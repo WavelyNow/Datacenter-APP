@@ -1,5 +1,13 @@
 import { PipeSegment, EquipmentItem } from './types';
-import { PIPE_DATABASE, PipeMaterial } from './constants';
+import { PIPE_STANDARDS } from './pipeStandards';
+
+// Helper to get pipe data safely
+const getPipeData = (material: string, size: string) => {
+    if (material === 'custom') return null;
+    const standard = PIPE_STANDARDS[material];
+    if (!standard) return null;
+    return standard.dimensions.find(d => d.dn === size);
+};
 
 export const calculatePipeVolume = (segment: PipeSegment): number => {
     let innerDiameterMm = 0;
@@ -7,19 +15,10 @@ export const calculatePipeVolume = (segment: PipeSegment): number => {
     if (segment.material === 'custom') {
         innerDiameterMm = segment.customInnerDiameter || 0;
     } else {
-        // Correctly cast material to the Key type
-        const materialData = PIPE_DATABASE[segment.material as PipeMaterial];
-        if (!materialData) return 0;
-
-        // In the new structure, standards are keys in the material object
-        // @ts-ignore - Dynamic access to standard keys
-        const standardData = materialData[segment.standard];
-        if (!standardData) return 0;
-
-        const pipeInfo = standardData[segment.size];
-        if (!pipeInfo) return 0;
-
-        innerDiameterMm = pipeInfo.id_mm;
+        const pipeData = getPipeData(segment.material, segment.size);
+        if (pipeData) {
+            innerDiameterMm = pipeData.id;
+        }
     }
 
     if (innerDiameterMm <= 0) return 0;
@@ -37,7 +36,7 @@ export const calculateTotalVolume = (
     safetyMargin: boolean
 ): number => {
     const pipesVolume = segments.reduce((sum, seg) => sum + calculatePipeVolume(seg), 0);
-    const equipmentVolume = equipmentList.reduce((sum, item) => sum + (item.volume || 0), 0);
+    const equipmentVolume = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
 
     const baseVolume = pipesVolume + equipmentVolume;
 
@@ -54,50 +53,38 @@ export const calculateWaterVolume = (totalVolume: number, percentage: number): n
 
 export const calculateSystemWeight = (
     segments: PipeSegment[],
+    equipmentList: EquipmentItem[],
     totalVolume: number
 ): { emptyWeight: number; fluidWeight: number; totalWeight: number } => {
-    // 1. Calculate Empty Pipe Weight
-    const emptyWeight = segments.reduce((sum, seg) => {
+
+    // 1. Calculate Total Empty Pipe Weight
+    const pipeEmptyWeight = segments.reduce((sum, seg) => {
         let weightPerMeter = 0;
 
         if (seg.material === 'custom') {
             weightPerMeter = seg.customWeight || 0;
         } else {
-            const materialData = PIPE_DATABASE[seg.material as PipeMaterial];
-            if (!materialData) return sum;
-
-            // @ts-ignore
-            const standardData = materialData[seg.standard];
-            if (!standardData) return sum;
-
-            const standardData = materialData[segment.standard];
-            if (!standardData) return 0;
-
-            const pipeInfo = standardData[segment.size];
-            if (!pipeInfo) return 0;
-
-            weightPerMeter = pipeInfo.weight_kg_m;
+            const pipeData = getPipeData(seg.material, seg.size);
+            if (pipeData) {
+                weightPerMeter = pipeData.weight;
+            }
         }
-        return weightPerMeter * segment.length;
-    };
+        return sum + (weightPerMeter * seg.length);
+    }, 0);
 
-    // 1. Calculate Total Empty Pipe Weight
-    const totalPipeEmptyWeight = segments.reduce((sum, seg) => sum + calculatePipeEmptyWeight(seg), 0);
+    // 2. Calculate Empty Equipment Weight
+    const equipmentEmptyWeight = equipmentList?.reduce((sum, item) => sum + (item.weight || 0), 0) || 0;
 
-    // 2. Calculate Total Empty Equipment Weight
-    const totalEquipmentEmptyWeight = equipmentList.reduce((sum, item) => sum + (item.weight || 0), 0);
-
-    // 3. Total Empty Weight of the system
-    const totalEmptyWeight = totalPipeEmptyWeight + totalEquipmentEmptyWeight;
-
-    // 4. Calculate Fluid Weight
+    // 3. Calculate Fluid Weight
     // Assumption: Glycol mix density approx 1.05 kg/L.
     const fluidDensity = 1.05;
     const fluidWeight = totalVolume * fluidDensity;
 
+    const totalEmptyWeight = pipeEmptyWeight + equipmentEmptyWeight;
+
     return {
         emptyWeight: totalEmptyWeight,
-        fluidWeight: fluidWeight,
+        fluidWeight,
         totalWeight: totalEmptyWeight + fluidWeight
     };
 };
@@ -125,9 +112,12 @@ export const generateBoQ = (segments: PipeSegment[]): BoQItem[] => {
             standardName = 'N/A';
             sizeName = `ID: ${segment.customInnerDiameter}mm`;
         } else {
-            key = `${segment.material}|${segment.standard}|${segment.size}`;
-            materialName = segment.material;
-            standardName = segment.standard;
+            key = `${segment.material}|${segment.size}`;
+
+            // Get pretty name from standards
+            const standard = PIPE_STANDARDS[segment.material];
+            materialName = standard ? standard.label : segment.material;
+            standardName = 'Standard';
             sizeName = segment.size;
         }
 
@@ -135,15 +125,6 @@ export const generateBoQ = (segments: PipeSegment[]): BoQItem[] => {
             const item = boqMap.get(key)!;
             item.totalLength += segment.length;
         } else {
-            // Validate standard if not custom
-            if (segment.material !== 'custom') {
-                const materialData = PIPE_DATABASE[segment.material as PipeMaterial];
-                if (!materialData) return;
-                // @ts-ignore
-                const standardData = materialData[segment.standard];
-                if (!standardData) return;
-            }
-
             boqMap.set(key, {
                 id: key,
                 materialName: materialName,
@@ -170,6 +151,7 @@ export interface DetailedWeightItem {
     emptyWeight: number;
     fluidWeight: number;
     totalWeight: number;
+    type: 'pipe' | 'equipment';
 }
 
 export const getDetailedWeightReport = (
@@ -189,20 +171,18 @@ export const getDetailedWeightReport = (
         if (seg.material === 'custom') {
             weightPerMeter = seg.customWeight || 0;
             innerDiameterMm = seg.customInnerDiameter || 0;
-            description = `Pipe Custom: ID ${innerDiameterMm}mm`;
+            description = `Teava Custom: ID ${innerDiameterMm}mm`;
         } else {
-            const materialData = PIPE_DATABASE[seg.material as PipeMaterial];
-            if (materialData) {
-                // @ts-ignore
-                const standardData = materialData[seg.standard];
-                if (standardData) {
-                    const pipeInfo = standardData[seg.size];
-                    if (pipeInfo) {
-                        weightPerMeter = pipeInfo.weight_kg_m;
-                        innerDiameterMm = pipeInfo.id_mm;
-                        description = `Pipe: ${seg.material} - ${seg.size}`;
-                    }
-                }
+            const standard = PIPE_STANDARDS[seg.material];
+            const pipeData = getPipeData(seg.material, seg.size);
+
+            if (standard && pipeData) {
+                weightPerMeter = pipeData.weight;
+                innerDiameterMm = pipeData.id;
+                description = `Teava ${standard.label} - ${seg.size}`;
+            } else {
+                // Fallback / Error case
+                description = `Unknown Pipe: ${seg.material} - ${seg.size}`;
             }
         }
 
@@ -219,14 +199,15 @@ export const getDetailedWeightReport = (
             quantity: `${seg.length.toFixed(2)} m`,
             emptyWeight,
             fluidWeight,
-            totalWeight: emptyWeight + fluidWeight
+            totalWeight: emptyWeight + fluidWeight,
+            type: 'pipe'
         });
     });
 
     // 2. Process Equipment
-    equipmentList.forEach(item => {
+    equipmentList?.forEach(item => {
         const fluidWeight = (item.volume || 0) * fluidDensity;
-        const emptyWeight = item.weight || 0; // Ensure we take the manual weight
+        const emptyWeight = item.weight || 0;
 
         report.push({
             id: item.id,
@@ -234,7 +215,8 @@ export const getDetailedWeightReport = (
             quantity: "1 buc",
             emptyWeight: emptyWeight,
             fluidWeight,
-            totalWeight: emptyWeight + fluidWeight
+            totalWeight: emptyWeight + fluidWeight,
+            type: 'equipment'
         });
     });
 

@@ -39,20 +39,13 @@ const calculateSummary = (data: PdfData): ReportSummary => {
     // So we need to add equipment weight manually here or update calculations.ts.
     // Use getDetailedWeightReport logic? No, let's just sum it up locally or use what we have.
 
-    // Better approach: Calculate weight using the same logic as the UI's Total Weight.
-    // The UI uses: detailedWeights.reduce((sum, item) => sum + item.totalWeight, 0);
-    // Let's replicate simple math here or import getDetailedWeightReport.
-    // Let's import getDetailedWeightReport to be 100% accurate.
-
-    // Actually, to avoid importing too many things and potential circular deps or complexity, let's just do:
-    const weightData = calculateSystemWeight(segments, totalVolume);
-    // now add equipment weights
-    const equipmentWeight = equipmentList.reduce((sum, item) => sum + (item.weight || 0), 0);
-    const totalWeightKg = weightData.totalWeight + equipmentWeight;
+    // 3. Calculate Weight
+    // calculateSystemWeight now includes pipe + equipment + fluid
+    const weightData = calculateSystemWeight(segments, equipmentList, totalVolume);
 
     return {
         totalVolumeLitres: totalVolume,
-        totalWeightKg: totalWeightKg,
+        totalWeightKg: weightData.totalWeight,
         glycolVol: glycolVol,
         waterVol: waterVol,
         mixDensity: 1.05

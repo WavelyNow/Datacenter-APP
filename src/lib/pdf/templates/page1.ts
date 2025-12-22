@@ -60,19 +60,26 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
         </div>
 
         <!-- 1. Summary -->
-        <div class="section-title">1. Sumar General</div>
+        <div class="section-title">1. Sumar General & Necesar Fluid</div>
         <table class="summary-table">
-            <tr>
-                <td><strong>Tip Fluid</strong></td>
-                <td>${data.fluidType === 'ethylene' ? 'Etilen Glicol' : 'Propilen Glicol'} ${data.glycolPercentage}%</td>
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 8px;"><strong>Tip Fluid</strong></td>
+                <td style="padding: 8px;">${data.fluidType === 'ethylene' ? 'Etilen Glicol' : 'Propilen Glicol'} ${data.glycolPercentage}% (Premix)</td>
             </tr>
             <tr>
-                <td><strong>Volum Total Sistem</strong></td>
-                <td>${fmt(summary.totalVolumeLitres)} litri</td>
+                <td style="padding: 8px;"><strong>Volum Total Sistem</strong></td>
+                <td style="padding: 8px;">${fmt(summary.totalVolumeLitres)} litri</td>
             </tr>
+            
+            <!-- ORDER ROW -->
+            <tr style="background-color: #e6f3ff; border: 2px solid #0066cc;">
+                <td style="padding: 10px; color: #004085;"><strong>DE COMANDAT (Total Fluid)</strong><br><span style="font-size: 8pt; font-weight: normal;">Se va comanda antigel premix concentrație ${data.glycolPercentage}%</span></td>
+                <td style="padding: 10px; font-size: 14pt; font-weight: bold; color: #0056b3;">${fmt(Math.ceil(summary.totalVolumeLitres))} Litri</td>
+            </tr>
+
             <tr>
-                <td><strong>Greutate Totală Fluid + Instalație</strong></td>
-                <td>${fmt(summary.totalWeightKg)} kg</td>
+                <td style="padding: 8px;"><strong>Greutate Totală (Estimată)</strong><br><span style="font-size: 8pt; color: #666;">Include greutate țevi goale + echipamente + fluid</span></td>
+                <td style="padding: 8px; font-weight: bold;">${fmt(Math.round(summary.totalWeightKg))} kg</td>
             </tr>
         </table>
 
@@ -105,4 +112,3 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
     </div>
     `;
 };
-```
