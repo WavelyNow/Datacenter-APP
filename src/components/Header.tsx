@@ -4,6 +4,7 @@ import { ProjectDetails } from '@/lib/types';
 import { PdfData } from '@/lib/pdf/types';
 import { Box, FileText, MapPin, Printer, Save, Upload, User } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
+import { PipeCatalogModal } from './PipeCatalogModal';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
@@ -112,8 +113,14 @@ export const Header: React.FC<HeaderProps> = ({
         }
     };
 
+    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+
     return (
         <header className="bg-neutral-900 border-b border-amber-900/30 pt-6 pb-6 px-4 mb-0 shadow-lg relative z-10 screen-only">
+
+            {/* Catalog Modal */}
+            <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
+
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     {/* Brand / Logo Area */}
@@ -132,9 +139,18 @@ export const Header: React.FC<HeaderProps> = ({
                             </div>
                         </label>
                         <div>
-                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-100 to-neutral-400">
-                                Engineering Suite
-                            </h1>
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-100 to-neutral-400">
+                                    Engineering Suite
+                                </h1>
+                                <button
+                                    onClick={() => setIsCatalogOpen(true)}
+                                    className="p-1.5 bg-neutral-800 hover:bg-neutral-700 text-amber-500 rounded-lg border border-neutral-700 transition-all hover:scale-105"
+                                    title="Open Pipe Catalog"
+                                >
+                                    <Book className="w-5 h-5" />
+                                </button>
+                            </div>
                             <p className="text-amber-500/80 text-xs font-medium tracking-wide flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                 HYDRAULIC CALC V2.0
@@ -142,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                     </div>
 
-                    {/* Project Metadata Inputs */}
+                    {/* Project Metadata Inputs - Unchanged */}
                     <div className="flex-1 w-full lg:w-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
                         <div className="space-y-1">
                             <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Nume Proiect</label>

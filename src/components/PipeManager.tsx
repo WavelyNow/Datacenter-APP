@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Plus, Trash2, Info, Settings2 } from 'lucide-react';
-import { PIPE_DATABASE, PipeMaterial } from '@/lib/constants';
+import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment } from '@/lib/types';
 import { calculatePipeVolume } from '@/lib/calculations';
 
@@ -14,11 +14,15 @@ interface PipeManagerProps {
 export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsChange }) => {
 
     const addSegment = () => {
+        // Default to Steel Light DN25
+        const defaultStandard = PIPE_STANDARDS['steel_light'];
+        const defaultPipe = defaultStandard.dimensions.find(d => d.dn === 'DN25') || defaultStandard.dimensions[0];
+
         const newSegment: PipeSegment = {
             id: crypto.randomUUID(),
-            material: 'Otel Carbon (Teava Neagra)',
-            standard: 'SCH40 / Standard',
-            size: 'DN25 (1)',
+            material: 'steel_light', // Key from PIPE_STANDARDS
+            standard: 'Standard', // Not strictly used for lookup now, but kept for compatibility
+            size: defaultPipe.dn,
             length: 10,
         };
         onSegmentsChange([...segments, newSegment]);
@@ -38,30 +42,16 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
             if (updates.material) {
                 if (updates.material === 'custom') {
                     // Switch to custom defaults
-                    updated.standard = 'N/A';
-                    updated.size = 'N/A';
+                    updated.size = 'custom';
                     updated.customInnerDiameter = 0;
                     updated.customWeight = 0;
                 } else {
                     // Switch to database defaults
-                    const matData = PIPE_DATABASE[updated.material as PipeMaterial];
-                    if (matData) {
-                        const standards = Object.keys(matData);
-                        updated.standard = standards[0] || '';
-                        // @ts-ignore
-                        const sizes = Object.keys(matData[updated.standard] || {});
-                        updated.size = sizes[0] || '';
+                    const standardData = PIPE_STANDARDS[updated.material];
+                    if (standardData) {
+                        const defaultPipe = standardData.dimensions[0];
+                        updated.size = defaultPipe.dn;
                     }
-                }
-            }
-
-            // Standard change handling (only if not custom)
-            if (updates.standard && updated.material !== 'custom') {
-                const matData = PIPE_DATABASE[updated.material as PipeMaterial];
-                if (matData) {
-                    // @ts-ignore
-                    const sizes = Object.keys(matData[updated.standard] || {});
-                    updated.size = sizes[0] || '';
                 }
             }
 
@@ -70,7 +60,26 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
     };
 
     const totalVolume = useMemo(() => {
-        return segments.reduce((acc, s) => acc + calculatePipeVolume(s), 0);
+        // We need to implement calculatePipeVolume logic here or update the utility.
+        // For simplicity, let's just calc it here using the new standards.
+        return segments.reduce((acc, s) => {
+            let id_mm = 0; // mm
+
+            if (s.material === 'custom') {
+                id_mm = s.customInnerDiameter || 0;
+            } else {
+                const standard = PIPE_STANDARDS[s.material];
+                const pipe = standard?.dimensions.find(d => d.dn === s.size);
+                if (pipe) id_mm = pipe.id;
+            }
+
+            // Volume (L) = Area (m2) * Length (m) * 1000
+            // r = id_mm / 2000 m
+            // V = pi * r^2 * Length * 1000
+            const radius_m = id_mm / 2000;
+            const vol = Math.PI * Math.pow(radius_m, 2) * s.length * 1000;
+            return acc + vol;
+        }, 0);
     }, [segments]);
 
     return (
@@ -103,113 +112,82 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                 {segments.map((segment) => {
                     const isCustom = segment.material === 'custom';
 
-                    // Determine Dropdown Data
-                    const matData = !isCustom ? PIPE_DATABASE[segment.material as PipeMaterial] : null;
-                    // @ts-ignore
-                    const standardData = matData ? matData[segment.standard] : null;
-                    const standards = matData ? Object.keys(matData) : [];
-                    const sizes = standardData ? Object.keys(standardData) : [];
+                    // Lookup Standard Data
+                    const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
+                    const pipeInfo = standardData?.dimensions.find(d => d.dn === segment.size);
 
-                    // Preview Calculations
-                    const pipeInfo = standardData ? standardData[segment.size] : null;
-                    const displayId = isCustom ? (segment.customInnerDiameter || 0) : (pipeInfo?.id_mm || 0);
-                    const vol = calculatePipeVolume(segment);
+                    // Safe values for display
+                    const displayId = isCustom ? (segment.customInnerDiameter || 0) : (pipeInfo?.id || 0);
 
                     return (
                         <div key={segment.id} className="bg-neutral-800 p-4 rounded-lg border border-neutral-700 hover:border-teal-500/50 transition-colors print:bg-slate-50 print:border-slate-100 grid grid-cols-1 gap-4 lg:grid-cols-12 items-end relative group">
 
                             {/* Material */}
-                            <div className="lg:col-span-3">
-                                <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Material</label>
+                            <div className="lg:col-span-4">
+                                <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Material Standard</label>
                                 <select
                                     className="w-full text-sm border-neutral-600 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-neutral-900 text-neutral-200 p-2 print:border-slate-200 print:bg-white print:text-black truncate"
                                     value={segment.material}
                                     onChange={(e) => updateSegment(segment.id, { material: e.target.value })}
                                 >
-                                    {Object.keys(PIPE_DATABASE).map((key) => (
-                                        <option key={key} value={key}>{key}</option>
+                                    {Object.entries(PIPE_STANDARDS).map(([key, std]) => (
+                                        <option key={key} value={key}>{std.label}</option>
                                     ))}
                                     <option value="custom" className="text-amber-400 font-bold">★ Custom / Manual</option>
                                 </select>
                             </div>
 
-                            {/* Standard OR Custom Weight */}
-                            <div className="lg:col-span-2">
-                                {isCustom ? (
-                                    // Custom Weight Input
-                                    <div>
+                            {/* Size Selector OR Custom Inputs */}
+                            {isCustom ? (
+                                <>
+                                    <div className="lg:col-span-2">
+                                        <label className="block text-[10px] font-bold text-amber-500 uppercase mb-1">ID (mm)</label>
+                                        <input
+                                            type="number"
+                                            className="w-full text-sm border-amber-900/50 rounded bg-neutral-900 text-amber-100 p-2"
+                                            value={segment.customInnerDiameter || ''}
+                                            onChange={(e) => updateSegment(segment.id, { customInnerDiameter: parseFloat(e.target.value) || 0 })}
+                                            placeholder="mm"
+                                        />
+                                    </div>
+                                    <div className="lg:col-span-2">
                                         <label className="block text-[10px] font-bold text-amber-500 uppercase mb-1">Weight (kg/m)</label>
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="0.01"
-                                            className="w-full text-sm border-amber-900/50 rounded focus:ring-1 focus:ring-amber-500 focus:border-amber-500 bg-neutral-900 text-amber-100 p-2"
+                                            className="w-full text-sm border-amber-900/50 rounded bg-neutral-900 text-amber-100 p-2"
                                             value={segment.customWeight || ''}
                                             onChange={(e) => updateSegment(segment.id, { customWeight: parseFloat(e.target.value) || 0 })}
                                             placeholder="kg/m"
                                         />
                                     </div>
-                                ) : (
-                                    // Standard Dropdown
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Standard</label>
+                                </>
+                            ) : (
+                                <div className="lg:col-span-4">
+                                    <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Pipe Size (DN)</label>
+                                    <div className="relative">
                                         <select
-                                            className="w-full text-sm border-neutral-600 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-neutral-900 text-neutral-200 p-2 print:border-slate-200 print:bg-white print:text-black truncate"
-                                            value={segment.standard}
-                                            onChange={(e) => updateSegment(segment.id, { standard: e.target.value })}
+                                            className="w-full text-sm border-neutral-600 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-neutral-900 text-neutral-200 p-2 pr-12 print:border-slate-200 print:bg-white print:text-black truncate font-mono"
+                                            value={segment.size}
+                                            onChange={(e) => updateSegment(segment.id, { size: e.target.value })}
                                         >
-                                            {standards.map(st => (
-                                                <option key={st} value={st}>{st}</option>
+                                            {standardData?.dimensions.map(d => (
+                                                <option key={d.dn} value={d.dn}>
+                                                    {d.dn} ({d.inch !== '-' ? d.inch : ''}) - ID: {d.id}mm
+                                                </option>
                                             ))}
                                         </select>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Size OR Custom ID */}
-                            <div className="lg:col-span-4">
-                                {isCustom ? (
-                                    // Custom ID Input
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-amber-500 uppercase mb-1">Inner Dia (mm)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.1"
-                                            className="w-full text-sm border-amber-900/50 rounded focus:ring-1 focus:ring-amber-500 focus:border-amber-500 bg-neutral-900 text-amber-100 p-2"
-                                            value={segment.customInnerDiameter || ''}
-                                            onChange={(e) => updateSegment(segment.id, { customInnerDiameter: parseFloat(e.target.value) || 0 })}
-                                            placeholder="ID (mm)"
-                                        />
-                                    </div>
-                                ) : (
-                                    // Size Dropdown
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Diameter</label>
-                                        <div className="relative">
-                                            <select
-                                                className="w-full text-sm border-neutral-600 rounded focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-neutral-900 text-neutral-200 p-2 pr-12 print:border-slate-200 print:bg-white print:text-black truncate"
-                                                value={segment.size}
-                                                onChange={(e) => updateSegment(segment.id, { size: e.target.value })}
-                                            >
-                                                {sizes.map(sz => (
-                                                    <option key={sz} value={sz}>{sz}</option>
-                                                ))}
-                                            </select>
-                                            {displayId > 0 && (
-                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-teal-500 pointer-events-none print:text-slate-500 bg-teal-900/10 px-1.5 py-0.5 rounded border border-teal-500/20 print:border-none print:bg-transparent">
-                                                    ID:{displayId}
-                                                </div>
-                                            )}
+                                        {/* Quick Badge */}
+                                        <div className="absolute right-8 top-1/2 -translate-y-1/2 text-[10px] text-teal-500 pointer-events-none">
+                                            OD: {pipeInfo?.od}
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
 
                             {/* Length & Actions */}
-                            <div className="lg:col-span-3 flex gap-2">
+                            <div className="lg:col-span-4 flex gap-2">
                                 <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Len (m)</label>
+                                    <label className="block text-[10px] font-bold text-neutral-500 uppercase mb-1 print:text-slate-500">Length (m)</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -222,7 +200,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                                 <div className="flex items-end pb-0.5">
                                     <button
                                         onClick={() => removeSegment(segment.id)}
-                                        className="text-neutral-500 hover:text-red-400 p-2 rounded hover:bg-red-900/20 transition-all cursor-pointer print:hidden border border-transparent hover:border-red-900/30"
+                                        className="text-neutral-500 hover:text-red-400 p-2 rounded hover:bg-red-900/20 transition-all cursor-pointer print:hidden border border-transparent hover:border-red900/30"
                                         title="Remove Segment"
                                     >
                                         <Trash2 className="w-5 h-5" />
