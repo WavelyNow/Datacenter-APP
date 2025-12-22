@@ -1,26 +1,184 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Professional Dark Mode */
+  --background: #0f172a;
+  /* Slate-900 */
+  --foreground: #f1f5f9;
+  /* Slate-100 */
+
+  --primary: #38bdf8;
+  /* Sky-400 */
+  --primary-foreground: #0f172a;
+
+  --secondary: #1e293b;
+  /* Slate-800 */
+  --secondary-foreground: #f1f5f9;
+
+  --accent: #334155;
+  /* Slate-700 */
+  --accent-foreground: #f1f5f9;
+
+  --destructive: #ef4444;
+  /* Red-500 */
+  --destructive-foreground: #ffffff;
+
+  --border: #334155;
+  /* Slate-700 */
+  --input: #1e293b;
+  /* Slate-800 */
+  --ring: #38bdf8;
+
+  --radius: 0.5rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* ... keep standard theme mappings ... */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Force Full Dark Mode on Body/HTML */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0f172a;
+  /* Slate-900 */
+  color: #f1f5f9;
+  /* Slate-100 */
+  min-height: 100vh;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  @apply antialiased;
+}
+
+/* GLOBAL Dark Mode Form Elements (Screen) */
+input,
+select,
+textarea {
+  @apply bg-slate-700 text-white border border-slate-600 rounded-md px-3 py-2 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all;
+}
+
+/* =========================================
+   PROFESSIONAL REPORT PRINT STYLES
+   ========================================= */
+@media print {
+  @page {
+    margin: 0.5cm;
+    size: A4 portrait;
+  }
+
+  html,
+  body {
+    background-color: white !important;
+    background: white !important;
+    color: black !important;
+    font-size: 12px;
+    /* Slightly smaller for report density */
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Structural Resets */
+  .min-h-screen {
+    min-height: auto !important;
+  }
+
+  .max-w-7xl,
+  .container {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Visual Flattener (No Cards, No Shadows, No Rounded) */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-radius: 0 !important;
+    transition: none !important;
+  }
+
+  /* Hide UI Elements */
+  header,
+  /* Hides the App Header */
+  .no-print,
+  button,
+  input[type="range"],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reveal Print Elements */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Card Repeal -> Turn cards into sections */
+  .bg-slate-900,
+  .bg-slate-800,
+  .bg-slate-700,
+  .bg-white {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+  }
+
+  /* Add separation borders for sections instead */
+  section,
+  .bg-slate-800 {
+    border-bottom: 0px solid #000 !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Table Styling for Print */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #000 !important;
+    color: black !important;
+    padding: 4px 8px !important;
+  }
+
+  thead {
+    background: #f3f4f6 !important;
+    /* Light gray header */
+    color: black !important;
+    font-weight: bold !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Text Color Forcing */
+  .text-white,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400,
+  .text-blue-400,
+  .text-blue-500 {
+    color: black !important;
+  }
+
+  /* Specific Component Overrides */
+  /* Remove inputs from display, show their values if standard text, but most inputs are hidden in this design */
+  input,
+  select {
+    border: none !important;
+    background: transparent !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-block;
+    width: auto;
+  }
 }

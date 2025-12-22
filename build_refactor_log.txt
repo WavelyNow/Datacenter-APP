@@ -1,0 +1,24 @@
+
+> glicol@0.1.0 build
+> next build
+
+▲ Next.js 16.1.0 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.3s
+  Running TypeScript ...
+  Collecting page data using 31 workers ...
+  Generating static pages using 31 workers (0/4) ...
+  Generating static pages using 31 workers (1/4) 
+  Generating static pages using 31 workers (2/4) 
+  Generating static pages using 31 workers (3/4) 
+✓ Generating static pages using 31 workers (4/4) in 363.7ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+
