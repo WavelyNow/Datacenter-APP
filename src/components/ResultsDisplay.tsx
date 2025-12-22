@@ -1,24 +1,20 @@
 import React from 'react';
-import { Droplet, Snowflake, Waves, ClipboardList, Scale } from 'lucide-react';
-import { calculateGlycolVolume, calculateWaterVolume, BoQItem } from '@/lib/calculations';
+import { Scale, ClipboardList } from 'lucide-react';
+import { calculateTotalVolume, generateBoQ, getDetailedWeightReport } from '@/lib/calculations';
+import { useProject } from '@/context/ProjectContext';
 
-interface ResultsDisplayProps {
-    totalSystemVolume: number;
-    glycolPercentage: number;
-    boqItems: BoQItem[];
-    totalWeight?: number;
-}
+export const ResultsDisplay: React.FC = () => {
+    const {
+        segments,
+        equipmentList,
+        glycolPercentage,
+    } = useProject();
 
-export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
-    totalSystemVolume,
-    glycolPercentage,
-    boqItems,
-    totalWeight = 0,
-}) => {
-    // const glycolVolume = calculateGlycolVolume(totalSystemVolume, glycolPercentage);
-    // const waterVolume = calculateWaterVolume(totalSystemVolume, glycolPercentage);
+    const totalSystemVolume = calculateTotalVolume(segments, equipmentList, false);
+    const boqItems = generateBoQ(segments);
 
-    // LOGIC UPDATE: We now assume Premix, so no need to show split volumes on UI
+    const detailedWeights = getDetailedWeightReport(segments, equipmentList, glycolPercentage);
+    const totalWeight = detailedWeights.reduce((sum, item) => sum + item.totalWeight, 0);
 
     return (
         <div className="space-y-6 print:break-before-auto">

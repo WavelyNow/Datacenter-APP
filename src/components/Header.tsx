@@ -1,146 +1,240 @@
-import React, { useRef } from 'react';
-import { Download, Upload, FolderOpen, Save, Image as ImageIcon } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { ProjectDetails } from '@/lib/types';
+import { PdfData } from '@/lib/pdf/types';
+import { Box, FileText, MapPin, Printer, Save, Upload, User } from 'lucide-react';
+import { useProject } from '@/context/ProjectContext';
 
 interface HeaderProps {
-    projectName: string;
-    onProjectNameChange: (name: string) => void;
-    engineerName: string;
-    onEngineerNameChange: (name: string) => void;
-    onSaveProject?: () => void;
-    onLoadProject?: (file: File) => void;
-    companyLogo?: string | null;
-    onLogoUpload?: (base64: string) => void;
+    projectDetails: ProjectDetails;
+    onProjectDetailsChange: (details: ProjectDetails) => void;
+    onLoadProject: (data: any) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-    projectName,
-    onProjectNameChange,
-    engineerName,
-    onEngineerNameChange,
-    onSaveProject,
-    onLoadProject,
-    companyLogo,
-    onLogoUpload
+    projectDetails,
+    onProjectDetailsChange,
+    onLoadProject
 }) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const logoInputRef = useRef<HTMLInputElement>(null);
+    const { segments, equipmentList, fluidType, glycolPercentage, safetyMargin } = useProject();
+    const [isDownloading, setIsDownloading] = useState(false);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0] && onLoadProject) {
-            onLoadProject(e.target.files[0]);
-            e.target.value = ''; // Reset input
-        }
+    const updateDetail = (field: keyof ProjectDetails, value: string) => {
+        onProjectDetailsChange({ ...projectDetails, [field]: value });
     };
 
-    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && onLogoUpload) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                onLogoUpload(reader.result as string);
+    const saveProject = () => {
+        const data = {
+            projectDetails,
+            segments,
+            equipmentList,
+            fluidType,
+            glycolPercentage,
+            safetyMargin
+        };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `project_${projectDetails.projectNumber}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
+    const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target?.result as string);
+                onLoadProject(data);
+            } catch (error) {
+                console.error('Error loading project:', error);
+                alert('Eroare la încărcarea fișierului.');
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const result = e.target?.result as string;
+            // Limit size if needed, but for now just save it
+            updateDetail('companyLogo', result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleDownloadPdf = async () => {
+        setIsDownloading(true);
+        try {
+            const data: PdfData = {
+                projectDetails,
+                segments: segments || [],
+                equipmentList: equipmentList || [],
+                fluidType: fluidType || 'ethylene',
+                glycolPercentage: glycolPercentage || 30,
+                safetyMargin: safetyMargin || false
             };
-            reader.readAsDataURL(file);
+
+            const response = await fetch('/api/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Generation failed');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Proiect_${projectDetails.projectName.replace(/\s+/g, '_')}_Rev${projectDetails.revision}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error: any) {
+            console.error('PDF Download Error:', error);
+            alert(`Eroare la generare PDF: ${error.message}`);
+        } finally {
+            setIsDownloading(false);
         }
     };
 
     return (
-        <header className="bg-neutral-900 border-b border-neutral-800 shadow-lg print:hidden sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-
-                {/* Branding / Logo Upload */}
-                <div className="flex items-center gap-4">
-                    <div
-                        className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-500 cursor-pointer hover:bg-teal-500/20 transition-all relative overflow-hidden group"
-                        onClick={() => logoInputRef.current?.click()}
-                        title="Upload Company Logo"
-                    >
-                        {companyLogo ? (
-                            <img src={companyLogo} alt="Logo" className="w-full h-full object-contain" />
-                        ) : (
-                            <ImageIcon className="w-5 h-5" />
-                        )}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[8px] text-white font-medium uppercase transition-opacity">
-                            Upload
+        <header className="bg-neutral-900 border-b border-amber-900/30 pt-6 pb-6 px-4 mb-0 shadow-lg relative z-10 screen-only">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    {/* Brand / Logo Area */}
+                    <div className="flex items-center gap-4 group cursor-pointer relative" title="Click to upload logo">
+                        <label className="relative block cursor-pointer">
+                            <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-1 rounded-xl shadow-lg shadow-orange-900/20 overflow-hidden w-16 h-16 flex items-center justify-center">
+                                {projectDetails.companyLogo ? (
+                                    <img src={projectDetails.companyLogo} alt="Company Logo" className="w-full h-full object-contain bg-white rounded-lg" />
+                                ) : (
+                                    <Box className="w-8 h-8 text-black" />
+                                )}
+                            </div>
+                            <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Upload className="w-4 h-4 text-white" />
+                            </div>
+                        </label>
+                        <div>
+                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-100 to-neutral-400">
+                                Engineering Suite
+                            </h1>
+                            <p className="text-amber-500/80 text-xs font-medium tracking-wide flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                HYDRAULIC CALC V2.0
+                            </p>
                         </div>
                     </div>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        ref={logoInputRef}
-                        onChange={handleLogoChange}
-                    />
 
-                    <div>
-                        <h1 className="text-lg font-bold text-neutral-100 leading-none">HydroCalc <span className="text-teal-500">Pro</span></h1>
-                        <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-medium">Engineering Suite</p>
+                    {/* Project Metadata Inputs */}
+                    <div className="flex-1 w-full lg:w-auto grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-800">
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Nume Proiect</label>
+                            <div className="relative group">
+                                <FileText className="absolute left-2 top-2 w-4 h-4 text-neutral-600 group-focus-within:text-amber-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={projectDetails.projectName}
+                                    onChange={(e) => updateDetail('projectName', e.target.value)}
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded text-sm px-2 py-1.5 pl-8 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-neutral-200"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Locație</label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-2 top-2 w-4 h-4 text-neutral-600 group-focus-within:text-amber-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={projectDetails.location}
+                                    onChange={(e) => updateDetail('location', e.target.value)}
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded text-sm px-2 py-1.5 pl-8 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-neutral-200"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Proiectant</label>
+                            <div className="relative group">
+                                <User className="absolute left-2 top-2 w-4 h-4 text-neutral-600 group-focus-within:text-amber-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={projectDetails.designer}
+                                    onChange={(e) => updateDetail('designer', e.target.value)}
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded text-sm px-2 py-1.5 pl-8 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-neutral-200"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">ID Proiect</label>
+                                <input
+                                    type="text"
+                                    value={projectDetails.projectNumber}
+                                    onChange={(e) => updateDetail('projectNumber', e.target.value)}
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded text-sm px-2 py-1.5 focus:ring-1 focus:ring-amber-500 text-neutral-200"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">Revizie</label>
+                                <input
+                                    type="text"
+                                    value={projectDetails.revision}
+                                    onChange={(e) => updateDetail('revision', e.target.value)}
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded text-sm px-2 py-1.5 focus:ring-1 focus:ring-amber-500 text-neutral-200 text-center"
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                {/* Project Inputs */}
-                <div className="hidden md:flex flex-1 items-center gap-4 max-w-2xl mx-8">
-                    <label className="flex-1">
-                        <span className="block text-[10px] text-neutral-500 uppercase font-bold mb-1">Project Name</span>
-                        <input
-                            type="text"
-                            placeholder="Enter Project Name..."
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 text-sm rounded px-3 py-1.5 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-colors"
-                            value={projectName}
-                            onChange={(e) => onProjectNameChange(e.target.value)}
-                        />
-                    </label>
-                    <label className="flex-1">
-                        <span className="block text-[10px] text-neutral-500 uppercase font-bold mb-1">Engineer</span>
-                        <input
-                            type="text"
-                            placeholder="Your Name..."
-                            className="w-full bg-neutral-800 border-neutral-700 text-neutral-200 text-sm rounded px-3 py-1.5 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-colors"
-                            value={engineerName}
-                            onChange={(e) => onEngineerNameChange(e.target.value)}
-                        />
-                    </label>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                    {onSaveProject && (
+                    {/* Actions Area */}
+                    <div className="flex flex-col gap-2 min-w-[140px]">
                         <button
-                            onClick={onSaveProject}
-                            className="flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-sm transition-colors border border-neutral-700 group"
-                            title="Save Project"
+                            onClick={handleDownloadPdf}
+                            disabled={isDownloading}
+                            className="w-full bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg font-bold shadow-lg shadow-amber-900/20 active:transform active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save className="w-4 h-4 text-emerald-500 group-hover:text-emerald-400" />
-                            <span className="hidden sm:inline font-medium">Save</span>
+                            {isDownloading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                    Generare...
+                                </>
+                            ) : (
+                                <>
+                                    <Printer className="w-4 h-4" />
+                                    Download PDF
+                                </>
+                            )}
                         </button>
-                    )}
 
-                    {onLoadProject && (
-                        <>
-                            <input
-                                type="file"
-                                accept=".json"
-                                className="hidden"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                            />
+                        <div className="grid grid-cols-2 gap-2">
                             <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-sm transition-colors border border-neutral-700 group"
-                                title="Load Project"
+                                onClick={saveProject}
+                                className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-3 py-1.5 rounded text-xs font-medium border border-neutral-700 transition-colors flex items-center justify-center gap-1"
                             >
-                                <FolderOpen className="w-4 h-4 text-amber-500 group-hover:text-amber-400" />
-                                <span className="hidden sm:inline font-medium">Load</span>
+                                <Save className="w-3 h-3" /> Save
                             </button>
-                        </>
-                    )}
-
-                    <button
-                        onClick={() => window.print()}
-                        className="flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded text-sm transition-colors font-medium shadow-lg shadow-teal-900/20 ml-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        <span className="hidden sm:inline">Print Report</span>
-                    </button>
+                            <label className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 px-3 py-1.5 rounded text-xs font-medium border border-neutral-700 transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                                <Upload className="w-3 h-3" /> Load
+                                <input type="file" accept=".json" onChange={loadProject} className="hidden" />
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>

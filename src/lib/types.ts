@@ -16,7 +16,20 @@ export interface EquipmentItem {
     name: string;
     volume: number;
     weight: number; // kg - Mandatory now
-    proofImage?: string; // Base64 string
+    proofImage?: string; // Base64 string - Legacy, keep for now but prefer photos array
+    photos?: string[]; // Array of Base64 strings for the gallery
+}
+
+export type FluidType = 'ethylene' | 'propylene' | 'water';
+
+export interface ProjectDetails {
+    projectName: string;
+    projectNumber: string;
+    designer: string;
+    location: string;
+    date: string;
+    revision: string;
+    companyLogo?: string; // Base64 string for the report header
 }
 
 export interface AppState {

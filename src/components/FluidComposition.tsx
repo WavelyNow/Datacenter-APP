@@ -1,15 +1,14 @@
 import React from 'react';
 import { Snowflake } from 'lucide-react';
+import { useProject } from '@/context/ProjectContext';
 
-interface FluidCompositionProps {
-    glycolPercentage: number;
-    onGlycolPercentageChange: (val: number) => void;
-}
+export const FluidComposition: React.FC = () => {
+    const { glycolPercentage, setGlycolPercentage } = useProject();
 
-export const FluidComposition: React.FC<FluidCompositionProps> = ({
-    glycolPercentage,
-    onGlycolPercentageChange,
-}) => {
+    const onGlycolPercentageChange = (val: number) => {
+        setGlycolPercentage(val);
+    };
+
     return (
         <div className="bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-700 print:bg-white print:border-slate-200 print:shadow-none">
             <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-2 print:border-slate-100">
