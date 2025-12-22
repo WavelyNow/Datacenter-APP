@@ -70,24 +70,35 @@ export const calculateSystemWeight = (
             const standardData = materialData[seg.standard];
             if (!standardData) return sum;
 
-            const pipeInfo = standardData[seg.size];
-            if (!pipeInfo) return sum;
+            const standardData = materialData[segment.standard];
+            if (!standardData) return 0;
+
+            const pipeInfo = standardData[segment.size];
+            if (!pipeInfo) return 0;
 
             weightPerMeter = pipeInfo.weight_kg_m;
         }
+        return weightPerMeter * segment.length;
+    };
 
-        return sum + (weightPerMeter * seg.length);
-    }, 0);
+    // 1. Calculate Total Empty Pipe Weight
+    const totalPipeEmptyWeight = segments.reduce((sum, seg) => sum + calculatePipeEmptyWeight(seg), 0);
 
-    // 2. Calculate Fluid Weight
+    // 2. Calculate Total Empty Equipment Weight
+    const totalEquipmentEmptyWeight = equipmentList.reduce((sum, item) => sum + (item.weight || 0), 0);
+
+    // 3. Total Empty Weight of the system
+    const totalEmptyWeight = totalPipeEmptyWeight + totalEquipmentEmptyWeight;
+
+    // 4. Calculate Fluid Weight
     // Assumption: Glycol mix density approx 1.05 kg/L.
     const fluidDensity = 1.05;
     const fluidWeight = totalVolume * fluidDensity;
 
     return {
-        emptyWeight,
-        fluidWeight,
-        totalWeight: emptyWeight + fluidWeight
+        emptyWeight: totalEmptyWeight,
+        fluidWeight: fluidWeight,
+        totalWeight: totalEmptyWeight + fluidWeight
     };
 };
 

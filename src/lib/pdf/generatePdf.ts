@@ -90,7 +90,6 @@ export async function generatePdf(data: PdfData): Promise<Buffer> {
                 display: flex;
                 justify-content: space-between;
                 border-bottom: 1px solid #ddd;
-                margin-bottom: 5px;
             }
         </style>
         <div class="header">

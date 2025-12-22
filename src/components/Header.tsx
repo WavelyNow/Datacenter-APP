@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ProjectDetails } from '@/lib/types';
 import { PdfData } from '@/lib/pdf/types';
-import { Box, FileText, MapPin, Printer, Save, Upload, User } from 'lucide-react';
+import { Box, Book, FileText, MapPin, Printer, Save, Upload, User } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { PipeCatalogModal } from './PipeCatalogModal';
 

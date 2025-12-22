@@ -39,66 +39,70 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
     `).join('');
 
     // --- HTML Content ---
+    // --- Helper for formatting numbers ---
+    const fmt = (n: number) => n.toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+    const generateBoQRows = (data: PdfData) => {
+        // This function needs to be defined or the boqRows variable used directly.
+        // Assuming the original boqRows is intended to be used here.
+        return boqRows;
+    };
+
     return `
-        <div class="page-break">
-            <h1>Raport Final: Volumetrie &amp; Materiale</h1>
-            
-            <div class="mb-4">
-                <strong>Proiect:</strong> ${projectDetails.projectName} (${projectDetails.projectNumber})<br>
-                <strong>Locație:</strong> ${projectDetails.location}<br>
-                <strong>Data:</strong> ${projectDetails.date} | <strong>Rev:</strong> ${projectDetails.revision}
+    <div class="report-container">
+        <!-- Title -->
+        <h1>RAPORT FINAL: VOLUMETRIE & MATERIALE</h1>
+        
+        <div class="project-info">
+            <strong>Proiect:</strong> ${data.projectDetails.projectName} (${data.projectDetails.projectNumber})<br>
+            <strong>Locație:</strong> ${data.projectDetails.location}<br>
+            <strong>Data:</strong> ${data.projectDetails.date} | <strong>Rev:</strong> ${data.projectDetails.revision}
+        </div>
+
+        <!-- 1. Summary -->
+        <div class="section-title">1. Sumar General</div>
+        <table class="summary-table">
+            <tr>
+                <td><strong>Tip Fluid</strong></td>
+                <td>${data.fluidType === 'ethylene' ? 'Etilen Glicol' : 'Propilen Glicol'} ${data.glycolPercentage}%</td>
+            </tr>
+            <tr>
+                <td><strong>Volum Total Sistem</strong></td>
+                <td>${fmt(summary.totalVolumeLitres)} litri</td>
+            </tr>
+            <tr>
+                <td><strong>Greutate Totală Fluid + Instalație</strong></td>
+                <td>${fmt(summary.totalWeightKg)} kg</td>
+            </tr>
+        </table>
+
+        <!-- 2. BoQ -->
+        <div class="section-title">2. Centralizator Materiale (BoQ)</div>
+        <table class="boq-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">NR.</th>
+                    <th>DESCRIERE MATERIAL</th>
+                    <th style="width: 100px;">CANTITATE</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${generateBoQRows(data)}
+            </tbody>
+        </table>
+        
+        <!-- Signatures -->
+        <div class="signatures">
+            <div class="sig-block">
+                <strong>Întocmit,</strong><br>
+                ${data.projectDetails.designer}
             </div>
-
-            <h2>1. Sumar General</h2>
-            <table>
-                <tbody>
-                    <tr>
-                        <td><strong>Tip Fluid</strong></td>
-                        <td>${fluidType === 'ethylene' ? 'Etilen Glicol' : fluidType === 'propylene' ? 'Propilen Glicol' : 'Apă'} ${glycolPercentage}%</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Volum Total Sistem</strong></td>
-                        <td class="mono"><strong>${summary.totalVolumeLitres.toFixed(1)} litri</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Volum Glicol (Necesar)</td>
-                        <td class="mono">${summary.glycolVol.toFixed(1)} litri</td>
-                    </tr>
-                    <tr>
-                        <td>Volum Apă</td>
-                        <td class="mono">${summary.waterVol.toFixed(1)} litri</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Greutate Totală Fluid</strong></td>
-                        <td class="mono"><strong>${summary.totalWeightKg.toFixed(1)} kg</strong></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2>2. Centralizator Materiale (BoQ)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">Nr.</th>
-                        <th>Descriere Material</th>
-                        <th style="width: 20%;">Cantitate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${boqRows}
-                </tbody>
-            </table>
-
-            <div class="signatures">
-                <div class="signature-box">
-                    <strong>Întocmit,</strong><br>
-                    ${projectDetails.designer}
-                </div>
-                <div class="signature-box">
-                    <strong>Verificat,</strong><br>
-                    -
-                </div>
+            <div class="sig-block">
+                <strong>Verificat,</strong><br>
+                -
             </div>
         </div>
+    </div>
     `;
 };
+```

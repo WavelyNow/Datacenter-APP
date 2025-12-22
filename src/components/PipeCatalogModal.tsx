@@ -65,14 +65,14 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                             const vol = (Math.PI * Math.pow(pipe.id / 20, 2) * 100) / 1000;
 
                                             return (
-                                                <tr key={idx} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-2 font-medium">{pipe.dn}</td>
-                                                    <td className="px-4 py-2 text-gray-500">{pipe.inch}</td>
-                                                    <td className="px-4 py-2">{pipe.od}</td>
-                                                    <td className="px-4 py-2">{pipe.thickness}</td>
-                                                    <td className="px-4 py-2 font-bold text-blue-700 bg-blue-50">{pipe.id}</td>
-                                                    <td className="px-4 py-2">{pipe.weight}</td>
-                                                    <td className="px-4 py-2 font-mono text-gray-600">{vol.toFixed(3)}</td>
+                                                <tr key={idx} className="hover:bg-gray-100 border-b border-gray-100 last:border-0 transition-colors">
+                                                    <td className="px-4 py-2 font-bold text-gray-800">{pipe.dn}</td>
+                                                    <td className="px-4 py-2 text-gray-800">{pipe.inch}</td>
+                                                    <td className="px-4 py-2 text-gray-800">{pipe.od}</td>
+                                                    <td className="px-4 py-2 text-gray-800">{pipe.thickness}</td>
+                                                    <td className="px-4 py-2 font-bold text-blue-700 bg-blue-50/50">{pipe.id}</td>
+                                                    <td className="px-4 py-2 text-gray-800">{pipe.weight}</td>
+                                                    <td className="px-4 py-2 font-mono text-gray-700">{vol.toFixed(3)}</td>
                                                 </tr>
                                             );
                                         })}
