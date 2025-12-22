@@ -78,11 +78,23 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         try {
             localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(data));
         } catch (e: any) {
-            console.error('Failed to save to localStorage:', e);
             if (e.name === 'QuotaExceededError') {
-                // If quota is full, maybe try to clear old data or just warn
-                // For now, we silent fail or log, to prevent app crash
-                console.warn('LocalStorage quota exceeded. Data may not persist.');
+                console.warn('LocalStorage quota exceeded. Attempting to save without logo.');
+                try {
+                    const dataWithoutLogo = {
+                        ...data,
+                        projectDetails: {
+                            ...data.projectDetails,
+                            companyLogo: undefined
+                        }
+                    };
+                    localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(dataWithoutLogo));
+                    console.log('Saved successfully without logo.');
+                } catch (retryError) {
+                    console.error('Failed to save even without logo:', retryError);
+                }
+            } else {
+                console.error('Failed to save to localStorage:', e);
             }
         }
     }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin]);
