@@ -41,12 +41,11 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
     // --- HTML Content ---
     // --- Helper for formatting numbers ---
     const fmt = (n: number) => n.toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const fmtInt = (n: number) => n.toLocaleString('ro-RO', { maximumFractionDigits: 0 });
 
-    const generateBoQRows = (data: PdfData) => {
-        // This function needs to be defined or the boqRows variable used directly.
-        // Assuming the original boqRows is intended to be used here.
-        return boqRows;
-    };
+    // Order Logic: Add 5% hidden buffer, then round UP to nearest 50
+    const volumeWithBuffer = summary.totalVolumeLitres * 1.05;
+    const orderVolume = Math.ceil(volumeWithBuffer / 50) * 50;
 
     return `
     <div class="report-container">
@@ -73,8 +72,8 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
             
             <!-- ORDER ROW -->
             <tr style="background-color: #e6f3ff; border: 2px solid #0066cc;">
-                <td style="padding: 10px; color: #004085;"><strong>DE COMANDAT (Total Fluid)</strong><br><span style="font-size: 8pt; font-weight: normal;">Se va comanda antigel premix concentrație ${data.glycolPercentage}%</span></td>
-                <td style="padding: 10px; font-size: 14pt; font-weight: bold; color: #0056b3;">${fmt(Math.ceil(summary.totalVolumeLitres))} Litri</td>
+                <td style="padding: 10px; color: #004085;"><strong>DE COMANDAT (Total Fluid)</strong><br><span style="font-size: 8pt; font-weight: normal;">Se va comanda antigel premix concentrație ${data.glycolPercentage}% (Include rezervă + rotunjire)</span></td>
+                <td style="padding: 10px; font-size: 14pt; font-weight: bold; color: #0056b3;">${fmtInt(orderVolume)} Litri</td>
             </tr>
 
             <tr>
@@ -94,7 +93,7 @@ export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
                 </tr>
             </thead>
             <tbody>
-                ${generateBoQRows(data)}
+                ${boqRows}
             </tbody>
         </table>
         
