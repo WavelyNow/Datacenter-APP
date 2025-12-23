@@ -1,19 +1,38 @@
+import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 
-import { ProjectDetails, PipeSegment, EquipmentItem, FluidType } from '@/lib/types';
+export interface PdfOptions {
+    includeVolume: boolean;
+    includeBoQ: boolean;
+    includeSupports: boolean;
+    includeWeights: boolean;
+    includePhotos: boolean;
+    supportSpacing: number; // e.g. 2.0
+    supportConfig?: {
+        spacing: number;
+        mountingType: 'concrete' | 'suspended';
+        height: number;
+        pipesPerSupport: number;
+    };
+}
 
 export interface PdfData {
     projectDetails: ProjectDetails;
     segments: PipeSegment[];
     equipmentList: EquipmentItem[];
-    fluidType: FluidType;
+    fluidType: string;
     glycolPercentage: number;
     safetyMargin: boolean;
-}
-
-export interface ReportSummary {
-    totalVolumeLitres: number;
-    totalWeightKg: number;
-    glycolVol: number;
-    waterVol: number;
-    mixDensity: number;
+    safetyMarginPercentage?: number;
+    supportConfig: {
+        spacing: number;
+        mountingType: 'concrete' | 'suspended';
+        height: number;
+        pipesPerSupport: number;
+    };
+    branding: {
+        primaryColor: string;
+        accentColor: string;
+        pdfTheme: 'modern' | 'classic' | 'industrial';
+    };
+    options?: PdfOptions;
 }

@@ -28,14 +28,33 @@ export interface ProjectDetails {
     designer: string;
     location: string;
     date: string;
+    beneficiary: string;
     revision: string;
     companyLogo?: string; // Base64 string for the report header
+}
+
+export type MountingType = 'concrete' | 'suspended';
+
+export interface SupportConfig {
+    spacing: number;
+    mountingType: MountingType;
+    height: number; // meters
+    pipesPerSupport: number; // 1, 2, or 3
+}
+
+export interface BrandingConfig {
+    primaryColor: string;
+    accentColor: string;
+    pdfTheme: 'modern' | 'classic' | 'industrial';
 }
 
 export interface AppState {
     segments: PipeSegment[];
     equipmentList: EquipmentItem[];
     safetyMargin: boolean;
+    safetyMarginPercentage: number;
     glycolPercentage: number;
     companyLogo?: string | null; // Base64 string
+    supportConfig: SupportConfig;
+    branding: BrandingConfig;
 }

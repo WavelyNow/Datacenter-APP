@@ -1,55 +1,124 @@
+import { PdfData } from '../types';
+import { drawTable } from '@/lib/pdf/templates/tableDrawer';
+import { getDetailedWeightReport } from '../../calculations';
+import { PDFContext } from './SectionGenerator';
 
-import { PdfData, ReportSummary } from '../types';
-import { getDetailedWeightReport } from '@/lib/calculations';
+export async function generatePage2(
+    ctx: PDFContext,
+    data: PdfData
+) {
+    const { theme, width } = ctx;
 
-export const generatePage2 = (data: PdfData) => {
+    await ctx.checkSpace(150);
+
+    // Smart Padding: If we are not at the top of a new page, add breathing room
+    if (ctx.currentY < ctx.height - 100) {
+        ctx.currentY -= 40;
+    }
+
+    // Section 3: Centralizator Echipamente
+    ctx.currentPage.drawText('3. CENTRALIZATOR ECHIPAMENTE', {
+        x: 50,
+        y: ctx.currentY,
+        size: 12,
+        font: ctx.fontBold,
+        color: theme.primary,
+    });
+    ctx.currentY -= 25;
+
     const reportItems = getDetailedWeightReport(data.segments, data.equipmentList, data.glycolPercentage);
+    const equipItems = reportItems.filter(i => i.type === 'equipment');
+    const pipeItems = reportItems.filter(i => i.type === 'pipe');
 
-    // Sort logic (optional): maybe pipes first, then equipment
-    // Currently getDetailedWeightReport returns them in that order.
+    if (equipItems.length > 0) {
+        const equipRows = equipItems.map(item => [
+            item.description,
+            item.quantity,
+            item.emptyWeight.toFixed(1),
+            item.fluidWeight.toFixed(1),
+            item.totalWeight.toFixed(1)
+        ]);
 
-    const rows = reportItems.map((item, idx) => `
-        <tr class="no-break-inside">
-            <td class="text-center">${idx + 1}</td>
-            <td>${item.description}</td>
-            <td class="text-center">${item.quantity}</td>
-            <td class="text-right mono">${item.emptyWeight.toFixed(1)}</td>
-            <td class="text-right mono">${item.fluidWeight.toFixed(1)}</td>
-            <td class="text-right mono text-bold">${item.totalWeight.toFixed(1)}</td>
-        </tr>
-    `).join('');
+        const subTotalEmpty = equipItems.reduce((acc, i) => acc + i.emptyWeight, 0);
+        const subTotalFluid = equipItems.reduce((acc, i) => acc + i.fluidWeight, 0);
 
-    const totalEmpty = reportItems.reduce((acc, i) => acc + i.emptyWeight, 0);
-    const totalFluid = reportItems.reduce((acc, i) => acc + i.fluidWeight, 0);
-    const grandTotal = totalEmpty + totalFluid;
+        equipRows.push([
+            'SUBTOTAL ECHIPAMENTE',
+            '-',
+            subTotalEmpty.toFixed(1), // Should be ~12207.1 as per user example
+            subTotalFluid.toFixed(1),
+            (subTotalEmpty + subTotalFluid).toFixed(1)
+        ]);
 
-    return `
-        <div class="page-break">
-            <h1>Anexa 1: Raport Detaliat Sarcini</h1>
-            
-            <p>Acest raport detaliază sarcinile statice generate de rețeaua hidraulică și echipamentele aferente.</p>
+        ctx.currentY = await drawTable(ctx, {
+            x: 50,
+            headers: ['ECHIPAMENT', 'CANT.', 'GREUTATE GOL (KG)', 'GREUTATE FLUID (KG)', 'TOTAL (KG)'],
+            rows: equipRows,
+            colWidths: [180, 50, 90, 90, 90],
+            align: ['left', 'center', 'right', 'right', 'right']
+        });
 
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 5%;">Nr.</th>
-                        <th>Descriere Element</th>
-                        <th style="width: 10%;">Cant.</th>
-                        <th style="width: 15%;">Greutate Gol (kg)</th>
-                        <th style="width: 15%;">Greutate Fluid (kg)</th>
-                        <th style="width: 15%;">TOTAL (kg)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rows}
-                    <tr class="total-row">
-                        <td colspan="3" class="text-right">TOTAL GENERAL</td>
-                        <td class="text-right mono">${totalEmpty.toFixed(1)}</td>
-                        <td class="text-right mono">${totalFluid.toFixed(1)}</td>
-                        <td class="text-right mono">${grandTotal.toFixed(1)}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    `;
-};
+        ctx.currentY -= 40;
+    }
+
+    // Section 4: Memorator Materiale (Conducte)
+    if (pipeItems.length > 0) {
+        await ctx.checkSpace(150);
+        ctx.currentPage.drawText('4. MEMORATOR MATERIALE (CONDUCTE)', {
+            x: 50,
+            y: ctx.currentY,
+            size: 12,
+            font: ctx.fontBold,
+            color: theme.primary,
+        });
+
+        ctx.currentY -= 25;
+
+        // Simplify description for "Technical Report" look
+        // We might want to split name and size if description is combined, or just leave as is.
+        // description usually is "Teava Otel - DN100"
+
+        const pipeRows = pipeItems.map(item => {
+            // Try to parse dimensions if possible, or just use description
+            return [
+                item.description.split('-')[0].trim(), // Material Type
+                item.description.split('-')[1]?.trim() || '-', // Size
+                item.quantity,
+                item.emptyWeight.toFixed(1),
+                item.fluidWeight.toFixed(1)
+            ];
+        });
+
+        // Calculate Totals for Summary
+        const totalMatWeight = reportItems.reduce((acc, i) => acc + i.emptyWeight, 0);
+        const totalFluidWeight = reportItems.reduce((acc, i) => acc + i.fluidWeight, 0);
+        const totalSystemWeight = totalMatWeight + totalFluidWeight;
+
+        ctx.currentY = await drawTable(ctx, {
+            x: 50,
+            headers: ['TIP ȚEAVĂ', 'DIMENSIUNE', 'LUNGIME (m)', 'GREUTATE MAT. (kg)', 'GREUTATE FL. (kg)'],
+            rows: pipeRows,
+            colWidths: [150, 80, 70, 100, 100],
+            align: ['left', 'center', 'center', 'right', 'right']
+        });
+
+        ctx.currentY -= 40;
+
+        // Final System Summary (Text Block as requested)
+        await ctx.checkSpace(100);
+        ctx.currentPage.drawText('REZUMAT SISTEM', { x: 50, y: ctx.currentY, size: 10, font: ctx.fontBold, color: theme.text });
+        ctx.currentY -= 15;
+
+        const summaryText1 = `Greutate Materiale: ${Math.round(totalMatWeight).toLocaleString('ro-RO')} kg`;
+        const summaryText2 = `Greutate Fluid: ${Math.round(totalFluidWeight).toLocaleString('ro-RO')} kg`;
+        const summaryText3 = `TOTAL GENERAL SISTEM: ${Math.round(totalSystemWeight).toLocaleString('ro-RO')} kg`;
+
+        ctx.currentPage.drawText(summaryText1, { x: 50, y: ctx.currentY, size: 9, font: ctx.fontRegular, color: theme.text });
+        ctx.currentY -= 12;
+        ctx.currentPage.drawText(summaryText2, { x: 50, y: ctx.currentY, size: 9, font: ctx.fontRegular, color: theme.text });
+        ctx.currentY -= 15;
+        ctx.currentPage.drawText(summaryText3, { x: 50, y: ctx.currentY, size: 10, font: ctx.fontBold, color: theme.primary });
+
+        ctx.currentY -= 40;
+    }
+}

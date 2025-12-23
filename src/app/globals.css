@@ -1,91 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  /* Professional Dark Mode */
+  /* Soft Dark / Deep Slate Palette */
   --background: #0f172a;
   /* Slate-900 */
   --foreground: #f1f5f9;
   /* Slate-100 */
 
-  --primary: #38bdf8;
-  /* Sky-400 */
-  --primary-foreground: #0f172a;
+  --primary: #3b82f6;
+  /* Blue-500 */
+  --primary-foreground: #ffffff;
 
   --secondary: #1e293b;
   /* Slate-800 */
-  --secondary-foreground: #f1f5f9;
+  --secondary-foreground: #f8fafc;
 
   --accent: #334155;
   /* Slate-700 */
   --accent-foreground: #f1f5f9;
 
-  --destructive: #ef4444;
-  /* Red-500 */
-  --destructive-foreground: #ffffff;
-
   --border: #334155;
-  /* Slate-700 */
   --input: #1e293b;
-  /* Slate-800 */
-  --ring: #38bdf8;
+  --ring: #3b82f6;
 
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
-  /* ... keep standard theme mappings ... */
 }
 
-/* Force Full Dark Mode on Body/HTML */
+/* Force Full Soft Dark Mode on Body/HTML */
 html,
-body {
-  background-color: #0f172a;
-  /* Slate-900 */
+body,
+.bg-neutral-900 {
+  background-color: #0f172a !important;
   color: #f1f5f9;
-  /* Slate-100 */
   min-height: 100vh;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  @apply antialiased;
+  font-family: var(--font-sans), 'Inter', system-ui, sans-serif;
+  @apply antialiased overflow-x-hidden;
 }
 
 /* GLOBAL Dark Mode Form Elements (Screen) */
 input,
 select,
 textarea {
-  @apply bg-slate-700 text-white border border-slate-600 rounded-md px-3 py-2 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all;
+  @apply bg-slate-800/50 text-white border border-slate-700/50 rounded-lg px-4 py-2.5 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all backdrop-blur-sm shadow-inner;
+}
+
+/* Glassmorphism Utilities - Soft Dark */
+.glass-panel {
+  @apply bg-slate-800/40 backdrop-blur-xl border border-white/5 shadow-2xl;
+}
+
+.glass-card {
+  @apply bg-slate-800/30 backdrop-blur-md border border-white/5 hover:border-blue-500/30 transition-all duration-300;
+}
+
+.text-glow {
+  text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.input-modern {
+  @apply bg-slate-900/40 border-white/10 focus:bg-slate-900/60 focus:border-blue-500/50 transition-all duration-300 text-white;
 }
 
 /* =========================================
-   PROFESSIONAL REPORT PRINT STYLES
+   PRINT STYLES (A4 Optimized)
    ========================================= */
 @media print {
   @page {
+    size: A4;
     margin: 0.5cm;
-    size: A4 portrait;
+    /* Minimal margins */
   }
 
+  /* Reset Body for Print */
   html,
   body {
     background-color: white !important;
     background: white !important;
     color: black !important;
-    font-size: 12px;
-    /* Slightly smaller for report density */
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    width: 210mm;
+    height: auto;
+    overflow: visible;
   }
 
-  /* Structural Resets */
-  .min-h-screen {
-    min-height: auto !important;
+  /* Hide UI Elements */
+  .screen-only,
+  header.screen-only,
+  .no-print,
+  button,
+  input[type="range"],
+  .glass-panel,
+  .glass-card,
+  nav {
+    display: none !important;
   }
 
+  /* Reset Containers */
   .max-w-7xl,
   .container {
     max-width: none !important;
@@ -94,91 +108,15 @@ textarea {
     margin: 0 !important;
   }
 
-  /* Visual Flattener (No Cards, No Shadows, No Rounded) */
-  * {
-    box-shadow: none !important;
+  /* Typography Resets */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  div {
+    color: black !important;
     text-shadow: none !important;
-    border-radius: 0 !important;
-    transition: none !important;
-  }
-
-  /* Hide UI Elements */
-  header,
-  /* Hides the App Header */
-  .no-print,
-  button,
-  input[type="range"],
-  .print\:hidden {
-    display: none !important;
-  }
-
-  /* Reveal Print Elements */
-  .print\:block {
-    display: block !important;
-  }
-
-  /* Card Repeal -> Turn cards into sections */
-  .bg-slate-900,
-  .bg-slate-800,
-  .bg-slate-700,
-  .bg-white {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-  }
-
-  /* Add separation borders for sections instead */
-  section,
-  .bg-slate-800 {
-    border-bottom: 0px solid #000 !important;
-    margin-bottom: 20px !important;
-  }
-
-  /* Table Styling for Print */
-  table {
-    border-collapse: collapse !important;
-    width: 100% !important;
-  }
-
-  th,
-  td {
-    border: 1px solid #000 !important;
-    color: black !important;
-    padding: 4px 8px !important;
-  }
-
-  thead {
-    background: #f3f4f6 !important;
-    /* Light gray header */
-    color: black !important;
-    font-weight: bold !important;
-  }
-
-  tr {
-    page-break-inside: avoid;
-  }
-
-  /* Text Color Forcing */
-  .text-white,
-  .text-slate-100,
-  .text-slate-200,
-  .text-slate-300,
-  .text-slate-400,
-  .text-blue-400,
-  .text-blue-500 {
-    color: black !important;
-  }
-
-  /* Specific Component Overrides */
-  /* Remove inputs from display, show their values if standard text, but most inputs are hidden in this design */
-  input,
-  select {
-    border: none !important;
-    background: transparent !important;
-    color: black !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: inline-block;
-    width: auto;
   }
 }

@@ -1,44 +1,187 @@
 import React from 'react';
-import { Snowflake } from 'lucide-react';
+import { Snowflake, Droplets, ThermometerSnowflake, Info } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 
 export const FluidComposition: React.FC = () => {
-    const { glycolPercentage, setGlycolPercentage } = useProject();
+    const {
+        glycolPercentage, setGlycolPercentage,
+        safetyMargin, setSafetyMargin,
+        safetyMarginPercentage, setSafetyMarginPercentage
+    } = useProject();
 
-    const onGlycolPercentageChange = (val: number) => {
-        setGlycolPercentage(val);
+    // Calculate approximate freezing point (Ethylene Glycol estimation)
+    const getFreezingPoint = (pct: number) => {
+        if (pct < 10) return -3;
+        if (pct < 20) return -8;
+        if (pct < 30) return -15;
+        if (pct < 40) return -24;
+        if (pct < 50) return -36;
+        return -45;
+    };
+
+    const freezingPoint = getFreezingPoint(glycolPercentage);
+
+    // Dynamic color based on concentration
+    const getFluidColor = (pct: number) => {
+        if (pct < 25) return 'from-cyan-400 to-blue-500'; // Dilute
+        if (pct < 40) return 'from-blue-500 to-indigo-600'; // Standard
+        return 'from-indigo-600 to-purple-600'; // Concentrated
     };
 
     return (
-        <div className="bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-700 print:bg-white print:border-slate-200 print:shadow-none">
-            <div className="flex items-center gap-2 mb-6 border-b border-slate-700 pb-2 print:border-slate-100">
-                <Snowflake className="w-5 h-5 text-blue-400 print:text-blue-500" />
-                <h2 className="text-xl font-semibold text-slate-100 print:text-slate-800">Fluid Composition</h2>
+        <div className="glass-panel p-0 rounded-3xl relative overflow-hidden group border border-white/10">
+            {/* Header / Top Section */}
+            <div className="p-6 pb-4 border-b border-white/5 relative z-10 bg-white/[0.02]">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center border border-blue-500/30 shadow-inner">
+                            <Snowflake className="w-6 h-6 text-blue-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-white tracking-tight">Fluid Mix</h2>
+                            <p className="text-xs text-slate-400 font-medium">Water / Glycol Ratio</p>
+                        </div>
+                    </div>
+
+                    {/* Freezing Point Badge */}
+                    <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300 uppercase tracking-wider mb-1">
+                            <ThermometerSnowflake className="w-3.5 h-3.5" />
+                            Freezing Point
+                        </div>
+                        <div className="text-xl font-black text-white font-mono bg-white/5 px-3 py-1 rounded-lg border border-white/10">
+                            {freezingPoint}°C
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-medium text-slate-400 print:text-slate-700">Glycol Concentration</label>
-                    <span className="text-lg font-bold text-blue-400 bg-slate-900 px-3 py-1 rounded-md print:bg-blue-50 print:text-blue-600">
-                        {glycolPercentage}%
-                    </span>
+            {/* Main Control Section */}
+            <div className="p-8 relative">
+                {/* Background Decor */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getFluidColor(glycolPercentage)} opacity-[0.03] pointer-events-none`}></div>
+
+                <div className="flex flex-col gap-8">
+                    {/* Large Percentage Display */}
+                    <div className="flex items-center justify-center relative py-4">
+                        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400 drop-shadow-sm tracking-tighter">
+                            {glycolPercentage}%
+                        </div>
+                        <div className="absolute top-0 right-1/4 translate-x-8 text-xs font-bold text-slate-500 border border-slate-700 rounded px-1.5 py-0.5 uppercase tracking-wider">
+                            Concentration
+                        </div>
+                    </div>
+
+                    {/* Slider Container */}
+                    <div className="relative w-full h-14 bg-slate-900/50 rounded-2xl border border-white/10 p-1.5 shadow-inner backdrop-blur-sm">
+
+                        {/* Interactive Track Area */}
+                        <div className="relative w-full h-full rounded-xl overflow-hidden">
+                            {/* Filled Part */}
+                            <div
+                                className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r ${getFluidColor(glycolPercentage)} transition-all duration-300 ease-out shadow-[0_0_20px_rgba(37,99,235,0.3)]`}
+                                style={{ width: `${glycolPercentage}%` }}
+                            >
+                                {/* Fluid Texture/Shine */}
+                                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:10px_10px]"></div>
+                            </div>
+
+                            {/* Unfilled Part (Water) */}
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none z-10 opacity-50">
+                                <span className="text-xs font-bold text-slate-300 uppercase">Water</span>
+                                <Droplets className="w-3.5 h-3.5 text-slate-300" />
+                            </div>
+
+                            {/* Slider Input (Invisible overlay) */}
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value={glycolPercentage}
+                                onChange={(e) => setGlycolPercentage(parseInt(e.target.value))}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
+                            />
+                        </div>
+                    </div>
                 </div>
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    className="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 print:bg-slate-200"
-                    value={glycolPercentage}
-                    onChange={(e) => onGlycolPercentageChange(parseInt(e.target.value))}
-                />
-                <div className="flex justify-between text-xs text-slate-500 print:text-slate-400">
-                    <span>0% (Pure Water)</span>
-                    <span>50%</span>
-                    <span>100% (Pure Glycol)</span>
+
+                {/* Footer Info */}
+                <div className="mt-8 grid grid-cols-2 gap-4">
+                    <div className="bg-slate-900/40 rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <Droplets className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-slate-500 uppercase font-bold">Water Vol</div>
+                            <div className="text-sm font-bold text-white">{(100 - glycolPercentage)}%</div>
+                        </div>
+                    </div>
+                    <div className="bg-slate-900/40 rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                            <Snowflake className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-slate-500 uppercase font-bold">Glycol Vol</div>
+                            <div className="text-sm font-bold text-white">{glycolPercentage}%</div>
+                        </div>
+                    </div>
+                </div>
+                {/* Safety & Reserve Section */}
+                <div className="mt-8 pt-6 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <Info className="w-4 h-4 text-amber-500/70" />
+                            <span className="text-sm font-bold text-slate-300">Rezervă de Siguranță</span>
+                        </div>
+                        <button
+                            onClick={() => setSafetyMargin(!safetyMargin)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${safetyMargin ? 'bg-amber-500' : 'bg-slate-700'}`}
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${safetyMargin ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
+
+                    {safetyMargin && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Procent Rezervă</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="20"
+                                        step="any"
+                                        value={safetyMarginPercentage}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setSafetyMarginPercentage(0);
+                                                return;
+                                            }
+                                            setSafetyMarginPercentage(parseFloat(val));
+                                        }}
+                                        className="w-24 bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-center text-base font-bold text-amber-400 focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
+                                    />
+                                    <span className="text-sm font-bold text-slate-500 select-none">%</span>
+                                </div>
+                            </div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                value={safetyMarginPercentage}
+                                onChange={(e) => setSafetyMarginPercentage(parseFloat(e.target.value))}
+                                className="w-full accent-amber-500 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                            />
+                            <p className="text-[10px] text-slate-500 leading-relaxed italic">
+                                * Această marjă este aplicată peste volumul total brut. Se recomandă între 2% și 5% pentru a acoperi pierderile neprevăzute.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 };
-

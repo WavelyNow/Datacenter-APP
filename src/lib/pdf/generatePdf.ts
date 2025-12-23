@@ -1,150 +1,91 @@
-
-// import puppeteer from 'puppeteer'; // Moved to dynamic import
-import { PdfData, ReportSummary } from './types';
-import { pdfStyles } from './templates/styles';
+import { PDFDocument } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
+import { PdfData } from './types';
 import { generatePage1 } from './templates/page1';
 import { generatePage2 } from './templates/page2';
+import { generateSupportPage } from './templates/supportPage';
 import { generatePage3 } from './templates/page3';
-import {
-    calculateTotalVolume,
-    calculateGlycolVolume,
-    calculateWaterVolume,
-    calculateSystemWeight
-} from '@/lib/calculations';
+import { PDFContext } from './templates/SectionGenerator';
+import { getTheme } from './styles';
+import fs from 'fs';
+import path from 'path';
+import { base64ToUint8Array } from './utils';
 
-// Re-implementing a simple helper if calculateTotalVolume is complex to import or returns different shape
-const calculateSummary = (data: PdfData): ReportSummary => {
-    const { segments, equipmentList, glycolPercentage, safetyMargin } = data;
+// Helper to fetch fonts from filesystem (Server-Side)
+async function fetchFont(filename: string): Promise<ArrayBuffer> {
+    const filePath = path.join(process.cwd(), 'public', 'fonts', filename);
+    const fileBuffer = fs.readFileSync(filePath);
+    return fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength) as ArrayBuffer;
+}
 
-    // 1. Calculate Total Volume (Litres)
-    // calculateTotalVolume(segments, equipmentList, safetyMargin) -> returns number
-    const totalVolume = calculateTotalVolume(segments, equipmentList, safetyMargin);
 
-    // 2. Calculate Glycol & Water Volumes
-    const glycolVol = calculateGlycolVolume(totalVolume, glycolPercentage);
-    const waterVol = calculateWaterVolume(totalVolume, glycolPercentage);
+export async function generatePdf(data: PdfData): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
 
-    // 3. Calculate Weight
-    // calculateSystemWeight(segments, totalVolume) -> returns { emptyWeight, fluidWeight, totalWeight }
-    // Note: calculateSystemWeight in calculations.ts currently only considers pipes for empty weight + fluid weight.
-    // It does NOT include equipment weight in its return structure explicitly if we look at the implementation in step 252?
-    // Let's re-read step 252.
-    // calculateSystemWeight only takes segments and totalVolume.
-    // It returns { emptyWeight, fluidWeight, totalWeight }.
-    // BUT! getDetailedWeightReport DOES include equipment.
-    // Let's use getDetailedWeightReport to be consistent with the detailed page.
-    // actually, let's just use the helpers we have for now to avoid complexity or importing too much.
-    // Wait, if I use calculateSystemWeight from calculations.ts, it might miss equipment weights if the implementation there is only for pipes?
-    // IN step 252: calculateSystemWeight iterates segments. It does NOT iterate equipment.
-    // So we need to add equipment weight manually here or update calculations.ts.
-    // Use getDetailedWeightReport logic? No, let's just sum it up locally or use what we have.
+    // Load fonts (Embedded to ensure portability)
+    // Load fonts (Embedded to ensure portability)
+    const fontBytes = await fetchFont('Arial.ttf');
 
-    // 3. Calculate Weight
-    // calculateSystemWeight now includes pipe + equipment + fluid
-    const weightData = calculateSystemWeight(segments, equipmentList, totalVolume);
+    const fontRegular = await pdfDoc.embedFont(fontBytes);
+    // Reuse Regular font for Bold since we lack a Bold variant, ensuring no crash.
+    const fontBold = fontRegular;
 
-    return {
-        totalVolumeLitres: totalVolume,
-        totalWeightKg: weightData.totalWeight,
-        glycolVol: glycolVol,
-        waterVol: waterVol,
-        mixDensity: 1.05
-    };
-};
-
-export async function generatePdf(data: PdfData): Promise<Buffer> {
-    const puppeteer = (await import('puppeteer')).default;
-    const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
-    const page = await browser.newPage();
-
-    // 1. Calculate Data
-    const summary = calculateSummary(data);
-
-    // 2. Build HTML
-    // We combine all templates.
-    const page1Html = generatePage1(data, summary);
-    const page2Html = generatePage2(data);
-    const page3Html = generatePage3(data); // Returns empty string if no photos
-
-    // Header/Footer Templates
-    const headerTemplate = `
-        <style>
-            .header {
-                font-family: Arial, sans-serif;
-                font-size: 8pt;
-                color: #555;
-                width: 100%;
-                padding-left: 20mm;
-                padding-right: 15mm;
-                display: flex;
-                justify-content: space-between;
-                border-bottom: 1px solid #ddd;
+    let logoImage = undefined;
+    if (data.projectDetails.companyLogo) {
+        try {
+            const logoBytes = base64ToUint8Array(data.projectDetails.companyLogo);
+            // Try PNG first, then JPG if it fails
+            try {
+                logoImage = await pdfDoc.embedPng(logoBytes);
+            } catch {
+                logoImage = await pdfDoc.embedJpg(logoBytes);
             }
-        </style>
-        <div class="header">
-            <span>${data.projectDetails.projectName}</span>
-            <span>Ref: ${data.projectDetails.projectNumber} | Rev: ${data.projectDetails.revision}</span>
-        </div>
-    `;
-
-    const footerTemplate = `
-        <style>
-            .footer {
-                font-family: Arial, sans-serif;
-                font-size: 8pt;
-                color: #555;
-                width: 100%;
-                padding-left: 20mm;
-                padding-right: 15mm;
-                display: flex;
-                justify-content: space-between;
-                border-top: 1px solid #ddd;
-                padding-top: 5px;
-            }
-        </style>
-        <div class="footer">
-            <span>Generat automat: ${new Date().toLocaleDateString('ro-RO')}</span>
-            <span>Pagina <span class="pageNumber"></span> din <span class="totalPages"></span></span>
-        </div>
-    `;
-
-    const fullHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>${pdfStyles}</style>
-        </head>
-        <body>
-            ${page1Html}
-            ${page2Html}
-            ${page3Html}
-        </body>
-        </html>
-    `;
-
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
-
-    // 3. Generate PDF
-    const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        displayHeaderFooter: true,
-        headerTemplate,
-        footerTemplate,
-        margin: {
-            top: '20mm',
-            bottom: '15mm',
-            left: '20mm',
-            right: '15mm'
+        } catch (e) {
+            console.warn('Could not embed custom logo, falling back to none.', e);
         }
-    });
+    }
 
-    await browser.close();
+    // Define Page Options
+    const showVolume = data.options?.includeVolume !== false;
+    const showBoQ = data.options?.includeBoQ !== false;
+    const showPage1 = showVolume || showBoQ;
+    const showWeights = data.options?.includeWeights === true;
+    const showSupports = data.options?.includeSupports === true;
 
-    // cast to Buffer because page.pdf returns Uint8Array in newer puppeteer versions which Buffer.from handles
-    return Buffer.from(pdfBuffer);
+    // --- PAGE GENERATION ---
+
+    // Initialize Layout Context
+    const theme = getTheme(data.branding);
+    const ctx = new PDFContext(pdfDoc, fontRegular, fontBold, data.projectDetails, theme, logoImage);
+    await ctx.addPage(); // Explicitly add the first page now that it's async
+
+    // Generate Content Flow
+    if (showPage1) {
+        await generatePage1(ctx, data);
+    }
+    if (showWeights) {
+        await generatePage2(ctx, data);
+    }
+    if (showSupports) {
+        await generateSupportPage(ctx, data);
+    }
+
+    // Always check for photos Annex if weights/supports are requested
+    if (showWeights || showSupports) {
+        await generatePage3(ctx, data);
+    }
+
+    // Finalize (footer on last page)
+    ctx.finish();
+
+    // If no pages were added (e.g. user deselected everything), add a placeholder
+    if (pdfDoc.getPageCount() === 0) {
+        const page = pdfDoc.addPage();
+        const { height } = page.getSize();
+        page.drawText('Nu s-a selectat nicio secțiune pentru raport.', { x: 50, y: height - 100, font: fontRegular, size: 12 });
+    }
+
+    const pdfBytes = await pdfDoc.save();
+    return pdfBytes;
 }

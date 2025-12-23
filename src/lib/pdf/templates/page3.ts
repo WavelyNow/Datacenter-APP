@@ -1,44 +1,96 @@
-
 import { PdfData } from '../types';
+import { PDFContext } from './SectionGenerator';
+import { base64ToUint8Array } from '../utils';
 
-export const generatePage3 = (data: PdfData) => {
+export async function generatePage3(
+    ctx: PDFContext,
+    data: PdfData
+) {
     const { equipmentList } = data;
+    const { theme } = ctx;
 
     // Filter equipment with photos
-    // Now supporting both legacy 'proofImage' and new 'photos' array
     const equipmentWithPhotos = equipmentList.filter(eq =>
         (eq.photos && eq.photos.length > 0) || eq.proofImage
     );
 
-    if (equipmentWithPhotos.length === 0) {
-        return ''; // Return empty string if no photos, generatePdf logic should verify this too to avoid blank page
-    }
+    if (equipmentWithPhotos.length === 0) return;
 
-    const galleryItems = equipmentWithPhotos.map(eq => {
-        // Collect all images for this equipment
+    // Start on a new page or ensure enough space for title
+    await ctx.checkSpace(200);
+
+    // Section Header
+    ctx.currentPage.drawText('ANEXA 2: DOCUMENTAȚIE FOTO ECHIPAMENTE', {
+        x: 50,
+        y: ctx.currentY,
+        size: 14,
+        font: ctx.fontBold,
+        color: theme.primary,
+    });
+
+    ctx.currentY -= 35;
+
+    for (const eq of equipmentWithPhotos) {
         const images: string[] = [];
         if (eq.photos) images.push(...eq.photos);
         if (eq.proofImage && !images.includes(eq.proofImage)) images.push(eq.proofImage);
 
-        return images.map((img, idx) => `
-            <div class="photo-item">
-                <img src="${img}" alt="${eq.name}" />
-                <div class="photo-caption">
-                    <strong>${eq.type}</strong><br>
-                    ${eq.name || 'Fără Nume'} ${images.length > 1 ? `(${idx + 1})` : ''}
-                </div>
-            </div>
-        `).join('');
-    }).join('');
+        for (const imgBase64 of images) {
+            // Photos usually need a lot of space
+            await ctx.checkSpace(300);
 
-    return `
-        <div class="page-break">
-            <h1>Anexa 2: Specificații Tehnice (Foto)</h1>
-            <p>Fișe tehnice și documentație foto pentru echipamentele din proiect.</p>
-            
-            <div class="photo-grid">
-                ${galleryItems}
-            </div>
-        </div>
-    `;
-};
+            try {
+                const imageBytes = base64ToUint8Array(imgBase64);
+                let image;
+                try {
+                    image = await ctx.pdfDoc.embedPng(imageBytes);
+                } catch {
+                    image = await ctx.pdfDoc.embedJpg(imageBytes);
+                }
+
+                const dims = image.scale(0.5);
+
+                // Max width/height constraints
+                const maxWidth = ctx.width - 100;
+                const maxHeight = 300; // Slightly more space
+
+                let finalWidth = dims.width;
+                let finalHeight = dims.height;
+
+                if (finalWidth > maxWidth) {
+                    const ratio = maxWidth / finalWidth;
+                    finalWidth = maxWidth;
+                    finalHeight *= ratio;
+                }
+
+                if (finalHeight > maxHeight) {
+                    const ratio = maxHeight / finalHeight;
+                    finalHeight = maxHeight;
+                    finalWidth *= ratio;
+                }
+
+                ctx.currentPage.drawImage(image, {
+                    x: 50,
+                    y: ctx.currentY - finalHeight,
+                    width: finalWidth,
+                    height: finalHeight
+                });
+
+                ctx.currentY -= (finalHeight + 15);
+
+                // Caption
+                ctx.currentPage.drawText(`Echipament: ${eq.type} (${eq.name || 'Fară Nume'})`, {
+                    x: 50,
+                    y: ctx.currentY,
+                    size: 9,
+                    font: ctx.fontRegular,
+                    color: theme.textLight
+                });
+
+                ctx.currentY -= 35;
+            } catch (err) {
+                console.warn('Failed to embed equipment photo', err);
+            }
+        }
+    }
+}

@@ -16,8 +16,23 @@ interface ProjectState {
     setGlycolPercentage: (pct: number) => void;
     safetyMargin: boolean;
     setSafetyMargin: (enabled: boolean) => void;
-    activeTab: 'config' | 'weights' | 'photos';
-    setActiveTab: (tab: 'config' | 'weights' | 'photos') => void;
+    safetyMarginPercentage: number;
+    setSafetyMarginPercentage: (pct: number) => void;
+    activeTab: 'config' | 'supports' | 'weights' | 'photos' | 'branding';
+    setActiveTab: (tab: 'config' | 'supports' | 'weights' | 'photos' | 'branding') => void;
+    supportConfig: {
+        spacing: number;
+        mountingType: 'concrete' | 'suspended';
+        height: number;
+        pipesPerSupport: number;
+    };
+    setSupportConfig: (config: any) => void;
+    branding: {
+        primaryColor: string;
+        accentColor: string;
+        pdfTheme: 'modern' | 'classic' | 'industrial';
+    };
+    setBranding: (config: any) => void;
 }
 
 const ProjectContext = createContext<ProjectState | undefined>(undefined);
@@ -29,6 +44,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         projectNumber: '2024-001',
         designer: 'Ing. Popescu',
         location: 'București',
+        beneficiary: '-',
         date: new Date().toISOString().split('T')[0],
         revision: 'A',
     });
@@ -43,9 +59,23 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const [fluidType, setFluidType] = useState<FluidType>('ethylene');
     const [glycolPercentage, setGlycolPercentage] = useState<number>(30);
     const [safetyMargin, setSafetyMargin] = useState<boolean>(true);
+    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(5);
+
+    const [supportConfig, setSupportConfig] = useState({
+        spacing: 2.5,
+        mountingType: 'suspended' as 'concrete' | 'suspended',
+        height: 1.5,
+        pipesPerSupport: 1
+    });
+
+    const [branding, setBranding] = useState({
+        primaryColor: '#3b82f6',
+        accentColor: '#10b981',
+        pdfTheme: 'modern' as 'modern' | 'classic' | 'industrial'
+    });
 
     // 5. UI State
-    const [activeTab, setActiveTab] = useState<'config' | 'weights' | 'photos'>('config');
+    const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding'>('config');
 
     // Persistence Logic (Load on Mount)
     useEffect(() => {
@@ -59,6 +89,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 if (data.fluidType) setFluidType(data.fluidType);
                 if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
                 if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
+                if (typeof data.safetyMarginPercentage === 'number') setSafetyMarginPercentage(data.safetyMarginPercentage);
+                if (data.supportConfig) {
+                    setSupportConfig(prev => ({ ...prev, ...data.supportConfig }));
+                }
+                if (data.branding) {
+                    setBranding(prev => ({ ...prev, ...data.branding }));
+                }
             } catch (e) {
                 console.error('Failed to load project:', e);
             }
@@ -73,7 +110,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             equipmentList,
             fluidType,
             glycolPercentage,
-            safetyMargin
+            safetyMargin,
+            safetyMarginPercentage,
+            supportConfig,
+            branding
         };
         try {
             localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(data));
@@ -91,13 +131,24 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                     localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(dataWithoutLogo));
                     console.log('Saved successfully without logo.');
                 } catch (retryError) {
-                    console.error('Failed to save even without logo:', retryError);
+                    console.warn('Still exceeding quota without logo. Pruning equipment photos...');
+                    try {
+                        const dataNoPhotos = {
+                            ...data,
+                            projectDetails: { ...data.projectDetails, companyLogo: undefined },
+                            equipmentList: equipmentList.map(item => ({ ...item, photos: undefined, proofImage: undefined }))
+                        };
+                        localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(dataNoPhotos));
+                        console.log('Saved successfully after full pruning.');
+                    } catch (finalError) {
+                        console.error('Failed to save even after pruning everything:', finalError);
+                    }
                 }
             } else {
                 console.error('Failed to save to localStorage:', e);
             }
         }
-    }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin]);
+    }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding]);
 
     const value = {
         projectDetails, setProjectDetails,
@@ -106,7 +157,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         fluidType, setFluidType,
         glycolPercentage, setGlycolPercentage,
         safetyMargin, setSafetyMargin,
-        activeTab, setActiveTab
+        safetyMarginPercentage, setSafetyMarginPercentage,
+        activeTab, setActiveTab,
+        supportConfig, setSupportConfig,
+        branding, setBranding
     };
 
     return (

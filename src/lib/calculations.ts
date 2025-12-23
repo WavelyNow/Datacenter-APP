@@ -1,5 +1,6 @@
 import { PipeSegment, EquipmentItem } from './types';
 import { PIPE_STANDARDS } from './pipeStandards';
+import { getRecommendedSupport, SupportProfile } from './supportStandards';
 
 // Helper to get pipe data safely
 const getPipeData = (material: string, size: string) => {
@@ -9,7 +10,40 @@ const getPipeData = (material: string, size: string) => {
     return standard.dimensions.find(d => d.dn === size);
 };
 
+// Precise density interpolation for Ethylene Glycol at 20°C
+export const getFluidDensity = (percentage: number): number => {
+    // Data points: [Percentage, Density kg/L]
+    const points = [
+        [0, 1.000],
+        [10, 1.011],
+        [20, 1.024],
+        [30, 1.038],
+        [40, 1.051],
+        [50, 1.065],
+        [60, 1.077],
+        [100, 1.115]
+    ];
+
+    // Clamp percentage
+    const p = Math.max(0, Math.min(100, percentage));
+
+    // Find the two points surrounding P
+    for (let i = 0; i < points.length - 1; i++) {
+        const [p1, d1] = points[i];
+        const [p2, d2] = points[i + 1];
+
+        if (p >= p1 && p <= p2) {
+            // Linear interpolation
+            const ratio = (p - p1) / (p2 - p1);
+            return d1 + (d2 - d1) * ratio;
+        }
+    }
+
+    return 1.000; // Fallback
+};
+
 export const calculatePipeVolume = (segment: PipeSegment): number => {
+    if (!segment) return 0;
     let innerDiameterMm = 0;
 
     if (segment.material === 'custom') {
@@ -35,7 +69,7 @@ export const calculateTotalVolume = (
     equipmentList: EquipmentItem[],
     safetyMargin: boolean
 ): number => {
-    const pipesVolume = segments.reduce((sum, seg) => sum + calculatePipeVolume(seg), 0);
+    const pipesVolume = segments.reduce((sum, seg) => sum + (seg ? calculatePipeVolume(seg) : 0), 0);
     const equipmentVolume = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
 
     const baseVolume = pipesVolume + equipmentVolume;
@@ -54,11 +88,13 @@ export const calculateWaterVolume = (totalVolume: number, percentage: number): n
 export const calculateSystemWeight = (
     segments: PipeSegment[],
     equipmentList: EquipmentItem[],
-    totalVolume: number
+    totalVolume: number,
+    glycolPercentage: number = 0 // Default to water if not provided
 ): { emptyWeight: number; fluidWeight: number; totalWeight: number } => {
 
     // 1. Calculate Total Empty Pipe Weight
     const pipeEmptyWeight = segments.reduce((sum, seg) => {
+        if (!seg) return sum;
         let weightPerMeter = 0;
 
         if (seg.material === 'custom') {
@@ -76,8 +112,7 @@ export const calculateSystemWeight = (
     const equipmentEmptyWeight = equipmentList?.reduce((sum, item) => sum + (item.weight || 0), 0) || 0;
 
     // 3. Calculate Fluid Weight
-    // Assumption: Glycol mix density approx 1.05 kg/L.
-    const fluidDensity = 1.05;
+    const fluidDensity = getFluidDensity(glycolPercentage);
     const fluidWeight = totalVolume * fluidDensity;
 
     const totalEmptyWeight = pipeEmptyWeight + equipmentEmptyWeight;
@@ -101,6 +136,7 @@ export const generateBoQ = (segments: PipeSegment[]): BoQItem[] => {
     const boqMap = new Map<string, BoQItem>();
 
     segments.forEach(segment => {
+        if (!segment) return;
         let key = '';
         let materialName = '';
         let standardName = '';
@@ -160,10 +196,11 @@ export const getDetailedWeightReport = (
     glycolPercentage: number
 ): DetailedWeightItem[] => {
     const report: DetailedWeightItem[] = [];
-    const fluidDensity = 1.05;
+    const fluidDensity = getFluidDensity(glycolPercentage);
 
     // 1. Process Pipe Segments
     segments.forEach(seg => {
+        if (!seg) return;
         let weightPerMeter = 0;
         let innerDiameterMm = 0;
         let description = '';
@@ -181,7 +218,6 @@ export const getDetailedWeightReport = (
                 innerDiameterMm = pipeData.id;
                 description = `Teava ${standard.label} - ${seg.size}`;
             } else {
-                // Fallback / Error case
                 description = `Unknown Pipe: ${seg.material} - ${seg.size}`;
             }
         }
@@ -221,4 +257,85 @@ export const getDetailedWeightReport = (
     });
 
     return report;
+};
+
+// --- SUPPORT CALCULATIONS ---
+
+export interface SupportItem {
+    segmentId: string;
+    description: string;
+    length: number; // m
+    spacing: number;
+    loadPerPoint: number; // kg
+    recommendedSupport: SupportProfile;
+    quantity: number;
+    mountingType: 'concrete' | 'suspended';
+    pipesPerSupport: number;
+    anchorReaction: number; // kg per anchor point
+}
+
+export const calculateSupportReport = (
+    segments: PipeSegment[],
+    glycolPercentage: number,
+    config: { spacing: number, mountingType: 'concrete' | 'suspended', pipesPerSupport: number }
+): SupportItem[] => {
+    const spacing = config.spacing;
+    const fluidDensity = getFluidDensity(glycolPercentage);
+
+    return segments.map(seg => {
+        if (!seg) return null; // Handle nulls in map
+        let weightPerMeterEmpty = 0;
+        let innerDiameterMm = 0;
+        let description = '';
+
+        if (seg.material === 'custom') {
+            weightPerMeterEmpty = seg.customWeight || 0;
+            innerDiameterMm = seg.customInnerDiameter || 0;
+            description = `Teava Custom: ID ${innerDiameterMm}mm`;
+        } else {
+            const standard = PIPE_STANDARDS[seg.material];
+            const pipeData = getPipeData(seg.material, seg.size);
+            if (standard && pipeData) {
+                weightPerMeterEmpty = pipeData.weight;
+                innerDiameterMm = pipeData.id;
+                description = `Teava ${standard.label} - ${seg.size}`;
+            } else {
+                description = `Unknown ${seg.material}`;
+            }
+        }
+
+        // Fluid Weight per meter
+        const radius = innerDiameterMm / 2 / 1000; // m
+        const area = Math.PI * Math.pow(radius, 2); // m^2
+        const volPerMeter = area * 1000; // Liters per meter
+        const fluidWeightPerMeter = volPerMeter * fluidDensity;
+
+        const totalWeightPerMeter = weightPerMeterEmpty + fluidWeightPerMeter;
+
+        // Point Load = (Weight per meter * Spacing) * config.pipesPerSupport
+        const pointLoad = (totalWeightPerMeter * spacing) * config.pipesPerSupport;
+
+        // Recommended Support
+        const recommendedSupport = getRecommendedSupport(pointLoad);
+
+        // Anchor Reaction (Pull-out force)
+        // We add a 20% safety factor for dynamic loads/vibrations
+        const anchorReaction = (pointLoad * 1.2) / 2;
+
+        // Quantity (Total Length / Spacing, round up)
+        const quantity = Math.ceil(seg.length / spacing) + 1;
+
+        return {
+            segmentId: seg.id,
+            description,
+            length: seg.length,
+            spacing,
+            loadPerPoint: pointLoad,
+            recommendedSupport,
+            quantity,
+            mountingType: config.mountingType,
+            pipesPerSupport: config.pipesPerSupport,
+            anchorReaction
+        };
+    }).filter(item => item !== null) as SupportItem[];
 };

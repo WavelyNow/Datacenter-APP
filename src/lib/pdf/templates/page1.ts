@@ -1,113 +1,171 @@
+import { PDFDocument, rgb } from 'pdf-lib';
+import { PdfData } from '../types';
+import { drawTable } from '@/lib/pdf/templates/tableDrawer';
+import { calculateSystemWeight, calculatePipeVolume, calculateTotalVolume, getFluidDensity } from '../../calculations';
+import { PDFContext } from './SectionGenerator';
 
-import { PdfData, ReportSummary } from '../types';
-import { PIPE_DATABASE, PipeMaterial } from '@/lib/constants';
+export async function generatePage1(
+    ctx: PDFContext,
+    data: PdfData
+) {
+    const { width, theme } = ctx;
 
-export const generatePage1 = (data: PdfData, summary: ReportSummary) => {
-    const { projectDetails, segments, fluidType, glycolPercentage } = data;
+    // Title: "RAPORT FINAL: VOLUMETRIE & MATERIALE"
+    const title = 'RAPORT FINAL: VOLUMETRIE & MATERIALE';
+    const titleSize = 18;
+    const titleWidth = ctx.fontBold.widthOfTextAtSize(title, titleSize);
 
-    // --- Helper Logic for BoQ ---
-    const materialSummary: Record<string, { desc: string, length: number }> = {};
-
-    segments.forEach(seg => {
-        let key = '';
-        let desc = '';
-
-        if (seg.material === 'custom') {
-            key = `custom-${seg.customInnerDiameter}`;
-            desc = `Țeavă Custom (ID ${seg.customInnerDiameter}mm)`;
-        } else {
-            key = `${seg.material}-${seg.standard}-${seg.size}`;
-            // Simplify material names
-            const matName = seg.material.includes('Stainless') ? 'Oțel Inoxidabil' :
-                seg.material.includes('Carbon') ? 'Oțel Carbon' :
-                    seg.material.includes('PPR') ? 'PPR' : seg.material;
-            desc = `Țeavă ${matName} - ${seg.size}`;
-        }
-
-        if (!materialSummary[key]) {
-            materialSummary[key] = { desc, length: 0 };
-        }
-        materialSummary[key].length += seg.length;
+    // 1. Title Page Block (Centered)
+    ctx.currentPage.drawText(title, {
+        x: (width - titleWidth) / 2,
+        y: ctx.currentY,
+        size: titleSize,
+        font: ctx.fontBold,
+        color: theme.primary,
     });
 
-    const boqRows = Object.values(materialSummary).map((item, idx) => `
-        <tr>
-            <td class="text-center">${idx + 1}</td>
-            <td>${item.desc}</td>
-            <td class="text-right mono">${item.length.toFixed(2)} m</td>
-        </tr>
-    `).join('');
+    ctx.currentY -= 30;
 
-    // --- HTML Content ---
-    // --- Helper for formatting numbers ---
-    const fmt = (n: number) => n.toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    const fmtInt = (n: number) => n.toLocaleString('ro-RO', { maximumFractionDigits: 0 });
+    const subTitle = `Nume Proiect: ${data.projectDetails.projectName}`;
+    const subTitleWidth = ctx.fontBold.widthOfTextAtSize(subTitle, 12);
+    ctx.currentPage.drawText(subTitle, {
+        x: (width - subTitleWidth) / 2,
+        y: ctx.currentY,
+        size: 12,
+        font: ctx.fontBold,
+        color: theme.text,
+    });
 
-    // Order Logic: Add 5% hidden buffer, then round UP to nearest 50
-    const volumeWithBuffer = summary.totalVolumeLitres * 1.05;
-    const orderVolume = Math.ceil(volumeWithBuffer / 50) * 50;
+    ctx.currentY -= 20;
 
-    return `
-    <div class="report-container">
-        <!-- Title -->
-        <h1>RAPORT FINAL: VOLUMETRIE & MATERIALE</h1>
-        
-        <div class="project-info">
-            <strong>Proiect:</strong> ${data.projectDetails.projectName} (${data.projectDetails.projectNumber})<br>
-            <strong>Locație:</strong> ${data.projectDetails.location}<br>
-            <strong>Data:</strong> ${data.projectDetails.date} | <strong>Rev:</strong> ${data.projectDetails.revision}
-        </div>
+    const detailsText = `Proiectant: ${data.projectDetails.designer} | Beneficiar: ${data.projectDetails.beneficiary} | Locație: ${data.projectDetails.location}`;
+    const detailsWidth = ctx.fontRegular.widthOfTextAtSize(detailsText, 10);
+    ctx.currentPage.drawText(detailsText, {
+        x: (width - detailsWidth) / 2,
+        y: ctx.currentY,
+        size: 10,
+        font: ctx.fontRegular,
+        color: theme.textLight,
+    });
 
-        <!-- 1. Summary -->
-        <div class="section-title">1. Sumar General & Necesar Fluid</div>
-        <table class="summary-table">
-            <tr style="background-color: #f8f9fa;">
-                <td style="padding: 8px;"><strong>Tip Fluid</strong></td>
-                <td style="padding: 8px;">${data.fluidType === 'ethylene' ? 'Etilen Glicol' : 'Propilen Glicol'} ${data.glycolPercentage}% (Premix)</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px;"><strong>Volum Total Sistem</strong></td>
-                <td style="padding: 8px;">${fmt(summary.totalVolumeLitres)} litri</td>
-            </tr>
-            
-            <!-- ORDER ROW -->
-            <tr style="background-color: #e6f3ff; border: 2px solid #0066cc;">
-                <td style="padding: 10px; color: #004085;"><strong>DE COMANDAT (Total Fluid)</strong><br><span style="font-size: 8pt; font-weight: normal;">Se va comanda antigel premix concentrație ${data.glycolPercentage}% (Include rezervă + rotunjire)</span></td>
-                <td style="padding: 10px; font-size: 14pt; font-weight: bold; color: #0056b3;">${fmtInt(orderVolume)} Litri</td>
-            </tr>
+    ctx.currentY -= 15;
 
-            <tr>
-                <td style="padding: 8px;"><strong>Greutate Totală (Estimată)</strong><br><span style="font-size: 8pt; color: #666;">Include greutate țevi goale + echipamente + fluid</span></td>
-                <td style="padding: 8px; font-weight: bold;">${fmt(Math.round(summary.totalWeightKg))} kg</td>
-            </tr>
-        </table>
+    const statusText = `Status: Revizia ${data.projectDetails.revision || 'A'} | Data Emiterii: ${new Date().toLocaleDateString('ro-RO')}`;
+    const statusWidth = ctx.fontRegular.widthOfTextAtSize(statusText, 10);
+    ctx.currentPage.drawText(statusText, {
+        x: (width - statusWidth) / 2,
+        y: ctx.currentY,
+        size: 10,
+        font: ctx.fontRegular,
+        color: theme.textLight,
+    });
 
-        <!-- 2. BoQ -->
-        <div class="section-title">2. Centralizator Materiale (BoQ)</div>
-        <table class="boq-table">
-            <thead>
-                <tr>
-                    <th style="width: 50px;">NR.</th>
-                    <th>DESCRIERE MATERIAL</th>
-                    <th style="width: 100px;">CANTITATE</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${boqRows}
-            </tbody>
-        </table>
-        
-        <!-- Signatures -->
-        <div class="signatures">
-            <div class="sig-block">
-                <strong>Întocmit,</strong><br>
-                ${data.projectDetails.designer}
-            </div>
-            <div class="sig-block">
-                <strong>Verificat,</strong><br>
-                -
-            </div>
-        </div>
-    </div>
-    `;
-};
+    ctx.currentY -= 60; // Space before next section
+
+    // 2. Specificații Tehnice Fluid Table
+    if (data.options?.includeVolume !== false) {
+        await ctx.checkSpace(160);
+
+        // Header for Fluid Specs
+        ctx.currentPage.drawText('SPECIFICAȚII TEHNICE FLUID', {
+            x: 50,
+            y: ctx.currentY,
+            size: 12,
+            font: ctx.fontBold,
+            color: theme.primary,
+        });
+        ctx.currentY -= 25;
+
+        const totalVolume = calculateTotalVolume(data.segments, data.equipmentList, false);
+        const marginPct = data.safetyMargin ? (data.safetyMarginPercentage ?? 5) : 0;
+        const bufferedVolume = totalVolume * (1 + (marginPct / 100));
+        const toOrderVolume = Math.ceil(bufferedVolume / 50) * 50;
+        const density = getFluidDensity(data.glycolPercentage);
+
+        const fluidLabel = data.fluidType === 'propylene' ? `PropilenGlycol ${data.glycolPercentage}%` : `EtilenGlycol ${data.glycolPercentage}%`;
+
+        // Table Data
+        const fluidHeaders = ['TIP FLUID', 'DENSITATE', 'CAPACITATE SISTEM', 'CANTITATE DE COMANDAT'];
+        const fluidRows = [[
+            fluidLabel,
+            `${density.toFixed(3)} kg/L`,
+            `${totalVolume.toFixed(0)} L`,
+            `${toOrderVolume.toLocaleString('ro-RO')} Litri` // (include rezervă ${marginPct}%)` -> Optional note can go below
+        ]];
+
+        ctx.currentY = await drawTable(ctx, {
+            x: 50,
+            headers: fluidHeaders,
+            rows: fluidRows,
+            colWidths: [140, 80, 100, 170],
+            align: ['left', 'center', 'right', 'right']
+        });
+
+        // Note about margin
+        ctx.currentPage.drawText(`*Cantitatea de comandat include o rezervă de tehnologică de ${marginPct}%.`, {
+            x: 50,
+            y: ctx.currentY - 10,
+            size: 8,
+            font: ctx.fontRegular,
+            color: theme.textLight // theme.textLight is usually grey
+        });
+
+        ctx.currentY -= 40;
+    }
+    // underline and redundant project info removed per user request
+
+    ctx.currentY -= 45;
+
+    // --- SECTION 2: BILL OF QUANTITIES (BoQ) ---
+    if (data.options?.includeBoQ !== false) {
+        await ctx.checkSpace(150);
+
+        // Futurist Section Header
+        ctx.currentPage.drawText('CENTRALIZATOR MATERIALE (BoQ)', {
+            x: 50,
+            y: ctx.currentY,
+            size: 12,
+            font: ctx.fontBold,
+            color: theme.text,
+        });
+        ctx.currentY -= 25;
+
+        const materialSummary: Record<string, { desc: string, length: number }> = {};
+        data.segments.forEach(seg => {
+            if (!seg) return;
+            const key = `${seg.material}-${seg.size}`;
+            if (!materialSummary[key]) {
+                let matName = seg.material;
+                if (seg.material === 'steel_light') matName = 'Oțel (Serie Ușoară)';
+                else if (seg.material === 'steel_heavy') matName = 'Oțel (Serie Grea)';
+                else if (seg.material === 'stainless_304') matName = 'Inox 304';
+                else if (seg.material === 'ppr_pn20') matName = 'PPR (PN20)';
+
+                materialSummary[key] = {
+                    desc: `Țeavă ${matName} - ${seg.size}`,
+                    length: 0
+                };
+            }
+            materialSummary[key].length += seg.length;
+        });
+
+        const tableData = Object.values(materialSummary).map((item, idx) => [
+            (idx + 1).toString(),
+            item.desc,
+            `${item.length.toFixed(2)} m`
+        ]);
+
+        if (tableData.length > 0) {
+            ctx.currentY = await drawTable(ctx, {
+                x: 50,
+                headers: ['NR.', 'DESCRIERE MATERIAL', 'CANTITATE'],
+                rows: tableData,
+                colWidths: [40, 360, 110], // NR, Item, Qty
+                align: ['center', 'left', 'right']
+            });
+        } else {
+            ctx.currentPage.drawText('Nu există date.', { x: 50, y: ctx.currentY, size: 10, font: ctx.fontRegular });
+            ctx.currentY -= 20;
+        }
+    }
+}
