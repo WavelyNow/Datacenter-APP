@@ -40,6 +40,8 @@ export interface SupportConfig {
     mountingType: MountingType;
     height: number; // meters
     pipesPerSupport: number; // 1, 2, or 3
+    insulationThickness: number; // mm
+    insulationDensity: number; // kg/m3
 }
 
 export interface BrandingConfig {

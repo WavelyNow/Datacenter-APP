@@ -5,6 +5,8 @@ export interface SupportProfile {
     description: string;
     maxLoadKg: number; // Maximum safe working load in kg per point
     category: 'clamp' | 'rail_light' | 'rail_medium' | 'rail_heavy';
+    profileRef?: string; // Reference to a structural profile name (e.g. "UNP 100") if applicable
+
 }
 
 export const SUPPORT_PROFILES: SupportProfile[] = [

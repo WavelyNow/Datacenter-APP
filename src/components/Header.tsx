@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import { ProjectDetails } from '@/lib/types';
 import { PdfData } from '@/lib/pdf/types';
-import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch } from 'lucide-react';
+import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch, Layers } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { PipeCatalogModal } from './PipeCatalogModal';
 import { PdfExportModal } from './PdfExportModal';
+
+import { ProfileCatalogModal } from './ProfileCatalogModal';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
@@ -20,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
     const { segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding } = useProject();
     const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+    const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
@@ -79,6 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
     return (
         <header className="relative z-50 pt-6 pb-2 px-4 mb-4 screen-only">
             <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
+            <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={() => setIsProfileCatalogOpen(false)} />
 
             <PdfExportModal
                 isOpen={isExportModalOpen}
@@ -123,13 +127,20 @@ export const Header: React.FC<HeaderProps> = ({
                                     Engineering Suite
                                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-500/30 bg-blue-500/10 text-blue-300">V2.0</span>
                                 </h1>
-                                <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                                <div className="flex flex-col gap-1 mt-1">
                                     <button
-                                        className="flex items-center gap-1.5 hover:text-blue-400 transition-colors cursor-pointer font-medium bg-white/5 px-2 py-1 rounded-md hover:bg-white/10"
+                                        className="flex items-center gap-1.5 hover:text-blue-400 transition-colors cursor-pointer font-medium bg-white/5 px-2 py-1 rounded-md hover:bg-white/10 text-sm text-slate-500 w-fit"
                                         onClick={() => setIsCatalogOpen(true)}
                                     >
                                         <Book className="w-3.5 h-3.5" />
                                         <span>Catalog Tevi</span>
+                                    </button>
+                                    <button
+                                        className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer font-medium bg-white/5 px-2 py-1 rounded-md hover:bg-white/10 text-sm text-slate-500 w-fit"
+                                        onClick={() => setIsProfileCatalogOpen(true)}
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        <span>Catalog Profile</span>
                                     </button>
                                 </div>
                             </div>

@@ -20,6 +20,8 @@ interface PdfExportModalProps {
             mountingType: 'concrete' | 'suspended';
             height: number;
             pipesPerSupport: number;
+            insulationThickness: number;
+            insulationDensity: number;
         };
         branding: {
             primaryColor: string;

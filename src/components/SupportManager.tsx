@@ -2,188 +2,308 @@
 import React, { useState, useMemo } from 'react';
 import { PipeSegment } from '@/lib/types';
 import { calculateSupportReport } from '@/lib/calculations';
-import { Ruler, Anchor } from 'lucide-react';
+import { Ruler, Anchor, Calculator, ArrowRight, Layers, Activity } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
+import { SupportStepper } from './SupportStepper';
+import { AnalysisTable } from './AnalysisTable';
+import { SupportOrderSummary } from './SupportOrderSummary';
+import { generateSupportBoM } from '@/lib/calculations';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SupportManagerProps {
     segments: PipeSegment[];
 }
 
+
+
+
+type SupportStep = 'config' | 'summary';
+
 export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
     const { glycolPercentage, supportConfig, setSupportConfig } = useProject();
+    const [currentStep, setCurrentStep] = useState<SupportStep>('config');
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Calculate report on fly
     const report = useMemo(() => {
         return calculateSupportReport(segments, glycolPercentage || 0, supportConfig);
-    }, [segments, glycolPercentage, supportConfig]);
+    }, [segments, glycolPercentage, supportConfig]); // Added dependencies for clarity
 
-    // Grouping for Summary if needed? For now just list.
+    const handleNext = () => {
+        if (currentStep === 'config') setCurrentStep('summary');
+    };
 
     return (
-        <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">
+        <div className="glass-panel min-h-[600px] flex flex-col relative overflow-hidden bg-slate-900/80 backdrop-blur-xl border border-white/5 shadow-2xl rounded-3xl">
             {/* Background Decor */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="relative z-10 space-y-8">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Anchor className="w-5 h-5 text-amber-500" />
-                            Calculatoare Suporți
-                        </h3>
-                        <p className="text-slate-400 text-sm mt-1">
-                            Determinare automată a tipului de suport (US3/US5/US7) în funcție de încărcare.
-                        </p>
-                    </div>
-                </div>
+            {/* Stepper Navigation */}
+            <SupportStepper currentStep={currentStep} onStepChange={setCurrentStep} />
 
-                {/* Advanced Controls Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Control: Spacing Slider */}
-                    <div className="bg-slate-900/40 p-5 rounded-xl border border-white/5 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                                <Ruler className="w-4 h-4 text-blue-400" />
-                                Pas Suporți
-                            </label>
-                            <span className="text-xl font-bold text-blue-400 font-mono">
-                                {supportConfig.spacing.toFixed(1)} m
-                            </span>
+            {/* Content Area */}
+            <div className="flex-1 p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+                {/* STEP 1: CONFIGURATION */}
+                {currentStep === 'config' && (
+                    <div className="max-w-4xl mx-auto space-y-8">
+                        <div className="text-center mb-10">
+                            <h2 className="text-2xl font-bold text-white mb-2">Configurare Parametri Sistem</h2>
+                            <p className="text-slate-400">Definiți scenariul de montaj pntru a calcula corect încărcările statice și dinamice.</p>
                         </div>
 
-                        <input
-                            type="range"
-                            min="1"
-                            max="4"
-                            step="0.5"
-                            value={supportConfig.spacing}
-                            onChange={(e) => setSupportConfig({ ...supportConfig, spacing: parseFloat(e.target.value) })}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
-                        />
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Spacing Card */}
+                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all group">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 rounded-lg bg-blue-500/20 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                            <Ruler className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-200">Pas Suporți</h4>
+                                            <p className="text-xs text-slate-500">Distanța între punctele de susținere</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl font-bold text-blue-400 font-mono">{supportConfig.spacing.toFixed(1)}m</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="6"
+                                    step="0.5"
+                                    value={supportConfig.spacing}
+                                    onChange={(e) => setSupportConfig({ ...supportConfig, spacing: parseFloat(e.target.value) })}
+                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
+                                />
+                                <div className="flex justify-between mt-2 text-xs text-slate-600 font-mono">
+                                    <span>1.0m</span>
+                                    <span>6.0m</span>
+                                </div>
+                            </div>
 
-                    {/* Control: Pipes per Support */}
-                    <div className="bg-slate-900/40 p-5 rounded-xl border border-white/5 space-y-4">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Țevi per Suport</label>
-                        <div className="flex gap-2">
-                            {[1, 2, 3].map(num => (
+                            {/* Mounting Height Card */}
+                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all group">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 rounded-lg bg-purple-500/20 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                            <Layers className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-200">Înălțime Montaj (H)</h4>
+                                            <p className="text-xs text-slate-500">Lungime consolă / tijă</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl font-bold text-purple-400 font-mono">{supportConfig.height.toFixed(1)}m</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0.5"
+                                    max="5.0"
+                                    step="0.5"
+                                    value={supportConfig.height}
+                                    onChange={(e) => setSupportConfig({ ...supportConfig, height: parseFloat(e.target.value) })}
+                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all"
+                                />
+                                <div className="flex justify-between mt-2 text-xs text-slate-600 font-mono">
+                                    <span>0.5m</span>
+                                    <span>5.0m</span>
+                                </div>
+                            </div>
+
+                            {/* Pipes per Support Card */}
+                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                            <Calculator className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-200">Încărcare Paralelă</h4>
+                                            <p className="text-xs text-slate-500">Număr de țevi pe o consolă</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-2xl font-bold text-emerald-400 font-mono">x{supportConfig.pipesPerSupport}</span>
+                                </div>
+                                <div className="flex gap-3">
+                                    {[1, 2, 3, 4].map(num => (
+                                        <button
+                                            key={num}
+                                            onClick={() => setSupportConfig({ ...supportConfig, pipesPerSupport: num })}
+                                            className={`flex-1 py-3 rounded-xl border font-bold transition-all ${supportConfig.pipesPerSupport === num
+                                                ? 'bg-emerald-500 text-white border-emerald-400 shadow-lg scale-105'
+                                                : 'bg-slate-900/50 border-white/5 text-slate-500 hover:bg-slate-800 hover:border-emerald-500/30'
+                                                }`}
+                                        >
+                                            {num} {num === 1 ? 'Țeavă' : 'Țevi'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Advanced Settings Toggle */}
+                        <div className="md:col-span-2 flex justify-center">
+                            <button
+                                onClick={() => setShowAdvanced(!showAdvanced)}
+                                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
+                            >
+                                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                {showAdvanced ? 'Ascunde Setări Avansate' : 'Setări Avansate (Izolație)'}
+                            </button>
+                        </div>
+
+                        {/* Insulation Card (Collapsible) */}
+                        {showAdvanced && (
+                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all group md:col-span-2 animate-in slide-in-from-top-4 fade-in duration-300">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 rounded-lg bg-amber-500/20 text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                            <Layers className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-200">Izolație Termică</h4>
+                                            <p className="text-xs text-slate-500">Grosime și densitate material</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-amber-400 font-mono">{supportConfig.insulationThickness} <span className="text-sm text-slate-500">mm</span></div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Thickness Slider */}
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">
+                                            <span>Grosime (mm)</span>
+                                            <span>{supportConfig.insulationThickness}mm</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            step="5"
+                                            value={supportConfig.insulationThickness}
+                                            onChange={(e) => setSupportConfig({ ...supportConfig, insulationThickness: parseInt(e.target.value) })}
+                                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 transition-all"
+                                        />
+                                        <div className="flex justify-between mt-2 text-[10px] text-slate-600 font-mono">
+                                            <span>0mm</span>
+                                            <span>50mm</span>
+                                            <span>100mm</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Density Selector */}
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">
+                                            <span>Tip Material (Densitate)</span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { label: 'Vată Minerală', val: 100 },
+                                                { label: 'Vată Sticlă', val: 50 },
+                                                { label: 'PIR / PUR', val: 40 },
+                                                { label: 'Elastomer', val: 19 }
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.val}
+                                                    onClick={() => setSupportConfig({ ...supportConfig, insulationDensity: opt.val })}
+                                                    className={`p-2 rounded-lg border text-xs font-bold transition-all ${supportConfig.insulationDensity === opt.val
+                                                        ? 'bg-amber-500 text-white border-amber-400'
+                                                        : 'bg-slate-900/50 border-white/5 text-slate-500 hover:bg-slate-800'
+                                                        }`}
+                                                >
+                                                    {opt.label} ({opt.val})
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mounting Type Selector */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5">
+                            <h4 className="font-bold text-slate-200 mb-4 flex items-center gap-2">
+                                <Anchor className="w-5 h-5 text-amber-500" />
+                                Mod de Fixare
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
-                                    key={num}
-                                    onClick={() => setSupportConfig({ ...supportConfig, pipesPerSupport: num })}
-                                    className={`flex-1 py-2 rounded-lg border transition-all font-bold ${supportConfig.pipesPerSupport === num
-                                        ? 'bg-amber-500/20 border-amber-500 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                                        : 'bg-slate-800/50 border-white/5 text-slate-500 hover:border-white/10'
+                                    onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'concrete' })}
+                                    className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'concrete'
+                                        ? 'bg-amber-500/10 border-amber-500 text-amber-100'
+                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:bg-slate-800'
                                         }`}
                                 >
-                                    {num} {num === 1 ? 'Țeavă' : 'Țevi'}
+                                    <h5 className="font-bold mb-1">Pardoseală / Beton</h5>
+                                    <p className="text-sm opacity-70">Montaj direct pe placă cu conexpand sau ancore chimice.</p>
                                 </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Control: Mounting Type */}
-                    <div className="bg-slate-900/40 p-5 rounded-xl border border-white/5 space-y-4">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tip Montaj</label>
-                        <div className="flex gap-2">
-                            {(['concrete', 'suspended'] as const).map(type => (
                                 <button
-                                    key={type}
-                                    onClick={() => setSupportConfig({ ...supportConfig, mountingType: type })}
-                                    className={`flex-1 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest ${supportConfig.mountingType === type
-                                        ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                                        : 'bg-slate-800/50 border-white/5 text-slate-500 hover:border-white/10'
+                                    onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'suspended' })}
+                                    className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'suspended'
+                                        ? 'bg-amber-500/10 border-amber-500 text-amber-100'
+                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:bg-slate-800'
                                         }`}
                                 >
-                                    {type === 'concrete' ? 'Pe Beton / Pardoseală' : 'Suspendat (Tijă filetată)'}
+                                    <h5 className="font-bold mb-1">Suspendat (Tavan)</h5>
+                                    <p className="text-sm opacity-70">Prindere în tavan cu tije filetate, coliere sau șine montaj.</p>
                                 </button>
-                            ))}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center pt-4">
+                            <button
+                                onClick={handleNext}
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-600/20 flex items-center gap-3 transition-all hover:scale-105 active:scale-95"
+                            >
+                                Analizează Structura <ArrowRight className="w-5 h-5" />
+                            </button>
                         </div>
                     </div>
+                )}
 
-                    {/* Control: Height */}
-                    <div className="bg-slate-900/40 p-5 rounded-xl border border-white/5 space-y-3">
-                        <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Înălțime Montaj</label>
-                            <span className="text-lg font-bold text-slate-200 font-mono">{supportConfig.height.toFixed(2)} m</span>
+                {/* STEP 2: SUMMARY & ANALYSIS */}
+                {currentStep === 'summary' && (
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-end mb-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-white">Rezumat & Verificare</h2>
+                                <p className="text-slate-400 text-sm">Calcul automat cantități și verificare structurală.</p>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setCurrentStep('config')}
+                                    className="text-slate-400 hover:text-white px-4 py-2 font-bold text-sm transition-all"
+                                >
+                                    Înapoi la Configurare
+                                </button>
+                            </div>
                         </div>
-                        <input
-                            type="range"
-                            min="0.1"
-                            max="5"
-                            step="0.1"
-                            value={supportConfig.height}
-                            onChange={(e) => setSupportConfig({ ...supportConfig, height: parseFloat(e.target.value) })}
-                            className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-slate-400"
+
+                        {/* BOM Summary */}
+                        <SupportOrderSummary
+                            bom={generateSupportBoM(report)}
+                            onExport={() => window.print()}
                         />
+
+
+
+                        {/* Engineering Analysis (Collapsible or visible below) */}
+                        <div className="pt-8 border-t border-white/5">
+                            <h3 className="text-xl font-bold text-slate-300 mb-4 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-blue-400" />
+                                Detalii Inginerie (Raport Tehnic)
+                            </h3>
+                            <AnalysisTable report={report} />
+                        </div>
                     </div>
-                </div>
+                )}
 
-                {/* Results Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/10 text-[10px] text-slate-500 uppercase tracking-wider font-bold">
-                                <th className="p-3">Segment Țeavă</th>
-                                <th className="p-3">Încărcare / Suport</th>
-                                <th className="p-3">Reacție Anchor (kg)</th>
-                                <th className="p-3">Profil Recomandat</th>
-                                <th className="p-3 text-right">Cantitate</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-sm divide-y divide-white/5">
-                            {report.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="p-8 text-center text-slate-500 italic">
-                                        Nu există segmente de țeavă definite.
-                                    </td>
-                                </tr>
-                            ) : (
-                                report.map((item) => {
-                                    // Color coding for recommended support
-                                    let badgeColor = "bg-slate-700 text-slate-300";
-                                    if (item.recommendedSupport.id.includes('us3')) badgeColor = "bg-green-500/20 text-green-300 border-green-500/30";
-                                    if (item.recommendedSupport.id.includes('us5')) badgeColor = "bg-blue-500/20 text-blue-300 border-blue-500/30";
-                                    if (item.recommendedSupport.id.includes('us7')) badgeColor = "bg-amber-500/20 text-amber-300 border-amber-500/30";
-                                    if (item.recommendedSupport.id.includes('heavy')) badgeColor = "bg-red-500/20 text-red-300 border-red-500/30";
 
-                                    return (
-                                        <tr key={item.segmentId} className="hover:bg-white/5 transition-colors group">
-                                            <td className="p-3 font-medium text-slate-300 group-hover:text-white">
-                                                {item.description}
-                                            </td>
-                                            <td className="p-3 font-mono text-slate-300">
-                                                <div className="text-blue-400 font-bold">{item.loadPerPoint.toFixed(1)} kg</div>
-                                                <div className="text-[10px] text-slate-500">{(item.loadPerPoint / item.pipesPerSupport).toFixed(1)} kg/țeavă</div>
-                                            </td>
-                                            <td className="p-3 font-mono">
-                                                <div className="text-amber-400 font-bold">{item.anchorReaction.toFixed(1)} kg</div>
-                                                <div className="text-[10px] text-slate-500 truncate">Forță smulgere / diblu</div>
-                                            </td>
-                                            <td className="p-3">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded border text-[10px] font-bold ${badgeColor}`}>
-                                                    {item.recommendedSupport.name}
-                                                </span>
-                                            </td>
-                                            <td className="p-3 text-right font-bold text-white font-mono text-lg">
-                                                {item.quantity} <span className="text-xs text-slate-500 font-sans font-normal text-[10px] uppercase">buc</span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
 
-                <div className="bg-blue-900/20 border border-blue-500/20 p-4 rounded-xl flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-blue-400 text-xs font-bold">i</span>
-                    </div>
-                    <p className="text-xs text-blue-200/80 leading-relaxed">
-                        Calculul presupune o distribuție uniformă a sarcinii. Profilul recomandat (US3/US5/US7) este selectat automat să reziste la greutatea țevii pline cu lichid (+glicol) pe distanța selectată.
-                    </p>
-                </div>
 
             </div>
         </div>

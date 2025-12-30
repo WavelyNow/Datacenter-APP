@@ -25,6 +25,8 @@ interface ProjectState {
         mountingType: 'concrete' | 'suspended';
         height: number;
         pipesPerSupport: number;
+        insulationThickness: number;
+        insulationDensity: number;
     };
     setSupportConfig: (config: any) => void;
     branding: {
@@ -65,7 +67,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         spacing: 2.5,
         mountingType: 'suspended' as 'concrete' | 'suspended',
         height: 1.5,
-        pipesPerSupport: 1
+        pipesPerSupport: 1,
+        insulationThickness: 30, // Default 30mm
+        insulationDensity: 100   // Default 100kg/m3
     });
 
     const [branding, setBranding] = useState({

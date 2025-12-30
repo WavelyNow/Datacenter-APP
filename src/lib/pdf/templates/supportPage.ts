@@ -54,7 +54,7 @@ export async function generateSupportPage(
         `${item.pipesPerSupport} / Sup.`,
         item.loadPerPoint.toFixed(1),
         item.anchorReaction.toFixed(1),
-        item.recommendedSupport.name,
+        item.recommendedProfile?.name || 'N/A',
         `${item.mountingType === 'concrete' ? 'Beton' : 'Susp.'} (${config.height}m)`
     ]);
 
