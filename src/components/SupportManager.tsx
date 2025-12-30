@@ -266,6 +266,46 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                             </div>
                         </div>
 
+                        {/* Modular Topology Configuration */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all">
+                            <h4 className="font-bold text-slate-200 mb-4 flex items-center gap-2">
+                                <Layers className="w-5 h-5 text-emerald-500" />
+                                Configurație Modulară (Elemente Adiționale)
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <button
+                                    onClick={() => setSupportConfig({ ...supportConfig, addLeftConsole: !supportConfig.addLeftConsole })}
+                                    className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addLeftConsole
+                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-emerald-500/20'
+                                        }`}
+                                >
+                                    <div className="text-xs font-bold uppercase mb-1">Consolă Stânga</div>
+                                    <div className="text-lg font-bold">{supportConfig.addLeftConsole ? 'ACTIVAT' : 'DEZACTIVAT'}</div>
+                                </button>
+                                <button
+                                    onClick={() => setSupportConfig({ ...supportConfig, addRightConsole: !supportConfig.addRightConsole })}
+                                    className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addRightConsole
+                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-emerald-500/20'
+                                        }`}
+                                >
+                                    <div className="text-xs font-bold uppercase mb-1">Consolă Dreapta</div>
+                                    <div className="text-lg font-bold">{supportConfig.addRightConsole ? 'ACTIVAT' : 'DEZACTIVAT'}</div>
+                                </button>
+                                <button
+                                    onClick={() => setSupportConfig({ ...supportConfig, addUpperRail: !supportConfig.addUpperRail })}
+                                    className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addUpperRail
+                                        ? 'bg-blue-500/20 border-blue-500 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-blue-500/20'
+                                        }`}
+                                >
+                                    <div className="text-xs font-bold uppercase mb-1">Etaj Superior (Rail)</div>
+                                    <div className="text-lg font-bold">{supportConfig.addUpperRail ? 'ACTIVAT' : 'DEZACTIVAT'}</div>
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="flex justify-center pt-4">
                             <button
                                 onClick={handleNext}

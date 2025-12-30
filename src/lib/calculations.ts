@@ -297,7 +297,9 @@ export interface SupportItem {
     anchorReaction: number; // kg (ULS)
     height?: number;
     isHeavyDuty?: boolean;
-
+    addLeftConsole?: boolean;
+    addRightConsole?: boolean;
+    addUpperRail?: boolean;
     // Engineering Analysis
     moment: number; // kg*m (Bending Moment)
     stress: number; // MPa (N/mm2)
@@ -400,6 +402,9 @@ export const calculateSupportReport = (
         insulationThickness: number;
         insulationDensity: number;
         height: number;
+        addLeftConsole?: boolean;
+        addRightConsole?: boolean;
+        addUpperRail?: boolean;
     }
 ): SupportItem[] => {
     const spacing = config.spacing;
@@ -534,7 +539,7 @@ export const calculateSupportReport = (
         if (analysis.deflection > (analysisLength * 1000 / ALLOWABLE_DEFLECTION_RATIO)) status = 'critical';
 
         // --- Heavy Duty Trigger Check ---
-        // If > 2 pipes, we might want to warn or force heavy if close to limit.
+        // If > 2 pipes, we might want to warn or force heavy
         // Current logic handles force via `isHeavyDuty` flag passed to `findOptimalProfile`.
 
         return {
@@ -560,6 +565,9 @@ export const calculateSupportReport = (
             utilization: analysis.utilization,
             status,
             isHeavyDuty,
+            addLeftConsole: config.addLeftConsole,
+            addRightConsole: config.addRightConsole,
+            addUpperRail: config.addUpperRail,
             mountingNote: generateMountingNote(
                 { sku: recommendedProfile.sku },
                 { sku: isHeavyDuty ? '131842' : '131840' },
@@ -661,20 +669,33 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
             category: 'profile'
         });
 
-        // --- 2. ACCESSORIES (System Hardware) ---
-        const numPosts = 2; // Assume H-Frame
+        // --- 1.2 ADDITIONAL RAILS (Etaj Superior) ---
+        if (firstItem.addUpperRail) {
+            bomList.push({
+                id: `PROF_UPPER_${segmentId}`,
+                groupName: groupLabel,
+                component: finalProfileStub.name,
+                specs: 'Etaj Superior (1.2m)',
+                sku: finalProfileStub.sku,
+                quantity: quantity, // 1 per support
+                unit: 'buc',
+                category: 'profile'
+            });
+        }
+
+        // --- 2. ACCESSORIES & CONNECTORS (System Hardware) ---
+        const isBeam = firstItem.pipesPerSupport > 1 || firstItem.mountingType === 'concrete';
+        const numPosts = (firstItem.mountingType === 'concrete') ? 2 : 0;
+        const numRails = 1;
 
         // 2.1 Base Plates
-        // Logic Update from User Request:
-        // 131842 -> For MPR 41/21
-        // 131840 -> For MPR 41/41 (and implicitly 41/62 / Heavy as it's Q100)
         let plateSku = '131840'; // Default Q100
         if (profile.sku.includes('130004') || profile.sku.includes('130001')) { // 41/21 match
             plateSku = '131842';
         }
 
         const plate = MUPRO_MASTER_CATALOG.find(c => c.sku === plateSku);
-        if (plate) {
+        if (plate && numPosts > 0) {
             bomList.push({
                 id: `BASE_${segmentId}`,
                 groupName: groupLabel,
@@ -687,19 +708,55 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
             });
         }
 
-        // 2.2 Anchors (Fixed 4 per Plate)
-        bomList.push({
-            id: `ANCH_${segmentId}`,
-            groupName: groupLabel,
-            component: 'Ancoră Heavy-Duty M12',
-            specs: 'M12x100', // Still technical, acceptable
-            sku: 'GENERIC_ANCHOR',
-            quantity: quantity * numPosts * 4,
-            unit: 'buc',
-            category: 'fixings'
-        });
+        // 2.2 Advanced Connectors (Corners)
+        // Rule: H-Frame (concrete mounting) needs connectors between railing and posts
+        if (firstItem.mountingType === 'concrete' && numPosts === 2) {
+            let connectorSku = '128002'; // Default Light
+            if (isHeavyDuty || profile.sku === '130014' || profile.sku === '130011') {
+                connectorSku = '128004'; // 4-hole for 41/41+
+            }
+            if (isHeavyDuty && profile.sku === '150570') {
+                connectorSku = '128010'; // Wing Fitting for Double Profile
+            }
 
-        // 2.3 Bolts (M10 vs M12)
+            const connector = MUPRO_MASTER_CATALOG.find(c => c.sku === connectorSku);
+            if (connector) {
+                bomList.push({
+                    id: `CONN_${segmentId}`,
+                    groupName: groupLabel,
+                    component: connector.name,
+                    specs: '90° Profil-Profil',
+                    sku: connector.sku,
+                    quantity: quantity * 2, // 2 corners per H-Frame
+                    unit: 'buc',
+                    category: 'accessories'
+                });
+            }
+        }
+
+        // 2.3 Anchors (Fixed 4 per Plate)
+        if (numPosts > 0) {
+            bomList.push({
+                id: `ANCH_${segmentId}`,
+                groupName: groupLabel,
+                component: 'Ancoră Heavy-Duty M12',
+                specs: 'M12x100',
+                sku: 'GENERIC_ANCHOR',
+                quantity: quantity * numPosts * 4,
+                unit: 'buc',
+                category: 'fixings'
+            });
+        }
+
+        // 2.4 Bolts (Calculated Precisely)
+        // 2 per Plate, 4 per 4-hole Connector, 2 per 2-hole Connector
+        let boltsPerSupport = (numPosts * 2);
+        if (firstItem.mountingType === 'concrete' && numPosts === 2) {
+            const isFourHole = (isHeavyDuty || profile.sku === '130014' || profile.sku === '130011');
+            boltsPerSupport += (2 * (isFourHole ? 4 : 2));
+        }
+        boltsPerSupport += (firstItem.pipesPerSupport * 1); // 1 per clamp
+
         const boltSku = isHeavyDuty ? '110435' : '110419';
         const bolt = MUPRO_MASTER_CATALOG.find(c => c.sku === boltSku);
         if (bolt) {
@@ -709,34 +766,30 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
                 component: bolt.name,
                 specs: isHeavyDuty ? 'M12x40' : 'M10x30',
                 sku: bolt.sku,
-                quantity: quantity * 6, // 4 for base + 2 for clamps/crossbar
+                quantity: quantity * boltsPerSupport,
                 unit: 'buc',
                 category: 'fixings'
             });
         }
 
-        // 2.4 End Caps
-        // 105805 (41/41 & 41/21 usually fits or specific. User Request: "End Cap 41/41: 105805")
-        // 105808 (41/62)
+        // 2.5 End Caps
         const capSku = isHeavyDuty || profile.name.includes('62') ? '105808' : '105805';
         const cap = MUPRO_MASTER_CATALOG.find(c => c.sku === capSku);
         if (cap) {
+            const capsPerSupport = (numPosts > 0) ? 4 : 2;
             bomList.push({
                 id: `CAP_${segmentId}`,
                 groupName: groupLabel,
                 component: cap.name,
                 specs: 'Protecție',
                 sku: cap.sku,
-                quantity: quantity * 4, // 2 per rail end (posts top + crossbar ends)
+                quantity: quantity * capsPerSupport,
                 unit: 'buc',
                 category: 'accessories'
             });
         }
 
         // --- 3. CLAMPS ---
-        // User Request: 
-        // 101037 (DN100), 101234 (DN200), 101258 (DN300)
-        // Range checking from MASTER CATALOG is best, but simple logic works too.
         const sizeNum = parseInt(firstItem.description.replace(/\D/g, '')) || 50;
         let clampSku = '101037';
         if (sizeNum > 200) clampSku = '101258';
@@ -754,6 +807,41 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
                 unit: 'buc',
                 category: 'fixings'
             });
+        }
+
+        // --- 4. MODULAR CONSOLES (Left/Right) ---
+        if (firstItem.addLeftConsole || firstItem.addRightConsole) {
+            const numExtra = (firstItem.addLeftConsole ? 1 : 0) + (firstItem.addRightConsole ? 1 : 0);
+
+            // For consoles, we use the "Pre-fabricated Console" SKUs if possible, or generic profile + plate.
+            // Let's use 133330 (300mm) as a standard modular add-on.
+            const consolePitem = MUPRO_MASTER_CATALOG.find(c => c.sku === '133330');
+            if (consolePitem) {
+                bomList.push({
+                    id: `EXTRA_CONSOLE_${segmentId}`,
+                    groupName: groupLabel,
+                    component: consolePitem.name,
+                    specs: 'Modular Side Console',
+                    sku: consolePitem.sku,
+                    quantity: quantity * numExtra,
+                    unit: 'buc',
+                    category: 'accessories'
+                });
+            }
+
+            // Also need bolts for these consoles
+            if (bolt) {
+                bomList.push({
+                    id: `BOLT_EXTRA_${segmentId}`,
+                    groupName: groupLabel,
+                    component: bolt.name,
+                    specs: 'Fixare Consolă Side',
+                    sku: bolt.sku,
+                    quantity: quantity * numExtra * 2, // 2 bolts per console
+                    unit: 'buc',
+                    category: 'fixings'
+                });
+            }
         }
     });
 

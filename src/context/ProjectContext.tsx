@@ -27,6 +27,9 @@ interface ProjectState {
         pipesPerSupport: number;
         insulationThickness: number;
         insulationDensity: number;
+        addLeftConsole: boolean;
+        addRightConsole: boolean;
+        addUpperRail: boolean;
     };
     setSupportConfig: (config: any) => void;
     branding: {
@@ -69,7 +72,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         height: 1.5,
         pipesPerSupport: 1,
         insulationThickness: 30, // Default 30mm
-        insulationDensity: 100   // Default 100kg/m3
+        insulationDensity: 100,  // Default 100kg/m3
+        addLeftConsole: false,
+        addRightConsole: false,
+        addUpperRail: false
     });
 
     const [branding, setBranding] = useState({

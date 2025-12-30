@@ -3,7 +3,7 @@ export interface MuproComponent {
     sku: string;
     name: string;
     description?: string;
-    category: 'profile' | 'base_plate' | 'bolt' | 'limit' | 'clamp' | 'cap' | 'insulation';
+    category: 'profile' | 'base_plate' | 'bolt' | 'limit' | 'clamp' | 'cap' | 'insulation' | 'connector';
     loadCapacity: 'Light' | 'Medium' | 'Heavy';
     weight?: number; // kg/m for profiles, kg/pc for others
     dimensions?: { h?: number; w?: number; length?: number; range?: [number, number] }; // mm
@@ -161,5 +161,60 @@ export const MUPRO_MASTER_CATALOG: MuproComponent[] = [
         description: 'Decuplare termică',
         category: 'insulation',
         loadCapacity: 'Medium'
+    },
+    // --- CONNECTORS & FITTINGS ---
+    {
+        sku: '128002',
+        name: 'Vinclu 2 găuri 90°',
+        description: 'Oțel Zincat, 4mm',
+        category: 'connector',
+        loadCapacity: 'Medium',
+        weight: 0.15
+    },
+    {
+        sku: '128004',
+        name: 'Vinclu 4 găuri 90°',
+        description: 'Oțel Zincat, 4mm',
+        category: 'connector',
+        loadCapacity: 'Heavy',
+        weight: 0.25
+    },
+    {
+        sku: '128010',
+        name: 'Talpă de legătură (Wing Fitting)',
+        description: 'Pentru conexiune profil-profil',
+        category: 'connector',
+        loadCapacity: 'Heavy',
+        weight: 0.45
+    },
+
+    // --- BEAM CLAMPS (TCS) ---
+    {
+        sku: '144010',
+        name: 'Clemă de grindă TCS 1',
+        description: 'M10, Prindere pe I-Beam',
+        category: 'connector',
+        loadCapacity: 'Medium',
+        weight: 0.35
+    },
+
+    // --- PRE-FABRICATED CONSOLES ---
+    {
+        sku: '133330',
+        name: 'Consolă 41/41/2.0 - 300mm',
+        description: 'Talpă sudată',
+        category: 'profile', // Act as profile but has fixed length
+        loadCapacity: 'Medium',
+        weight: 1.20,
+        dimensions: { h: 41, w: 41, length: 300 }
+    },
+    {
+        sku: '133600',
+        name: 'Consolă 41/41/2.0 - 600mm',
+        description: 'Talpă sudată',
+        category: 'profile',
+        loadCapacity: 'Medium',
+        weight: 2.10,
+        dimensions: { h: 41, w: 41, length: 600 }
     }
 ];

@@ -44,6 +44,9 @@ export interface SupportConfig {
     pipesPerSupport: number; // 1, 2, or 3
     insulationThickness: number; // mm
     insulationDensity: number; // kg/m3
+    addLeftConsole: boolean;
+    addRightConsole: boolean;
+    addUpperRail: boolean;
 }
 
 export interface BrandingConfig {
