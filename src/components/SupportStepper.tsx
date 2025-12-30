@@ -2,15 +2,15 @@ import React from 'react';
 import { Settings, Activity, BookOpen, ChevronRight, Check } from 'lucide-react';
 
 interface Step {
-    id: 'config' | 'summary' | 'catalog';
+    id: 'config' | 'summary';
     label: string;
     icon: React.ElementType;
     description: string;
 }
 
 interface SupportStepperProps {
-    currentStep: 'config' | 'summary' | 'catalog';
-    onStepChange: (step: 'config' | 'summary' | 'catalog') => void;
+    currentStep: 'config' | 'summary';
+    onStepChange: (step: 'config' | 'summary') => void;
 }
 
 export const SupportStepper: React.FC<SupportStepperProps> = ({ currentStep, onStepChange }) => {
