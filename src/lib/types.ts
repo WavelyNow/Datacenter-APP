@@ -1,8 +1,10 @@
-import { PipeMaterial } from './constants';
+import { PIPE_STANDARDS } from './pipeStandards';
+
+export type PipeMaterial = keyof typeof PIPE_STANDARDS;
 
 export interface PipeSegment {
     id: string;
-    material: string;
+    material: PipeMaterial | 'custom';
     standard: string;
     size: string;
     length: number; // meters

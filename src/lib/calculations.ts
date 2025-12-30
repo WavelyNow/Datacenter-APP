@@ -351,7 +351,7 @@ const findOptimalProfile = (designLoadKg: number, armLengthM: number, isHeavyDut
 export const calculateMechanicalStress = (
     loadKg: number,
     lengthM: number,
-    profile: { structural?: { Iy?: number; Wy?: number };[key: string]: any },
+    profile: MuproComponent,
     model: 'cantilever' | 'beam' = 'cantilever'
 ): { stress: number, deflection: number, moment: number, utilization: number } => {
 
@@ -600,7 +600,7 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
 
         const firstItem = items[0];
         const groupLabel = firstItem.description;
-        const profile = firstItem.recommendedProfile as any as MuproComponent; // Cast safely
+        const profile = firstItem.recommendedProfile as MuproComponent; // Cast safely
         const isHeavyDuty = firstItem.isHeavyDuty;
         const quantity = items.reduce((sum, i) => sum + i.quantity, 0);
 

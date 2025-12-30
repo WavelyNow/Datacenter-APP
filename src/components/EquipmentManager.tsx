@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useMemo } from 'react';
-import { Package, ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Scale, Droplet, Box, BookOpen, Info } from 'lucide-react';
+import { Package, ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Scale, Droplet, Box, BookOpen, Info, Copy } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
@@ -200,7 +200,17 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sky-500/50 text-xs">L</span>
                                     </div>
                                 </div>
-                                <div className="md:col-span-2 flex justify-end">
+                                <div className="md:col-span-2 flex justify-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const newItem = { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` };
+                                            onEquipmentChange([...equipmentList, newItem]);
+                                        }}
+                                        className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-sm cursor-pointer"
+                                        title="Duplicate"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={() => removeItem(item.id)}
                                         className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-sm cursor-pointer"

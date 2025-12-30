@@ -81,6 +81,18 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                     <span>1.0m</span>
                                     <span>6.0m</span>
                                 </div>
+                                <div className="flex gap-2 mt-4">
+                                    {[1.5, 2.0, 3.0].map(val => (
+                                        <button
+                                            key={val}
+                                            onClick={() => setSupportConfig({ ...supportConfig, spacing: val })}
+                                            className="px-2 py-1 rounded bg-slate-900 border border-white/10 text-[10px] text-slate-400 hover:text-white hover:border-blue-500/50 transition-colors"
+                                        >
+                                            {val}m
+                                        </button>
+                                    ))}
+                                    <span className="text-[10px] text-slate-600 self-center ml-auto">Presets</span>
+                                </div>
                             </div>
 
                             {/* Mounting Height Card */}

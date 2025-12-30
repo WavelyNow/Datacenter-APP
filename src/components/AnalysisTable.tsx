@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SupportItem } from '@/lib/calculations';
-import { AlertCircle, AlertTriangle, ArrowRight, CheckCircle, ChevronRight, FileText, Settings, Info, ChevronDown, ChevronUp, Activity, PenTool } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Settings, Info, ChevronDown, ChevronUp, Activity, PenTool } from 'lucide-react';
 interface AnalysisTableProps {
     report: SupportItem[];
 }
