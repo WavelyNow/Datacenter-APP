@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch, Layers } from 'lucide-react';
+import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch, Layers, Sparkles } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { PipeCatalogModal } from './PipeCatalogModal';
-import { PdfExportModal } from './PdfExportModal';
+import { ExportModal } from './ExportModal';
+import { PdfWizardModal } from './PdfWizardModal';
 
 import { ProfileCatalogModal } from './ProfileCatalogModal';
 
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
     const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isWizardModalOpen, setIsWizardModalOpen] = useState(false);
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
@@ -84,9 +86,25 @@ export const Header: React.FC<HeaderProps> = ({
             <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
             <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={() => setIsProfileCatalogOpen(false)} />
 
-            <PdfExportModal
+            <ExportModal
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
+                data={{
+                    projectDetails,
+                    segments: segments || [],
+                    equipmentList: equipmentList || [],
+                    fluidType: fluidType || 'ethylene',
+                    glycolPercentage: glycolPercentage || 30,
+                    safetyMargin: safetyMargin || false,
+                    safetyMarginPercentage: safetyMarginPercentage || 5,
+                    supportConfig: supportConfig,
+                    branding: branding
+                }}
+            />
+
+            <PdfWizardModal
+                isOpen={isWizardModalOpen}
+                onClose={() => setIsWizardModalOpen(false)}
                 data={{
                     projectDetails,
                     segments: segments || [],
@@ -254,6 +272,13 @@ export const Header: React.FC<HeaderProps> = ({
                             >
                                 <Printer className="w-4 h-4" />
                                 <span>Export PDF</span>
+                            </button>
+                            <button
+                                onClick={() => setIsWizardModalOpen(true)}
+                                className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 hover:text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group text-sm"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                <span>Wizard PDF</span>
                             </button>
 
                             <div className="grid grid-cols-2 gap-2">

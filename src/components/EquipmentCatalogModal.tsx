@@ -9,11 +9,19 @@ interface EquipmentCatalogModalProps {
     onSelect: (item: CatalogEquipment) => void;
 }
 
+import { createPortal } from 'react-dom';
+
 export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ isOpen, onClose, onSelect }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
-    if (!isOpen) return null;
+    React.useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    if (!isOpen || !mounted) return null;
 
     const categories = Array.from(new Set(EQUIPMENT_CATALOG.map(item => item.category)));
 
@@ -24,8 +32,8 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         return matchesSearch && matchesCategory;
     });
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 lg:p-8">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={onClose} />
 
@@ -131,6 +139,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     Valorile de volum și greutate sunt estimative conform fișelor tehnice standard.
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

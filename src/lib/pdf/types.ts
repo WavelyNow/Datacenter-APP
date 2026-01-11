@@ -30,6 +30,9 @@ export interface PdfData {
         pipesPerSupport: number;
         insulationThickness: number;
         insulationDensity: number;
+        addLeftConsole?: boolean;
+        addRightConsole?: boolean;
+        addUpperRail?: boolean;
     };
     branding: {
         primaryColor: string;

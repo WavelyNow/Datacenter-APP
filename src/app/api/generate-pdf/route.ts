@@ -47,13 +47,21 @@ export async function POST(req: NextRequest) {
         }
         
         if (errors.length > 0) {
-            return NextResponse.json({ 
-                error: 'Validation failed', 
-                details: errors 
+            console.log('[DEBUG] Validation failed with errors:', errors);
+            return NextResponse.json({
+                error: 'Validation failed',
+                details: errors
             }, { status: 400 });
         }
 
+        console.log('[DEBUG] Starting PDF generation with data:', {
+            segmentsCount: data.segments?.length || 0,
+            equipmentCount: data.equipmentList?.length || 0,
+            projectName: data.projectDetails?.projectName,
+            options: data.options
+        });
         const pdfBuffer = await generatePdf(data);
+        console.log(`[DEBUG] PDF generation completed, buffer size: ${pdfBuffer.length} bytes`);
 
         const filename = `Proiect_${sanitizeProjectName(data.projectDetails.projectName)}_Rev${data.projectDetails.revision}.pdf`;
 

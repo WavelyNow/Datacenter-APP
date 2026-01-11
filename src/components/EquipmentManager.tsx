@@ -42,7 +42,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
     const addEquipment = () => {
         const newItem: EquipmentItem = {
-            id: crypto.randomUUID(),
+            id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: 'Chiller',
             name: '',
             volume: 0,
@@ -53,7 +53,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
     const addFromCatalog = (catalogItem: CatalogEquipment) => {
         const newItem: EquipmentItem = {
-            id: crypto.randomUUID(),
+            id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: catalogItem.category,
             name: catalogItem.model,
             volume: catalogItem.volume,
@@ -204,7 +204,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 <div className="md:col-span-2 flex justify-end gap-2">
                                     <button
                                         onClick={() => {
-                                            const newItem = { ...item, id: crypto.randomUUID(), name: `${item.name} (Copy)` };
+                                            const newItem = { ...item, id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, name: `${item.name} (Copy)` };
                                             onEquipmentChange([...equipmentList, newItem]);
                                         }}
                                         className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all shadow-sm cursor-pointer"
