@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download } from 'lucide-react';
+import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
+import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
 
 interface EquipmentManagerProps {
@@ -33,13 +34,26 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
     onSafetyMarginChange,
     viewMode
 }) => {
-    const [isCatalogOpen, setIsCatalogOpen] = React.useState(false);
+    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+    const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
     const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
     const pdfInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
     const totalVolume = useMemo(() => {
         return equipmentList.reduce((acc, item) => acc + (item.volume || 0), 0);
     }, [equipmentList]);
+
+    const openDetailModal = (item: EquipmentItem) => {
+        setSelectedEquipment(item);
+    };
+
+    const handleDetailUpdate = (updates: Partial<EquipmentItem>) => {
+        if (!selectedEquipment) return;
+        onEquipmentChange(equipmentList.map(item =>
+            item.id === selectedEquipment.id ? { ...item, ...updates } : item
+        ));
+        setSelectedEquipment(prev => prev ? { ...prev, ...updates } : null);
+    };
 
     const addEquipment = () => {
         const newItem: EquipmentItem = {
@@ -171,12 +185,41 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
                 <div className={`space-y-3 ${viewMode === 'photos' ? '!space-y-0 !grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : ''}`}>
                     {equipmentList.map((item, index) => (
-                        <div key={item.id} className={`group relative bg-muted/10 border border-border rounded-lg p-4 transition-all hover:border-border hover:shadow-sm ${viewMode !== 'photos' ? 'grid grid-cols-1 md:grid-cols-12 gap-4 items-end' : 'flex flex-col'}`}>
+                        <div key={item.id} className={`group relative bg-muted/10 border border-border rounded-lg p-4 transition-all hover:border-primary/30 hover:shadow-sm ${viewMode !== 'photos' ? 'grid grid-cols-1 md:grid-cols-12 gap-4 items-end' : 'flex flex-col'}`}>
 
-                            {/* Number */}
+                            {/* Number Indicator */}
                             {viewMode !== 'photos' && (
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary group-hover:bg-primary rounded-l-lg transition-colors" />
                             )}
+
+                            {/* Top Action Bar - Always Visible */}
+                            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity z-10">
+                                <button
+                                    onClick={() => openDetailModal(item)}
+                                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground text-[10px] font-medium transition-colors"
+                                    title="View Details"
+                                >
+                                    <ExternalLink className="w-3 h-3" />
+                                    <span className="hidden sm:inline">Details</span>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const newItem = { ...item, id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, name: `${item.name} (Copy)` };
+                                        onEquipmentChange([...equipmentList, newItem]);
+                                    }}
+                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                                    title="Duplicate"
+                                >
+                                    <Copy className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => removeItem(item.id)}
+                                    className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                    title="Remove"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
 
                             {/* Type Selection */}
                             <div className={`${viewMode === 'photos' ? 'mb-3 w-full' : 'md:col-span-3 space-y-1.5'}`}>
@@ -258,25 +301,6 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                             />
                                         </div>
                                     </div>
-                                    <div className="md:col-span-2 flex justify-end gap-1 pb-0.5">
-                                        <button
-                                            onClick={() => {
-                                                const newItem = { ...item, id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, name: `${item.name} (Copy)` };
-                                                onEquipmentChange([...equipmentList, newItem]);
-                                            }}
-                                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                                            title="Duplicate"
-                                        >
-                                            <Copy className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => removeItem(item.id)}
-                                            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                            title="Remove"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
                                 </>
                             )}
 
@@ -357,29 +381,49 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
             </div>
 
             {/* Safety Margin Alert */}
-            {viewMode === 'volume' && onSafetyMarginChange && (
-                <div className="bg-muted/30 border-t border-border p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${safetyMargin ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
-                            <ShieldCheck className="w-4 h-4" />
+            {
+                viewMode === 'volume' && onSafetyMarginChange && (
+                    <div className="bg-muted/30 border-t border-border p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${safetyMargin ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                                <ShieldCheck className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-foreground">Safety Buffer</h4>
+                                <p className="text-[10px] text-muted-foreground">Adds 5% to volume calculations</p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="text-sm font-medium text-foreground">Safety Buffer</h4>
-                            <p className="text-[10px] text-muted-foreground">Adds 5% to volume calculations</p>
-                        </div>
-                    </div>
 
-                    <button
-                        onClick={() => onSafetyMarginChange(!safetyMargin)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-md transition-colors ${safetyMargin
-                            ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                            : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
-                            }`}
-                    >
-                        {safetyMargin ? 'ENABLED' : 'DISABLED'}
-                    </button>
-                </div>
-            )}
-        </div>
+                        <button
+                            onClick={() => onSafetyMarginChange(!safetyMargin)}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-md transition-colors ${safetyMargin
+                                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
+                                }`}
+                        >
+                            {safetyMargin ? 'ENABLED' : 'DISABLED'}
+                        </button>
+                    </div>
+                )
+            }
+
+            {/* Modals */}
+            <EquipmentCatalogModal
+                isOpen={isCatalogOpen}
+                onClose={() => setIsCatalogOpen(false)}
+                onSelect={addFromCatalog}
+            />
+
+            {
+                selectedEquipment && (
+                    <EquipmentDetailModal
+                        isOpen={!!selectedEquipment}
+                        onClose={() => setSelectedEquipment(null)}
+                        equipment={selectedEquipment}
+                        onUpdate={handleDetailUpdate}
+                    />
+                )
+            }
+        </div >
     );
 };
