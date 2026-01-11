@@ -49,6 +49,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         const newItem: CatalogEquipment = {
             id: `custom-${Date.now()}`,
             category: formData.category || 'Other',
+            manufacturer: 'Generic',
             model: formData.model,
             volume: formData.volume || 0,
             weight: formData.weight || 0,
