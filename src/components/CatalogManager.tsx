@@ -45,6 +45,7 @@ export const CatalogManager: React.FC = () => {
         const newItem: CatalogEquipment = {
             id: `custom-${Date.now()}`,
             category: formData.category || 'Other',
+            manufacturer: 'Generic',
             model: formData.model,
             volume: formData.volume || 0,
             weight: formData.weight || 0,
@@ -316,8 +317,8 @@ export const CatalogManager: React.FC = () => {
                             <div className="flex items-center gap-4">
                                 {/* Manufacturer Badge */}
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xs ${selectedItem.manufacturer === 'Schneider Electric' ? 'bg-green-600' :
-                                        selectedItem.manufacturer === 'Vertiv' ? 'bg-blue-600' :
-                                            selectedItem.manufacturer === 'Grundfos' ? 'bg-red-600' : 'bg-gray-600'
+                                    selectedItem.manufacturer === 'Vertiv' ? 'bg-blue-600' :
+                                        selectedItem.manufacturer === 'Grundfos' ? 'bg-red-600' : 'bg-gray-600'
                                     }`}>
                                     {selectedItem.manufacturer === 'Schneider Electric' ? 'SE' :
                                         selectedItem.manufacturer === 'Vertiv' ? 'V' :
@@ -327,9 +328,9 @@ export const CatalogManager: React.FC = () => {
                                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{selectedItem.category}</span>
                                     <h2 className="text-lg font-bold text-foreground">{selectedItem.model}</h2>
                                     <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mt-1 ${selectedItem.manufacturer === 'Schneider Electric' ? 'bg-green-500/10 text-green-600 border border-green-500/20' :
-                                            selectedItem.manufacturer === 'Vertiv' ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' :
-                                                selectedItem.manufacturer === 'Grundfos' ? 'bg-red-500/10 text-red-600 border border-red-500/20' :
-                                                    'bg-gray-500/10 text-gray-600 border border-gray-500/20'
+                                        selectedItem.manufacturer === 'Vertiv' ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20' :
+                                            selectedItem.manufacturer === 'Grundfos' ? 'bg-red-500/10 text-red-600 border border-red-500/20' :
+                                                'bg-gray-500/10 text-gray-600 border border-gray-500/20'
                                         }`}>{selectedItem.manufacturer}</span>
                                 </div>
                             </div>
