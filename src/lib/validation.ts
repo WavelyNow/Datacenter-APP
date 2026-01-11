@@ -18,19 +18,19 @@ export interface ValidationResult {
 
 export const validateBase64Image = (base64: string): ValidationResult => {
   const errors: string[] = [];
-  
+
   // Check format
   const imageFormatRegex = /^data:image\/(png|jpeg|jpg|webp);base64,/;
   if (!imageFormatRegex.test(base64)) {
     errors.push('Invalid image format. Only PNG, JPEG, and WebP are allowed.');
   }
-  
+
   // Check size
   const sizeInBytes = (base64.length * 3) / 4;
   if (sizeInBytes > VALIDATION_LIMITS.MAX_IMAGE_SIZE_BYTES) {
     errors.push(`Image size exceeds ${VALIDATION_LIMITS.MAX_IMAGE_SIZE_BYTES / 1024 / 1024}MB limit.`);
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors
@@ -74,9 +74,10 @@ export const validatePipeSegment = (segment: PipeSegment): ValidationResult => {
 export const validateEquipmentItem = (item: EquipmentItem): ValidationResult => {
   const errors: string[] = [];
 
-  if (!item.name || item.name.trim() === '') {
-    errors.push('Equipment name is required');
-  }
+  // Name is no longer strictly required - will use fallback in PDF
+  // if (!item.name || item.name.trim() === '') {
+  //   errors.push('Equipment name is required');
+  // }
 
   if (item.volume < 0) {
     errors.push('Volume cannot be negative');

@@ -18,6 +18,14 @@ export interface EquipmentItem {
     name: string;
     volume: number;
     weight: number; // kg - Mandatory now
+    // Extended fields
+    power?: number; // kW
+    flowRate?: number; // m³/h
+    glycolRecommendation?: number; // %
+    glycolProofImage?: string; // Base64 - screenshot from manufacturer PDF
+    options?: string[]; // e.g. ['Free Cooling', 'Bypass', 'Redundant Pumps']
+    notes?: string; // Additional notes
+    // Media
     proofImage?: string; // Base64 string - Legacy, keep for now but prefer photos array
     photos?: string[]; // Array of Base64 strings for the gallery
     technicalSheet?: string; // Base64 string (PDF) or URL
@@ -54,6 +62,23 @@ export interface BrandingConfig {
     primaryColor: string;
     accentColor: string;
     pdfTheme: 'modern' | 'classic' | 'industrial';
+}
+
+export type PDFSectionId = 'header' | 'volume' | 'boq' | 'weights' | 'supports' | 'photos';
+export type PDFAlignment = 'left' | 'center' | 'right';
+
+export interface PDFSection {
+    id: PDFSectionId;
+    label: string;
+    enabled: boolean;
+    alignment: PDFAlignment;
+    order: number;
+}
+
+export interface PDFLayoutConfig {
+    sections: PDFSection[];
+    showPageNumbers: boolean;
+    compactMode: boolean;
 }
 
 export interface AppState {

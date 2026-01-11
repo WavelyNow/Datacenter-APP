@@ -1,303 +1,322 @@
+'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Search, Box, Layers, ArrowRight, CheckCircle, Filter, Grid } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Box, Plus, Trash2, X, Check, Scale, Ruler } from 'lucide-react';
 import { MUPRO_MASTER_CATALOG, MuproComponent } from '@/lib/muproVerifiedStandards';
 
 // --- Types ---
-type Manufacturer = 'MÜPRO' | 'OBO Bettermann' | 'Hilti' | 'Fischer' | 'Generic';
 type LoadCapacity = 'Light' | 'Medium' | 'Heavy';
-type Material = 'Galvanized' | 'Stainless' | 'Black Steel';
+type ProfileType = 'All' | 'C-Channel' | 'U-Profile' | 'L-Angle' | 'Square';
 
-interface CatalogComponent extends MuproComponent {
-    manufacturer: Manufacturer;
-    material: Material;
+interface CustomProfile extends MuproComponent {
+    isCustom: true;
 }
 
-// --- Mock Data Extension ---
-// Wrapping MÜPRO data and adding placeholders for others
-const EXTENDED_CATALOG: CatalogComponent[] = [
-    // Proven MÜPRO Items
-    ...MUPRO_MASTER_CATALOG.filter(c => c.category === 'profile').map(c => ({
-        ...c,
-        manufacturer: 'MÜPRO' as Manufacturer,
-        material: 'Galvanized' as Material
-    })),
-    // Mock OBO Items (For Demo)
-    {
-        sku: 'OBO_US3', name: 'US 3 (50x30)', category: 'profile', manufacturer: 'OBO Bettermann',
-        material: 'Galvanized', loadCapacity: 'Light', weight: 1.83, structural: { Iy: 6.2, Wy: 2.5 },
-        description: 'U-Support Profile'
-    },
-    {
-        sku: 'OBO_US5', name: 'US 5 (50x50)', category: 'profile', manufacturer: 'OBO Bettermann',
-        material: 'Galvanized', loadCapacity: 'Medium', weight: 2.65, structural: { Iy: 13.5, Wy: 5.2 },
-        description: 'U-Support Profile'
-    },
-    // Mock Hilti Items
-    {
-        sku: 'MQ_21', name: 'MQ-21 (41x21)', category: 'profile', manufacturer: 'Hilti',
-        material: 'Galvanized', loadCapacity: 'Light', weight: 1.50, structural: { Iy: 1.8, Wy: 0.9 },
-        description: 'Installation Channel'
-    },
-    {
-        sku: 'MQ_41', name: 'MQ-41 (41x41)', category: 'profile', manufacturer: 'Hilti',
-        material: 'Galvanized', loadCapacity: 'Medium', weight: 2.10, structural: { Iy: 6.3, Wy: 2.8 },
-        description: 'Installation Channel'
-    }
-];
+// --- Helper to detect profile type from name ---
+const getProfileType = (name: string): ProfileType => {
+    if (name.includes('MPR') || name.includes('Consolă')) return 'C-Channel';
+    if (name.includes('U ')) return 'U-Profile';
+    if (name.includes('Cornier') || name.includes('L ')) return 'L-Angle';
+    if (name.includes('Pătrată')) return 'Square';
+    return 'C-Channel';
+};
 
 export const ProfileCatalog: React.FC = () => {
     // --- State ---
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedManufacturers, setSelectedManufacturers] = useState<Manufacturer[]>(['MÜPRO']);
-    const [selectedLoad, setSelectedLoad] = useState<LoadCapacity[]>([]);
-    const [selectedMaterial, setSelectedMaterial] = useState<Material | 'All'>('All');
-    const [expandedProfile, setExpandedProfile] = useState<string | null>(null);
+    const [selectedType, setSelectedType] = useState<ProfileType>('All');
+    const [selectedLoad, setSelectedLoad] = useState<LoadCapacity | 'All'>('All');
+    const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>([]);
+    const [isCreateMode, setIsCreateMode] = useState(false);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        weight: 0,
+        h: 0,
+        w: 0,
+        loadCapacity: 'Medium' as LoadCapacity
+    });
+
+    // Load Custom Profiles from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('custom_profiles_catalog');
+        if (saved) {
+            try {
+                setCustomProfiles(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to parse custom profiles", e);
+            }
+        }
+    }, []);
+
+    // --- Combined Catalog ---
+    const allProfiles = useMemo(() => {
+        const muproProfiles = MUPRO_MASTER_CATALOG.filter(c => c.category === 'profile');
+        return [...customProfiles, ...muproProfiles];
+    }, [customProfiles]);
 
     // --- Filters ---
     const filteredProfiles = useMemo(() => {
-        return EXTENDED_CATALOG.filter(p => {
-            // Search
+        return allProfiles.filter(p => {
             const q = searchQuery.toLowerCase();
-            const matchesSearch = p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
-
-            // Manufacturer
-            const matchesMan = selectedManufacturers.length === 0 || selectedManufacturers.includes(p.manufacturer);
-
-            // Load
-            const matchesLoad = selectedLoad.length === 0 || (p.loadCapacity && selectedLoad.includes(p.loadCapacity as LoadCapacity));
-
-            // Material
-            const matchesMat = selectedMaterial === 'All' || p.material === selectedMaterial;
-
-            return matchesSearch && matchesMan && matchesLoad && matchesMat;
+            const matchesSearch = p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q);
+            const matchesType = selectedType === 'All' || getProfileType(p.name) === selectedType;
+            const matchesLoad = selectedLoad === 'All' || p.loadCapacity === selectedLoad;
+            return matchesSearch && matchesType && matchesLoad;
         });
-    }, [searchQuery, selectedManufacturers, selectedLoad, selectedMaterial]);
+    }, [allProfiles, searchQuery, selectedType, selectedLoad]);
+
+    // Profile Types for Pills
+    const profileTypes: ProfileType[] = ['All', 'C-Channel', 'U-Profile', 'L-Angle', 'Square'];
 
     // --- Handlers ---
-    const toggleManufacturer = (m: Manufacturer) => {
-        setSelectedManufacturers(prev =>
-            prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]
-        );
-    };
+    const handleSaveCustom = () => {
+        if (!formData.name) return;
 
-    const toggleLoad = (l: LoadCapacity) => {
-        setSelectedLoad(prev =>
-            prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]
-        );
-    };
-
-    // --- Compatible System Logic (Preserved/Adapted) ---
-    const getSystemComponents = (profile: CatalogComponent) => {
-        if (profile.manufacturer !== 'MÜPRO') return null; // Only MÜPRO has full logic implemented
-
-        const isHeavy = profile.loadCapacity === 'Heavy';
-        let baseSku = '131840';
-        if (profile.name.includes('41/21')) baseSku = '131842';
-        let capSku = '105805';
-        if (profile.name.includes('41/62') || profile.name.includes('124')) capSku = '105808';
-        const boltSku = isHeavy ? '110435' : '110419';
-
-        return {
-            base: MUPRO_MASTER_CATALOG.find(c => c.sku === baseSku),
-            cap: MUPRO_MASTER_CATALOG.find(c => c.sku === capSku),
-            bolt: MUPRO_MASTER_CATALOG.find(c => c.sku === boltSku),
+        const newProfile: CustomProfile = {
+            sku: `custom-${Date.now()}`,
+            name: formData.name,
+            description: formData.description,
+            category: 'profile',
+            loadCapacity: formData.loadCapacity,
+            weight: formData.weight,
+            dimensions: { h: formData.h, w: formData.w, length: 6000 },
+            isCustom: true
         };
+
+        const updated = [...customProfiles, newProfile];
+        setCustomProfiles(updated);
+        localStorage.setItem('custom_profiles_catalog', JSON.stringify(updated));
+
+        // Reset
+        setFormData({ name: '', description: '', weight: 0, h: 0, w: 0, loadCapacity: 'Medium' });
+        setIsCreateMode(false);
+    };
+
+    const handleDelete = (sku: string) => {
+        if (confirm('Delete this custom profile?')) {
+            const updated = customProfiles.filter(p => p.sku !== sku);
+            setCustomProfiles(updated);
+            localStorage.setItem('custom_profiles_catalog', JSON.stringify(updated));
+        }
+    };
+
+    // Load Capacity Colors
+    const getLoadColor = (load: LoadCapacity) => {
+        switch (load) {
+            case 'Light': return 'bg-green-500';
+            case 'Medium': return 'bg-amber-500';
+            case 'Heavy': return 'bg-red-500';
+        }
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-full bg-slate-950 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+        <div className="flex flex-col h-full bg-card rounded-2xl overflow-hidden border border-border shadow-xl">
 
-            {/* --- SIDEBAR FILTERS --- */}
-            <div className="w-full md:w-80 bg-slate-900/80 border-r border-white/5 p-6 flex flex-col gap-8 overflow-y-auto backdrop-blur-md">
-
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
-                        <Box className="w-6 h-6" />
+            {/* Header */}
+            <div className="p-6 border-b border-border bg-secondary/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                        <Box className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-white text-lg leading-tight">System Catalog</h2>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Modular Support</p>
+                        <h2 className="text-lg font-bold text-foreground">Profile Metalice</h2>
+                        <p className="text-xs text-muted-foreground">{filteredProfiles.length} profile disponibile</p>
                     </div>
                 </div>
 
-                {/* Manufacturers */}
-                <div className="space-y-3">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                        <Filter className="w-3 h-3" /> Manufacturers
-                    </h3>
-                    <div className="space-y-2">
-                        {(['MÜPRO', 'OBO Bettermann', 'Hilti', 'Fischer', 'Generic'] as Manufacturer[]).map(m => (
-                            <button
-                                key={m}
-                                onClick={() => toggleManufacturer(m)}
-                                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between group ${selectedManufacturers.includes(m)
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white border border-white/5'
-                                    }`}
-                            >
-                                {m}
-                                {selectedManufacturers.includes(m) && <CheckCircle className="w-4 h-4 text-blue-200" />}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Load Capacity */}
-                <div className="space-y-3">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Load Capacity</h3>
-                    <div className="flex flex-col gap-2">
-                        {[
-                            { id: 'Light', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-                            { id: 'Medium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-                            { id: 'Heavy', color: 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse-slow' }
-                        ].map(l => (
-                            <button
-                                key={l.id}
-                                onClick={() => toggleLoad(l.id as LoadCapacity)}
-                                className={`px-4 py-2.5 rounded-lg text-xs font-bold border flex items-center gap-3 transition-all ${selectedLoad.includes(l.id as LoadCapacity)
-                                        ? l.color
-                                        : 'bg-slate-900/50 border-white/5 text-slate-500 hover:bg-slate-800'
-                                    }`}
-                            >
-                                <div className={`w-2 h-2 rounded-full ${l.id === 'Light' ? 'bg-green-500' : l.id === 'Medium' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                                {l.id} Load
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Material */}
-                <div className="space-y-3">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Material</h3>
-                    <select
-                        value={selectedMaterial}
-                        onChange={(e) => setSelectedMaterial(e.target.value as Material | 'All')}
-                        className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-300 focus:border-blue-500/50 focus:outline-none appearance-none"
-                    >
-                        <option value="All">All Materials</option>
-                        <option value="Galvanized">Galvanized Steel</option>
-                        <option value="Stainless">Stainless Steel</option>
-                        <option value="Black Steel">Black Steel</option>
-                    </select>
-                </div>
+                {!isCreateMode ? (
+                    <button onClick={() => setIsCreateMode(true)} className="btn btn-primary btn-sm gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Custom
+                    </button>
+                ) : (
+                    <button onClick={() => setIsCreateMode(false)} className="btn btn-secondary btn-sm gap-2">
+                        <X className="w-4 h-4" />
+                        Cancel
+                    </button>
+                )}
             </div>
 
-            {/* --- MAIN CONTENT --- */}
-            <div className="flex-1 bg-slate-950 p-6 md:p-8 overflow-y-auto relative">
+            {isCreateMode ? (
+                /* CREATE FORM */
+                <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
+                    <div className="max-w-xl mx-auto bg-card border border-border rounded-xl p-8 shadow-sm">
+                        <h4 className="text-lg font-bold mb-6 text-foreground">Create Custom Profile</h4>
 
-                {/* Top Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 sticky top-0 bg-slate-950/90 backdrop-blur-xl z-20 py-4 border-b border-white/5">
-                    <div className="relative w-full md:w-96 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search catalog (SKU, Name)..."
-                            className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all font-medium"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <div className="text-xs text-slate-500 font-mono">
-                        {filteredProfiles.length} Items Found
+                        <div className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase">Profile Name</label>
+                                <input
+                                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+                                    placeholder="e.g. Profil C 60x40x3"
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase">Height (mm)</label>
+                                    <input type="number" className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" value={formData.h} onChange={e => setFormData({ ...formData, h: parseFloat(e.target.value) || 0 })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase">Width (mm)</label>
+                                    <input type="number" className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" value={formData.w} onChange={e => setFormData({ ...formData, w: parseFloat(e.target.value) || 0 })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase">Weight (kg/m)</label>
+                                    <input type="number" step="0.01" className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" value={formData.weight} onChange={e => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase">Load Capacity</label>
+                                <div className="flex gap-2">
+                                    {(['Light', 'Medium', 'Heavy'] as LoadCapacity[]).map(l => (
+                                        <button
+                                            key={l}
+                                            onClick={() => setFormData({ ...formData, loadCapacity: l })}
+                                            className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${formData.loadCapacity === l ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary border-border text-muted-foreground hover:bg-muted'}`}
+                                        >
+                                            {l}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase">Description (Optional)</label>
+                                <input
+                                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+                                    placeholder="e.g. Oțel Zincat"
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 mt-8">
+                            <button onClick={() => setIsCreateMode(false)} className="flex-1 btn btn-secondary h-11">Cancel</button>
+                            <button onClick={handleSaveCustom} className="flex-1 btn btn-primary h-11 font-bold">Save Profile</button>
+                        </div>
                     </div>
                 </div>
+            ) : (
+                /* LIST VIEW */
+                <>
+                    {/* Filters Row */}
+                    <div className="p-4 border-b border-border bg-muted/20 flex flex-col md:flex-row gap-4 items-center">
+                        {/* Search */}
+                        <div className="relative flex-1 w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <input
+                                type="text"
+                                placeholder="Search profiles..."
+                                className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary/20 text-foreground"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
 
-                {/* Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {filteredProfiles.map((item) => {
-                        const isExpanded = expandedProfile === item.sku;
-                        const system = getSystemComponents(item);
+                        {/* Type Pills */}
+                        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+                            {profileTypes.map(t => (
+                                <button
+                                    key={t}
+                                    onClick={() => setSelectedType(t)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border whitespace-nowrap ${selectedType === t ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:border-foreground/30'}`}
+                                >
+                                    {t === 'All' ? 'All Types' : t}
+                                </button>
+                            ))}
+                        </div>
 
-                        return (
-                            <div
-                                key={item.sku}
-                                className={`relative group rounded-2xl border transition-all duration-300 ${isExpanded
-                                        ? 'bg-slate-900 border-blue-500/50 shadow-2xl shadow-blue-900/20 z-10 scale-[1.02]'
-                                        : 'bg-slate-900/30 border-white/5 hover:bg-slate-800/50 hover:border-white/10 hover:-translate-y-1'
-                                    }`}
-                            >
-                                {/* Top Badge */}
-                                <div className="absolute top-4 right-4 z-10">
-                                    <span className="bg-slate-950/80 backdrop-blur border border-white/10 text-white text-[10px] font-mono px-2 py-1 rounded-md">
-                                        #{item.sku}
-                                    </span>
-                                </div>
+                        {/* Load Filter */}
+                        <select
+                            value={selectedLoad}
+                            onChange={e => setSelectedLoad(e.target.value as LoadCapacity | 'All')}
+                            className="bg-background border border-border rounded-lg px-3 py-2 text-xs font-medium text-foreground"
+                        >
+                            <option value="All">All Loads</option>
+                            <option value="Light">Light</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Heavy">Heavy</option>
+                        </select>
+                    </div>
 
-                                {/* Content */}
-                                <div className="p-6 cursor-pointer" onClick={() => setExpandedProfile(isExpanded ? null : item.sku)}>
-                                    <div className="w-12 h-12 rounded-xl bg-slate-950 border border-white/10 flex items-center justify-center mb-4 text-slate-400 group-hover:text-blue-400 transition-colors">
-                                        <Grid className="w-6 h-6" />
-                                    </div>
+                    {/* Grid */}
+                    <div className="flex-1 overflow-y-auto p-5 bg-muted/5 custom-scrollbar">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {filteredProfiles.map((item) => {
+                                const isCustom = 'isCustom' in item && item.isCustom;
 
-                                    <h4 className="text-white font-bold text-lg mb-1 pr-12 line-clamp-1">{item.name}</h4>
-                                    <p className="text-slate-500 text-xs mb-4 flex items-center gap-2">
-                                        <span className="text-blue-400">{item.manufacturer}</span> • {item.material}
-                                    </p>
-
-                                    {/* Metrics */}
-                                    <div className="grid grid-cols-2 gap-2 text-[10px] bg-slate-950/50 rounded-lg p-3 border border-white/5">
-                                        <div>
-                                            <div className="text-slate-500 uppercase font-bold tracking-wider mb-0.5">Weight</div>
-                                            <div className="text-slate-300 font-mono">{(item.weight || 0).toFixed(2)} kg/m</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-slate-500 uppercase font-bold tracking-wider mb-0.5">Inertia (Iy)</div>
-                                            <div className="text-slate-300 font-mono">{(item.structural?.Iy || 0).toFixed(1)} cm4</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Load Indicator Bar */}
-                                    <div className={`h-1 w-full mt-4 rounded-full ${item.loadCapacity === 'Heavy' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' :
-                                            item.loadCapacity === 'Medium' ? 'bg-amber-500' : 'bg-green-500'
-                                        }`} />
-                                </div>
-
-                                {/* Expanded Detail Overlay */}
-                                {isExpanded && (
-                                    <div className="px-6 pb-6 pt-0 animate-in fade-in zoom-in-95 duration-200">
-                                        <div className="h-px w-full bg-white/5 my-4" />
-
-                                        {system ? (
-                                            <div className="space-y-3">
-                                                <h5 className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-2">
-                                                    <Layers className="w-3 h-3" /> Compatible System
-                                                </h5>
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    {[system.base, system.bolt, system.cap].map((comp, i) => (
-                                                        comp && (
-                                                            <div key={i} className="flex items-center gap-3 bg-slate-950 p-2 rounded-lg border border-white/5">
-                                                                <div className="w-8 h-8 rounded bg-slate-900 flex items-center justify-center text-slate-500">
-                                                                    <Box className="w-4 h-4" />
-                                                                </div>
-                                                                <div>
-                                                                    <div className="text-xs text-slate-300 font-medium">{comp.name}</div>
-                                                                    <div className="text-[10px] text-slate-600 font-mono">SKU: {comp.sku}</div>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="p-4 bg-slate-950/50 rounded-lg border border-white/5 text-xs text-slate-500 text-center italic">
-                                                Detailed system components not available for mocked items.
+                                return (
+                                    <div
+                                        key={item.sku}
+                                        className="group bg-card border border-border rounded-xl p-5 hover:shadow-lg transition-all hover:border-primary/30 relative"
+                                    >
+                                        {/* Custom Badge & Delete */}
+                                        {isCustom && (
+                                            <div className="absolute top-3 right-3 flex items-center gap-2">
+                                                <span className="bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full">CUSTOM</span>
+                                                <button onClick={() => handleDelete(item.sku)} className="text-muted-foreground hover:text-destructive transition-colors">
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
                                             </div>
                                         )}
 
-                                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                                            <button className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium transition-colors">
-                                                View Datasheet <ArrowRight className="w-3 h-3" />
-                                            </button>
+                                        {/* SKU */}
+                                        <div className="text-[10px] font-mono text-muted-foreground mb-2">#{item.sku}</div>
+
+                                        {/* Name */}
+                                        <h4 className="text-sm font-bold text-foreground mb-1 pr-16 line-clamp-2 group-hover:text-primary transition-colors">{item.name}</h4>
+
+                                        {/* Manufacturer Badge */}
+                                        {'manufacturer' in item && (item as { manufacturer?: string }).manufacturer && (
+                                            <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 ${(item as { manufacturer?: string }).manufacturer === 'MÜPRO' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                                (item as { manufacturer?: string }).manufacturer === 'Hilti' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                    (item as { manufacturer?: string }).manufacturer === 'OBO Bettermann' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
+                                                        'bg-muted text-muted-foreground'
+                                                }`}>
+                                                {(item as { manufacturer?: string }).manufacturer}
+                                            </span>
+                                        )}
+
+                                        {/* Description */}
+                                        <p className="text-xs text-muted-foreground mb-4 line-clamp-1">{item.description || '-'}</p>
+
+                                        {/* Metrics */}
+                                        <div className="grid grid-cols-2 gap-2 text-[10px] bg-secondary/50 rounded-lg p-3 border border-border/50 mb-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <Scale className="w-3 h-3 text-muted-foreground" />
+                                                <span className="text-foreground font-mono font-bold">{(item.weight || 0).toFixed(2)} kg/m</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Ruler className="w-3 h-3 text-muted-foreground" />
+                                                <span className="text-foreground font-mono font-bold">{item.dimensions?.h || 0}x{item.dimensions?.w || 0}</span>
+                                            </div>
                                         </div>
+
+                                        {/* Load Indicator */}
+                                        <div className={`h-1 w-full rounded-full ${getLoadColor(item.loadCapacity as LoadCapacity)}`} />
                                     </div>
-                                )}
+                                );
+                            })}
+                        </div>
+
+                        {filteredProfiles.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                                <Box className="w-12 h-12 mb-4 opacity-30" />
+                                <p className="text-sm">No profiles found</p>
+                                <p className="text-xs mt-1">Try adjusting your filters</p>
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

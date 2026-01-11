@@ -51,6 +51,40 @@ const DashboardContent = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
+  // Keyboard Shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S / Ctrl+S - Save project
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        saveProject();
+      }
+      // Cmd+E / Ctrl+E - Export
+      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+        e.preventDefault();
+        setIsExportOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Auto-save to localStorage every 30 seconds
+  React.useEffect(() => {
+    const autoSaveData = {
+      projectDetails,
+      segments,
+      equipmentList,
+      fluidType,
+      glycolPercentage,
+      safetyMargin,
+      safetyMarginPercentage,
+      supportConfig
+    };
+    localStorage.setItem('datacenter_autosave', JSON.stringify(autoSaveData));
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin]);
+
   // File Handlers
   const saveProject = () => {
     const data = {

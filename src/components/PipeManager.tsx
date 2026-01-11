@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown, Box } from 'lucide-react';
+import { Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown, Box, Copy } from 'lucide-react';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment } from '@/lib/types';
 
@@ -28,6 +28,16 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
 
     const removeSegment = (id: string) => {
         onSegmentsChange(segments.filter(s => s.id !== id));
+    };
+
+    const duplicateSegment = (id: string) => {
+        const original = segments.find(s => s.id === id);
+        if (!original) return;
+        const duplicate = { ...original, id: crypto.randomUUID() };
+        const index = segments.findIndex(s => s.id === id);
+        const newSegments = [...segments];
+        newSegments.splice(index + 1, 0, duplicate);
+        onSegmentsChange(newSegments);
     };
 
     const moveSegment = (id: string, direction: 'up' | 'down') => {
@@ -220,33 +230,46 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                                 />
                             </div>
 
-                            {/* Actions */}
-                            <div className="absolute right-2 top-2 md:static md:col-span-1 flex md:flex-col gap-1 md:gap-2 justify-end h-full pb-0.5">
-                                <div className="flex md:flex-col gap-1">
+                            {/* Actions - Inline Row at Bottom */}
+                            <div className="md:col-span-12 flex items-center justify-between pt-3 mt-3 border-t border-border/50">
+                                <div className="flex items-center gap-1">
                                     <button
                                         onClick={() => moveSegment(segment.id, 'up')}
                                         disabled={index === 0}
-                                        className="p-2 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all disabled:opacity-30 disabled:hover:bg-card"
+                                        className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all disabled:opacity-20"
                                         title="Move Up"
                                     >
-                                        <ChevronUp className="w-3.5 h-3.5" />
+                                        <ChevronUp className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => moveSegment(segment.id, 'down')}
                                         disabled={index === segments.length - 1}
-                                        className="p-2 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all disabled:opacity-30 disabled:hover:bg-card"
+                                        className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all disabled:opacity-20"
                                         title="Move Down"
                                     >
-                                        <ChevronDown className="w-3.5 h-3.5" />
+                                        <ChevronDown className="w-4 h-4" />
+                                    </button>
+                                    <span className="text-[10px] text-muted-foreground ml-2 hidden sm:inline">Reorder</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => duplicateSegment(segment.id)}
+                                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-all"
+                                        title="Duplicate"
+                                    >
+                                        <Copy className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Duplicate</span>
+                                    </button>
+                                    <button
+                                        onClick={() => removeSegment(segment.id)}
+                                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-medium transition-all"
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Delete</span>
                                     </button>
                                 </div>
-                                <button
-                                    onClick={() => removeSegment(segment.id)}
-                                    className="p-2 rounded-lg bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-all shadow-sm cursor-pointer mt-1"
-                                    title="Remove Segment"
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                </button>
                             </div>
                         </div>
                     );
