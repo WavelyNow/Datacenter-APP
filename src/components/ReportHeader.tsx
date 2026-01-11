@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { FileText } from 'lucide-react';
 
 interface ReportHeaderProps {
     companyLogo?: string | null;
@@ -15,45 +16,48 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
     dateStr
 }) => {
     return (
-        <header className="grid grid-cols-12 gap-4 border-b-2 border-black pb-4 mb-6 break-inside-avoid">
-            {/* Logo Area */}
-            <div className="col-span-4 h-24 flex items-center justify-start overflow-hidden relative">
-                {companyLogo ? (
-                    <Image
-                        src={companyLogo}
-                        alt="Logo"
-                        fill
-                        className="object-contain print:block"
-                        unoptimized
-                    />
-                ) : (
-                    <div className="w-full h-full border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                        <span className="text-gray-400 text-xs text-center font-sans p-2">
-                            LOGO (Upload & Print)
-                        </span>
-                    </div>
-                )}
-            </div>
-
-            {/* Meta Data Area */}
-            <div className="col-span-8 flex flex-col justify-between text-right">
-                <div>
-                    <h1 className="text-2xl font-bold uppercase tracking-tight">Raport Tehnic</h1>
-                    <p className="text-sm font-medium text-gray-600 uppercase">Dimensionare Instalație Hidraulică</p>
+        <header className="mb-8 pb-6 border-b border-neutral-200 break-inside-avoid print:border-black">
+            <div className="flex items-start justify-between">
+                {/* Logo Area */}
+                <div className="w-1/3">
+                    {companyLogo ? (
+                        <div className="relative h-16 w-full max-w-[200px]">
+                            <Image
+                                src={companyLogo}
+                                alt="Logo"
+                                fill
+                                className="object-contain object-left"
+                                unoptimized
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 text-neutral-400">
+                            <div className="w-10 h-10 bg-neutral-100 rounded flex items-center justify-center">
+                                <FileText className="w-5 h-5" />
+                            </div>
+                            <span className="text-xs uppercase tracking-wider font-medium">No Logo</span>
+                        </div>
+                    )}
                 </div>
 
-                <div className="text-sm space-y-0.5 mt-2">
-                    <div className="flex justify-end gap-2">
-                        <span className="font-bold text-gray-500 text-xs uppercase">Proiect:</span>
-                        <span className="font-bold">{projectName || 'Nespecificat'}</span>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <span className="font-bold text-gray-500 text-xs uppercase">Inginer:</span>
-                        <span>{engineerName || 'Nespecificat'}</span>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <span className="font-bold text-gray-500 text-xs uppercase">Data:</span>
-                        <span>{dateStr}</span>
+                {/* Meta Data Area */}
+                <div className="text-right">
+                    <h1 className="text-xl font-bold uppercase tracking-tight text-neutral-900 leading-none mb-1">Raport Tehnic</h1>
+                    <p className="text-xs font-medium text-neutral-500 uppercase tracking-widest mb-4">Dimensionare Instalație Hidraulică</p>
+
+                    <div className="space-y-1">
+                        <div className="flex justify-end gap-3 text-sm">
+                            <span className="text-neutral-500 text-xs font-semibold uppercase tracking-wider mt-0.5">Proiect</span>
+                            <span className="font-medium text-neutral-900">{projectName || '—'}</span>
+                        </div>
+                        <div className="flex justify-end gap-3 text-sm">
+                            <span className="text-neutral-500 text-xs font-semibold uppercase tracking-wider mt-0.5">Inginer</span>
+                            <span className="font-medium text-neutral-900">{engineerName || '—'}</span>
+                        </div>
+                        <div className="flex justify-end gap-3 text-sm">
+                            <span className="text-neutral-500 text-xs font-semibold uppercase tracking-wider mt-0.5">Data</span>
+                            <span className="font-medium text-neutral-900">{dateStr}</span>
+                        </div>
                     </div>
                 </div>
             </div>

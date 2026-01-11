@@ -1,6 +1,7 @@
 
-import React from 'react';
-import { X, Book } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { X, Book, Info } from 'lucide-react';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 
 interface PipeCatalogModalProps {
@@ -9,69 +10,78 @@ interface PipeCatalogModalProps {
 }
 
 export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => {
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    if (!isOpen || !mounted) return null;
+
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-500" onClick={onClose} />
+
+            <div className="relative bg-card w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border animate-in zoom-in-95 duration-300">
+
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-                    <div className="flex items-center gap-2">
-                        <Book className="w-5 h-5 text-blue-600" />
-                        <h2 className="text-xl font-bold text-gray-800">Catalog Tehnic - Dimensiuni Țevi</h2>
+                <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between shrink-0 backdrop-blur-md">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                            <Book className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-foreground leading-none">Catalog Tehnic - Dimensiuni Țevi</h2>
+                            <p className="text-xs text-muted-foreground mt-1">Specificații standardizate pentru țevi din oțel</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                        <X className="w-6 h-6 text-gray-500" />
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 rounded-full hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8 bg-card">
                     {Object.entries(PIPE_STANDARDS).map(([key, standard]) => (
-                        <div key={key} className="space-y-3">
-                            <div className="border-l-4 border-blue-600 pl-3">
-                                <h3 className="text-lg font-bold text-gray-800">{standard.label}</h3>
-                                <p className="text-sm text-gray-500">{standard.description}</p>
+                        <div key={key} className="space-y-4">
+                            <div className="flex items-start gap-4">
+                                <div className="mt-1 w-1 h-12 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                                <div>
+                                    <h3 className="text-xl font-bold text-foreground">{standard.label}</h3>
+                                    <p className="text-sm text-muted-foreground max-w-2xl">{standard.description}</p>
+                                </div>
                             </div>
 
-                            <div className="overflow-x-auto rounded-lg border border-gray-200">
+                            <div className="overflow-hidden rounded-xl border border-border bg-muted/10">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                    <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                                         <tr>
-                                            <th className="px-4 py-2 border-b">DN (Nominal)</th>
-                                            <th className="px-4 py-2 border-b">Inch</th>
-                                            <th className="px-4 py-2 border-b">Diametru Exterior (mm)</th>
-                                            <th className="px-4 py-2 border-b">Grosime Perete (mm)</th>
-                                            <th className="px-4 py-2 border-b font-bold text-blue-700 bg-blue-50">Diametru Interior (mm)</th>
-                                            <th className="px-4 py-2 border-b">Greutate (kg/m)</th>
-                                            <th className="px-4 py-2 border-b">Volum (l/m)</th>
+                                            <th className="px-6 py-4 font-bold">DN (Nominal)</th>
+                                            <th className="px-6 py-4 font-bold">Inch</th>
+                                            <th className="px-6 py-4 font-bold">Diametru Ext. (mm)</th>
+                                            <th className="px-6 py-4 font-bold">Grosime (mm)</th>
+                                            <th className="px-6 py-4 font-bold text-primary bg-primary/5">Diametru Int. (mm)</th>
+                                            <th className="px-6 py-4 font-bold">Greutate (kg/m)</th>
+                                            <th className="px-6 py-4 font-bold">Volum (l/m)</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100">
+                                    <tbody className="divide-y divide-border">
                                         {standard.dimensions.map((pipe, idx) => {
-                                            // Volume (liters) = Area (m2) * Length (1m) * 1000
-                                            // ID in mm. ID/1000 = m. r = ID/2000.
-                                            // V = pi * (ID/2000)^2 * 1 * 1000 => liters
-                                            // Easier: Liters/m = (pi * (ID)^2) / 4000.  (Because ID^2 is mm^2. 10^6 mm2 = 1m2. so ID^2/10^6. *1000L).
-                                            // (ID^2 * 3.14159) / 4000 is approx correct.
-                                            // Example: ID 50mm. 2500 * 3.14 / 4000 = 1.96 L/m. Correct.
-
-                                            // Let's use simpler: (ID_mm / 2)^2 * PI / 1000 -> This gives volume in Liters per meter for a cylinder?
-                                            // 1m length. V = pi * r^2 * h.
-                                            // r = pipe.id / 2 mm = pipe.id / 20 cm.
-                                            // V_cm3 = pi * (id/20)^2 * 100.
-                                            // V_liters = V_cm3 / 1000.
                                             const vol = (Math.PI * Math.pow(pipe.id / 20, 2) * 100) / 1000;
 
                                             return (
-                                                <tr key={idx} className="hover:bg-gray-100 border-b border-gray-100 last:border-0 transition-colors">
-                                                    <td className="px-4 py-2 font-bold text-gray-800">{pipe.dn}</td>
-                                                    <td className="px-4 py-2 text-gray-800">{pipe.inch}</td>
-                                                    <td className="px-4 py-2 text-gray-800">{pipe.od}</td>
-                                                    <td className="px-4 py-2 text-gray-800">{pipe.thickness}</td>
-                                                    <td className="px-4 py-2 font-bold text-blue-700 bg-blue-50/50">{pipe.id}</td>
-                                                    <td className="px-4 py-2 text-gray-800">{pipe.weight}</td>
-                                                    <td className="px-4 py-2 font-mono text-gray-700">{vol.toFixed(3)}</td>
+                                                <tr key={idx} className="hover:bg-muted/30 transition-colors group">
+                                                    <td className="px-6 py-3 font-bold text-foreground">{pipe.dn}</td>
+                                                    <td className="px-6 py-3 text-muted-foreground">{pipe.inch}</td>
+                                                    <td className="px-6 py-3 text-muted-foreground font-mono">{pipe.od}</td>
+                                                    <td className="px-6 py-3 text-muted-foreground font-mono">{pipe.thickness}</td>
+                                                    <td className="px-6 py-3 font-bold text-primary bg-primary/5 font-mono group-hover:bg-primary/10 transition-colors">{pipe.id}</td>
+                                                    <td className="px-6 py-3 text-muted-foreground font-mono">{pipe.weight}</td>
+                                                    <td className="px-6 py-3 font-mono text-emerald-500">{vol.toFixed(3)}</td>
                                                 </tr>
                                             );
                                         })}
@@ -82,12 +92,21 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                     ))}
                 </div>
 
-                <div className="p-4 border-t bg-gray-50 text-right">
-                    <button onClick={onClose} className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition-colors">
+                {/* Footer */}
+                <div className="px-8 py-6 border-t border-border bg-muted/30 flex justify-between items-center shrink-0 backdrop-blur-md">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Info className="w-4 h-4" />
+                        <span>Toate dimensiunile sunt în milimetri (mm) dacă nu este specificat altfel.</span>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="btn btn-secondary"
+                    >
                         Închide Catalogul
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

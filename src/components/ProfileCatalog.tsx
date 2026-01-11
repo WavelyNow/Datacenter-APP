@@ -106,7 +106,7 @@ export const ProfileCatalog: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-[800px] bg-slate-950 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+        <div className="flex flex-col md:flex-row h-full bg-slate-950 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
 
             {/* --- SIDEBAR FILTERS --- */}
             <div className="w-full md:w-80 bg-slate-900/80 border-r border-white/5 p-6 flex flex-col gap-8 overflow-y-auto backdrop-blur-md">

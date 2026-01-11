@@ -1,55 +1,42 @@
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch, Layers, Sparkles } from 'lucide-react';
+import { Box, Book, Printer, Save, Upload, Layers, Sparkles, Settings, GitBranch, ChevronRight } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { PipeCatalogModal } from './PipeCatalogModal';
 import { ExportModal } from './ExportModal';
 import { PdfWizardModal } from './PdfWizardModal';
-
 import { ProfileCatalogModal } from './ProfileCatalogModal';
+import { ProjectSettingsModal } from './ProjectSettingsModal';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
     onProjectDetailsChange: (details: ProjectDetails) => void;
     onLoadProject: (data: ProjectLoadData) => void;
+    // Actions
+    onOpenPipeCatalog: () => void;
+    onOpenProfileCatalog: () => void;
+    onOpenEquipmentCatalog: () => void;
+    onOpenExport: () => void;
+    onOpenSettings: () => void;
+    onSaveProject: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
     projectDetails,
     onProjectDetailsChange,
-    onLoadProject
+    onLoadProject,
+    onOpenPipeCatalog,
+    onOpenProfileCatalog,
+    onOpenEquipmentCatalog,
+    onOpenExport,
+    onOpenSettings,
+    onSaveProject
 }) => {
-    const { segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding } = useProject();
-    const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-    const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const [isWizardModalOpen, setIsWizardModalOpen] = useState(false);
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
-    };
-
-    const saveProject = () => {
-        const data = {
-            projectDetails,
-            segments,
-            equipmentList,
-            fluidType,
-            glycolPercentage,
-            safetyMargin,
-            safetyMarginPercentage,
-            supportConfig
-        };
-        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `project_${projectDetails.projectNumber}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
     };
 
     const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,232 +56,96 @@ export const Header: React.FC<HeaderProps> = ({
         reader.readAsText(file);
     };
 
-    const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const result = e.target?.result as string;
-            updateDetail('companyLogo', result);
-        };
-        reader.readAsDataURL(file);
-    };
-
     return (
-        <header className="relative z-50 pt-6 pb-2 px-4 mb-4 screen-only">
-            <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
-            <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={() => setIsProfileCatalogOpen(false)} />
+        <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-md border-b border-border screen-only transition-all duration-300">
+            <div className="spacing-page h-16 flex items-center justify-between gap-4">
 
-            <ExportModal
-                isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
-                data={{
-                    projectDetails,
-                    segments: segments || [],
-                    equipmentList: equipmentList || [],
-                    fluidType: fluidType || 'ethylene',
-                    glycolPercentage: glycolPercentage || 30,
-                    safetyMargin: safetyMargin || false,
-                    safetyMarginPercentage: safetyMarginPercentage || 5,
-                    supportConfig: supportConfig,
-                    branding: branding
-                }}
-            />
+                {/* Left: Project Title Context */}
+                <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex flex-col">
+                        <input
+                            type="text"
+                            value={projectDetails.projectName}
+                            onChange={(e) => updateDetail('projectName', e.target.value)}
+                            className="bg-transparent border-none p-0 text-base font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-2 -ml-2 transition-all w-64 truncate"
+                            placeholder="Project Name"
+                        />
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground px-0">
+                            <span className="font-mono">{projectDetails.projectNumber}</span>
+                            <span>•</span>
+                            <span>Rev. {projectDetails.revision}</span>
+                        </div>
+                    </div>
+                </div>
 
-            <PdfWizardModal
-                isOpen={isWizardModalOpen}
-                onClose={() => setIsWizardModalOpen(false)}
-                data={{
-                    projectDetails,
-                    segments: segments || [],
-                    equipmentList: equipmentList || [],
-                    fluidType: fluidType || 'ethylene',
-                    glycolPercentage: glycolPercentage || 30,
-                    safetyMargin: safetyMargin || false,
-                    safetyMarginPercentage: safetyMarginPercentage || 5,
-                    supportConfig: supportConfig,
-                    branding: branding
-                }}
-            />
+                {/* Right: Tools & Catalogs */}
+                <div className="flex items-center gap-3 shrink-0">
 
-            <div className="max-w-7xl mx-auto">
-                <div className="glass-panel rounded-2xl p-5 relative overflow-hidden group border border-white/10">
-                    {/* Background Decorative Blur */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                    {/* Quick Catalogs */}
+                    <div className="flex items-center gap-2 mr-2 bg-secondary/50 p-1.5 rounded-xl border border-border/50">
+                        <button
+                            onClick={onOpenEquipmentCatalog}
+                            className="btn btn-ghost btn-sm h-7 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-1.5 px-3"
+                            title="Open Equipment Database"
+                        >
+                            <Box className="w-3.5 h-3.5" />
+                            Equipment
+                        </button>
+                        <div className="w-px h-4 bg-border/50" />
+                        <button
+                            onClick={onOpenPipeCatalog}
+                            className="btn btn-ghost btn-sm h-7 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-1.5 px-3"
+                            title="Open Pipe Catalog"
+                        >
+                            <Book className="w-3.5 h-3.5" />
+                            Pipes
+                        </button>
+                        <div className="w-px h-4 bg-border/50" />
+                        <button
+                            onClick={onOpenProfileCatalog}
+                            className="btn btn-ghost btn-sm h-7 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-1.5 px-3"
+                            title="Open Profile Catalog"
+                        >
+                            <Layers className="w-3.5 h-3.5" />
+                            Profiles
+                        </button>
+                    </div>
 
-                    <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-6 relative z-10">
-                        {/* 1. Brand Section */}
-                        <div className="flex items-center gap-5 group min-w-fit">
-                            <label className="relative block cursor-pointer transition-transform hover:scale-105 duration-300">
-                                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                <div className="bg-slate-800/50 p-2 rounded-2xl shadow-inner border border-white/5 w-16 h-16 flex items-center justify-center backdrop-blur-md">
-                                    {projectDetails.companyLogo ? (
-                                        <Image
-                                            src={projectDetails.companyLogo}
-                                            alt="Logo"
-                                            width={64}
-                                            height={64}
-                                            className="w-full h-full object-contain"
-                                            unoptimized
-                                        />
-                                    ) : (
-                                        <Box className="w-8 h-8 text-slate-500" />
-                                    )}
-                                </div>
-                                <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-[2px]">
-                                    <Upload className="w-5 h-5 text-blue-400" />
-                                </div>
+                    <div className="h-5 w-px bg-border mx-1 hidden lg:block" />
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+
+                        <button
+                            onClick={onOpenSettings}
+                            className="btn btn-ghost btn-icon h-9 w-9 text-muted-foreground hover:text-foreground"
+                            title="Project Settings"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex items-center border border-border rounded-lg bg-card shadow-sm p-0.5" title="Save / Load">
+                            <button
+                                onClick={onSaveProject}
+                                className="btn btn-ghost btn-icon h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                                <Save className="w-4 h-4" />
+                            </button>
+                            <div className="w-px h-4 bg-border mx-0.5" />
+                            <label className="btn btn-ghost btn-icon h-8 w-8 rounded-md cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted">
+                                <Upload className="w-4 h-4" />
+                                <input type="file" accept=".json" onChange={loadProject} className="hidden" />
                             </label>
-
-                            <div>
-                                <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                                    Engineering Suite
-                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-500/30 bg-blue-500/10 text-blue-300">V2.0</span>
-                                </h1>
-                                <div className="flex flex-col gap-1 mt-1">
-                                    <button
-                                        className="flex items-center gap-1.5 hover:text-blue-400 transition-colors cursor-pointer font-medium bg-white/5 px-2 py-1 rounded-md hover:bg-white/10 text-sm text-slate-500 w-fit"
-                                        onClick={() => setIsCatalogOpen(true)}
-                                    >
-                                        <Book className="w-3.5 h-3.5" />
-                                        <span>Catalog Tevi</span>
-                                    </button>
-                                    <button
-                                        className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer font-medium bg-white/5 px-2 py-1 rounded-md hover:bg-white/10 text-sm text-slate-500 w-fit"
-                                        onClick={() => setIsProfileCatalogOpen(true)}
-                                    >
-                                        <Layers className="w-3.5 h-3.5" />
-                                        <span>Catalog Profile</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
-                        {/* 2. Vertical Divider (Desktop) */}
-                        <div className="hidden xl:block w-px h-16 bg-white/5 mx-2"></div>
-
-                        {/* 3. Project Info Grid */}
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 w-full">
-                            {/* Row 1: Main Project Name (Full Width on Mobile, 8 cols on desktop) */}
-                            <div className="md:col-span-8 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <FileText className="w-3 h-3" /> Nume Proiect
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.projectName}
-                                    onChange={(e) => updateDetail('projectName', e.target.value)}
-                                    className="w-full input-modern text-sm !bg-slate-900/30 font-medium"
-                                    placeholder="ex. Cooling System Data Center"
-                                />
-                            </div>
-
-                            {/* Row 1: ID (4 cols) */}
-                            <div className="md:col-span-4 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <Hash className="w-3 h-3" /> Project ID
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.projectNumber}
-                                    onChange={(e) => updateDetail('projectNumber', e.target.value)}
-                                    className="w-full input-modern text-sm !bg-slate-900/30 font-mono text-blue-300"
-                                    placeholder="2024-001"
-                                />
-                            </div>
-
-                            {/* Row 2: Location (5 cols) */}
-                            <div className="md:col-span-5 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <MapPin className="w-3 h-3" /> Locație
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.location}
-                                    onChange={(e) => updateDetail('location', e.target.value)}
-                                    className="w-full input-modern text-xs !py-2 !bg-slate-900/30 text-slate-300"
-                                    placeholder="București, Sector 1"
-                                />
-                            </div>
-
-                            {/* Row 2: Beneficiary (NEW - 4 cols) */}
-                            <div className="md:col-span-4 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <User className="w-3 h-3" /> Beneficiar
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.beneficiary || ''}
-                                    onChange={(e) => updateDetail('beneficiary', e.target.value)}
-                                    className="w-full input-modern text-xs !py-2 !bg-slate-900/30 text-slate-300"
-                                    placeholder="ex. Spitalul Municipal"
-                                />
-                            </div>
-
-                            {/* Row 2: Designer (4 cols) */}
-                            <div className="md:col-span-4 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <User className="w-3 h-3" /> Proiectant
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.designer}
-                                    onChange={(e) => updateDetail('designer', e.target.value)}
-                                    className="w-full input-modern text-xs !py-2 !bg-slate-900/30 text-slate-300"
-                                    placeholder="Ing. Popescu Ion"
-                                />
-                            </div>
-
-                            {/* Row 2: Revision (1 col) */}
-                            <div className="md:col-span-1 space-y-1">
-                                <label className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-wider pl-1">
-                                    <GitBranch className="w-3 h-3" /> Rev
-                                </label>
-                                <input
-                                    type="text"
-                                    value={projectDetails.revision}
-                                    onChange={(e) => updateDetail('revision', e.target.value)}
-                                    className="w-full input-modern text-xs text-center !py-2 !bg-slate-900/30 font-bold"
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        {/* 4. Vertical Divider (Desktop) */}
-                        <div className="hidden xl:block w-px h-16 bg-white/5 mx-2"></div>
-
-                        {/* 5. Actions */}
-                        <div className="flex xl:flex-col gap-2 min-w-[140px]">
-                            <button
-                                onClick={() => setIsExportModalOpen(true)}
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group text-sm"
-                            >
-                                <Printer className="w-4 h-4" />
-                                <span>Export PDF</span>
-                            </button>
-                            <button
-                                onClick={() => setIsWizardModalOpen(true)}
-                                className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 hover:text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group text-sm"
-                            >
-                                <Sparkles className="w-4 h-4" />
-                                <span>Wizard PDF</span>
-                            </button>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <button
-                                    onClick={saveProject}
-                                    className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-2 py-2 rounded-lg text-[10px] font-bold border border-white/5 transition-all flex items-center justify-center gap-1"
-                                    title="Save JSON"
-                                >
-                                    <Save className="w-3 h-3" /> SAVE
-                                </button>
-                                <label className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-2 py-2 rounded-lg text-[10px] font-bold border border-white/5 transition-all flex items-center justify-center gap-1 cursor-pointer" title="Load JSON">
-                                    <Upload className="w-3 h-3" /> LOAD
-                                    <input type="file" accept=".json" onChange={loadProject} className="hidden" />
-                                </label>
-                            </div>
-                        </div>
+                        <button
+                            onClick={onOpenExport}
+                            className="btn btn-primary h-9 px-4 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-2"
+                        >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Export</span>
+                        </button>
                     </div>
                 </div>
             </div>

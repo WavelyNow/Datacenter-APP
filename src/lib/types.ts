@@ -20,6 +20,7 @@ export interface EquipmentItem {
     weight: number; // kg - Mandatory now
     proofImage?: string; // Base64 string - Legacy, keep for now but prefer photos array
     photos?: string[]; // Array of Base64 strings for the gallery
+    technicalSheet?: string; // Base64 string (PDF) or URL
 }
 
 export type FluidType = 'ethylene' | 'propylene' | 'water';

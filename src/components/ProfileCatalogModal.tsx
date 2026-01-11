@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { ProfileCatalog } from './ProfileCatalog';
 
@@ -9,21 +10,24 @@ interface ProfileCatalogModalProps {
 }
 
 export const ProfileCatalogModal = ({ isOpen, onClose }: ProfileCatalogModalProps) => {
+    const [mounted, setMounted] = useState(false);
 
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
+    if (!isOpen || !mounted) return null;
 
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-500" onClick={onClose} />
 
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden border border-white/40 ring-1 ring-slate-900/5 dark:bg-slate-900/90 dark:border-slate-800">
-
-                {/* Close Button Header Overlay */}
-                <div className="absolute top-4 right-4 z-50">
+            <div className="relative w-full max-w-7xl h-[90vh] animate-in zoom-in-95 duration-300 flex flex-col">
+                <div className="absolute -top-12 right-0 md:-right-12 md:top-0 z-50">
                     <button
                         onClick={onClose}
-                        className="p-2 bg-slate-100/50 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-700/80 rounded-full transition-colors text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white backdrop-blur-sm"
+                        className="w-10 h-10 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center backdrop-blur-md border border-border transition-all"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -31,6 +35,7 @@ export const ProfileCatalogModal = ({ isOpen, onClose }: ProfileCatalogModalProp
 
                 <ProfileCatalog />
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

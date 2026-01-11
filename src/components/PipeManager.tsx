@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown, Box } from 'lucide-react';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment } from '@/lib/types';
 
@@ -85,68 +85,76 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
     }, [segments]);
 
     return (
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        <div className="bg-card border border-border p-6 sm:p-8 rounded-2xl relative overflow-hidden shadow-sm">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center border border-teal-500/20 shadow-sm">
-                        <Settings2 className="w-6 h-6 text-teal-500" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between spacing-lg mb-8">
+                <div className="flex items-center spacing-md">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+                        <Settings2 className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                        <h2 className="text-xl font-bold text-foreground flex items-center spacing-sm">
                             Pipe Manager
-                            <span className="px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-400 text-xs font-bold border border-teal-500/20">
+                            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
                                 {segments.length}
                             </span>
                         </h2>
-                        <p className="text-slate-400 text-sm">Configurează segmentele de țeavă din proiect.</p>
+                        <p className="text-muted-foreground text-sm">Configure pipe segments for your project.</p>
                     </div>
                 </div>
 
                 <button
                     onClick={addSegment}
-                    className="group relative flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-teal-500/20 active:scale-95 overflow-hidden"
+                    className="btn btn-primary btn-md spacing-xs group"
                 >
-                    <Plus className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">Add Segment</span>
+                    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                    <span>Add Segment</span>
                 </button>
             </div>
 
             {/* List */}
             <div className="space-y-4">
                 {segments.length === 0 && (
-                    <div className="text-center py-16 px-4 bg-white/5 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center group cursor-pointer hover:bg-white/10 transition-colors" onClick={addSegment}>
-                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Plus className="w-8 h-8 text-slate-500 group-hover:text-teal-400 transition-colors" />
+                    <div
+                        onClick={addSegment}
+                        className="group flex flex-col items-center justify-center py-16 px-4 rounded-2xl border border-dashed border-border bg-muted/20 hover:bg-muted/40 hover:border-primary/30 transition-all duration-300 cursor-pointer"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
+                            <Box className="w-8 h-8 text-primary" />
                         </div>
-                        <p className="text-slate-400 font-medium">Nu există segmente de țeavă.</p>
-                        <p className="text-sm text-slate-600 mt-1">Apasă aici sau pe butonul &quot;Add Segment&quot; pentru a începe.</p>
+                        <h3 className="text-lg font-medium text-foreground mb-1">No Pipe Segments</h3>
+                        <p className="text-muted-foreground text-sm">Add a new segment to start configuring your pipeline.</p>
                     </div>
                 )}
 
-                {segments.map((segment) => {
+                {segments.map((segment, index) => {
                     const isCustom = segment.material === 'custom';
                     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
                     const pipeInfo = standardData?.dimensions.find(d => d.dn === segment.size);
 
                     return (
-                        <div key={segment.id} className="glass-card p-4 rounded-xl grid grid-cols-1 md:grid-cols-12 gap-5 items-end relative group">
+                        <div key={segment.id} className="bg-muted/20 border border-border p-5 rounded-xl grid grid-cols-1 md:grid-cols-12 gap-6 items-end relative group transition-all duration-300 hover:border-primary/30 hover:bg-muted/30">
+
+                            {/* Index Number (Subtle) */}
+                            <div className="absolute -left-3 -top-3 w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center text-[10px] font-bold text-muted-foreground shadow-sm z-10">
+                                {index + 1}
+                            </div>
 
                             {/* Material Selection */}
-                            <div className="md:col-span-4 space-y-1.5">
-                                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider ml-1">Material Standard</label>
+                            <div className="md:col-span-4 space-y-2">
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1">Material Standard</label>
                                 <div className="relative">
                                     <select
-                                        className="w-full text-sm input-modern appearance-none cursor-pointer"
+                                        className="w-full bg-card border border-border rounded-lg py-2 pl-4 pr-10 text-sm text-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer"
                                         value={segment.material}
                                         onChange={(e) => updateSegment(segment.id, { material: e.target.value })}
                                     >
                                         {Object.entries(PIPE_STANDARDS).map(([key, std]) => (
-                                            <option key={key} value={key} className="bg-slate-900 text-white">{std.label}</option>
+                                            <option key={key} value={key} className="bg-card text-foreground">{std.label}</option>
                                         ))}
-                                        <option value="custom" className="bg-slate-900 text-amber-500 font-bold">★ Custom / Manual</option>
+                                        <option value="custom" className="bg-card text-amber-500 font-bold">★ Custom / Manual</option>
                                     </select>
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
                                         <GripVertical className="w-4 h-4" />
                                     </div>
                                 </div>
@@ -155,21 +163,21 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                             {/* Size / Custom Logic */}
                             {isCustom ? (
                                 <>
-                                    <div className="md:col-span-2 space-y-1.5">
-                                        <label className="text-[10px] uppercase font-bold text-amber-500 tracking-wider ml-1">ID (mm)</label>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-medium text-amber-500/80 uppercase tracking-wider ml-1">ID (mm)</label>
                                         <input
                                             type="number"
-                                            className="w-full text-sm input-modern !border-amber-500/30 text-amber-400 focus:text-amber-300"
+                                            className="w-full bg-card border border-amber-500/30 rounded-lg py-2 px-3 text-sm text-amber-500 focus:ring-1 focus:ring-amber-500/50 outline-none"
                                             value={segment.customInnerDiameter || ''}
                                             onChange={(e) => updateSegment(segment.id, { customInnerDiameter: parseFloat(e.target.value) || 0 })}
                                             placeholder="mm"
                                         />
                                     </div>
-                                    <div className="md:col-span-2 space-y-1.5">
-                                        <label className="text-[10px] uppercase font-bold text-amber-500 tracking-wider ml-1">kg/m</label>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-medium text-amber-500/80 uppercase tracking-wider ml-1">kg/m</label>
                                         <input
                                             type="number"
-                                            className="w-full text-sm input-modern !border-amber-500/30 text-amber-400 focus:text-amber-300"
+                                            className="w-full bg-card border border-amber-500/30 rounded-lg py-2 px-3 text-sm text-amber-500 focus:ring-1 focus:ring-amber-500/50 outline-none"
                                             value={segment.customWeight || ''}
                                             onChange={(e) => updateSegment(segment.id, { customWeight: parseFloat(e.target.value) || 0 })}
                                             placeholder="kg/m"
@@ -177,61 +185,64 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                                     </div>
                                 </>
                             ) : (
-                                <div className="md:col-span-4 space-y-1.5">
-                                    <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider ml-1">Pipe Size (DN)</label>
+                                <div className="md:col-span-4 space-y-2">
+                                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1">Pipe Size (DN)</label>
                                     <div className="relative">
                                         <select
-                                            className="w-full text-sm input-modern appearance-none font-mono tracking-tight cursor-pointer"
+                                            className="w-full bg-card border border-border rounded-lg py-2 pl-4 pr-10 text-sm font-mono tracking-tight text-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer"
                                             value={segment.size}
                                             onChange={(e) => updateSegment(segment.id, { size: e.target.value })}
                                         >
                                             {standardData?.dimensions.map(d => (
-                                                <option key={d.dn} value={d.dn} className="bg-slate-900 text-white">
+                                                <option key={d.dn} value={d.dn} className="bg-card text-foreground">
                                                     {d.dn} ({d.inch !== '-' ? d.inch : ''})
                                                 </option>
                                             ))}
                                         </select>
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs font-mono text-slate-500">
-                                            ID: <span className="text-teal-400 font-bold">{pipeInfo?.id}mm</span>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs font-mono text-muted-foreground">
+                                            ID: <span className="text-primary font-bold">{pipeInfo?.id}mm</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Length */}
-                            <div className="md:col-span-3 space-y-1.5">
-                                <label className="text-[10px] uppercase font-bold text-slate-500 tracking-wider ml-1">Length (m)</label>
+                            <div className="md:col-span-3 space-y-2">
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider ml-1">Length (m)</label>
                                 <input
                                     type="number"
                                     min="0"
                                     step="0.1"
-                                    className="w-full text-sm input-modern font-bold text-white"
+                                    className="w-full bg-card border border-border rounded-lg py-2 px-3 text-sm font-bold text-foreground focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                                     value={segment.length}
                                     onChange={(e) => updateSegment(segment.id, { length: parseFloat(e.target.value) || 0 })}
+                                    onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
                                 />
                             </div>
 
-                            {/* Reorder & Delete */}
-                            <div className="absolute -right-2 -top-2 md:static md:col-span-1 flex md:flex-col gap-1 md:gap-2">
-                                <button
-                                    onClick={() => moveSegment(segment.id, 'up')}
-                                    disabled={segments.indexOf(segment) === 0}
-                                    className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-white/5 disabled:opacity-30 disabled:hover:bg-slate-800"
-                                    title="Move Up"
-                                >
-                                    <ChevronUp className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => moveSegment(segment.id, 'down')}
-                                    disabled={segments.indexOf(segment) === segments.length - 1}
-                                    className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-white/5 disabled:opacity-30 disabled:hover:bg-slate-800"
-                                    title="Move Down"
-                                >
-                                    <ChevronDown className="w-3.5 h-3.5" />
-                                </button>
+                            {/* Actions */}
+                            <div className="absolute right-2 top-2 md:static md:col-span-1 flex md:flex-col gap-1 md:gap-2 justify-end h-full pb-0.5">
+                                <div className="flex md:flex-col gap-1">
+                                    <button
+                                        onClick={() => moveSegment(segment.id, 'up')}
+                                        disabled={index === 0}
+                                        className="p-2 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all disabled:opacity-30 disabled:hover:bg-card"
+                                        title="Move Up"
+                                    >
+                                        <ChevronUp className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveSegment(segment.id, 'down')}
+                                        disabled={index === segments.length - 1}
+                                        className="p-2 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-all disabled:opacity-30 disabled:hover:bg-card"
+                                        title="Move Down"
+                                    >
+                                        <ChevronDown className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => removeSegment(segment.id)}
-                                    className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 transition-all opacity-100 shadow-sm cursor-pointer"
+                                    className="p-2 rounded-lg bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-all shadow-sm cursor-pointer mt-1"
                                     title="Remove Segment"
                                 >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -243,14 +254,14 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
             </div>
 
             {/* Footer */}
-            <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2 text-slate-500 text-xs bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+            <div className="mt-8 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-xs bg-muted/20 px-3 py-1.5 rounded-lg border border-border">
                     <Info className="w-3.5 h-3.5" />
-                    <span>Calculat pe baza diametrului interior (ID)</span>
+                    <span>Calculated based on inner diameter (ID)</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                    <span className="text-sm text-slate-500 uppercase tracking-widest font-bold">Total Volum Țevi</span>
-                    <span className="text-3xl font-bold text-teal-400 text-glow">{totalVolume.toFixed(2)} <span className="text-lg text-teal-500/50 ml-1">L</span></span>
+                    <span className="text-sm text-muted-foreground uppercase tracking-widest font-bold">Total Volume</span>
+                    <span className="text-3xl font-bold text-primary text-glow">{totalVolume.toFixed(2)} <span className="text-lg text-primary/50 ml-1">L</span></span>
                 </div>
             </div>
         </div>

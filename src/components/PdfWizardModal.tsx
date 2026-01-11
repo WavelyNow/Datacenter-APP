@@ -1,7 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Zap, Layers, Settings } from 'lucide-react';
+import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor } from 'lucide-react';
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
+
+import { createPortal } from 'react-dom';
 
 interface PdfWizardModalProps {
     isOpen: boolean;
@@ -37,26 +40,26 @@ type Preset = 'basic' | 'standard' | 'full' | 'custom';
 
 const presets: Record<Preset, { name: string; desc: string; icon: React.ComponentType<any>; options: Partial<PdfOptions> }> = {
     basic: {
-        name: 'Raport Basic',
-        desc: 'Sumar volum și listă cantități esențiale',
+        name: 'Basic Report',
+        desc: 'Essential volume summary and BoQ.',
         icon: Package,
         options: { includeVolume: true, includeBoQ: true, includeSupports: false, includeWeights: false, includePhotos: false }
     },
     standard: {
-        name: 'Raport Standard',
-        desc: 'Include suporturi și prinderi',
+        name: 'Standard Report',
+        desc: 'Includes supports and mounting details.',
         icon: Anchor,
         options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: false, includePhotos: false }
     },
     full: {
-        name: 'Raport Complet',
-        desc: 'Totul inclus: greutăți, fotografii și suporturi',
+        name: 'Full Report',
+        desc: 'Complete documentation with weights & photos.',
         icon: Layers,
         options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: true, includePhotos: true }
     },
     custom: {
-        name: 'Personalizat',
-        desc: 'Configurare manuală a tuturor opțiunilor',
+        name: 'Custom',
+        desc: 'Manually configure all options.',
         icon: Settings,
         options: {}
     }
@@ -67,6 +70,12 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
     const [selectedPreset, setSelectedPreset] = useState<Preset>('basic');
     const [isGenerating, setIsGenerating] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     // Options State
     const [options, setOptions] = useState<PdfOptions>({
@@ -102,7 +111,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
     const toggleOption = (key: keyof PdfOptions) => {
         setOptions(prev => ({ ...prev, [key]: !prev[key] as boolean }));
@@ -147,7 +156,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             return blob;
         } catch (error) {
             console.error('PDF Error:', error);
-            alert('Eroare la generare PDF');
+            alert('Error generating PDF');
             return null;
         } finally {
             setIsGenerating(false);
@@ -168,7 +177,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         if (previewUrl) {
             const a = document.createElement('a');
             a.href = previewUrl;
-            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = `Project_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
             a.click();
             onClose();
             return;
@@ -179,7 +188,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = `Project_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -200,12 +209,12 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         switch (currentStep) {
             case 1:
                 return (
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">Alege Tipul de Raport</h3>
-                            <p className="text-slate-400">Selectează un preset sau personalizează opțiunile</p>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="text-center space-y-2">
+                            <h3 className="text-2xl font-bold text-foreground">Select Report Type</h3>
+                            <p className="text-muted-foreground">Choose a preset configuration or customize your own.</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {(Object.keys(presets) as Preset[]).map(preset => {
                                 const { name, desc, icon: Icon } = presets[preset];
                                 const isSelected = selectedPreset === preset;
@@ -213,31 +222,32 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                     <button
                                         key={preset}
                                         onClick={() => selectPreset(preset)}
-                                        className={`p-6 rounded-2xl border-2 transition-all text-left ${
-                                            isSelected
-                                                ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
-                                                : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                                        }`}
+                                        className={`bg-card p-6 rounded-2xl border transition-all text-left group relative overflow-hidden ${isSelected
+                                            ? 'border-primary/50 bg-primary/5 shadow-lg shadow-primary/10'
+                                            : 'border-border hover:border-primary/20 hover:bg-muted/10'
+                                            }`}
                                     >
-                                        <div className="flex items-start gap-4">
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                                isSelected ? 'bg-blue-500/20' : 'bg-slate-700'
-                                            }`}>
-                                                <Icon className={`w-6 h-6 ${isSelected ? 'text-blue-400' : 'text-slate-400'}`} />
+                                        <div className="relative z-10 flex items-start gap-5">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors ${isSelected ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30' : 'bg-muted text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'
+                                                }`}>
+                                                <Icon className="w-7 h-7" />
                                             </div>
                                             <div>
-                                                <h4 className={`font-bold mb-1 ${isSelected ? 'text-blue-400' : 'text-white'}`}>
+                                                <h4 className={`text-lg font-bold mb-1 transition-colors ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                                                     {name}
                                                 </h4>
-                                                <p className="text-sm text-slate-400">{desc}</p>
+                                                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
                                             </div>
                                         </div>
                                         {isSelected && (
-                                            <div className="mt-4 flex justify-end">
-                                                <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                                                    <Check className="w-4 h-4 text-white" />
+                                            <div className="absolute top-4 right-4">
+                                                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                                                    <Check className="w-3.5 h-3.5 text-primary-foreground" />
                                                 </div>
                                             </div>
+                                        )}
+                                        {isSelected && (
+                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
                                         )}
                                     </button>
                                 );
@@ -247,131 +257,123 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 );
             case 2:
                 return (
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">Personalizează Opțiunile</h3>
-                            <p className="text-slate-400">Alege ce să includă în raport</p>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="text-center space-y-2">
+                            <h3 className="text-2xl font-bold text-foreground">Customize Options</h3>
+                            <p className="text-muted-foreground">Fine-tune what information is included in your report.</p>
                         </div>
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-3 p-4 rounded-lg bg-slate-800/50 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${options.includeVolume ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                    {options.includeVolume && <Check className="w-3.5 h-3.5 text-white" />}
-                                </div>
-                                <input type="checkbox" className="hidden" checked={options.includeVolume} onChange={() => toggleOption('includeVolume')} />
-                                <div>
-                                    <span className="text-sm font-medium text-slate-200">Sumar & Volum</span>
-                                    <p className="text-xs text-slate-500">Calcul volum total și specificații fluide</p>
-                                </div>
-                            </label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {[
+                                { key: 'includeVolume', label: 'Summary & Volume', desc: 'Total volume calculations and fluid specs.' },
+                                { key: 'includeBoQ', label: 'Bill of Quantities', desc: 'Detailed list of materials and equipment.' },
+                                { key: 'includeSupports', label: 'Supports & Mounting', desc: 'Support calculations and specifications.' },
+                                { key: 'includeWeights', label: 'Weight Table', desc: 'Static load analysis for structural engineering.' },
+                                { key: 'includePhotos', label: 'Photo Documentation', desc: 'Appendix with equipment images and data sheets.' }
+                            ].map((opt) => (
+                                <label
+                                    key={opt.key}
+                                    className={`flex items-start gap-4 p-5 rounded-xl border cursor-pointer transition-all ${options[opt.key as keyof PdfOptions]
+                                        ? 'bg-primary/5 border-primary/30'
+                                        : 'bg-card border-border hover:bg-muted/10'
+                                        }`}
+                                >
+                                    <div className={`mt-1 w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${options[opt.key as keyof PdfOptions]
+                                        ? 'bg-primary border-primary shadow-lg shadow-primary/20'
+                                        : 'border-muted-foreground bg-muted'
+                                        }`}>
+                                        {options[opt.key as keyof PdfOptions] && <Check className="w-4 h-4 text-primary-foreground" />}
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={options[opt.key as keyof PdfOptions] as boolean}
+                                        onChange={() => toggleOption(opt.key as keyof PdfOptions)}
+                                    />
+                                    <div>
+                                        <span className={`text-base font-bold block mb-1 ${options[opt.key as keyof PdfOptions] ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                            {opt.label}
+                                        </span>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">{opt.desc}</p>
 
-                            <label className="flex items-center gap-3 p-4 rounded-lg bg-slate-800/50 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${options.includeBoQ ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                    {options.includeBoQ && <Check className="w-3.5 h-3.5 text-white" />}
-                                </div>
-                                <input type="checkbox" className="hidden" checked={options.includeBoQ} onChange={() => toggleOption('includeBoQ')} />
-                                <div>
-                                    <span className="text-sm font-medium text-slate-200">Lista Cantități (BoQ)</span>
-                                    <p className="text-xs text-slate-500">Materiale și echipamente necesare</p>
-                                </div>
-                            </label>
-
-                            <label className="flex items-center gap-3 p-4 rounded-lg bg-slate-800/50 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${options.includeSupports ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                    {options.includeSupports && <Check className="w-3.5 h-3.5 text-white" />}
-                                </div>
-                                <input type="checkbox" className="hidden" checked={options.includeSupports} onChange={() => toggleOption('includeSupports')} />
-                                <div>
-                                    <span className="text-sm font-medium text-slate-200">Suporți & Prinderi</span>
-                                    <p className="text-xs text-slate-500">Calcul și specificații suporturi</p>
-                                </div>
-                            </label>
-
-                            {options.includeSupports && (
-                                <div className="ml-8 p-3 rounded-lg bg-slate-900/50 border border-slate-600">
-                                    <span className="text-xs text-slate-400 mr-2">Distanță calcul:</span>
-                                    <select
-                                        value={options.supportSpacing}
-                                        onChange={(e) => setOptions(prev => ({ ...prev, supportSpacing: parseFloat(e.target.value) }))}
-                                        className="bg-slate-800 border border-slate-600 text-white text-xs rounded px-2 py-1"
-                                    >
-                                        <option value="1.5">1.5m</option>
-                                        <option value="2.0">2.0m</option>
-                                        <option value="2.5">2.5m</option>
-                                    </select>
-                                </div>
-                            )}
-
-                            <label className="flex items-center gap-3 p-4 rounded-lg bg-slate-800/50 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${options.includeWeights ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                    {options.includeWeights && <Check className="w-3.5 h-3.5 text-white" />}
-                                </div>
-                                <input type="checkbox" className="hidden" checked={options.includeWeights} onChange={() => toggleOption('includeWeights')} />
-                                <div>
-                                    <span className="text-sm font-medium text-slate-200">Tabel Greutăți</span>
-                                    <p className="text-xs text-slate-500">Sarcini statice echipamente</p>
-                                </div>
-                            </label>
-
-                            <label className="flex items-center gap-3 p-4 rounded-lg bg-slate-800/50 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${options.includePhotos ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                    {options.includePhotos && <Check className="w-3.5 h-3.5 text-white" />}
-                                </div>
-                                <input type="checkbox" className="hidden" checked={options.includePhotos} onChange={() => toggleOption('includePhotos')} />
-                                <div>
-                                    <span className="text-sm font-medium text-slate-200">Documentație FOTO</span>
-                                    <p className="text-xs text-slate-500">Anexă cu imagini echipamente</p>
-                                </div>
-                            </label>
+                                        {/* Special case for Supports spacing */}
+                                        {opt.key === 'includeSupports' && options.includeSupports && (
+                                            <div className="mt-3 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                                                <span className="text-xs font-bold text-primary uppercase tracking-wider">Spacing:</span>
+                                                <select
+                                                    value={options.supportSpacing}
+                                                    onChange={(e) => setOptions(prev => ({ ...prev, supportSpacing: parseFloat(e.target.value) }))}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="bg-card border border-primary/30 text-foreground text-xs rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-primary"
+                                                >
+                                                    <option value="1.5">1.5m</option>
+                                                    <option value="2.0">2.0m</option>
+                                                    <option value="2.5">2.5m</option>
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
+                                </label>
+                            ))}
                         </div>
                     </div>
                 );
             case 3:
                 return (
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">Previzualizare Raport</h3>
-                            <p className="text-slate-400">Verifică conținutul înainte de descărcare</p>
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
+                        <div className="text-center space-y-2 shrink-0">
+                            <h3 className="text-2xl font-bold text-foreground">Preview Report</h3>
+                            <p className="text-muted-foreground">Review the content before final export.</p>
                         </div>
-                        {previewUrl ? (
-                            <div className="bg-slate-800/50 rounded-lg overflow-hidden">
-                                <iframe src={previewUrl} className="w-full h-[600px] bg-white" />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <Eye className="w-16 h-16 text-slate-600 mb-4" />
-                                <p className="text-slate-500">Previzualizarea nu este încă generată</p>
-                                <button
-                                    onClick={handlePreview}
-                                    disabled={isGenerating}
-                                    className="mt-4 bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2"
-                                >
-                                    {isGenerating ? <span className="animate-spin text-xl">•</span> : <Eye className="w-4 h-4" />}
-                                    Generează Previzualizare
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex-1 min-h-0 bg-muted/20 rounded-xl border border-border shadow-2xl overflow-hidden relative group">
+                            {previewUrl ? (
+                                <iframe src={previewUrl} className="w-full h-full bg-white" />
+                            ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                                    <div className="w-20 h-20 rounded-full bg-muted border border-border flex items-center justify-center mb-6 shadow-xl">
+                                        <Eye className="w-10 h-10 text-muted-foreground" />
+                                    </div>
+                                    <p className="text-muted-foreground max-w-xs mb-8">Preview has not been generated yet. Click the button below to render the PDF.</p>
+                                    <button
+                                        onClick={handlePreview}
+                                        disabled={isGenerating}
+                                        className="btn btn-primary btn-lg gap-3"
+                                    >
+                                        {isGenerating ? <span className="animate-spin text-xl">•</span> : <Eye className="w-5 h-5" />}
+                                        Generate Preview
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 );
             case 4:
                 return (
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold text-white mb-2">Descarcă Raportul</h3>
-                            <p className="text-slate-400">Raportul este gata pentru descărcare</p>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col items-center justify-center h-full">
+                        <div className="text-center space-y-2">
+                            <h3 className="text-3xl font-bold text-foreground">Ready to Download</h3>
+                            <p className="text-muted-foreground">Your report has been successfully generated.</p>
                         </div>
-                        <div className="bg-slate-800/50 rounded-lg p-8 text-center">
-                            <FileText className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                            <h4 className="text-lg font-bold text-white mb-2">Raport PDF Generat</h4>
-                            <p className="text-slate-400 mb-6">
-                                Proiect: {data.projectDetails.projectName}<br />
-                                Revizia: {data.projectDetails.revision}
+
+                        <div className="bg-card p-10 rounded-3xl border border-primary/20 bg-primary/5 text-center max-w-md w-full relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+
+                            <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/40 animate-in zoom-in duration-500">
+                                <FileText className="w-12 h-12 text-primary-foreground" />
+                            </div>
+
+                            <h4 className="text-xl font-bold text-foreground mb-2">
+                                {data.projectDetails.projectName || 'Untitled Project'}
+                            </h4>
+                            <p className="text-muted-foreground mb-8 font-mono text-sm bg-muted py-1 px-3 rounded-full inline-block border border-border">
+                                Revision {data.projectDetails.revision}
                             </p>
+
                             <button
                                 onClick={handleDownload}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-blue-900/20 transition-all flex items-center gap-2 mx-auto"
+                                className="w-full btn btn-primary btn-lg gap-2 text-base shadow-xl shadow-primary/20"
                             >
                                 <Download className="w-5 h-5" />
-                                Descarcă PDF
+                                Download PDF
                             </button>
                         </div>
                     </div>
@@ -381,100 +383,116 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onClick={onClose} />
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-500" onClick={onClose} />
 
-            <div className="relative bg-slate-900 border border-slate-700 w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="relative bg-card w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border animate-in zoom-in-95 duration-300">
 
                 {/* Header */}
-                <div className="p-6 border-b border-slate-800 bg-slate-800/50 flex items-center justify-between shrink-0">
-                    <div>
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-blue-400" />
-                            Generator Raport PDF Avansat
-                        </h3>
-                        <p className="text-slate-400 text-sm">Pas {currentStep} din 4</p>
+                <div className="px-8 py-6 border-b border-border bg-muted/30 flex items-center justify-between shrink-0 backdrop-blur-md">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                            <Sparkles className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-foreground leading-none">Report Wizard</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Step {currentStep} of 4</p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 rounded-full hover:bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/50 shrink-0">
-                    <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4].map(step => (
-                            <div key={step} className="flex items-center">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                    step <= currentStep ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-500'
-                                }`}>
-                                    {step}
+                {/* Progress Steps */}
+                <div className="px-8 py-6 border-b border-border bg-muted/20 shrink-0">
+                    <div className="relative flex items-center justify-between max-w-3xl mx-auto">
+                        {/* Connecting Line */}
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-border -z-10" />
+                        <div
+                            className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary transition-all duration-500 -z-10"
+                            style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+                        />
+
+                        {[1, 2, 3, 4].map(step => {
+                            const isActive = step <= currentStep;
+                            const isCurrent = step === currentStep;
+                            return (
+                                <div key={step} className="flex flex-col items-center gap-2 bg-card px-2">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-300 ${isActive
+                                        ? 'bg-primary border-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary),0.5)]'
+                                        : 'bg-card border-muted text-muted-foreground'
+                                        } ${isCurrent ? 'scale-110' : ''}`}>
+                                        {step}
+                                    </div>
+                                    <span className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted-foreground'
+                                        }`}>
+                                        {step === 1 && 'Type'}
+                                        {step === 2 && 'Options'}
+                                        {step === 3 && 'Preview'}
+                                        {step === 4 && 'Export'}
+                                    </span>
                                 </div>
-                                {step < 4 && (
-                                    <div className={`w-12 h-1 mx-2 rounded ${
-                                        step < currentStep ? 'bg-blue-500' : 'bg-slate-700'
-                                    }`} />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex justify-between mt-2 text-xs text-slate-500">
-                        <span>Alege Preset</span>
-                        <span>Personalizează</span>
-                        <span>Previzualizează</span>
-                        <span>Descarcă</span>
+                            );
+                        })}
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    {renderStepContent()}
+                {/* Content Area */}
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                    <div className="max-w-4xl mx-auto h-full">
+                        {renderStepContent()}
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-slate-800 bg-slate-800/30 flex justify-between items-center shrink-0">
+                <div className="px-8 py-6 border-t border-border bg-muted/30 flex justify-between items-center shrink-0 backdrop-blur-md">
                     <button
                         onClick={prevStep}
                         disabled={currentStep === 1}
-                        className="px-4 py-2 text-sm font-bold text-slate-400 hover:text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="btn btn-ghost gap-2 pl-2 disabled:opacity-0"
                     >
                         <ChevronLeft className="w-4 h-4" />
-                        Înapoi
+                        Back
                     </button>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-4">
                         {currentStep === 3 && !previewUrl && (
                             <button
                                 onClick={handlePreview}
                                 disabled={isGenerating}
-                                className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2"
+                                className="btn btn-secondary gap-2"
                             >
-                                {isGenerating ? <span className="animate-spin text-xl">•</span> : <Eye className="w-4 h-4" />}
-                                Generează Previzualizare
+                                {isGenerating ? <span className="animate-spin">•</span> : <Eye className="w-4 h-4" />}
+                                Generate Preview
                             </button>
                         )}
-                        {currentStep === 4 && (
-                            <button
-                                onClick={handleDownload}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-900/20 transition-all flex items-center gap-2"
-                            >
-                                <Download className="w-4 h-4" />
-                                Descarcă PDF
-                            </button>
-                        )}
-                        {currentStep < 4 && (
+
+                        {currentStep < 4 ? (
                             <button
                                 onClick={nextStep}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-900/20 transition-all flex items-center gap-2"
+                                className="btn btn-primary gap-2 px-8"
                             >
-                                Continuă
+                                Continue
                                 <ChevronRight className="w-4 h-4" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleDownload}
+                                className="btn btn-primary gap-2 px-8 shadow-lg shadow-primary/25"
+                            >
+                                <Download className="w-4 h-4" />
+                                Download Again
                             </button>
                         )}
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

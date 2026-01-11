@@ -6,6 +6,7 @@ export interface CatalogEquipment {
     volume: number; // L
     weight: number; // kg (empty)
     description: string;
+    technicalSheet?: string; // Base64 or URL
 }
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [

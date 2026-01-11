@@ -14,9 +14,6 @@ interface SupportManagerProps {
     segments: PipeSegment[];
 }
 
-
-
-
 type SupportStep = 'config' | 'summary';
 
 export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
@@ -27,17 +24,17 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
     // Calculate report on fly
     const report = useMemo(() => {
         return calculateSupportReport(segments, glycolPercentage || 0, supportConfig);
-    }, [segments, glycolPercentage, supportConfig]); // Added dependencies for clarity
+    }, [segments, glycolPercentage, supportConfig]);
 
     const handleNext = () => {
         if (currentStep === 'config') setCurrentStep('summary');
     };
 
     return (
-        <div className="glass-panel min-h-[600px] flex flex-col relative overflow-hidden bg-slate-900/80 backdrop-blur-xl border border-white/5 shadow-2xl rounded-3xl">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="bg-card border border-border rounded-3xl shadow-sm min-h-[600px] flex flex-col relative overflow-hidden">
+            {/* Background Decor - Subtle for Light/Dark */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[100px] pointer-events-none" />
 
             {/* Stepper Navigation */}
             <SupportStepper currentStep={currentStep} onStepChange={setCurrentStep} />
@@ -49,24 +46,24 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                 {currentStep === 'config' && (
                     <div className="max-w-4xl mx-auto space-y-8">
                         <div className="text-center mb-10">
-                            <h2 className="text-2xl font-bold text-white mb-2">Configurare Parametri Sistem</h2>
-                            <p className="text-slate-400">Definiți scenariul de montaj pntru a calcula corect încărcările statice și dinamice.</p>
+                            <h2 className="text-2xl font-bold text-foreground mb-2">Configurare Parametri Sistem</h2>
+                            <p className="text-muted-foreground">Definiți scenariul de montaj pntru a calcula corect încărcările statice și dinamice.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Spacing Card */}
-                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all group">
+                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-primary/30 transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-blue-500/20 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                             <Ruler className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-200">Pas Suporți</h4>
-                                            <p className="text-xs text-slate-500">Distanța între punctele de susținere</p>
+                                            <h4 className="font-bold text-foreground">Pas Suporți</h4>
+                                            <p className="text-xs text-muted-foreground">Distanța între punctele de susținere</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-blue-400 font-mono">{supportConfig.spacing.toFixed(1)}m</span>
+                                    <span className="text-2xl font-bold text-primary font-mono">{supportConfig.spacing.toFixed(1)}m</span>
                                 </div>
                                 <input
                                     type="range"
@@ -75,9 +72,9 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                     step="0.5"
                                     value={supportConfig.spacing}
                                     onChange={(e) => setSupportConfig({ ...supportConfig, spacing: parseFloat(e.target.value) })}
-                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
+                                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
                                 />
-                                <div className="flex justify-between mt-2 text-xs text-slate-600 font-mono">
+                                <div className="flex justify-between mt-2 text-xs text-muted-foreground font-mono">
                                     <span>1.0m</span>
                                     <span>6.0m</span>
                                 </div>
@@ -86,28 +83,28 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                         <button
                                             key={val}
                                             onClick={() => setSupportConfig({ ...supportConfig, spacing: val })}
-                                            className="px-2 py-1 rounded bg-slate-900 border border-white/10 text-[10px] text-slate-400 hover:text-white hover:border-blue-500/50 transition-colors"
+                                            className="px-2 py-1 rounded bg-card border border-border text-[10px] text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
                                         >
                                             {val}m
                                         </button>
                                     ))}
-                                    <span className="text-[10px] text-slate-600 self-center ml-auto">Presets</span>
+                                    <span className="text-[10px] text-muted-foreground self-center ml-auto">Presets</span>
                                 </div>
                             </div>
 
                             {/* Mounting Height Card */}
-                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all group">
+                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-purple-500/30 transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-purple-500/20 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
                                             <Layers className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-200">Înălțime Montaj (H)</h4>
-                                            <p className="text-xs text-slate-500">Lungime consolă / tijă</p>
+                                            <h4 className="font-bold text-foreground">Înălțime Montaj (H)</h4>
+                                            <p className="text-xs text-muted-foreground">Lungime consolă / tijă</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-purple-400 font-mono">{supportConfig.height.toFixed(1)}m</span>
+                                    <span className="text-2xl font-bold text-purple-500 font-mono">{supportConfig.height.toFixed(1)}m</span>
                                 </div>
                                 <input
                                     type="range"
@@ -116,27 +113,27 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                     step="0.5"
                                     value={supportConfig.height}
                                     onChange={(e) => setSupportConfig({ ...supportConfig, height: parseFloat(e.target.value) })}
-                                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all"
+                                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all"
                                 />
-                                <div className="flex justify-between mt-2 text-xs text-slate-600 font-mono">
+                                <div className="flex justify-between mt-2 text-xs text-muted-foreground font-mono">
                                     <span>0.5m</span>
                                     <span>5.0m</span>
                                 </div>
                             </div>
 
                             {/* Pipes per Support Card */}
-                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                                             <Calculator className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-200">Încărcare Paralelă</h4>
-                                            <p className="text-xs text-slate-500">Număr de țevi pe o consolă</p>
+                                            <h4 className="font-bold text-foreground">Încărcare Paralelă</h4>
+                                            <p className="text-xs text-muted-foreground">Număr de țevi pe o consolă</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-emerald-400 font-mono">x{supportConfig.pipesPerSupport}</span>
+                                    <span className="text-2xl font-bold text-emerald-500 font-mono">x{supportConfig.pipesPerSupport}</span>
                                 </div>
                                 <div className="flex gap-3">
                                     {[1, 2, 3, 4].map(num => (
@@ -144,8 +141,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                             key={num}
                                             onClick={() => setSupportConfig({ ...supportConfig, pipesPerSupport: num })}
                                             className={`flex-1 py-3 rounded-xl border font-bold transition-all ${supportConfig.pipesPerSupport === num
-                                                ? 'bg-emerald-500 text-white border-emerald-400 shadow-lg scale-105'
-                                                : 'bg-slate-900/50 border-white/5 text-slate-500 hover:bg-slate-800 hover:border-emerald-500/30'
+                                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg scale-105'
+                                                : 'bg-card border-border text-muted-foreground hover:bg-muted hover:border-emerald-500/30'
                                                 }`}
                                         >
                                             {num} {num === 1 ? 'Țeavă' : 'Țevi'}
@@ -159,7 +156,7 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                         <div className="md:col-span-2 flex justify-center">
                             <button
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-wider"
+                                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-bold uppercase tracking-wider"
                             >
                                 {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 {showAdvanced ? 'Ascunde Setări Avansate' : 'Setări Avansate (Izolație)'}
@@ -168,26 +165,26 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
 
                         {/* Insulation Card (Collapsible) */}
                         {showAdvanced && (
-                            <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-all group md:col-span-2 animate-in slide-in-from-top-4 fade-in duration-300">
+                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-amber-500/30 transition-all group md:col-span-2 animate-in slide-in-from-top-4 fade-in duration-300">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-amber-500/20 text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                                             <Layers className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-200">Izolație Termică</h4>
-                                            <p className="text-xs text-slate-500">Grosime și densitate material</p>
+                                            <h4 className="font-bold text-foreground">Izolație Termică</h4>
+                                            <p className="text-xs text-muted-foreground">Grosime și densitate material</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold text-amber-400 font-mono">{supportConfig.insulationThickness} <span className="text-sm text-slate-500">mm</span></div>
+                                        <div className="text-2xl font-bold text-amber-500 font-mono">{supportConfig.insulationThickness} <span className="text-sm text-muted-foreground">mm</span></div>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* Thickness Slider */}
                                     <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">
+                                        <div className="flex justify-between text-xs text-muted-foreground mb-2 font-bold uppercase tracking-wider">
                                             <span>Grosime (mm)</span>
                                             <span>{supportConfig.insulationThickness}mm</span>
                                         </div>
@@ -198,9 +195,9 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                             step="5"
                                             value={supportConfig.insulationThickness}
                                             onChange={(e) => setSupportConfig({ ...supportConfig, insulationThickness: parseInt(e.target.value) })}
-                                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 transition-all"
+                                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 transition-all"
                                         />
-                                        <div className="flex justify-between mt-2 text-[10px] text-slate-600 font-mono">
+                                        <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-mono">
                                             <span>0mm</span>
                                             <span>50mm</span>
                                             <span>100mm</span>
@@ -209,7 +206,7 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
 
                                     {/* Density Selector */}
                                     <div>
-                                        <div className="flex justify-between text-xs text-slate-400 mb-2 font-bold uppercase tracking-wider">
+                                        <div className="flex justify-between text-xs text-muted-foreground mb-2 font-bold uppercase tracking-wider">
                                             <span>Tip Material (Densitate)</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
@@ -223,8 +220,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                                     key={opt.val}
                                                     onClick={() => setSupportConfig({ ...supportConfig, insulationDensity: opt.val })}
                                                     className={`p-2 rounded-lg border text-xs font-bold transition-all ${supportConfig.insulationDensity === opt.val
-                                                        ? 'bg-amber-500 text-white border-amber-400'
-                                                        : 'bg-slate-900/50 border-white/5 text-slate-500 hover:bg-slate-800'
+                                                        ? 'bg-amber-500 text-white border-amber-500'
+                                                        : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                                         }`}
                                                 >
                                                     {opt.label} ({opt.val})
@@ -237,8 +234,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                         )}
 
                         {/* Mounting Type Selector */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5">
-                            <h4 className="font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <div className="bg-muted/10 p-6 rounded-2xl border border-border">
+                            <h4 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                 <Anchor className="w-5 h-5 text-amber-500" />
                                 Mod de Fixare
                             </h4>
@@ -246,8 +243,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'concrete' })}
                                     className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'concrete'
-                                        ? 'bg-amber-500/10 border-amber-500 text-amber-100'
-                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:bg-slate-800'
+                                        ? 'bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-400'
+                                        : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                         }`}
                                 >
                                     <h5 className="font-bold mb-1">Pardoseală / Beton</h5>
@@ -256,8 +253,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'suspended' })}
                                     className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'suspended'
-                                        ? 'bg-amber-500/10 border-amber-500 text-amber-100'
-                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:bg-slate-800'
+                                        ? 'bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-400'
+                                        : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                         }`}
                                 >
                                     <h5 className="font-bold mb-1">Suspendat (Tavan)</h5>
@@ -267,8 +264,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                         </div>
 
                         {/* Modular Topology Configuration */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all">
-                            <h4 className="font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all">
+                            <h4 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                 <Layers className="w-5 h-5 text-emerald-500" />
                                 Configurație Modulară (Elemente Adiționale)
                             </h4>
@@ -276,8 +273,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addLeftConsole: !supportConfig.addLeftConsole })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addLeftConsole
-                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-emerald-500/20'
+                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-emerald-500/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Consolă Stânga</div>
@@ -286,8 +283,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addRightConsole: !supportConfig.addRightConsole })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addRightConsole
-                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-emerald-500/20'
+                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-emerald-500/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Consolă Dreapta</div>
@@ -296,8 +293,8 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addUpperRail: !supportConfig.addUpperRail })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addUpperRail
-                                        ? 'bg-blue-500/20 border-blue-500 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
-                                        : 'bg-slate-900/30 border-white/5 text-slate-500 hover:border-blue-500/20'
+                                        ? 'bg-blue-500/20 border-blue-500 text-blue-700 dark:text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-blue-500/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Etaj Superior (Rail)</div>
@@ -309,7 +306,7 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                         <div className="flex justify-center pt-4">
                             <button
                                 onClick={handleNext}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-blue-600/20 flex items-center gap-3 transition-all hover:scale-105 active:scale-95"
+                                className="btn btn-primary btn-lg gap-3"
                             >
                                 Analizează Structura <ArrowRight className="w-5 h-5" />
                             </button>
@@ -322,13 +319,13 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                     <div className="space-y-8">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <h2 className="text-2xl font-bold text-white">Rezumat & Verificare</h2>
-                                <p className="text-slate-400 text-sm">Calcul automat cantități și verificare structurală.</p>
+                                <h2 className="text-2xl font-bold text-foreground">Rezumat & Verificare</h2>
+                                <p className="text-muted-foreground text-sm">Calcul automat cantități și verificare structurală.</p>
                             </div>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setCurrentStep('config')}
-                                    className="text-slate-400 hover:text-white px-4 py-2 font-bold text-sm transition-all"
+                                    className="text-muted-foreground hover:text-foreground px-4 py-2 font-bold text-sm transition-all"
                                 >
                                     Înapoi la Configurare
                                 </button>
@@ -341,22 +338,16 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
                             onExport={() => window.print()}
                         />
 
-
-
                         {/* Engineering Analysis (Collapsible or visible below) */}
-                        <div className="pt-8 border-t border-white/5">
-                            <h3 className="text-xl font-bold text-slate-300 mb-4 flex items-center gap-2">
-                                <Activity className="w-5 h-5 text-blue-400" />
+                        <div className="pt-8 border-t border-border">
+                            <h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-primary" />
                                 Detalii Inginerie (Raport Tehnic)
                             </h3>
                             <AnalysisTable report={report} />
                         </div>
                     </div>
                 )}
-
-
-
-
             </div>
         </div>
     );

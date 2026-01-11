@@ -1,122 +1,237 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Semantic Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
 :root {
-  /* Soft Dark / Deep Slate Palette */
-  --background: #0f172a;
-  /* Slate-900 */
-  --foreground: #f1f5f9;
-  /* Slate-100 */
+  /* 
+    LIGHT MODE: "Warm Alabaster"
+    Soft, paper-like, comfortable.
+  */
+  --background: #fafaf9;
+  /* Stone 50 */
+  --foreground: #292524;
+  /* Stone 800 */
 
-  --primary: #3b82f6;
-  /* Blue-500 */
-  --primary-foreground: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #292524;
 
-  --secondary: #1e293b;
-  /* Slate-800 */
-  --secondary-foreground: #f8fafc;
+  --popover: #ffffff;
+  --popover-foreground: #292524;
 
-  --accent: #334155;
-  /* Slate-700 */
-  --accent-foreground: #f1f5f9;
+  --primary: #44403c;
+  /* Stone 700 - Warm Charcoal */
+  --primary-foreground: #fafaf9;
 
-  --border: #334155;
-  --input: #1e293b;
-  --ring: #3b82f6;
+  --secondary: #f5f5f4;
+  /* Stone 100 */
+  --secondary-foreground: #1c1917;
+
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  /* Stone 500 */
+
+  --accent: #f5f5f4;
+  --accent-foreground: #1c1917;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fafaf9;
+
+  --border: #e7e5e4;
+  /* Stone 200 */
+  --input: #f5f5f4;
+  /* Stone 100 - Filled Inputs */
+  --ring: #44403c;
 
   --radius: 0.75rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+.dark {
+  /*
+    DARK MODE: "Obsidian Emerald"
+    Luxury, sophisticated, premium.
+    Neutral graphite base with rich Emerald Green accents.
+  */
+  --background: #111113;
+  /* Pure Neutral Dark */
+  --foreground: #fafafa;
+
+  --card: #1a1a1d;
+  /* Neutral Charcoal */
+  --card-foreground: #fafafa;
+
+  --popover: #1a1a1d;
+  --popover-foreground: #fafafa;
+
+  --primary: #10b981;
+  /* Emerald 500 - Luxury Green */
+  --primary-foreground: #022c22;
+
+  --secondary: #252528;
+  /* Warm Neutral Grey */
+  --secondary-foreground: #fafafa;
+
+  --muted: #252528;
+  --muted-foreground: #a1a1aa;
+
+  --accent: #2a2a2e;
+  --accent-foreground: #fafafa;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #fafafa;
+
+  --border: #2a2a2e;
+  /* Subtle Neutral Border */
+  --input: #1a1a1d;
+  --ring: #10b981;
 }
 
-/* Force Full Soft Dark Mode on Body/HTML */
-html,
-body,
-.bg-neutral-900 {
-  background-color: #0f172a !important;
-  color: #f1f5f9;
-  min-height: 100vh;
-  font-family: var(--font-sans), 'Inter', system-ui, sans-serif;
-  @apply antialiased overflow-x-hidden;
-}
-
-/* GLOBAL Dark Mode Form Elements (Screen) */
-input,
-select,
-textarea {
-  @apply bg-slate-800/50 text-white border border-slate-700/50 rounded-lg px-4 py-2.5 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:outline-none transition-all backdrop-blur-sm shadow-inner;
-}
-
-/* Glassmorphism Utilities - Soft Dark */
-.glass-panel {
-  @apply bg-slate-800/40 backdrop-blur-xl border border-white/5 shadow-2xl;
-}
-
-.glass-card {
-  @apply bg-slate-800/30 backdrop-blur-md border border-white/5 hover:border-blue-500/30 transition-all duration-300;
-}
-
-.text-glow {
-  text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-}
-
-.input-modern {
-  @apply bg-slate-900/40 border-white/10 focus:bg-slate-900/60 focus:border-blue-500/50 transition-all duration-300 text-white;
-}
-
-/* =========================================
-   PRINT STYLES (A4 Optimized)
-   ========================================= */
-@media print {
-  @page {
-    size: A4;
-    margin: 0.5cm;
-    /* Minimal margins */
+/* Base Styles */
+@layer base {
+  * {
+    border-color: var(--border);
   }
 
-  /* Reset Body for Print */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  }
+
+  /* IOS-Style Filled Inputs */
+  input,
+  select,
+  textarea {
+    @apply bg-input border-transparent text-foreground placeholder-muted-foreground rounded-xl px-4 py-2.5 shadow-sm transition-all duration-200;
+    @apply focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none;
+  }
+}
+
+/* Premium Utilities */
+@layer utilities {
+  .glass-panel {
+    @apply bg-card/80 backdrop-blur-xl border border-border shadow-sm dark:shadow-none;
+  }
+
+  .sidebar-panel {
+    @apply bg-background border-r border-border h-screen sticky top-0;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-muted-foreground;
+  }
+
+  .card-premium {
+    @apply bg-card rounded-2xl border border-border/50 shadow-xl shadow-stone-200/50 dark:shadow-none;
+  }
+
+  .spacing-page {
+    @apply max-w-[1600px] mx-auto px-6;
+  }
+
+  /* =====================
+     PREMIUM APPLE BUTTONS
+     ===================== */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.97];
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow-md shadow-stone-900/10 hover:brightness-110;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-muted/50 text-muted-foreground hover:text-foreground;
+  }
+
+  .btn-icon {
+    @apply h-9 w-9 p-0 rounded-lg;
+  }
+
+  /* Sizes */
+  .btn-sm {
+    @apply h-8 px-3 text-xs;
+  }
+
+  .btn-md {
+    @apply h-10 px-4;
+  }
+
+  .btn-lg {
+    @apply h-12 px-6;
+  }
+
+  /* Custom Scrollbar - Minimal */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+  }
+}
+
+/* Print Optimization */
+@media print {
+  @page {
+    margin: 0.5cm;
+  }
+
   html,
   body {
-    background-color: white !important;
     background: white !important;
     color: black !important;
-    width: 210mm;
-    height: auto;
+    width: 100%;
     overflow: visible;
   }
 
-  /* Hide UI Elements */
-  .screen-only,
-  header.screen-only,
-  .no-print,
-  button,
-  input[type="range"],
-  .glass-panel,
-  .glass-card,
-  nav {
+  .no-print {
     display: none !important;
-  }
-
-  /* Reset Containers */
-  .max-w-7xl,
-  .container {
-    max-width: none !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Typography Resets */
-  h1,
-  h2,
-  h3,
-  h4,
-  p,
-  span,
-  div {
-    color: black !important;
-    text-shadow: none !important;
   }
 }

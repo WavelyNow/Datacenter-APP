@@ -18,8 +18,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'config' | 'supports' | 'weights' | 'photos' | 'branding';
-    setActiveTab: (tab: 'config' | 'supports' | 'weights' | 'photos' | 'branding') => void;
+    activeTab: 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
+    setActiveTab: (tab: 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -28,10 +28,8 @@ interface ProjectState {
 
 const ProjectContext = createContext<ProjectState | undefined>(undefined);
 
-// Helper function to initialize state from localStorage
-const initializeFromStorage = (): Partial<ProjectState> => {
-    if (typeof window === 'undefined') return {};
-    
+// Helper function to load state from localStorage (client-side only)
+const loadFromStorage = (): Partial<ProjectState> => {
     try {
         const saved = localStorage.getItem('hydraulic_calc_project_v2');
         if (!saved) return {};
@@ -43,75 +41,67 @@ const initializeFromStorage = (): Partial<ProjectState> => {
 };
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-    // Get saved data once
-    const savedData = typeof window !== 'undefined' ? initializeFromStorage() : {};
-    
-    // 1. Project Details - with lazy initialization
-    const [projectDetails, setProjectDetails] = useState<ProjectDetails>(() => {
-        return savedData.projectDetails || {
-            projectName: 'Data Center Cooling',
-            projectNumber: '2024-001',
-            designer: 'Ing. Popescu',
-            location: 'București',
-            beneficiary: '-',
-            date: new Date().toISOString().split('T')[0],
-            revision: 'A',
-        };
+    // 1. Project Details
+    const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
+        projectName: 'Data Center Cooling',
+        projectNumber: '2024-001',
+        designer: 'Ing. Popescu',
+        location: 'București',
+        beneficiary: '-',
+        date: new Date().toISOString().split('T')[0],
+        revision: 'A',
     });
 
-    // 2. Pipe Segments - with lazy initialization
-    const [segments, setSegments] = useState<PipeSegment[]>(() => {
-        return savedData.segments || [];
+    // 2. Pipe Segments
+    const [segments, setSegments] = useState<PipeSegment[]>([]);
+
+    // 3. Equipment
+    const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
+
+    // 4. Fluid Configuration
+    const [fluidType, setFluidType] = useState<FluidType>('ethylene');
+
+    const [glycolPercentage, setGlycolPercentage] = useState<number>(30);
+
+    const [safetyMargin, setSafetyMargin] = useState<boolean>(true);
+
+    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(5);
+
+    const [supportConfig, setSupportConfig] = useState<SupportConfig>({
+        spacing: 2.5,
+        mountingType: 'suspended',
+        height: 1.5,
+        pipesPerSupport: 1,
+        insulationThickness: 30,
+        insulationDensity: 100,
+        addLeftConsole: false,
+        addRightConsole: false,
+        addUpperRail: false
     });
 
-    // 3. Equipment - with lazy initialization
-    const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>(() => {
-        return savedData.equipmentList || [];
-    });
-
-    // 4. Fluid Configuration - with lazy initialization
-    const [fluidType, setFluidType] = useState<FluidType>(() => {
-        return savedData.fluidType || 'ethylene';
-    });
-    
-    const [glycolPercentage, setGlycolPercentage] = useState<number>(() => {
-        return typeof savedData.glycolPercentage === 'number' ? savedData.glycolPercentage : 30;
-    });
-    
-    const [safetyMargin, setSafetyMargin] = useState<boolean>(() => {
-        return typeof savedData.safetyMargin === 'boolean' ? savedData.safetyMargin : true;
-    });
-    
-    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(() => {
-        return typeof savedData.safetyMarginPercentage === 'number' ? savedData.safetyMarginPercentage : 5;
-    });
-
-    const [supportConfig, setSupportConfig] = useState<SupportConfig>(() => {
-        const defaultConfig: SupportConfig = {
-            spacing: 2.5,
-            mountingType: 'suspended',
-            height: 1.5,
-            pipesPerSupport: 1,
-            insulationThickness: 30,
-            insulationDensity: 100,
-            addLeftConsole: false,
-            addRightConsole: false,
-            addUpperRail: false
-        };
-        return savedData.supportConfig ? { ...defaultConfig, ...savedData.supportConfig } : defaultConfig;
-    });
-
-    const [branding, setBranding] = useState<BrandingConfig>(() => {
-        const defaultBranding: BrandingConfig = {
-            primaryColor: '#3b82f6',
-            accentColor: '#10b981',
-            pdfTheme: 'modern'
-        };
-        return savedData.branding ? { ...defaultBranding, ...savedData.branding } : defaultBranding;
+    const [branding, setBranding] = useState<BrandingConfig>({
+        primaryColor: '#3b82f6',
+        accentColor: '#10b981',
+        pdfTheme: 'modern'
     });
 
     // 5. UI State
-    const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding'>('config');
+    const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs'>('config');
+
+    // Load saved data on client-side only
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const saved = loadFromStorage();
+        if (saved.projectDetails) setProjectDetails(saved.projectDetails);
+        if (saved.segments) setSegments(saved.segments);
+        if (saved.equipmentList) setEquipmentList(saved.equipmentList);
+        if (saved.fluidType) setFluidType(saved.fluidType);
+        if (saved.glycolPercentage !== undefined) setGlycolPercentage(saved.glycolPercentage);
+        if (saved.safetyMargin !== undefined) setSafetyMargin(saved.safetyMargin);
+        if (saved.safetyMarginPercentage !== undefined) setSafetyMarginPercentage(saved.safetyMarginPercentage);
+        if (saved.supportConfig) setSupportConfig(prev => ({ ...prev, ...saved.supportConfig }));
+        if (saved.branding) setBranding(prev => ({ ...prev, ...saved.branding }));
+    }, []);
 
     // Persistence Logic (Save on Change)
     useEffect(() => {
