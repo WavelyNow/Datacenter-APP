@@ -52,7 +52,7 @@ export const ProfileCatalog: React.FC = () => {
     }, []);
 
     // --- Combined Catalog ---
-    const allProfiles = useMemo(() => {
+    const allProfiles = useMemo((): (MuproComponent | CustomProfile)[] => {
         const muproProfiles = MUPRO_MASTER_CATALOG.filter(c => c.category === 'profile');
         return [...customProfiles, ...muproProfiles];
     }, [customProfiles]);
