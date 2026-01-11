@@ -1,13 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Box, Book, Printer, Save, Upload, Layers, Sparkles, Settings, GitBranch, ChevronRight } from 'lucide-react';
-import { useProject } from '@/context/ProjectContext';
-import { PipeCatalogModal } from './PipeCatalogModal';
-import { ExportModal } from './ExportModal';
-import { PdfWizardModal } from './PdfWizardModal';
-import { ProfileCatalogModal } from './ProfileCatalogModal';
-import { ProjectSettingsModal } from './ProjectSettingsModal';
+import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
@@ -21,6 +15,10 @@ interface HeaderProps {
     onOpenExport: () => void;
     onOpenSettings: () => void;
     onSaveProject: () => void;
+    onUndo: () => void;
+    onRedo: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,7 +30,12 @@ export const Header: React.FC<HeaderProps> = ({
     onOpenEquipmentCatalog,
     onOpenExport,
     onOpenSettings,
-    onSaveProject
+
+    onSaveProject,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo
 }) => {
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
@@ -80,6 +83,27 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {/* Right: Tools & Catalogs */}
                 <div className="flex items-center gap-3 shrink-0">
+
+                    {/* Undo/Redo - New Phase 3 */}
+                    <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg border border-border/50 mr-2">
+                        <button
+                            onClick={onUndo}
+                            disabled={!canUndo}
+                            className="p-1.5 rounded-md hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Undo (Ctrl+Z)"
+                        >
+                            <Undo className="w-4 h-4" />
+                        </button>
+                        <div className="w-px h-3 bg-border/50" />
+                        <button
+                            onClick={onRedo}
+                            disabled={!canRedo}
+                            className="p-1.5 rounded-md hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Redo (Ctrl+Y)"
+                        >
+                            <Redo className="w-4 h-4" />
+                        </button>
+                    </div>
 
                     {/* Quick Catalogs */}
                     <div className="flex items-center gap-2 mr-2 bg-secondary/50 p-1.5 rounded-xl border border-border/50">

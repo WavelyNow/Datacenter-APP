@@ -184,7 +184,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                 )}
 
                 <div className={`space-y-3 ${viewMode === 'photos' ? '!space-y-0 !grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : ''}`}>
-                    {equipmentList.map((item, index) => (
+                    {equipmentList.map((item) => (
                         <div key={item.id} className={`group relative bg-muted/10 border border-border rounded-lg p-4 transition-all hover:border-primary/30 hover:shadow-sm ${viewMode !== 'photos' ? 'grid grid-cols-1 md:grid-cols-12 gap-4 items-end' : 'flex flex-col'}`}>
 
                             {/* Number Indicator */}

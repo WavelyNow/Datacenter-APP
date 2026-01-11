@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor } from 'lucide-react';
+import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor, LucideIcon } from 'lucide-react';
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
 
@@ -38,7 +37,7 @@ interface PdfWizardModalProps {
 
 type Preset = 'basic' | 'standard' | 'full' | 'custom';
 
-const presets: Record<Preset, { name: string; desc: string; icon: React.ComponentType<any>; options: Partial<PdfOptions> }> = {
+const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
     basic: {
         name: 'Basic Report',
         desc: 'Essential volume summary and BoQ.',

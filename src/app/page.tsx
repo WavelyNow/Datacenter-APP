@@ -42,7 +42,9 @@ const DashboardContent = () => {
     safetyMargin,
     safetyMarginPercentage,
     supportConfig,
-    branding
+    branding,
+    isInitialized,
+    undo, redo, canUndo, canRedo
   } = useProject();
 
   // Modal States
@@ -51,42 +53,19 @@ const DashboardContent = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
-  // Keyboard Shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+S / Ctrl+S - Save project
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        saveProject();
-      }
-      // Cmd+E / Ctrl+E - Export
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        setIsExportOpen(true);
-      }
-    };
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-muted-foreground animate-pulse font-medium">Initializing Engineering Suite...</p>
+        </div>
+      </div>
+    );
+  }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Auto-save to localStorage every 30 seconds
-  React.useEffect(() => {
-    const autoSaveData = {
-      projectDetails,
-      segments,
-      equipmentList,
-      fluidType,
-      glycolPercentage,
-      safetyMargin,
-      safetyMarginPercentage,
-      supportConfig
-    };
-    localStorage.setItem('datacenter_autosave', JSON.stringify(autoSaveData));
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin]);
-
-  // File Handlers
-  const saveProject = () => {
+  // File Handlers - defined before keyboard shortcuts effect
+  const saveProject = React.useCallback(() => {
     const data = {
       projectDetails,
       segments,
@@ -105,7 +84,55 @@ const DashboardContent = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
+
+  // Keyboard Shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+S / Ctrl+S - Save project
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        saveProject();
+      }
+      // Cmd+E / Ctrl+E - Export
+      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+        e.preventDefault();
+        setIsExportOpen(true);
+      }
+      // Undo: Ctrl+Z
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      // Redo: Ctrl+Y or Ctrl+Shift+Z
+      if (((e.metaKey || e.ctrlKey) && e.key === 'y') || ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'z')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saveProject]);
+
+  // Auto-save to localStorage every 30 seconds
+  React.useEffect(() => {
+    const autoSaveData = {
+      projectDetails,
+      segments,
+      equipmentList,
+      fluidType,
+      glycolPercentage,
+      safetyMargin,
+      safetyMarginPercentage,
+      supportConfig
+    };
+    try {
+      localStorage.setItem('datacenter_autosave', JSON.stringify(autoSaveData));
+    } catch (e) {
+      console.warn('Autosave failed:', e);
+    }
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
 
   const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -168,8 +195,6 @@ const DashboardContent = () => {
         onExportOpen={() => setIsExportOpen(true)}
         onSave={saveProject}
         onLoad={loadProject}
-        onCatalogOpen={() => setIsCatalogOpen(true)}
-        onProfileOpen={() => setIsProfileCatalogOpen(true)}
       />
 
       {/* 3. Main Content Area */}
@@ -193,6 +218,10 @@ const DashboardContent = () => {
           onOpenExport={() => setIsExportOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onSaveProject={saveProject}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
 
         <div className="flex-1 overflow-y-auto scroll-smooth pb-32">
@@ -245,7 +274,7 @@ const DashboardContent = () => {
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Dimensionare Suporți</h2>
                     <p className="text-muted-foreground">Calculul necesarului de materiale pentru prinderi.</p>
                   </div>
-                  <SupportManager segments={segments} />
+                  <SupportManager />
                 </div>
               )}
 

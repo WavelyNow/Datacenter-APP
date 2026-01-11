@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CatalogEquipment, EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
-import { Search, Plus, Trash2, FileText, Download, Save, Box, Book, Layers, Edit2, Check, X, Weight } from 'lucide-react';
+import { Search, Plus, Trash2, FileText, Download, Box, Book, Layers, Edit2, Check, X, Weight } from 'lucide-react';
 import { PipeCatalogModal } from './PipeCatalogModal';
 import { ProfileCatalogModal } from './ProfileCatalogModal';
 
@@ -10,7 +10,19 @@ export const CatalogManager: React.FC = () => {
     // Equipment Database State
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [customCatalog, setCustomCatalog] = useState<CatalogEquipment[]>([]);
+    const [customCatalog, setCustomCatalog] = useState<CatalogEquipment[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const saved = localStorage.getItem('custom_equipment_catalog');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse custom catalog", e);
+                return [];
+            }
+        }
+        return [];
+    });
     const [isCreateMode, setIsCreateMode] = useState(false);
 
     // Other Modals State
@@ -27,17 +39,6 @@ export const CatalogManager: React.FC = () => {
         description: '',
         technicalSheet: undefined
     });
-
-    useEffect(() => {
-        const saved = localStorage.getItem('custom_equipment_catalog');
-        if (saved) {
-            try {
-                setCustomCatalog(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse custom catalog", e);
-            }
-        }
-    }, []);
 
     const handleSaveCustom = () => {
         if (!formData.model || !formData.category) return;

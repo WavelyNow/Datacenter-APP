@@ -1,9 +1,18 @@
 import type { NextConfig } from "next";
+import withPWA from 'next-pwa';
+
+const withPWAConfig = withPWA({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+  scope: '/',
+  sw: 'sw.js',
+});
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   serverExternalPackages: ['puppeteer'],
 };
 
-export default nextConfig;
+export default withPWAConfig(nextConfig);

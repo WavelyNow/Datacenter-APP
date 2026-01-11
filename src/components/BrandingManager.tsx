@@ -5,7 +5,7 @@ import { useProject } from '@/context/ProjectContext';
 import Image from 'next/image';
 import {
     Layout, GripVertical, Eye, EyeOff, AlignLeft, AlignCenter, AlignRight,
-    Upload, Trash2, RefreshCw, ChevronUp, ChevronDown,
+    Trash2, RefreshCw, ChevronUp, ChevronDown,
     Image as ImageIcon, Loader2, RefreshCcw
 } from 'lucide-react';
 import { PDFSection, PDFSectionId, PDFAlignment } from '@/lib/types';

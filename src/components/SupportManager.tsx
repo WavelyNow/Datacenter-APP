@@ -1,30 +1,23 @@
-
-import React, { useState, useMemo } from 'react';
-import { PipeSegment } from '@/lib/types';
-import { calculateSupportReport } from '@/lib/calculations';
-import { Ruler, Anchor, Calculator, ArrowRight, Layers, Activity } from 'lucide-react';
+import React, { useState } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useSupportCalculations } from '@/hooks/useSupportCalculations';
 import { SupportStepper } from './SupportStepper';
 import { AnalysisTable } from './AnalysisTable';
 import { SupportOrderSummary } from './SupportOrderSummary';
-import { generateSupportBoM } from '@/lib/calculations';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Ruler, Anchor, Calculator, ArrowRight, Layers, Activity } from 'lucide-react';
 
 interface SupportManagerProps {
-    segments: PipeSegment[];
+    // segments: PipeSegment[]; // Removed as we use hook now
 }
 
 type SupportStep = 'config' | 'summary';
 
-export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
-    const { glycolPercentage, supportConfig, setSupportConfig } = useProject();
+export const SupportManager: React.FC<SupportManagerProps> = () => {
+    const { supportConfig, setSupportConfig } = useProject();
+    const { report, bom } = useSupportCalculations();
+
     const [currentStep, setCurrentStep] = useState<SupportStep>('config');
     const [showAdvanced, setShowAdvanced] = useState(false);
-
-    // Calculate report on fly
-    const report = useMemo(() => {
-        return calculateSupportReport(segments, glycolPercentage || 0, supportConfig);
-    }, [segments, glycolPercentage, supportConfig]);
 
     const handleNext = () => {
         if (currentStep === 'config') setCurrentStep('summary');
@@ -334,7 +327,7 @@ export const SupportManager: React.FC<SupportManagerProps> = ({ segments }) => {
 
                         {/* BOM Summary */}
                         <SupportOrderSummary
-                            bom={generateSupportBoM(report)}
+                            bom={bom}
                             onExport={() => window.print()}
                         />
 

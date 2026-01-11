@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { EQUIPMENT_CATALOG, CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
-import { Search, X, Box, Info, Plus, FileText, Trash2, Smartphone, Save } from 'lucide-react';
+import { Search, X, Box, Plus, FileText, Trash2, Save } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface EquipmentCatalogModalProps {
@@ -14,10 +14,24 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [view, setView] = useState<'list' | 'create'>('list');
-    const [mounted, setMounted] = useState(false);
 
-    // Custom Database State
-    const [customCatalog, setCustomCatalog] = useState<CatalogEquipment[]>([]);
+    // Use useMemo for mounted check instead of useState+useEffect pattern
+    const mounted = typeof window !== 'undefined';
+
+    // Custom Database State - lazy initialization
+    const [customCatalog, setCustomCatalog] = useState<CatalogEquipment[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const saved = localStorage.getItem('custom_equipment_catalog');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse custom catalog", e);
+                return [];
+            }
+        }
+        return [];
+    });
 
     // Form State
     const [formData, setFormData] = useState<Partial<CatalogEquipment>>({
@@ -28,20 +42,6 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         description: '',
         technicalSheet: undefined
     });
-
-    useEffect(() => {
-        setMounted(true);
-        // Load custom database
-        const saved = localStorage.getItem('custom_equipment_catalog');
-        if (saved) {
-            try {
-                setCustomCatalog(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse custom catalog", e);
-            }
-        }
-        return () => setMounted(false);
-    }, []);
 
     const handleSaveCustom = () => {
         if (!formData.model || !formData.category) return;

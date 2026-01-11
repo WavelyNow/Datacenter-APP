@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Book, Search, Filter, Scale, Ruler } from 'lucide-react';
-import { PIPE_STANDARDS, PipeStandard } from '@/lib/pipeStandards';
+import { X, Book, Search, Scale, Ruler } from 'lucide-react';
+import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 
 interface PipeCatalogModalProps {
     isOpen: boolean;
@@ -13,18 +13,14 @@ interface PipeCatalogModalProps {
 type PipeCategory = 'all' | 'metal' | 'plastic' | 'special';
 
 export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => {
-    const [mounted, setMounted] = useState(false);
+    // Client-side check
+    const mounted = typeof window !== 'undefined';
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<PipeCategory>('all');
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
     // Filter standards
     const filteredStandards = useMemo(() => {
-        return Object.entries(PIPE_STANDARDS).filter(([key, standard]) => {
+        return Object.entries(PIPE_STANDARDS).filter(([, standard]) => {
             // Category filter
             if (selectedCategory !== 'all' && standard.category !== selectedCategory) {
                 return false;

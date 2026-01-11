@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Upload, MapPin, User, Hash, Image as ImageIcon, Settings } from 'lucide-react';
+import { X, Upload, MapPin, User, Hash, Settings, Save } from 'lucide-react';
 import Image from 'next/image';
 import { ProjectDetails } from '@/lib/types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { projectSettingsSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
 interface ProjectSettingsModalProps {
     isOpen: boolean;
@@ -11,23 +15,53 @@ interface ProjectSettingsModalProps {
     onProjectDetailsChange: (details: ProjectDetails) => void;
 }
 
+type FormData = z.infer<typeof projectSettingsSchema>;
+
 export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
     isOpen,
     onClose,
     projectDetails,
     onProjectDetailsChange,
 }) => {
-    const [mounted, setMounted] = useState(false);
+    // Client-side check
+    const mounted = typeof window !== 'undefined';
 
+    const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
+        resolver: zodResolver(projectSettingsSchema),
+        defaultValues: {
+            projectName: projectDetails.projectName,
+            projectNumber: projectDetails.projectNumber,
+            designer: projectDetails.designer,
+            location: projectDetails.location,
+            beneficiary: projectDetails.beneficiary,
+            revision: projectDetails.revision,
+        }
+    });
+
+    const companyLogo = watch('companyLogo' as any); // Type assertion for non-schema field if needed, or better add to schema as optional string
+
+    // Reset form when modal opens or details change externally
     useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
+        if (isOpen) {
+            reset({
+                projectName: projectDetails.projectName,
+                projectNumber: projectDetails.projectNumber,
+                designer: projectDetails.designer,
+                location: projectDetails.location,
+                beneficiary: projectDetails.beneficiary,
+                revision: projectDetails.revision,
+            });
+        }
+    }, [isOpen, projectDetails, reset]);
 
     if (!isOpen || !mounted) return null;
 
-    const updateDetail = (field: keyof ProjectDetails, value: string) => {
-        onProjectDetailsChange({ ...projectDetails, [field]: value });
+    const onSubmit = (data: FormData) => {
+        onProjectDetailsChange({
+            ...projectDetails,
+            ...data
+        });
+        onClose();
     };
 
     const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +71,8 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target?.result as string;
-            updateDetail('companyLogo', result);
+            // Immediate update for logo since it's hard to bind to RHF file input neatly without custom component
+            onProjectDetailsChange({ ...projectDetails, companyLogo: result });
         };
         reader.readAsDataURL(file);
     };
@@ -55,8 +90,8 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                             <Settings className="w-4 h-4 text-primary" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-foreground">Project Settings</h3>
-                            <p className="text-[10px] text-muted-foreground">Configure project details and metadata</p>
+                            <h3 className="text-sm font-bold text-foreground">Setări Proiect</h3>
+                            <p className="text-[10px] text-muted-foreground">Configurare detalii și metadate</p>
                         </div>
                     </div>
                     <button
@@ -67,115 +102,105 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6">
-
-                    {/* Logo Upload Section */}
-                    <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-3 block">Company Branding</label>
-                        <div className="flex items-start gap-4">
-                            <label className="group relative flex-shrink-0 w-24 h-24 rounded-xl bg-muted/50 border-2 border-dashed border-border hover:border-primary/50 cursor-pointer overflow-hidden transition-all">
-                                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                {projectDetails.companyLogo ? (
-                                    <Image
-                                        src={projectDetails.companyLogo}
-                                        alt="Logo"
-                                        fill
-                                        className="object-contain p-2"
-                                        unoptimized
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                                        <ImageIcon className="w-6 h-6" />
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Upload className="w-5 h-5 text-white" />
-                                </div>
-                            </label>
-                            <div className="flex-1 space-y-1">
-                                <h4 className="text-sm font-medium text-foreground">Company Logo</h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                    Upload your company logo to be displayed on all generated reports and exports.
-                                </p>
-                                <p className="text-[10px] text-muted-foreground pt-1">
-                                    Recommended: PNG or JPG, square aspect ratio.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="h-px bg-border" />
-
-                    {/* Form Fields */}
+                <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                    {/* Project Identity */}
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Project Number</label>
-                                <div className="relative">
-                                    <Hash className="absolute left-3 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Nume Proiect</label>
+                                <div className="space-y-1">
                                     <input
-                                        type="text"
-                                        value={projectDetails.projectNumber}
-                                        onChange={(e) => updateDetail('projectNumber', e.target.value)}
-                                        className="w-full bg-muted/30 border border-border pl-9 pr-3 py-2 rounded-lg text-sm font-mono text-foreground focus:border-primary/50 focus:bg-background transition-all"
-                                        placeholder="0001"
+                                        {...register('projectName')}
+                                        className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        placeholder="ex. Data Center Cooling"
+                                    />
+                                    {errors.projectName && <p className="text-destructive text-[10px]">{errors.projectName.message}</p>}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Număr Proiect</label>
+                                <div className="space-y-1">
+                                    <div className="relative">
+                                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                        <input
+                                            {...register('projectNumber')}
+                                            className="w-full bg-muted/30 border border-border rounded-lg pl-9 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                            placeholder="2024-001"
+                                        />
+                                    </div>
+                                    {errors.projectNumber && <p className="text-destructive text-[10px]">{errors.projectNumber.message}</p>}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Beneficiar</label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                <input
+                                    {...register('beneficiary')}
+                                    className="w-full bg-muted/30 border border-border rounded-lg pl-9 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Nume Beneficiar"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Locație</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                    <input
+                                        {...register('location')}
+                                        className="w-full bg-muted/30 border border-border rounded-lg pl-9 pr-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        placeholder="Oraș, Țară"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Project Name</label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={projectDetails.projectName}
-                                        onChange={(e) => updateDetail('projectName', e.target.value)}
-                                        className="w-full bg-muted/30 border border-border px-3 py-2 rounded-lg text-sm text-foreground focus:border-primary/50 focus:bg-background transition-all font-medium"
-                                        placeholder="Enter project name..."
-                                    />
+                                <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Proiectant</label>
+                                <input
+                                    {...register('designer')}
+                                    className="w-full bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Nume Proiectant"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-border">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-lg bg-muted border border-border flex items-center justify-center overflow-hidden relative group">
+                                        {projectDetails.companyLogo ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={projectDetails.companyLogo} alt="Logo" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Upload className="w-5 h-5 text-muted-foreground group-hover:scale-110 transition-transform" />
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            onChange={handleLogoUpload}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-medium">Logo Companie</div>
+                                        <div className="text-[10px] text-muted-foreground">Recomandat 200x200px PNG</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Location</label>
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    value={projectDetails.location}
-                                    onChange={(e) => updateDetail('location', e.target.value)}
-                                    className="w-full bg-muted/30 border border-border pl-9 pr-3 py-2 rounded-lg text-sm text-foreground focus:border-primary/50 focus:bg-background transition-all"
-                                    placeholder="City, Country..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Beneficiary</label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-2.5 w-3.5 h-3.5 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    value={projectDetails.beneficiary || ''}
-                                    onChange={(e) => updateDetail('beneficiary', e.target.value)}
-                                    className="w-full bg-muted/30 border border-border pl-9 pr-3 py-2 rounded-lg text-sm text-foreground focus:border-primary/50 focus:bg-background transition-all"
-                                    placeholder="Client Name..."
-                                />
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary btn-sm gap-2"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    Salvează
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-border bg-muted/30 flex justify-end">
-                    <button
-                        onClick={onClose}
-                        className="btn btn-primary btn-sm min-w-[80px]"
-                    >
-                        Done
-                    </button>
-                </div>
+                </form>
             </div>
         </div>,
         document.body

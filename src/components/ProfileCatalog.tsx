@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Box, Plus, Trash2, X, Check, Scale, Ruler } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Box, Plus, Trash2, X, Scale, Ruler } from 'lucide-react';
 import { MUPRO_MASTER_CATALOG, MuproComponent } from '@/lib/muproVerifiedStandards';
 
 // --- Types ---
@@ -26,7 +26,19 @@ export const ProfileCatalog: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<ProfileType>('All');
     const [selectedLoad, setSelectedLoad] = useState<LoadCapacity | 'All'>('All');
-    const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>([]);
+    const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const saved = localStorage.getItem('custom_profiles_catalog');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse custom profiles", e);
+                return [];
+            }
+        }
+        return [];
+    });
     const [isCreateMode, setIsCreateMode] = useState(false);
 
     // Form State
@@ -38,18 +50,6 @@ export const ProfileCatalog: React.FC = () => {
         w: 0,
         loadCapacity: 'Medium' as LoadCapacity
     });
-
-    // Load Custom Profiles from localStorage
-    useEffect(() => {
-        const saved = localStorage.getItem('custom_profiles_catalog');
-        if (saved) {
-            try {
-                setCustomProfiles(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse custom profiles", e);
-            }
-        }
-    }, []);
 
     // --- Combined Catalog ---
     const allProfiles = useMemo((): (MuproComponent | CustomProfile)[] => {

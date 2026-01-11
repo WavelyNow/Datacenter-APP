@@ -1,35 +1,30 @@
 import React from 'react';
-import { ProjectDetails, ProjectLoadData } from '@/lib/types';
+import { ProjectDetails } from '@/lib/types';
 import {
     Box,
     Book,
-    Layers,
     Package,
     Scale,
     Camera,
     Anchor,
     Palette,
     Settings,
-    LogOut,
     Save,
     Upload,
-    Printer,
-    Sparkles,
-    ChevronDown,
-    MoreVertical
+    Printer
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
+export type TabId = 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
+
 interface SidebarProps {
-    activeTab: string;
-    onTabChange: (tabId: any) => void;
+    activeTab: TabId;
+    onTabChange: (tabId: TabId) => void;
     projectDetails: ProjectDetails;
     onSettingsOpen: () => void;
     onExportOpen: () => void;
     onSave: () => void;
     onLoad: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onCatalogOpen: () => void;
-    onProfileOpen: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -39,12 +34,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSettingsOpen,
     onExportOpen,
     onSave,
-    onLoad,
-    onCatalogOpen,
-    onProfileOpen
+    onLoad
 }) => {
 
-    const menuItems = [
+    const menuItems: { id: TabId; label: string; icon: React.ElementType }[] = [
         { id: 'config', label: 'Configurare', icon: Package },
         { id: 'supports', label: 'Suporți & Prinderi', icon: Anchor },
         { id: 'weights', label: 'Sarcini Statice', icon: Scale },
@@ -52,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'branding', label: 'Branding', icon: Palette },
     ];
 
-    const databaseItems = [
+    const databaseItems: { id: TabId; label: string; icon: React.ElementType }[] = [
         { id: 'catalogs', label: 'Catalog Echipamente', icon: Book },
     ];
 

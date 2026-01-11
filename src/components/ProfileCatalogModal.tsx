@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { ProfileCatalog } from './ProfileCatalog';
@@ -10,12 +10,8 @@ interface ProfileCatalogModalProps {
 }
 
 export const ProfileCatalogModal = ({ isOpen, onClose }: ProfileCatalogModalProps) => {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
+    // Client-side check
+    const mounted = typeof window !== 'undefined';
 
     if (!isOpen || !mounted) return null;
 

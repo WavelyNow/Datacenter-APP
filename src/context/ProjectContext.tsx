@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig } from '@/lib/types';
+import { useHistory } from '@/hooks/useHistory';
 
 interface ProjectState {
     projectDetails: ProjectDetails;
@@ -24,7 +25,13 @@ interface ProjectState {
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
     setBranding: (config: Partial<BrandingConfig>) => void;
+    isInitialized: boolean;
+    undo: () => void;
+    redo: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
 }
+
 
 const ProjectContext = createContext<ProjectState | undefined>(undefined);
 
@@ -41,81 +48,62 @@ const loadFromStorage = (): Partial<ProjectState> => {
 };
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-    // 1. Project Details
-    const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
-        projectName: 'Data Center Cooling',
-        projectNumber: '2024-001',
-        designer: 'Ing. Popescu',
-        location: 'București',
-        beneficiary: '-',
-        date: new Date().toISOString().split('T')[0],
-        revision: 'A',
-    });
+    // Initial State Definition
+    const defaultState = {
+        projectDetails: {
+            projectName: 'Data Center Cooling',
+            projectNumber: '2024-001',
+            designer: 'Ing. Popescu',
+            location: 'București',
+            beneficiary: '-',
+            date: new Date().toISOString().split('T')[0],
+            revision: 'A',
+        } as ProjectDetails,
+        segments: [] as PipeSegment[],
+        equipmentList: [] as EquipmentItem[],
+        fluidType: 'ethylene' as FluidType,
+        glycolPercentage: 30,
+        safetyMargin: true,
+        safetyMarginPercentage: 5,
+        supportConfig: {
+            spacing: 2.5,
+            mountingType: 'suspended' as const,
+            height: 1.5,
+            pipesPerSupport: 1,
+            insulationThickness: 30,
+            insulationDensity: 100,
+            addLeftConsole: false,
+            addRightConsole: false,
+            addUpperRail: false
+        } as SupportConfig,
+        branding: {
+            primaryColor: '#3b82f6',
+            accentColor: '#10b981',
+            pdfTheme: 'modern' as const
+        } as BrandingConfig
+    };
 
-    // 2. Pipe Segments
-    const [segments, setSegments] = useState<PipeSegment[]>([]);
+    const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
-    // 3. Equipment
-    const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
-
-    // 4. Fluid Configuration
-    const [fluidType, setFluidType] = useState<FluidType>('ethylene');
-
-    const [glycolPercentage, setGlycolPercentage] = useState<number>(30);
-
-    const [safetyMargin, setSafetyMargin] = useState<boolean>(true);
-
-    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(5);
-
-    const [supportConfig, setSupportConfig] = useState<SupportConfig>({
-        spacing: 2.5,
-        mountingType: 'suspended',
-        height: 1.5,
-        pipesPerSupport: 1,
-        insulationThickness: 30,
-        insulationDensity: 100,
-        addLeftConsole: false,
-        addRightConsole: false,
-        addUpperRail: false
-    });
-
-    const [branding, setBranding] = useState<BrandingConfig>({
-        primaryColor: '#3b82f6',
-        accentColor: '#10b981',
-        pdfTheme: 'modern'
-    });
-
-    // 5. UI State
+    // UI States (Not in History)
     const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs'>('config');
+    const [isInitialized, setIsInitialized] = useState(false);
 
-    // Load saved data on client-side only
+    // Load saved data using useHistory reset
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const saved = loadFromStorage();
-        if (saved.projectDetails) setProjectDetails(saved.projectDetails);
-        if (saved.segments) setSegments(saved.segments);
-        if (saved.equipmentList) setEquipmentList(saved.equipmentList);
-        if (saved.fluidType) setFluidType(saved.fluidType);
-        if (saved.glycolPercentage !== undefined) setGlycolPercentage(saved.glycolPercentage);
-        if (saved.safetyMargin !== undefined) setSafetyMargin(saved.safetyMargin);
-        if (saved.safetyMarginPercentage !== undefined) setSafetyMarginPercentage(saved.safetyMarginPercentage);
-        if (saved.supportConfig) setSupportConfig(prev => ({ ...prev, ...saved.supportConfig }));
-        if (saved.branding) setBranding(prev => ({ ...prev, ...saved.branding }));
+        if (Object.keys(saved).length > 0) {
+            // Merge saved with default to populate any missing fields
+            reset({ ...defaultState, ...saved } as any);
+        }
+        setIsInitialized(true);
     }, []);
 
     // Persistence Logic (Save on Change)
     useEffect(() => {
-        const data = {
-            projectDetails,
-            segments,
-            equipmentList,
-            fluidType,
-            glycolPercentage,
-            safetyMargin,
-            safetyMarginPercentage,
-            supportConfig,
-            branding
-        };
+        if (!isInitialized) return;
+        const data = state;
         try {
             localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(data));
         } catch (e) {
@@ -138,7 +126,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                         const dataNoPhotos = {
                             ...data,
                             projectDetails: { ...data.projectDetails, companyLogo: undefined },
-                            equipmentList: equipmentList.map(item => ({ ...item, photos: undefined, proofImage: undefined }))
+                            equipmentList: data.equipmentList.map(item => ({ ...item, photos: undefined, proofImage: undefined }))
                         };
                         localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(dataNoPhotos));
                         console.log('Saved successfully after full pruning.');
@@ -150,28 +138,38 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 console.error('Failed to save to localStorage:', e);
             }
         }
-    }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding]);
+    }, [state, isInitialized]);
 
-    // Wrapper functions to handle partial updates
-    const handleSetSupportConfig = (config: Partial<SupportConfig>) => {
-        setSupportConfig(prev => ({ ...prev, ...config }));
-    };
+    // Setters Adapters
+    const setProjectDetails = useCallback((val: any) => set(prev => ({ ...prev, projectDetails: typeof val === 'function' ? val(prev.projectDetails) : val })), [set]);
+    const setSegments = useCallback((val: any) => set(prev => ({ ...prev, segments: typeof val === 'function' ? val(prev.segments) : val })), [set]);
+    const setEquipmentList = useCallback((val: any) => set(prev => ({ ...prev, equipmentList: typeof val === 'function' ? val(prev.equipmentList) : val })), [set]);
+    const setFluidType = useCallback((val: any) => set(prev => ({ ...prev, fluidType: typeof val === 'function' ? val(prev.fluidType) : val })), [set]);
+    const setGlycolPercentage = useCallback((val: any) => set(prev => ({ ...prev, glycolPercentage: typeof val === 'function' ? val(prev.glycolPercentage) : val })), [set]);
+    const setSafetyMargin = useCallback((val: any) => set(prev => ({ ...prev, safetyMargin: typeof val === 'function' ? val(prev.safetyMargin) : val })), [set]);
+    const setSafetyMarginPercentage = useCallback((val: any) => set(prev => ({ ...prev, safetyMarginPercentage: typeof val === 'function' ? val(prev.safetyMarginPercentage) : val })), [set]);
 
-    const handleSetBranding = (config: Partial<BrandingConfig>) => {
-        setBranding(prev => ({ ...prev, ...config }));
-    };
+    const setSupportConfig = useCallback((config: Partial<SupportConfig>) => {
+        set(prev => ({ ...prev, supportConfig: { ...prev.supportConfig, ...config } }));
+    }, [set]);
+
+    const setBranding = useCallback((config: Partial<BrandingConfig>) => {
+        set(prev => ({ ...prev, branding: { ...prev.branding, ...config } }));
+    }, [set]);
 
     const value = {
-        projectDetails, setProjectDetails,
-        segments, setSegments,
-        equipmentList, setEquipmentList,
-        fluidType, setFluidType,
-        glycolPercentage, setGlycolPercentage,
-        safetyMargin, setSafetyMargin,
-        safetyMarginPercentage, setSafetyMarginPercentage,
+        projectDetails: state.projectDetails, setProjectDetails,
+        segments: state.segments, setSegments,
+        equipmentList: state.equipmentList, setEquipmentList,
+        fluidType: state.fluidType, setFluidType,
+        glycolPercentage: state.glycolPercentage, setGlycolPercentage,
+        safetyMargin: state.safetyMargin, setSafetyMargin,
+        safetyMarginPercentage: state.safetyMarginPercentage, setSafetyMarginPercentage,
         activeTab, setActiveTab,
-        supportConfig, setSupportConfig: handleSetSupportConfig,
-        branding, setBranding: handleSetBranding
+        supportConfig: state.supportConfig, setSupportConfig,
+        branding: state.branding, setBranding,
+        isInitialized,
+        undo, redo, canUndo, canRedo
     };
 
     return (
