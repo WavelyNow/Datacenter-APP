@@ -1,11 +1,18 @@
 
 import React from 'react';
 import { PipeSegment } from '@/lib/types';
-import { PIPE_STANDARDS } from '@/lib/pipeStandards';
-import { GitCommit, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface SchematicCanvasProps {
     segments: PipeSegment[];
+}
+
+interface SegmentPosition {
+    segment: PipeSegment;
+    startX: number;
+    endX: number;
+    width: number;
+    index: number;
 }
 
 export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) => {
@@ -20,7 +27,14 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
     // Scale factor: pixels per meter
     const scale = totalLength > 0 ? drawableWidth / totalLength : 0;
 
-    let currentX = padding;
+    // Calculate all segment positions immutably
+    const segmentPositions: SegmentPosition[] = segments.reduce((acc, segment, index) => {
+        const segmentWidth = segment.length * scale;
+        const startX = index === 0 ? padding : acc[index - 1].endX;
+        const endX = startX + segmentWidth;
+        
+        return [...acc, { segment, startX, endX, width: segmentWidth, index }];
+    }, [] as SegmentPosition[]);
 
     return (
         <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-slate-900/20 overflow-hidden group">
@@ -46,11 +60,7 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                         strokeLinecap="round"
                     />
 
-                    {segments.map((segment, index) => {
-                        const segmentWidth = segment.length * scale;
-                        const startX = currentX;
-                        currentX += segmentWidth;
-
+                    {segmentPositions.map(({ segment, startX, endX, width, index }) => {
                         // Color selection based on material
                         let color = "#cbd5e1"; // default slate
                         if (segment.material.includes('steel')) color = "#60a5fa"; // blue
@@ -64,7 +74,7 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                                 <line
                                     x1={startX}
                                     y1="60"
-                                    x2={currentX}
+                                    x2={endX}
                                     y2="60"
                                     stroke={color}
                                     strokeWidth="4"
@@ -82,13 +92,13 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                                     strokeWidth="2"
                                 />
 
-                                {index === segments.length - 1 && (
-                                    <circle cx={currentX} cy="60" r="4" fill="#fff" stroke="#0f172a" strokeWidth="2" />
+                                {index === segmentPositions.length - 1 && (
+                                    <circle cx={endX} cy="60" r="4" fill="#fff" stroke="#0f172a" strokeWidth="2" />
                                 )}
 
                                 {/* Label (Size) */}
                                 <text
-                                    x={startX + (segmentWidth / 2)}
+                                    x={startX + (width / 2)}
                                     y="45"
                                     textAnchor="middle"
                                     className="fill-slate-400 text-[10px] font-mono font-bold"
@@ -98,7 +108,7 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
 
                                 {/* Label (Length) */}
                                 <text
-                                    x={startX + (segmentWidth / 2)}
+                                    x={startX + (width / 2)}
                                     y="80"
                                     textAnchor="middle"
                                     className="fill-slate-600 text-[9px] font-bold"

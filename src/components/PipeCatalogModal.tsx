@@ -49,7 +49,6 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {standard.dimensions.map((pipe, idx) => {
-                                            const volumePerMeter = Math.PI * Math.pow(pipe.id / 20, 2); // r = id/2 (mm) / 10 (cm) -> V = pi*r^2 * 100cm / 1000 = liters? No.
                                             // Volume (liters) = Area (m2) * Length (1m) * 1000
                                             // ID in mm. ID/1000 = m. r = ID/2000.
                                             // V = pi * (ID/2000)^2 * 1 * 1000 => liters

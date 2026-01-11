@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { PipeSegment, EquipmentItem, ProjectDetails, FluidType } from '@/lib/types';
+import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig } from '@/lib/types';
 
 interface ProjectState {
     projectDetails: ProjectDetails;
@@ -20,97 +20,98 @@ interface ProjectState {
     setSafetyMarginPercentage: (pct: number) => void;
     activeTab: 'config' | 'supports' | 'weights' | 'photos' | 'branding';
     setActiveTab: (tab: 'config' | 'supports' | 'weights' | 'photos' | 'branding') => void;
-    supportConfig: {
-        spacing: number;
-        mountingType: 'concrete' | 'suspended';
-        height: number;
-        pipesPerSupport: number;
-        insulationThickness: number;
-        insulationDensity: number;
-        addLeftConsole: boolean;
-        addRightConsole: boolean;
-        addUpperRail: boolean;
-    };
-    setSupportConfig: (config: any) => void;
-    branding: {
-        primaryColor: string;
-        accentColor: string;
-        pdfTheme: 'modern' | 'classic' | 'industrial';
-    };
-    setBranding: (config: any) => void;
+    supportConfig: SupportConfig;
+    setSupportConfig: (config: Partial<SupportConfig>) => void;
+    branding: BrandingConfig;
+    setBranding: (config: Partial<BrandingConfig>) => void;
 }
 
 const ProjectContext = createContext<ProjectState | undefined>(undefined);
 
+// Helper function to initialize state from localStorage
+const initializeFromStorage = (): Partial<ProjectState> => {
+    if (typeof window === 'undefined') return {};
+    
+    try {
+        const saved = localStorage.getItem('hydraulic_calc_project_v2');
+        if (!saved) return {};
+        return JSON.parse(saved);
+    } catch (e) {
+        console.error('Failed to load project:', e);
+        return {};
+    }
+};
+
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-    // 1. Project Details
-    const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
-        projectName: 'Data Center Cooling',
-        projectNumber: '2024-001',
-        designer: 'Ing. Popescu',
-        location: 'București',
-        beneficiary: '-',
-        date: new Date().toISOString().split('T')[0],
-        revision: 'A',
+    // Get saved data once
+    const savedData = typeof window !== 'undefined' ? initializeFromStorage() : {};
+    
+    // 1. Project Details - with lazy initialization
+    const [projectDetails, setProjectDetails] = useState<ProjectDetails>(() => {
+        return savedData.projectDetails || {
+            projectName: 'Data Center Cooling',
+            projectNumber: '2024-001',
+            designer: 'Ing. Popescu',
+            location: 'București',
+            beneficiary: '-',
+            date: new Date().toISOString().split('T')[0],
+            revision: 'A',
+        };
     });
 
-    // 2. Pipe Segments
-    const [segments, setSegments] = useState<PipeSegment[]>([]);
-
-    // 3. Equipment
-    const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>([]);
-
-    // 4. Fluid Configuration
-    const [fluidType, setFluidType] = useState<FluidType>('ethylene');
-    const [glycolPercentage, setGlycolPercentage] = useState<number>(30);
-    const [safetyMargin, setSafetyMargin] = useState<boolean>(true);
-    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(5);
-
-    const [supportConfig, setSupportConfig] = useState({
-        spacing: 2.5,
-        mountingType: 'suspended' as 'concrete' | 'suspended',
-        height: 1.5,
-        pipesPerSupport: 1,
-        insulationThickness: 30, // Default 30mm
-        insulationDensity: 100,  // Default 100kg/m3
-        addLeftConsole: false,
-        addRightConsole: false,
-        addUpperRail: false
+    // 2. Pipe Segments - with lazy initialization
+    const [segments, setSegments] = useState<PipeSegment[]>(() => {
+        return savedData.segments || [];
     });
 
-    const [branding, setBranding] = useState({
-        primaryColor: '#3b82f6',
-        accentColor: '#10b981',
-        pdfTheme: 'modern' as 'modern' | 'classic' | 'industrial'
+    // 3. Equipment - with lazy initialization
+    const [equipmentList, setEquipmentList] = useState<EquipmentItem[]>(() => {
+        return savedData.equipmentList || [];
+    });
+
+    // 4. Fluid Configuration - with lazy initialization
+    const [fluidType, setFluidType] = useState<FluidType>(() => {
+        return savedData.fluidType || 'ethylene';
+    });
+    
+    const [glycolPercentage, setGlycolPercentage] = useState<number>(() => {
+        return typeof savedData.glycolPercentage === 'number' ? savedData.glycolPercentage : 30;
+    });
+    
+    const [safetyMargin, setSafetyMargin] = useState<boolean>(() => {
+        return typeof savedData.safetyMargin === 'boolean' ? savedData.safetyMargin : true;
+    });
+    
+    const [safetyMarginPercentage, setSafetyMarginPercentage] = useState<number>(() => {
+        return typeof savedData.safetyMarginPercentage === 'number' ? savedData.safetyMarginPercentage : 5;
+    });
+
+    const [supportConfig, setSupportConfig] = useState<SupportConfig>(() => {
+        const defaultConfig: SupportConfig = {
+            spacing: 2.5,
+            mountingType: 'suspended',
+            height: 1.5,
+            pipesPerSupport: 1,
+            insulationThickness: 30,
+            insulationDensity: 100,
+            addLeftConsole: false,
+            addRightConsole: false,
+            addUpperRail: false
+        };
+        return savedData.supportConfig ? { ...defaultConfig, ...savedData.supportConfig } : defaultConfig;
+    });
+
+    const [branding, setBranding] = useState<BrandingConfig>(() => {
+        const defaultBranding: BrandingConfig = {
+            primaryColor: '#3b82f6',
+            accentColor: '#10b981',
+            pdfTheme: 'modern'
+        };
+        return savedData.branding ? { ...defaultBranding, ...savedData.branding } : defaultBranding;
     });
 
     // 5. UI State
     const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding'>('config');
-
-    // Persistence Logic (Load on Mount)
-    useEffect(() => {
-        const saved = localStorage.getItem('hydraulic_calc_project_v2');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                if (data.projectDetails) setProjectDetails(data.projectDetails);
-                if (data.segments) setSegments(data.segments);
-                if (data.equipmentList) setEquipmentList(data.equipmentList);
-                if (data.fluidType) setFluidType(data.fluidType);
-                if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-                if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
-                if (typeof data.safetyMarginPercentage === 'number') setSafetyMarginPercentage(data.safetyMarginPercentage);
-                if (data.supportConfig) {
-                    setSupportConfig(prev => ({ ...prev, ...data.supportConfig }));
-                }
-                if (data.branding) {
-                    setBranding(prev => ({ ...prev, ...data.branding }));
-                }
-            } catch (e) {
-                console.error('Failed to load project:', e);
-            }
-        }
-    }, []);
 
     // Persistence Logic (Save on Change)
     useEffect(() => {
@@ -127,8 +128,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         };
         try {
             localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(data));
-        } catch (e: any) {
-            if (e.name === 'QuotaExceededError') {
+        } catch (e) {
+            const error = e as Error;
+            if (error.name === 'QuotaExceededError') {
                 console.warn('LocalStorage quota exceeded. Attempting to save without logo.');
                 try {
                     const dataWithoutLogo = {
@@ -140,7 +142,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                     };
                     localStorage.setItem('hydraulic_calc_project_v2', JSON.stringify(dataWithoutLogo));
                     console.log('Saved successfully without logo.');
-                } catch (retryError) {
+                } catch {
                     console.warn('Still exceeding quota without logo. Pruning equipment photos...');
                     try {
                         const dataNoPhotos = {
@@ -160,6 +162,15 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding]);
 
+    // Wrapper functions to handle partial updates
+    const handleSetSupportConfig = (config: Partial<SupportConfig>) => {
+        setSupportConfig(prev => ({ ...prev, ...config }));
+    };
+
+    const handleSetBranding = (config: Partial<BrandingConfig>) => {
+        setBranding(prev => ({ ...prev, ...config }));
+    };
+
     const value = {
         projectDetails, setProjectDetails,
         segments, setSegments,
@@ -169,8 +180,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         safetyMargin, setSafetyMargin,
         safetyMarginPercentage, setSafetyMarginPercentage,
         activeTab, setActiveTab,
-        supportConfig, setSupportConfig,
-        branding, setBranding
+        supportConfig, setSupportConfig: handleSetSupportConfig,
+        branding, setBranding: handleSetBranding
     };
 
     return (

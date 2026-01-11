@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { Palette, Layout, Type, Image as ImageIcon, Check, RefreshCw } from 'lucide-react';
+import Image from 'next/image';
+import { Palette, Layout, Image as ImageIcon, Check, RefreshCw } from 'lucide-react';
+import { BrandingConfig } from '@/lib/types';
 
 export const BrandingManager: React.FC = () => {
     const { branding, setBranding, projectDetails, setProjectDetails } = useProject();
 
     const themes = [
-        { id: 'modern', name: 'Modern Futurist', desc: 'Minimalist, dark, high contrast with glow effects.' },
-        { id: 'classic', name: 'Corporate Pro', desc: 'Clean, light backgrounds, traditional serif fonts.' },
-        { id: 'industrial', name: 'Blueprints', desc: 'Technical look, blueprint blue accents, monospace fonts.' }
+        { id: 'modern' as const, name: 'Modern Futurist', desc: 'Minimalist, dark, high contrast with glow effects.' },
+        { id: 'classic' as const, name: 'Corporate Pro', desc: 'Clean, light backgrounds, traditional serif fonts.' },
+        { id: 'industrial' as const, name: 'Blueprints', desc: 'Technical look, blueprint blue accents, monospace fonts.' }
     ];
 
     const colors = [
@@ -21,8 +23,8 @@ export const BrandingManager: React.FC = () => {
         { name: 'Cyan', value: '#06b6d4' }
     ];
 
-    const updateBranding = (updates: any) => {
-        setBranding({ ...branding, ...updates });
+    const updateBranding = (updates: Partial<BrandingConfig>) => {
+        setBranding(updates);
     };
 
     const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,8 +57,8 @@ export const BrandingManager: React.FC = () => {
                                 key={theme.id}
                                 onClick={() => updateBranding({ pdfTheme: theme.id })}
                                 className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group ${branding.pdfTheme === theme.id
-                                        ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10'
-                                        : 'bg-white/5 border-white/5 hover:border-white/10'
+                                    ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10'
+                                    : 'bg-white/5 border-white/5 hover:border-white/10'
                                     }`}
                             >
                                 <div>
@@ -131,7 +133,14 @@ export const BrandingManager: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-2 group relative overflow-hidden">
                                 {projectDetails.companyLogo ? (
-                                    <img src={projectDetails.companyLogo} alt="Preview" className="w-full h-full object-contain" />
+                                    <Image
+                                        src={projectDetails.companyLogo}
+                                        alt="Preview"
+                                        width={96}
+                                        height={96}
+                                        className="w-full h-full object-contain"
+                                        unoptimized
+                                    />
                                 ) : (
                                     <ImageIcon className="w-8 h-8 text-slate-700" />
                                 )}

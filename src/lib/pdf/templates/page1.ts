@@ -1,7 +1,6 @@
-import { PDFDocument, rgb } from 'pdf-lib';
 import { PdfData } from '../types';
 import { drawTable } from '@/lib/pdf/templates/tableDrawer';
-import { calculateSystemWeight, calculatePipeVolume, calculateTotalVolume, getFluidDensity } from '../../calculations';
+import { calculateTotalVolume, getFluidDensity } from '../../calculations';
 import { PDFContext } from './SectionGenerator';
 
 export async function generatePage1(

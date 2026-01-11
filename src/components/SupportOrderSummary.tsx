@@ -8,13 +8,6 @@ interface SupportOrderSummaryProps {
 }
 
 export const SupportOrderSummary: React.FC<SupportOrderSummaryProps> = ({ bom, onExport }) => {
-    // Group by category for cleaner display
-    const groups = {
-        profile: bom.filter(i => i.category === 'profile'),
-        accessories: bom.filter(i => i.category === 'accessories'),
-        fixings: bom.filter(i => i.category === 'fixings'),
-    };
-
     const copyToClipboard = () => {
         const text = bom.map(i => `${i.component} | ${i.specs} | ${i.quantity} ${i.unit}`).join('\n');
         navigator.clipboard.writeText(text);

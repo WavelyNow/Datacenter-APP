@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SupportItem } from '@/lib/calculations';
-import { AlertTriangle, CheckCircle, Settings, Info, ChevronDown, ChevronUp, Activity, PenTool } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ChevronDown, ChevronUp, Activity, Settings, PenTool, Info } from 'lucide-react';
 interface AnalysisTableProps {
     report: SupportItem[];
 }
@@ -37,18 +37,15 @@ export const AnalysisTable: React.FC<AnalysisTableProps> = ({ report }) => {
                             const isExpanded = expandedRow === item.segmentId;
 
                             // Visual Status Logic
-                            let statusColor = "text-emerald-400";
                             let StatusIcon = CheckCircle;
                             let statusText = "OPTIM";
                             let rowBg = "";
 
-                            if (item.status === 'warning') { // Was item.utilization > 80
-                                statusColor = "text-amber-400";
+                            if (item.status === 'warning') {
                                 StatusIcon = AlertTriangle;
                                 statusText = "LIMITĂ (80%+)";
                             }
                             if (item.status === 'critical') {
-                                statusColor = "text-red-400 animate-pulse";
                                 StatusIcon = AlertTriangle;
                                 statusText = "INSUFICIENT - UPGRADE";
                                 rowBg = "bg-red-500/5";

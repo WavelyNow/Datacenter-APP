@@ -311,9 +311,6 @@ export interface SupportItem {
 
 // Engineering Constants
 const E_STEEL = 210000; // MPa (N/mm2) - Modulus of Elasticity for Steel
-const GAMMA_STEEL = 1.35; // Partial Safety Factor for permanent loads (Eurocode) -> Simplified to Load Factor here
-const GAMMA_FLUID = 1.0; // Variable load factor
-const DYNAMIC_FACTOR = 1.2; // Vibration/Dynamic factor
 
 const ALLOWABLE_DEFLECTION_RATIO = 250; // L/250
 
@@ -323,7 +320,7 @@ const generateMountingNote = (profile: { sku: string }, base: { sku: string }, b
 };
 
 // Find a suitable profile from our VERIFIED catalog based on load
-const findOptimalProfile = (designLoadKg: number, armLengthM: number, isHeavyDuty: boolean = false, model: 'cantilever' | 'beam' = 'cantilever'): any => {
+const findOptimalProfile = (designLoadKg: number, armLengthM: number, isHeavyDuty: boolean = false, model: 'cantilever' | 'beam' = 'cantilever'): MuproComponent | null => {
     // 1. Get Channels from Master Catalog
     let candidates = MUPRO_MASTER_CATALOG.filter(c => c.category === 'profile');
 
@@ -420,7 +417,6 @@ export const calculateSupportReport = (
         let weightPerMeterEmpty = 0;
         let innerDiameterMm = 0;
         let outerDiameterMm = 0; // Needed for insulation calc
-        let fluidVolumePerMeter = 0;
         let dn = 0;
         let description = '';
 
@@ -496,24 +492,24 @@ export const calculateSupportReport = (
         }
 
         // Select the heavier profile to be safe for both
-        const recommendedProfile = (postProfile.weight > beamProfile.weight) ? postProfile : beamProfile;
+        const recommendedProfile = (postProfile && (postProfile.weight || 0) > (beamProfile?.weight || 0)) ? postProfile : beamProfile;
 
         // Recalculate stress for the chosen one
-        const governedByPost = postProfile.weight > beamProfile.weight;
+        const governedByPost = (postProfile && (postProfile.weight || 0) > (beamProfile?.weight || 0));
         const analysisLoad = governedByPost ? (designLoad * 0.15) : designLoad;
         const analysisLength = governedByPost ? mountingHeight : Math.max(requiredArmLengthM, 0.2);
         // If post governed, model is cantilever (lateral load). If beam governed, use determined model.
         const analysisModel = governedByPost ? 'cantilever' : calculationModel;
 
-        const analysis = calculateMechanicalStress(analysisLoad, analysisLength, recommendedProfile, analysisModel);
+        const analysis = calculateMechanicalStress(analysisLoad, analysisLength, recommendedProfile as MuproComponent, analysisModel);
 
         // 5. Anchors
         const numAnchors = config.mountingType === 'concrete' ? 4 : 2;
 
         // Add Support Self-Weight
         // H-Frame: Beam + 2 Posts. Trapeze: Beam.
-        const beamW = recommendedProfile.weight * Math.max(requiredArmLengthM, 0.4);
-        const postW = (config.mountingType === 'concrete') ? (recommendedProfile.weight * mountingHeight * 2) : 0;
+        const beamW = (recommendedProfile?.weight || 0) * Math.max(requiredArmLengthM, 0.4);
+        const postW = (config.mountingType === 'concrete') ? ((recommendedProfile?.weight || 0) * mountingHeight * 2) : 0;
         const totalProfileWeight = beamW + postW;
 
         const clampsWeight = config.pipesPerSupport * getClampWeight(seg.size);
@@ -569,10 +565,10 @@ export const calculateSupportReport = (
             addRightConsole: config.addRightConsole,
             addUpperRail: config.addUpperRail,
             mountingNote: generateMountingNote(
-                { sku: recommendedProfile.sku },
+                { sku: recommendedProfile?.sku || 'UNKNOWN' },
                 { sku: isHeavyDuty ? '131842' : '131840' },
                 { sku: isHeavyDuty ? '110435' : '110419' },
-                { sku: recommendedProfile.sku === '130004' || recommendedProfile.sku === '130014' ? '105805' : '105808' }
+                { sku: recommendedProfile?.sku === '130004' || recommendedProfile?.sku === '130014' ? '105805' : '105808' }
             )
         };
 
@@ -684,9 +680,7 @@ export const generateSupportBoM = (supportItems: SupportItem[]): BoMItem[] => {
         }
 
         // --- 2. ACCESSORIES & CONNECTORS (System Hardware) ---
-        const isBeam = firstItem.pipesPerSupport > 1 || firstItem.mountingType === 'concrete';
         const numPosts = (firstItem.mountingType === 'concrete') ? 2 : 0;
-        const numRails = 1;
 
         // 2.1 Base Plates
         let plateSku = '131840'; // Default Q100

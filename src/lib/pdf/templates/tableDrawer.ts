@@ -1,4 +1,4 @@
-import { PDFPage, rgb } from 'pdf-lib';
+import { PDFPage, PDFFont, RGB } from 'pdf-lib';
 import { PDFContext } from './SectionGenerator';
 
 interface TableOptions {
@@ -21,7 +21,7 @@ export const drawTable = async (
     const tableWidth = colWidths.reduce((acc, w) => acc + w, 0);
 
     // Helper: Wrap Text
-    const wrapText = (text: string, font: any, size: number, maxWidth: number): string[] => {
+    const wrapText = (text: string, font: PDFFont, size: number, maxWidth: number): string[] => {
         if (!text) return [''];
         const words = text.split(' ');
         const lines: string[] = [];
@@ -42,7 +42,7 @@ export const drawTable = async (
     };
 
     // Helper: Draw Text with Alignment
-    const drawCellText = (p: PDFPage, text: string, xPos: number, yPos: number, width: number, font: any, color: any, alignment: string) => {
+    const drawCellText = (p: PDFPage, text: string, xPos: number, yPos: number, width: number, font: PDFFont, color: RGB, alignment: string) => {
         const textWidth = font.widthOfTextAtSize(text, 8);
         let finalX = xPos + 8;
         if (alignment === 'center') finalX = xPos + (width / 2) - (textWidth / 2);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Activity, BookOpen, ChevronRight, Check } from 'lucide-react';
+import { Settings, Activity, Check } from 'lucide-react';
 
 interface Step {
     id: 'config' | 'summary';

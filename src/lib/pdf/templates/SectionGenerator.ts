@@ -1,14 +1,15 @@
-import { PDFDocument, PDFPage, PDFFont, rgb } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFFont, PDFImage } from 'pdf-lib';
 import { ProjectDetails } from '@/lib/types';
 import { drawHeader, drawFooter } from './common';
+import { PdfTheme } from '../styles';
 
 export class PDFContext {
     pdfDoc: PDFDocument;
     fontRegular: PDFFont;
     fontBold: PDFFont;
     projectDetails: ProjectDetails;
-    theme: any;
-    logoImage?: any;
+    theme: PdfTheme;
+    logoImage?: PDFImage;
 
     currentPage!: PDFPage;
     currentY!: number;
@@ -21,8 +22,8 @@ export class PDFContext {
         fontRegular: PDFFont,
         fontBold: PDFFont,
         projectDetails: ProjectDetails,
-        theme: any,
-        logoImage?: any
+        theme: PdfTheme,
+        logoImage?: PDFImage
     ) {
         this.pdfDoc = pdfDoc;
         this.fontRegular = fontRegular;

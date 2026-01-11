@@ -1,16 +1,17 @@
-import { PDFPage, rgb } from 'pdf-lib';
+import { PDFPage, PDFFont, PDFImage, rgb } from 'pdf-lib';
 import { ProjectDetails } from '../../types';
+import { PdfTheme } from '../styles';
 
 export const drawHeader = async (
     page: PDFPage,
-    fontRegular: any,
-    fontBold: any,
+    fontRegular: PDFFont,
+    fontBold: PDFFont,
     projectDetails: ProjectDetails,
-    theme: any,
-    logoImage?: any
+    theme: PdfTheme,
+    logoImage?: PDFImage
 ): Promise<number> => {
     const { width, height } = page.getSize();
-    let topBandY = height - 25;
+    const topBandY = height - 25;
 
     // Draw Logo on the Right
     if (logoImage) {
@@ -76,9 +77,9 @@ export const drawHeader = async (
 
 export const drawFooter = (
     page: PDFPage,
-    fontRegular: any,
+    fontRegular: PDFFont,
     pageNumber: number,
-    theme: any,
+    theme: PdfTheme,
     projectName: string = 'Data Center Cooling',
     revision: string = 'A'
 ) => {

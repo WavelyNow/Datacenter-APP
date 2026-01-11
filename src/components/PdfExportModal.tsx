@@ -80,9 +80,10 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({ isOpen, onClose,
             document.body.removeChild(a);
 
             onClose();
-        } catch (error: any) {
+        } catch (error) {
             console.error('PDF Download Error:', error);
-            alert(`Eroare la generare PDF: ${error.message}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            alert(`Eroare la generare PDF: ${errorMessage}`);
         } finally {
             setIsGenerating(false);
         }
@@ -144,7 +145,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({ isOpen, onClose,
                                 <Package className="w-4 h-4 text-slate-400" />
                                 Lista de Cantități (BoQ)
                             </div>
-                            <p className="text-xs text-slate-500 mt-1">Necesar țeavă "De Comandat" (cu rezerve incluse).</p>
+                            <p className="text-xs text-slate-500 mt-1">Necesar țeavă &quot;De Comandat&quot; (cu rezerve incluse).</p>
                         </div>
                     </label>
 

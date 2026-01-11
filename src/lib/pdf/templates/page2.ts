@@ -7,7 +7,7 @@ export async function generatePage2(
     ctx: PDFContext,
     data: PdfData
 ) {
-    const { theme, width } = ctx;
+    const { theme } = ctx;
 
     await ctx.checkSpace(150);
 

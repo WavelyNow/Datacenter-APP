@@ -120,7 +120,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                             <Plus className="w-8 h-8 text-slate-500 group-hover:text-teal-400 transition-colors" />
                         </div>
                         <p className="text-slate-400 font-medium">Nu există segmente de țeavă.</p>
-                        <p className="text-sm text-slate-600 mt-1">Apasă aici sau pe butonul "Add Segment" pentru a începe.</p>
+                        <p className="text-sm text-slate-600 mt-1">Apasă aici sau pe butonul &quot;Add Segment&quot; pentru a începe.</p>
                     </div>
                 )}
 
@@ -128,7 +128,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({ segments, onSegmentsCh
                     const isCustom = segment.material === 'custom';
                     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
                     const pipeInfo = standardData?.dimensions.find(d => d.dn === segment.size);
-                    const displayId = isCustom ? (segment.customInnerDiameter || 0) : (pipeInfo?.id || 0);
 
                     return (
                         <div key={segment.id} className="glass-card p-4 rounded-xl grid grid-cols-1 md:grid-cols-12 gap-5 items-end relative group">

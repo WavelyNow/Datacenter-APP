@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { ProjectDetails } from '@/lib/types';
-import { PdfData } from '@/lib/pdf/types';
+import Image from 'next/image';
+import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { Box, Book, FileText, MapPin, Printer, Save, Upload, User, Hash, GitBranch, Layers } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { PipeCatalogModal } from './PipeCatalogModal';
@@ -12,7 +12,7 @@ import { ProfileCatalogModal } from './ProfileCatalogModal';
 interface HeaderProps {
     projectDetails: ProjectDetails;
     onProjectDetailsChange: (details: ProjectDetails) => void;
-    onLoadProject: (data: any) => void;
+    onLoadProject: (data: ProjectLoadData) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -112,7 +112,14 @@ export const Header: React.FC<HeaderProps> = ({
                                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                                 <div className="bg-slate-800/50 p-2 rounded-2xl shadow-inner border border-white/5 w-16 h-16 flex items-center justify-center backdrop-blur-md">
                                     {projectDetails.companyLogo ? (
-                                        <img src={projectDetails.companyLogo} alt="Logo" className="w-full h-full object-contain" />
+                                        <Image
+                                            src={projectDetails.companyLogo}
+                                            alt="Logo"
+                                            width={64}
+                                            height={64}
+                                            className="w-full h-full object-contain"
+                                            unoptimized
+                                        />
                                     ) : (
                                         <Box className="w-8 h-8 text-slate-500" />
                                     )}

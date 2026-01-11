@@ -38,7 +38,9 @@ const DashboardContent = () => {
     { id: 'weights', label: 'Sarcini Statice', icon: Scale },
     { id: 'photos', label: 'Documentație FOTO', icon: Camera },
     { id: 'branding', label: 'Branding & Stil', icon: Palette },
-  ];
+  ] as const;
+
+  type TabId = typeof tabs[number]['id'];
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-blue-500/30 pb-20">
@@ -66,7 +68,7 @@ const DashboardContent = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as TabId)}
                   className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden group ${isActive
                     ? 'text-white shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'

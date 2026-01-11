@@ -65,3 +65,31 @@ export interface AppState {
     supportConfig: SupportConfig;
     branding: BrandingConfig;
 }
+
+export interface ApiError {
+    message: string;
+    code?: string;
+    details?: unknown;
+}
+
+export interface ImageUploadResult {
+    success: boolean;
+    base64?: string;
+    error?: string;
+    sizeKb?: number;
+}
+
+export interface PdfGenerationProgress {
+    stage: 'validating' | 'rendering' | 'compressing' | 'complete';
+    progress: number; // 0-100
+    message: string;
+}
+
+export interface ProjectLoadData {
+    segments?: PipeSegment[];
+    equipmentList?: EquipmentItem[];
+    projectDetails?: ProjectDetails;
+    fluidType?: FluidType;
+    glycolPercentage?: number;
+    safetyMargin?: boolean;
+}

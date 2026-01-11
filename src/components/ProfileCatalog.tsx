@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, Info, Box, Layers, ArrowRight, CheckCircle, ChevronDown, ChevronUp, Filter, X, Grid, List } from 'lucide-react';
+import { Search, Box, Layers, ArrowRight, CheckCircle, Filter, Grid } from 'lucide-react';
 import { MUPRO_MASTER_CATALOG, MuproComponent } from '@/lib/muproVerifiedStandards';
 
 // --- Types ---

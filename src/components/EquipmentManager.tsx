@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useRef, useMemo } from 'react';
-import { Package, ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Scale, Droplet, Box, BookOpen, Info, Copy } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Scale, Box, BookOpen, Info, Copy } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
@@ -61,7 +62,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
         onEquipmentChange([...equipmentList, newItem]);
     };
 
-    const updateItem = (id: string, field: keyof EquipmentItem, value: any) => {
+    const updateItem = (id: string, field: keyof EquipmentItem, value: EquipmentItem[keyof EquipmentItem]) => {
         const updated = equipmentList.map(item =>
             item.id === id ? { ...item, [field]: value } : item
         );
@@ -149,7 +150,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                 {equipmentList.length === 0 && (
                     <div className="text-center py-16 px-4 bg-white/5 rounded-2xl border border-dashed border-white/10 flex flex-col items-center justify-center">
                         <p className="text-slate-400 font-medium">No equipment added.</p>
-                        {viewMode === 'volume' && <p className="text-sm text-slate-500 mt-1">Use "Add Equipment" to start.</p>}
+                        {viewMode === 'volume' && <p className="text-sm text-slate-500 mt-1">Use &quot;Add Equipment&quot; to start.</p>}
                     </div>
                 )}
 
@@ -260,10 +261,12 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
                                 {item.proofImage ? (
                                     <div className="relative group/img cursor-pointer w-full h-40 rounded-xl overflow-hidden border border-white/5" onClick={() => triggerFileInput(item.id)}>
-                                        <img
+                                        <Image
                                             src={item.proofImage}
                                             alt="Proof"
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                            unoptimized
                                         />
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
                                             <Upload className="w-6 h-6 text-white" />

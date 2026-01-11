@@ -1,6 +1,6 @@
 import React from 'react';
 import { Scale, ClipboardList, Droplet, ArrowRight, FileSpreadsheet } from 'lucide-react';
-import { calculateTotalVolume, generateBoQ, getDetailedWeightReport, calculatePipeVolume } from '@/lib/calculations';
+import { generateBoQ, getDetailedWeightReport, calculatePipeVolume } from '@/lib/calculations';
 import { useProject } from '@/context/ProjectContext';
 
 export const ResultsDisplay: React.FC = () => {

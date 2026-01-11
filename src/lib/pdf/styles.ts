@@ -24,6 +24,8 @@ export const getTheme = (branding?: { primaryColor: string; accentColor: string 
     };
 };
 
+export type PdfTheme = ReturnType<typeof getTheme>;
+
 export const Theme = getTheme(); // Default theme
 
 export const styles = {
