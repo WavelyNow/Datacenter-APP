@@ -11,7 +11,7 @@ interface ProjectState {
     setSegments: (segments: PipeSegment[]) => void;
     addSegments: (segments: PipeSegment[]) => void;
     equipmentList: EquipmentItem[];
-    setEquipmentList: (list: EquipmentItem[]) => void;
+    setEquipmentList: (list: EquipmentItem[] | ((prev: EquipmentItem[]) => EquipmentItem[])) => void;
     fluidType: FluidType;
     setFluidType: (type: FluidType) => void;
     glycolPercentage: number;

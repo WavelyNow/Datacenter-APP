@@ -48,7 +48,8 @@ export class IfcService {
             WEBIFC.IFCFLOWMOVINGDEVICE,
             WEBIFC.IFCFLOWTERMINAL,
             WEBIFC.IFCUNITARYEQUIPMENT,
-            WEBIFC.IFCFLOWSEGMENT
+            WEBIFC.IFCFLOWSEGMENT,
+            WEBIFC.IFCFLOWFITTING // Add Fittings
         ];
 
         const allObjects: any[] = [];
@@ -70,6 +71,30 @@ export class IfcService {
                 if (type === WEBIFC.IFCVALVE || type === WEBIFC.IFCFLOWCONTROLLER) category = 'Valve';
                 if (type === WEBIFC.IFCFLOWSEGMENT) category = 'Pipe';
                 if (type === WEBIFC.IFCUNITARYEQUIPMENT) category = 'Equipment';
+
+                // Detailed Filling Logic
+                if (type === WEBIFC.IFCFLOWFITTING) {
+                    category = 'Fitting';
+                    // Check PredefinedType if available (It's an enum usually, can use value directly or map)
+                    // In web-ifc, props.PredefinedType might be { value: 'ELBOW', ... } or just enum integer.
+                    // For safety, let's try to map string if possible or check ObjectType
+
+                    if (props.ObjectType && props.ObjectType.value) {
+                        const objType = props.ObjectType.value.toLowerCase();
+                        if (objType.includes('elbow') || objType.includes('bend') || objType.includes('cot')) category = 'Elbow';
+                        else if (objType.includes('tee') || objType.includes('teu')) category = 'Tee';
+                        else if (objType.includes('reduc') || objType.includes('red')) category = 'Reducer';
+                    }
+
+                    // Fallback to name if ObjectType isn't clear
+                    if (category === 'Fitting') {
+                        const n = name.toLowerCase();
+                        if (n.includes('elbow') || n.includes('ben') || n.includes('winkel') || n.includes('cot')) category = 'Elbow';
+                        if (n.includes('tee') || n.includes('t-stuck') || n.includes('teu')) category = 'Tee';
+                        if (n.includes('reduc') || n.includes('transition')) category = 'Reducer';
+                        if (n.includes('cap') || n.includes('plug')) category = 'Cap';
+                    }
+                }
 
                 // Get System from map
                 const systemName = systemMap.get(id) || 'Unassigned';

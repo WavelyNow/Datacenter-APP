@@ -1,19 +1,19 @@
-
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileBox, Loader2, Check, AlertTriangle, ArrowRight, MousePointer2, Layers } from 'lucide-react';
+import { Upload, FileBox, Loader2, Check, AlertTriangle, ArrowRight, MousePointer2, Layers, FileText } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
 import { IfcService } from '@/lib/bim/IfcService';
-import { PipeSegment } from '@/lib/types';
-
+import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';
+import { BimObjectEditor } from './bim/BimObjectEditor';
 
 export const BimPage = () => {
-    const { addSegments } = useProject();
+    const { addSegments, setEquipmentList } = useProject();
     const [selectedObject, setSelectedObject] = useState<any | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'3d' | 'table'>('3d');
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
@@ -65,38 +65,85 @@ export const BimPage = () => {
     };
 
     const handleImport = () => {
-        // Filter only pipes for the "Import Pipes" action, or handle others
+        // 1. Process Pipes
         const pipes = foundPipes.filter(p => p.type === 'Pipe');
-
         if (pipes.length > 0) {
-            // We need to map our generic object back to PipeSegment structure expected by context
-            // The service 'extractPipes' did this mapping. 'extractBimObjects' returns a cleaner generic object.
-            // For this specific 'Quick Import' button, we might want to just grab pipes.
-            // Let's re-run strictly pipe extraction or map carefully.
-
-            // For V1 of this feature, let's just alert the user or map roughly.
-            // Ideally we call 'addSegments' with properly formatted data.
-            // We can map on the fly:
             const mappedPipes: PipeSegment[] = pipes.map(p => ({
                 id: crypto.randomUUID(),
                 name: p.name || 'Imported Pipe',
+                // Use the material set by the Editor, or default to Steel
+                material: (p.material as any) || 'Steel - Carbon',
                 fluid: 'water',
                 temperature: 15,
                 flowRate: 0,
-                length: 5, // Default/Mock as per service v1
-                diameter: 114.3,
-                material: 'Steel',
-                roughness: 0.045,
+                length: 5, // Ideally use p.length from IFC if available
+                diameter: 114.3, // Ideally use p.diameter
                 standard: 'EN 10255',
-                size: 'DN100',
+                size: 'DN100', // Placeholder
                 fittings: []
             }));
-
             addSegments(mappedPipes);
-            alert(`Imported ${mappedPipes.length} pipe segments to your configuration.`);
-        } else {
-            alert('No pipes found to import directly. Use the list below to map equipment.');
         }
+
+        // 2. Process Components (Valves, Fittings, Pumps)
+        const components = foundPipes.filter(p => ['Valve', 'Pump', 'Fitting', 'Elbow', 'Tee', 'Reducer', 'Cap'].includes(p.type));
+        if (components.length > 0) {
+            const mappedEquipment: EquipmentItem[] = components.map(c => ({
+                id: crypto.randomUUID(),
+                name: c.name || `${c.type} (BIM)`,
+                type: c.type,
+                manufacturer: 'Generic BIM',
+                model: 'Standard',
+                power: 0,
+                weight: c.type === 'Valve' ? 15 : 2, // Estimated weights
+                volume: c.type === 'Valve' ? 5 : 0.5, // Estimated volume (Liters) for Glycol Calc
+                dimensions: { length: 0, width: 0, height: 0 },
+                price: 0,
+                // Store original BIM ID
+                notes: `Imported from BIM (GlobalId: ${c.globalId})`
+            }));
+
+            // Add to equipment list
+            setEquipmentList(prev => [...prev, ...mappedEquipment]);
+        }
+
+        alert(`Imported ${pipes.length} pipes and ${components.length} components (valves, fittings) to the project.\n\nGlycol volume will now be calculated automatically based on these items.`);
+    };
+
+    const handleExportBOM = () => {
+        if (foundPipes.length === 0) {
+            alert("No data to export. Please load an IFC file first.");
+            return;
+        }
+
+        // Create CSV Header
+        const headers = ["Global ID", "Name", "Type", "System", "Connected To"];
+
+        // Map data to CSV rows
+        const rows = foundPipes.map(obj => [
+            obj.globalId,
+            `"${obj.name}"`, // Escape quotes
+            obj.type,
+            obj.system,
+            obj.connectedTo.length > 0 ? "Yes" : "No"
+        ]);
+
+        // Combine header and rows
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.join(","))
+        ].join("\n");
+
+        // Create Blob and download
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bim_bom_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
@@ -104,16 +151,16 @@ export const BimPage = () => {
             {/* Header */}
             <div className="flex justify-between items-start shrink-0">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                        BIM Viewer & Data
-                        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full border border-primary/20">BETA</span>
-                    </h1>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <FileBox className="w-6 h-6 text-indigo-500" />
+                        BIM Model Viewer
+                    </h2>
                     <p className="text-muted-foreground mt-1">
                         Visualize IFC models, inspect pumps/valves, and import engineering data.
                     </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                     <button
                         onClick={() => setShowInstructions(!showInstructions)}
                         className="btn btn-ghost border border-border gap-2"
@@ -121,6 +168,16 @@ export const BimPage = () => {
                         <AlertTriangle className="w-4 h-4 text-amber-500" />
                         {showInstructions ? 'Hide Guide' : 'Export Guide'}
                     </button>
+
+                    {foundPipes.length > 0 && (
+                        <button
+                            onClick={handleExportBOM}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                        >
+                            <FileText className="w-4 h-4" />
+                            Export BOM
+                        </button>
+                    )}
 
                     {status === 'extracted' && (
                         <div className="flex gap-3">
@@ -223,7 +280,9 @@ export const BimPage = () => {
                                                 <td className="px-4 py-2">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                                                         obj.type === 'Pump' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
-                                                            'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                                                            obj.type === 'Valve' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
+                                                                ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(obj.type) ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
+                                                                    'bg-slate-500/10 text-slate-600 border-slate-500/20'
                                                         }`}>
                                                         {obj.type}
                                                     </span>
@@ -238,15 +297,27 @@ export const BimPage = () => {
                                                 </td>
                                                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{obj.system || '-'}</td>
                                                 <td className="px-4 py-2 text-right">
-                                                    <button
-                                                        className="text-xs text-primary hover:underline font-bold"
-                                                        onClick={() => {
-                                                            setSelectedObject(obj);
-                                                            setIsWizardOpen(true);
-                                                        }}
-                                                    >
-                                                        Map to Library
-                                                    </button>
+                                                    {['Pump', 'Valve', 'Equipment'].includes(obj.type) ? (
+                                                        <button
+                                                            className="text-xs text-primary hover:underline font-bold"
+                                                            onClick={() => {
+                                                                setSelectedObject(obj);
+                                                                setIsWizardOpen(true);
+                                                            }}
+                                                        >
+                                                            Map to Library
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="text-xs text-indigo-500 hover:underline font-bold"
+                                                            onClick={() => {
+                                                                setSelectedObject(obj);
+                                                                setIsEditorOpen(true);
+                                                            }}
+                                                        >
+                                                            Edit Properties
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -319,11 +390,53 @@ export const BimPage = () => {
                 onClose={() => setIsWizardOpen(false)}
                 bimObject={selectedObject}
                 onSave={(data) => {
-                    console.log('Saved Mapping:', data);
-                    // Here we would add to ProjectContext
-                    // addEquipment(data.mappedProduct)...
+                    const mappedItem: EquipmentItem = {
+                        id: data.mappedProduct.id,
+                        name: `${data.name} (${data.mappedProduct.model})`,
+                        type: 'Pump',
+                        manufacturer: data.mappedProduct.manufacturer,
+                        model: data.mappedProduct.model,
+                        power: data.mappedProduct.power,
+                        weight: data.mappedProduct.weight || 100,
+                        dimensions: { length: 0, width: 0, height: 0 },
+                        price: data.mappedProduct.price || 0,
+                        proofImage: data.mappedProduct.imageUrl,
+                        // Custom fields
+                        flowRate: data.flowRate,
+                        head: data.headPressure,
+                        volume: 10 // default
+                    };
+
+                    setEquipmentList(prev => [...prev, mappedItem]);
                     setIsWizardOpen(false);
-                    alert(`Successfully mapped ${data.name} to ${data.mappedProduct.manufacturer} ${data.mappedProduct.model}`);
+                    alert(`Successfully imported and mapped: ${mappedItem.name}`);
+                }}
+            />
+
+            <BimObjectEditor
+                isOpen={isEditorOpen}
+                onClose={() => setIsEditorOpen(false)}
+                bimObject={selectedObject}
+                onSave={(updates) => {
+                    if (updates.applyToAll) {
+                        // Batch Update
+                        setFoundPipes(prev => prev.map(item => {
+                            if (item.type === selectedObject.type && item.system === selectedObject.system) {
+                                return { ...item, name: updates.name, material: updates.material };
+                            }
+                            return item;
+                        }));
+                        alert(`Updated all ${selectedObject.type}s in system ${selectedObject.system}`);
+                    } else {
+                        // Single Update
+                        setFoundPipes(prev => prev.map(item => {
+                            if (item.id === selectedObject.id) {
+                                return { ...item, name: updates.name, material: updates.material };
+                            }
+                            return item;
+                        }));
+                    }
+                    setIsEditorOpen(false);
                 }}
             />
         </div>

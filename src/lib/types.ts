@@ -26,8 +26,13 @@ export interface EquipmentItem {
     volume: number;
     weight: number; // kg - Mandatory now
     // Extended fields
+    manufacturer?: string;
+    model?: string;
+    price?: number;
+    dimensions?: { length: number; width: number; height: number };
     power?: number; // kW
     flowRate?: number; // m³/h
+    head?: number; // m (pressure head)
     glycolRecommendation?: number; // %
     glycolProofImage?: string; // Base64 - screenshot from manufacturer PDF
     options?: string[]; // e.g. ['Free Cooling', 'Bypass', 'Redundant Pumps']
