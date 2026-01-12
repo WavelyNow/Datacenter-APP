@@ -8,9 +8,12 @@ import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment } from '@/lib/types';
 
+import { BimMappingWizard } from './bim/BimMappingWizard';
+
 export const BimPage = () => {
     const { addSegments } = useProject();
     const [selectedObject, setSelectedObject] = useState<any | null>(null);
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'3d' | 'table'>('3d');
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
@@ -210,7 +213,7 @@ export const BimPage = () => {
                                         <tr>
                                             <th className="px-4 py-3 font-medium">Type</th>
                                             <th className="px-4 py-3 font-medium">Name</th>
-                                            <th className="px-4 py-3 font-medium">Global ID</th>
+                                            <th className="px-4 py-3 font-medium">System</th>
                                             <th className="px-4 py-3 font-medium text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -225,10 +228,23 @@ export const BimPage = () => {
                                                         {obj.type}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-2 font-medium">{obj.name}</td>
-                                                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{obj.globalId}</td>
+                                                <td className="px-4 py-2 font-medium">
+                                                    {obj.name}
+                                                    {obj.connectedTo && obj.connectedTo.length > 0 && (
+                                                        <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/20" title="Connected items">
+                                                            Builds Net
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{obj.system || '-'}</td>
                                                 <td className="px-4 py-2 text-right">
-                                                    <button className="text-xs text-primary hover:underline font-bold" onClick={() => alert('Mapping feature coming in next step!')}>
+                                                    <button
+                                                        className="text-xs text-primary hover:underline font-bold"
+                                                        onClick={() => {
+                                                            setSelectedObject(obj);
+                                                            setIsWizardOpen(true);
+                                                        }}
+                                                    >
                                                         Map to Library
                                                     </button>
                                                 </td>
@@ -297,6 +313,19 @@ export const BimPage = () => {
                 )}
 
             </div>
+
+            <BimMappingWizard
+                isOpen={isWizardOpen}
+                onClose={() => setIsWizardOpen(false)}
+                bimObject={selectedObject}
+                onSave={(data) => {
+                    console.log('Saved Mapping:', data);
+                    // Here we would add to ProjectContext
+                    // addEquipment(data.mappedProduct)...
+                    setIsWizardOpen(false);
+                    alert(`Successfully mapped ${data.name} to ${data.mappedProduct.manufacturer} ${data.mappedProduct.model}`);
+                }}
+            />
         </div>
     );
 };

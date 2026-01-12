@@ -20,8 +20,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim';
-    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim') => void;
+    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy';
+    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -107,7 +107,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
     // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Load saved data using useHistory reset

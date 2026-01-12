@@ -12,11 +12,12 @@ import {
     Settings,
     Save,
     Upload,
-    Printer
+    Printer,
+    Leaf
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -54,6 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const engineeringGroup: MenuItem[] = [
         { id: 'bim', label: 'BIM Model / 3D Viewer', icon: Box },
         { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
+        { id: 'energy', label: 'Eficiență Energetică', icon: Leaf, badge: 'NEW' },
         { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
         { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
     ];

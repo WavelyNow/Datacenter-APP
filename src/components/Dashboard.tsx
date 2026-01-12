@@ -12,10 +12,12 @@ import {
     FolderOpen,
     Plus,
     FileBox,
-    Package
+    Package,
+    Leaf
 } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { BimImportModal } from './bim/BimImportModal';
+import { PueGauge, EnergyConsumptionChart } from './EnergyWidgets';
 
 export const Dashboard = () => {
     const {
@@ -62,7 +64,7 @@ export const Dashboard = () => {
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="card-premium p-6 flex items-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('config')}>
                     <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                         <Activity className="w-6 h-6" />
@@ -90,6 +92,16 @@ export const Dashboard = () => {
                     <div>
                         <div className="text-2xl font-bold">Safe</div>
                         <div className="text-sm text-muted-foreground font-medium">System Status</div>
+                    </div>
+                </div>
+
+                <div className="card-premium p-6 flex items-center gap-4 hover:border-indigo-500/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('energy')}>
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                        <Leaf className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <div className="text-2xl font-bold text-indigo-600">1.42</div>
+                        <div className="text-sm text-muted-foreground font-medium">Auto-Calc PUE</div>
                     </div>
                 </div>
             </div>
@@ -184,6 +196,13 @@ export const Dashboard = () => {
                                 <li className="flex flex-col gap-1">
                                     <div className="flex items-center gap-2">
                                         <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
+                                        <span className="font-bold text-sm">Energy Dashboard</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">Monitor PUE and Carbon Footprint in real-time.</span>
+                                </li>
+                                <li className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
                                         <span className="font-bold text-sm">Hydraulic Engine</span>
                                     </div>
                                     <span className="text-xs text-muted-foreground">Auto-calculate pressure drop & velocity for complex loops.</span>
@@ -194,10 +213,6 @@ export const Dashboard = () => {
                                         <span className="font-bold text-sm">BIM Integration</span>
                                     </div>
                                     <span className="text-xs text-muted-foreground">Import IFC models, view in 3D, and extract pipe data automatically.</span>
-                                </li>
-                                <li className="flex flex-col gap-1">
-                                    <span className="font-bold text-sm">Cloud Library</span>
-                                    <span className="text-xs text-muted-foreground">Save and share your custom equipment & profiles.</span>
                                 </li>
                             </ul>
                         </div>

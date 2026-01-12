@@ -41,18 +41,19 @@ export class IfcService {
         if (!this.ifcApi || this.modelId === null) throw new Error('Model not loaded');
 
         // We want to extract: Pumps, Valves, Chillers (UnitaryEquipment), etc.
-        // We will scan for multiple types
         const typesToScan = [
             WEBIFC.IFCPUMP,
             WEBIFC.IFCVALVE,
             WEBIFC.IFCFLOWCONTROLLER,
-            WEBIFC.IFCFLOWMOVINGDEVICE, // Fans, Pumps
+            WEBIFC.IFCFLOWMOVINGDEVICE,
             WEBIFC.IFCFLOWTERMINAL,
-            WEBIFC.IFCUNITARYEQUIPMENT, // Chillers often here
-            WEBIFC.IFCFLOWSEGMENT // Pipes (we keep them too)
+            WEBIFC.IFCUNITARYEQUIPMENT,
+            WEBIFC.IFCFLOWSEGMENT
         ];
 
         const allObjects: any[] = [];
+        const systemMap = await this.buildSystemMap();
+        const connectionMap = await this.buildConnectionMap();
 
         for (const type of typesToScan) {
             const items = await this.ifcApi.GetLineIDsWithType(this.modelId, type);
@@ -60,42 +61,111 @@ export class IfcService {
                 const id = items.get(i);
                 const props = await this.ifcApi.GetLine(this.modelId, id);
 
-                // Get Property Sets for Name/Info
-                // This is a bit complex in web-ifc raw API, usually implies querying relationships
-                // For simplicity in this v1, we use the Entity Name and GlobalID. 
-                // Getting Psets via raw API requires scanning IfcRelDefinesByProperties.
-
-                // Let's at least get the "Name" attribute from the entity itself
                 const name = props.Name ? props.Name.value : 'Unnamed';
                 const globalId = props.GlobalId ? props.GlobalId.value : 'Unknown';
 
-                // Determine category based on IFC Type
+                // Determine category
                 let category = 'Generic';
                 if (type === WEBIFC.IFCPUMP || type === WEBIFC.IFCFLOWMOVINGDEVICE) category = 'Pump';
                 if (type === WEBIFC.IFCVALVE || type === WEBIFC.IFCFLOWCONTROLLER) category = 'Valve';
                 if (type === WEBIFC.IFCFLOWSEGMENT) category = 'Pipe';
                 if (type === WEBIFC.IFCUNITARYEQUIPMENT) category = 'Equipment';
 
-                // Attempt to get basic sizing if possible (e.g. for pipes we did it before)
-                let properties: any = {};
+                // Get System from map
+                const systemName = systemMap.get(id) || 'Unassigned';
 
-                if (category === 'Pipe') {
-                    // Reuse previous logic for pipe dims if we want, or just basic
-                    // For now, let's keep it simple and generic for the table
-                }
+                // Get Connected items
+                const connectedIds = connectionMap.get(id) || [];
 
                 allObjects.push({
                     id: id,
                     globalId: globalId,
                     name: name,
-                    type: category, // Simplified type for UI
-                    ifcType: type, // Raw IFC type ID
+                    type: category,
+                    ifcType: type,
+                    system: systemName,
+                    connectedTo: connectedIds,
                     rawData: props
                 });
             }
         }
 
         return allObjects;
+    }
+
+    /**
+     * Build a map of EntityID -> SystemName
+     */
+    private async buildSystemMap(): Promise<Map<number, string>> {
+        const map = new Map<number, string>();
+        if (this.modelId === null) return map;
+
+        try {
+            // Find all IfcRelAssignsToGroup
+            const lines = this.ifcApi.GetLineIDsWithType(this.modelId, WEBIFC.IFCRELASSIGNSTOGROUP);
+            for (let i = 0; i < lines.size(); i++) {
+                const relId = lines.get(i);
+                const rel = this.ifcApi.GetLine(this.modelId, relId);
+
+                // Check if RelatingGroup is specific system type if needed, or just take its name
+                const groupRef = rel.RelatingGroup;
+                if (!groupRef) continue;
+
+                const group = this.ifcApi.GetLine(this.modelId, groupRef.value);
+                // Check if it is IfcSystem or IfcDistributionSystem
+                // We'll trust the rel for now and just capture the name
+
+                const systemName = group.Name ? group.Name.value : 'Unnamed System';
+
+                if (rel.RelatedObjects && Array.isArray(rel.RelatedObjects)) {
+                    rel.RelatedObjects.forEach((r: any) => {
+                        map.set(r.value, systemName);
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to extract systems:', e);
+        }
+        return map;
+    }
+
+    /**
+     * Build a map of EntityID -> [ConnectedEntityIDs]
+     */
+    private async buildConnectionMap(): Promise<Map<number, number[]>> {
+        const map = new Map<number, number[]>();
+        if (this.modelId === null) return map;
+
+        // Helper to add bi-directional connection
+        const addConn = (a: number, b: number) => {
+            if (!map.has(a)) map.set(a, []);
+            if (!map.has(b)) map.set(b, []);
+            if (!map.get(a)?.includes(b)) map.get(a)?.push(b);
+            if (!map.get(b)?.includes(a)) map.get(b)?.push(a);
+        };
+
+        try {
+            // 1. IfcRelConnectsElements (Direct)
+            const connects = this.ifcApi.GetLineIDsWithType(this.modelId, WEBIFC.IFCRELCONNECTSELEMENTS);
+            for (let i = 0; i < connects.size(); i++) {
+                const rel = this.ifcApi.GetLine(this.modelId, connects.get(i));
+                if (rel.RelatingElement && rel.RelatedElement) {
+                    addConn(rel.RelatingElement.value, rel.RelatedElement.value);
+                }
+            }
+
+            // 2. IfcRelConnectsPortToElement (Indirect via Ports - simplified)
+            // Just linking port to element locally first.
+            // Full topology usually requires traversing Element -> Port -> Port (via RelConnectsPorts) -> Element.
+            // For this version (MVP), we might stick to direct element connections if available, 
+            // but often MEP uses Ports. Let's try basic port logic if needed later.
+            // Many 'Export to IFC' plugins just use RelConnectsElements for simplicity.
+
+        } catch (e) {
+            console.warn('Failed to extract connections:', e);
+        }
+
+        return map;
     }
 
     async extractPipes(): Promise<PipeSegment[]> {
