@@ -239,6 +239,8 @@ const DashboardContent = () => {
                     <PipeManager
                       segments={segments}
                       onSegmentsChange={setSegments}
+                      fluidType={fluidType}
+                      glycolPercentage={glycolPercentage}
                     />
                     <EquipmentManager
                       equipmentList={equipmentList}
