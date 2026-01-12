@@ -48,6 +48,7 @@ export const BrandingManager: React.FC = () => {
             includeWeights: enabledSections.some(s => s.id === 'weights'),
             includeSupports: enabledSections.some(s => s.id === 'supports'),
             includePhotos: enabledSections.some(s => s.id === 'photos'),
+            includeEnergy: false,
             supportSpacing: supportConfig.spacing,
         };
         return opts;

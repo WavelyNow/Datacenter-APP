@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet } from 'lucide-react';
+import { X, FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet, Leaf } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
@@ -47,6 +47,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
         includeBoQ: true,
         includeSupports: true,
         includeWeights: false,
+        includeEnergy: true,
         includePhotos: false,
         supportSpacing: 2.0
     });
@@ -193,6 +194,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
                                     { key: 'includeBoQ', label: 'Bill of Quantities', icon: FileText },
                                     { key: 'includeSupports', label: 'Supports Configuration', icon: Anchor },
                                     { key: 'includeWeights', label: 'Weights Table', icon: Scale },
+                                    { key: 'includeEnergy', label: 'Sustainability Report', icon: Leaf },
                                     { key: 'includePhotos', label: 'Documentation Photos', icon: Camera }
                                 ].map((opt) => (
                                     <div key={opt.key}>

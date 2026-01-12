@@ -6,6 +6,7 @@ export interface PdfOptions {
     includeSupports: boolean;
     includeWeights: boolean;
     includePhotos: boolean;
+    includeEnergy: boolean; // New Sustainability Report
     supportSpacing: number; // e.g. 2.0
     supportConfig?: {
         spacing: number;

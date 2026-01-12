@@ -4,6 +4,7 @@ import { PdfData } from './types';
 import { generatePage1 } from './templates/page1';
 import { generatePage2 } from './templates/page2';
 import { generateSupportPage } from './templates/supportPage';
+import { generateEnergyPage } from './templates/energyPage';
 import { generatePage3 } from './templates/page3';
 import { PDFContext } from './templates/SectionGenerator';
 import { getTheme } from './styles';
@@ -94,6 +95,12 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
         console.log('[DEBUG] Generating support page');
         await generateSupportPage(ctx, data);
         console.log('[DEBUG] Support page generated successfully');
+    }
+
+    if (data.options?.includeEnergy) {
+        console.log('[DEBUG] Generating Energy page');
+        await generateEnergyPage(ctx, data);
+        console.log('[DEBUG] Energy page generated successfully');
     }
 
     // Always check for photos Annex if weights/supports are requested

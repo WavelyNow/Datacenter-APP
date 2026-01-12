@@ -95,12 +95,13 @@ export const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-indigo-500/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('energy')}>
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                <div className="card-premium p-6 flex items-center gap-4 hover:border-emerald-500/50 transition-colors cursor-pointer group relative overflow-hidden" onClick={() => setActiveTab('energy')}>
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-500 text-white text-[9px] font-bold rounded-full animate-pulse">NEW</div>
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                         <Leaf className="w-6 h-6" />
                     </div>
                     <div>
-                        <div className="text-2xl font-bold text-indigo-600">1.42</div>
+                        <div className="text-2xl font-bold text-emerald-600">1.42</div>
                         <div className="text-sm text-muted-foreground font-medium">Auto-Calc PUE</div>
                     </div>
                 </div>

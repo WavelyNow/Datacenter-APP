@@ -5,7 +5,9 @@ export const calculatePipeVolume = (segment: PipeSegment): number => {
     if (!segment) return 0;
     let innerDiameterMm = 0;
 
-    if (segment.material === 'custom') {
+    if (segment.diameter && segment.diameter > 0) {
+        innerDiameterMm = segment.diameter;
+    } else if (segment.material === 'custom') {
         innerDiameterMm = segment.customInnerDiameter || 0;
     } else {
         const pipeData = getPipeData(segment.material, segment.size);
