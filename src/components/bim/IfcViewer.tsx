@@ -21,35 +21,51 @@ const Model = ({ fileUrl, onLoaded }: IfcViewerProps) => {
         if (!fileUrl) return;
 
         const ifcLoader = new IFCLoader();
-        ifcLoader.ifcManager.setWasmPath('/'); // Public folder
+        // Use absolute path with origin to ensure correct loading from public/ folder
+        ifcLoader.ifcManager.setWasmPath('../../../../wasm/');
 
-        ifcLoader.load(fileUrl, (ifcModel) => {
-            // Center model
-            if (ifcModel.geometry.boundingBox) {
-                const center = ifcModel.geometry.boundingBox.getCenter(new THREE.Vector3());
-                ifcModel.position.set(-center.x, -center.y, -center.z); // Re-center to 0,0,0
-            }
-
-            // Style settings - Make pipes look metallic
-            if (ifcModel.material) {
-                // IfcLoader creates a multi-material usually, but we can override or traverse
-                ifcModel.traverse((child) => {
-                    if ((child as THREE.Mesh).isMesh) {
-                        const mesh = child as THREE.Mesh;
-                        mesh.material = new THREE.MeshStandardMaterial({
-                            color: 0xcccccc,
-                            roughness: 0.3,
-                            metalness: 0.8
-                        });
-                        // Highlight edges slightly
-                    }
-                });
-            }
-
-            setModel(ifcModel as unknown as THREE.Group);
-            scene.add(ifcModel);
-            if (onLoaded) onLoaded();
+        // Optimizations to prevent infinite loops on complex geometry
+        ifcLoader.ifcManager.applyWebIfcConfig({
+            COORDINATE_TO_ORIGIN: false,
+            // @ts-ignore -- properties exist in web-ifc but missing in web-ifc-three types
+            USE_FAST_BOOLS: true
         });
+
+        ifcLoader.load(
+            fileUrl,
+            (ifcModel) => {
+                // Center model if needed manually, or rely on camera controls
+                if (ifcModel.geometry.boundingBox) {
+                    // Optional: log bounding box to debug
+                    console.log('Model loaded. Bounding box:', ifcModel.geometry.boundingBox);
+                }
+
+                // Style settings - Make pipes look metallic
+                if (ifcModel.material) {
+                    // IfcLoader creates a multi-material usually, but we can override or traverse
+                    ifcModel.traverse((child) => {
+                        if ((child as THREE.Mesh).isMesh) {
+                            const mesh = child as THREE.Mesh;
+                            mesh.material = new THREE.MeshStandardMaterial({
+                                color: 0xcccccc,
+                                roughness: 0.3,
+                                metalness: 0.8
+                            });
+                        }
+                    });
+                }
+
+                setModel(ifcModel as unknown as THREE.Group);
+                scene.add(ifcModel);
+                if (onLoaded) onLoaded();
+            },
+            (progress) => {
+                // console.log('Loading progress:', progress);
+            },
+            (error) => {
+                console.error('IFC Loading Error:', error);
+            }
+        );
 
         return () => {
             if (model) {

@@ -44,7 +44,8 @@
   },
   "overrides": {
     "web-ifc-three": {
-      "three": "$three"
+      "three": "$three",
+      "web-ifc": "$web-ifc"
     }
   }
 }

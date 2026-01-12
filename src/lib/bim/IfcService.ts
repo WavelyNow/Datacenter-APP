@@ -12,8 +12,9 @@ export class IfcService {
 
     constructor() {
         this.ifcApi = new WEBIFC.IfcAPI();
-        // Point to the WASM file we copied to public/
-        this.ifcApi.SetWasmPath('/',);
+        // Point to the WASM file using relative traversal from chunk directory
+        this.ifcApi.SetWasmPath('../../../../wasm/');
+        console.log('IfcService: WASM path set to ../../../../wasm/');
     }
 
     /**
@@ -72,6 +73,9 @@ export class IfcService {
                 if (type === WEBIFC.IFCFLOWSEGMENT) category = 'Pipe';
                 if (type === WEBIFC.IFCUNITARYEQUIPMENT) category = 'Equipment';
 
+                // Debug log every 50 items
+                if (i % 50 === 0) console.log(`Processing ${category} ${i}/${items.size()}`);
+
                 // Detailed Filling Logic
                 if (type === WEBIFC.IFCFLOWFITTING) {
                     category = 'Fitting';
@@ -102,14 +106,28 @@ export class IfcService {
                 // Get Connected items
                 const connectedIds = connectionMap.get(id) || [];
 
+                // Get properties (Length, Diameter, Psets)
+                const properties = await this.getProperties(id);
+
+                // Use refined name from properties if available, or clean up existing name
+                const refinedName = properties.name !== 'Unknown Pipe' ? properties.name : (name.startsWith('Current_direction') ? 'Pipe Segment' : name);
+
+                // Guess material/diameter if missing
+                const materialGuess = this.guessMaterial(refinedName);
+                const diameterGuess = properties.diameter || this.guessDiameter(refinedName);
+
                 allObjects.push({
                     id: id,
                     globalId: globalId,
-                    name: name,
+                    name: refinedName,
                     type: category,
                     ifcType: type,
                     system: systemName,
                     connectedTo: connectedIds,
+                    // Engineering Data
+                    length: properties.length || 0,
+                    diameter: diameterGuess,
+                    material: materialGuess,
                     rawData: props
                 });
             }
@@ -252,14 +270,16 @@ export class IfcService {
             const relID = lines.get(i);
             const rel = this.ifcApi.GetLine(this.modelId, relID);
 
-            // Check if this relation applies to our pipe
+            // 1. Check RelDefinesByProperties (Standard)
             if (rel.RelatedObjects && Array.isArray(rel.RelatedObjects)) {
-                // web-ifc structure might differ slightly depending on version, checking basic Relation logic
-                // For performance, usually we inverse map, but simple loop for now
                 const relatedIds = rel.RelatedObjects.map((r: any) => r.value);
                 if (relatedIds.includes(expressID)) {
-                    // Found a property set!
-                    const pset = this.ifcApi.GetLine(this.modelId, rel.RelatingPropertyDefinition.value);
+                    if (!rel.RelatingPropertyDefinition) continue;
+
+                    const psetRef = rel.RelatingPropertyDefinition;
+                    // Sometimes pset is just an ID, sometimes an object. Handle both if safely possible or assume ID
+                    const psetId = psetRef.value;
+                    const pset = this.ifcApi.GetLine(this.modelId, psetId);
 
                     if (pset && pset.HasProperties) {
                         for (const propRef of pset.HasProperties) {
@@ -269,15 +289,16 @@ export class IfcService {
                                 const key = prop.Name.value;
                                 const val = prop.NominalValue.value;
 
-                                if (key === 'Length' || key === 'Nennlänge') {
-                                    length = parseFloat(val) / 1000; // Assume mm to m usually, need unit check ideally
+                                // Length Checks
+                                if (['Length', 'Nennlänge', 'OverallLength', 'CutLength'].includes(key)) {
+                                    const num = parseFloat(val);
+                                    if (!isNaN(num)) length = num > 100 ? num / 1000 : num; // Heuristic: if > 100 likely mm
                                 }
-                                if (key === 'NominalDiameter' || key === 'DN' || key === 'Size') {
-                                    diameter = `DN${val}`;
-                                }
-                                // Sometimes Size is a string "1/2 inch"
-                                if (key === 'Size' && typeof val === 'string') {
-                                    diameter = val;
+
+                                // Diameter Checks
+                                if (['NominalDiameter', 'DN', 'Size', 'Diameter', 'OuterDiameter'].includes(key)) {
+                                    // Handle "50 mm", "2 inch", etc
+                                    diameter = `DN${parseFloat(val)}`;
                                 }
                             }
                         }
@@ -285,6 +306,9 @@ export class IfcService {
                 }
             }
         }
+
+        // 2. Fallback: Check Base Quantities (RelDefinesByProperties -> ElementQuantity)
+        // (Simplified for now, staying with PropertySets)
 
         return { name, length, diameter };
     }

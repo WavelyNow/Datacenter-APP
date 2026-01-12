@@ -130,6 +130,7 @@ export interface ProjectLoadData {
     fluidType?: FluidType;
     glycolPercentage?: number;
     safetyMargin?: boolean;
+    ifcModelUrl?: string | null;
 }
 
 export interface CloudProject {

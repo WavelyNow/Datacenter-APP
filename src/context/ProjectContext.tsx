@@ -14,6 +14,8 @@ interface ProjectState {
     setEquipmentList: (list: EquipmentItem[] | ((prev: EquipmentItem[]) => EquipmentItem[])) => void;
     fluidType: FluidType;
     setFluidType: (type: FluidType) => void;
+    ifcModelUrl: string | null;
+    setIfcModelUrl: (url: string | null) => void;
     glycolPercentage: number;
     setGlycolPercentage: (pct: number) => void;
     safetyMargin: boolean;
@@ -75,6 +77,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         } as ProjectDetails,
         segments: [] as PipeSegment[],
         equipmentList: [] as EquipmentItem[],
+        ifcModelUrl: null as string | null,
         fluidType: 'ethylene' as FluidType,
         glycolPercentage: 30,
         safetyMargin: true,
@@ -133,7 +136,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 equipmentList: state.equipmentList,
                 fluidType: state.fluidType,
                 glycolPercentage: state.glycolPercentage,
-                safetyMargin: state.safetyMargin
+                safetyMargin: state.safetyMargin,
+                ifcModelUrl: state.ifcModelUrl
             };
 
             const { data, error } = await supabase
@@ -162,7 +166,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 equipmentList: state.equipmentList,
                 fluidType: state.fluidType,
                 glycolPercentage: state.glycolPercentage,
-                safetyMargin: state.safetyMargin
+                safetyMargin: state.safetyMargin,
+                ifcModelUrl: state.ifcModelUrl
             };
 
             const { error } = await supabase
@@ -197,7 +202,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 cloudProjectId: data.id,
                 // Ensure specific fields are correctly typed/initialized from loaded data
                 glycolPercentage: typeof projectData.glycolPercentage === 'number' ? projectData.glycolPercentage : defaultState.glycolPercentage,
-                safetyMargin: projectData.safetyMargin ?? defaultState.safetyMargin
+                safetyMargin: projectData.safetyMargin ?? defaultState.safetyMargin,
+                ifcModelUrl: projectData.ifcModelUrl || null
             };
             reset(newState as any);
         }
@@ -208,6 +214,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const setSegments = useCallback((val: any) => set(prev => ({ ...prev, segments: typeof val === 'function' ? val(prev.segments) : val })), [set]);
     const setEquipmentList = useCallback((val: any) => set(prev => ({ ...prev, equipmentList: typeof val === 'function' ? val(prev.equipmentList) : val })), [set]);
     const setFluidType = useCallback((val: any) => set(prev => ({ ...prev, fluidType: typeof val === 'function' ? val(prev.fluidType) : val })), [set]);
+    const setIfcModelUrl = useCallback((val: any) => set(prev => ({ ...prev, ifcModelUrl: typeof val === 'function' ? val(prev.ifcModelUrl) : val })), [set]);
     const setGlycolPercentage = useCallback((val: any) => set(prev => ({ ...prev, glycolPercentage: typeof val === 'function' ? val(prev.glycolPercentage) : val })), [set]);
     const setSafetyMargin = useCallback((val: any) => set(prev => ({ ...prev, safetyMargin: typeof val === 'function' ? val(prev.safetyMargin) : val })), [set]);
     const setSafetyMarginPercentage = useCallback((val: any) => set(prev => ({ ...prev, safetyMarginPercentage: typeof val === 'function' ? val(prev.safetyMarginPercentage) : val })), [set]);
@@ -225,6 +232,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         segments: state.segments, setSegments,
         equipmentList: state.equipmentList, setEquipmentList,
         fluidType: state.fluidType, setFluidType,
+        ifcModelUrl: state.ifcModelUrl, setIfcModelUrl,
         glycolPercentage: state.glycolPercentage, setGlycolPercentage,
         safetyMargin: state.safetyMargin, setSafetyMargin,
         safetyMarginPercentage: state.safetyMarginPercentage, setSafetyMarginPercentage,

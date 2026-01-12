@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { FileUp, Box, Layers, Filter, Maximize2, RotateCcw, Save, Trash2, FileText, Settings, AlertTriangle, ArrowRight, Database, Upload, FileBox, Loader2, Check, MousePointer2 } from 'lucide-react';
 import { HelpBeacon } from './help/HelpBeacon';
 import { useProject } from '@/context/ProjectContext';
@@ -11,7 +13,7 @@ import { BimMappingWizard } from './bim/BimMappingWizard';
 import { BimObjectEditor } from './bim/BimObjectEditor';
 
 export const BimPage = () => {
-    const { addSegments, setEquipmentList } = useProject();
+    const { addSegments, setEquipmentList, ifcModelUrl, setIfcModelUrl, saveToCloud } = useProject();
     const [selectedObject, setSelectedObject] = useState<any | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -19,35 +21,120 @@ export const BimPage = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
-    const [status, setStatus] = useState<'idle' | 'parsing' | 'extracted' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
     const [foundPipes, setFoundPipes] = useState<any[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
+    const [activeTab, setActiveTab] = useState<'All' | 'Pipe' | 'Fitting' | 'Equipment'>('All');
+
+    // Filter Logic
+    const filteredPipes = useMemo(() => {
+        if (activeTab === 'All') return foundPipes;
+        if (activeTab === 'Pipe') return foundPipes.filter(p => p.type === 'Pipe');
+        if (activeTab === 'Fitting') return foundPipes.filter(p => ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(p.type));
+        if (activeTab === 'Equipment') return foundPipes.filter(p => ['Pump', 'Valve', 'Equipment'].includes(p.type));
+        return foundPipes;
+    }, [foundPipes, activeTab]);
+
+    // Debug log to ensure state is updating
+    console.log('BimPage Render:', { status, found: foundPipes.length, tab: activeTab });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Load from Cloud if available
+    React.useEffect(() => {
+        if (ifcModelUrl && !fileUrl) {
+            setFileUrl(ifcModelUrl);
+        }
+    }, [ifcModelUrl, fileUrl]);
+
+
+    const uploadToSupabase = async (fileToUpload: File) => {
+        try {
+            // Supabase Free Tier Limit Check (50MB)
+            const MAX_SIZE_MB = 50;
+            if (fileToUpload.size > MAX_SIZE_MB * 1024 * 1024) {
+                console.warn("File too large for cloud sync (Supabase Free Tier limit)");
+                return 'too_large';
+            }
+
+            setStatus('uploading');
+            const fileExt = fileToUpload.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(7)}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('bim-files')
+                .upload(filePath, fileToUpload);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('bim-files')
+                .getPublicUrl(filePath);
+
+            return publicUrl;
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            throw new Error(error.message || 'Failed to upload to cloud');
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
-            setFileUrl(URL.createObjectURL(selectedFile));
-            setStatus('idle');
             setFoundPipes([]);
+
+            // Immediate local preview
+            const localUrl = URL.createObjectURL(selectedFile);
+            setFileUrl(localUrl);
+
+            try {
+                // Upload to Supabase for persistence
+                const publicUrl = await uploadToSupabase(selectedFile);
+
+                if (publicUrl === 'too_large') {
+                    setErrorMessage("File exceeds 50MB cloud limit. Loaded locally only - will not be synced.");
+                    setStatus('idle');
+                    // Don't set IfcModelUrl for cloud, just keep localUrl
+                } else if (publicUrl) {
+                    setIfcModelUrl(publicUrl);
+                    // Auto-save project to persist the URL
+                    await saveToCloud();
+                    setStatus('idle');
+                }
+            } catch (err: any) {
+                console.error("Cloud upload failed, continuing locally:", err);
+                setErrorMessage("Cloud upload failed, but you can still view locally. " + err.message);
+                setStatus('idle');
+            }
         }
     };
 
     const handleParse = async () => {
-        if (!file) return;
-
         setStatus('parsing');
         try {
-            const buffer = await file.arrayBuffer();
+            let buffer: ArrayBuffer;
+
+            if (file) {
+                buffer = await file.arrayBuffer();
+            } else if (ifcModelUrl) {
+                // Fetch from URL if no local file (e.g. page reload)
+                const response = await fetch(ifcModelUrl);
+                buffer = await response.arrayBuffer();
+            } else {
+                return;
+            }
+
             const service = new IfcService();
 
             await service.init();
             await service.loadFile(new Uint8Array(buffer));
 
             // Extract all types of objects
+            console.log('Starting extraction...');
             const objects = await service.extractBimObjects();
+            console.log('Extraction complete. Items found:', objects.length);
 
             // For now, we just treat them all as potential segments or generic items
             // In a real scenario, we would map specific types to specific app entities
@@ -253,32 +340,53 @@ export const BimPage = () => {
 
                     {/* Extracted Data Table */}
                     {status === 'extracted' && (
-                        <div className="h-[300px] bg-card border border-border rounded-xl flex flex-col overflow-hidden shadow-lg animate-in slide-in-from-bottom-10">
-                            <div className="px-4 py-3 border-b border-border bg-muted/50 flex justify-between items-center">
-                                <h3 className="font-bold flex items-center gap-2 text-sm">
-                                    <MousePointer2 className="w-4 h-4 text-primary" />
-                                    Recognized Objects
-                                </h3>
+                        <div className="h-[400px] bg-card border border-border rounded-xl flex flex-col overflow-hidden shadow-lg animate-in slide-in-from-bottom-10">
+                            {/* Tabs Header */}
+                            <div className="px-4 py-2 border-b border-border bg-muted/30 flex justify-between items-center">
                                 <div className="flex gap-2">
-                                    <span className="text-xs font-mono bg-background border border-border px-2 py-1 rounded">
-                                        Total: {foundPipes.length}
-                                    </span>
+                                    {(['All', 'Pipe', 'Fitting', 'Equipment'] as const).map(tab => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${activeTab === tab
+                                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                                : 'hover:bg-muted text-muted-foreground'}`}
+                                        >
+                                            {tab === 'All' ? 'All Objects' : tab + 's'}
+                                        </button>
+                                    ))}
                                 </div>
+                                <span className="text-xs font-mono bg-background border border-border px-2 py-1 rounded">
+                                    Count: {filteredPipes.length}
+                                </span>
                             </div>
 
                             <div className="flex-1 overflow-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-muted-foreground uppercase bg-muted/50 sticky top-0 backdrop-blur">
+                                <table className="w-full text-sm text-left relative">
+                                    <thead className="text-xs text-muted-foreground uppercase bg-muted/50 sticky top-0 backdrop-blur z-10">
                                         <tr>
-                                            <th className="px-4 py-3 font-medium">Type</th>
+                                            <th className="px-4 py-3 font-medium w-[100px]">Type</th>
                                             <th className="px-4 py-3 font-medium">Name</th>
+
+                                            {/* Dynamic Columns based on Tab */}
+                                            {activeTab === 'Pipe' && (
+                                                <>
+                                                    <th className="px-4 py-3 font-medium">Diameter</th>
+                                                    <th className="px-4 py-3 font-medium">Length (m)</th>
+                                                    <th className="px-4 py-3 font-medium">Material</th>
+                                                </>
+                                            )}
+                                            {activeTab === 'Fitting' && (
+                                                <th className="px-4 py-3 font-medium">Size</th>
+                                            )}
+
                                             <th className="px-4 py-3 font-medium">System</th>
                                             <th className="px-4 py-3 font-medium text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
-                                        {foundPipes.map((obj, i) => (
-                                            <tr key={i} className="hover:bg-muted/50 transition-colors">
+                                        {filteredPipes.map((obj, i) => (
+                                            <tr key={obj.id} className="hover:bg-muted/50 transition-colors group">
                                                 <td className="px-4 py-2">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                                                         obj.type === 'Pump' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
@@ -289,40 +397,45 @@ export const BimPage = () => {
                                                         {obj.type}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-2 font-medium">
+                                                <td className="px-4 py-2 font-medium max-w-[200px] truncate" title={obj.name}>
                                                     {obj.name}
-                                                    {obj.connectedTo && obj.connectedTo.length > 0 && (
-                                                        <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded border border-emerald-500/20" title="Connected items">
-                                                            Builds Net
-                                                        </span>
-                                                    )}
                                                 </td>
-                                                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{obj.system || '-'}</td>
-                                                <td className="px-4 py-2 text-right">
-                                                    {['Pump', 'Valve', 'Equipment'].includes(obj.type) ? (
-                                                        <button
-                                                            className="text-xs text-primary hover:underline font-bold"
-                                                            onClick={() => {
-                                                                setSelectedObject(obj);
-                                                                setIsWizardOpen(true);
-                                                            }}
-                                                        >
-                                                            Map to Library
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            className="text-xs text-indigo-500 hover:underline font-bold"
-                                                            onClick={() => {
-                                                                setSelectedObject(obj);
-                                                                setIsEditorOpen(true);
-                                                            }}
-                                                        >
-                                                            Edit Properties
-                                                        </button>
-                                                    )}
+
+                                                {/* Pipe Specific Columns */}
+                                                {activeTab === 'Pipe' && (
+                                                    <>
+                                                        <td className="px-4 py-2 font-mono text-xs">{obj.diameter || '-'}</td>
+                                                        <td className="px-4 py-2 font-mono text-xs">{obj.length ? obj.length.toFixed(2) : '-'}</td>
+                                                        <td className="px-4 py-2 text-xs text-muted-foreground">{obj.material || 'Generic'}</td>
+                                                    </>
+                                                )}
+                                                {/* Fitting Columns */}
+                                                {activeTab === 'Fitting' && (
+                                                    <td className="px-4 py-2 font-mono text-xs">{obj.diameter || '-'}</td>
+                                                )}
+
+                                                <td className="px-4 py-2 font-mono text-xs text-muted-foreground max-w-[150px] truncate">{obj.system || '-'}</td>
+
+                                                <td className="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        className="text-xs text-indigo-500 hover:underline font-bold"
+                                                        onClick={() => {
+                                                            setSelectedObject(obj);
+                                                            setIsEditorOpen(true);
+                                                        }}
+                                                    >
+                                                        Edit
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
+                                        {filteredPipes.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
+                                                    No {activeTab.toLowerCase()} objects found in this view.
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
