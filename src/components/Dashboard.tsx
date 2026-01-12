@@ -11,7 +11,8 @@ import {
     Cloud,
     FolderOpen,
     Plus,
-    FileBox
+    FileBox,
+    Package
 } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { BimImportModal } from './bim/BimImportModal';
@@ -22,6 +23,7 @@ export const Dashboard = () => {
         setProjectDetails,
         setActiveTab,
         segments,
+        equipmentList,
         loadFromCloud
     } = useProject();
 
@@ -92,32 +94,117 @@ export const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Content Grid */}
+            {/* Content Grid (Below Stats) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* Left Column: Stats & Quick Actions */}
+                {/* Left Column: Project Overview & Stats */}
                 <div className="lg:col-span-2 space-y-8">
 
-                    {/* Updates Section */}
-                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/10 relative overflow-hidden">
+                    {/* Getting Started Guide (Show if project is empty-ish) */}
+                    {segments.length === 0 && equipmentList.length === 0 && (
+                        <div className="bg-muted/30 border border-border rounded-2xl p-6">
+                            <h3 className="font-bold text-lg mb-4">Getting Started Checklist</h3>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
+                                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-300">1</div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm">Configure Fluid</p>
+                                        <p className="text-xs text-muted-foreground">Set your glycol type and concentration.</p>
+                                    </div>
+                                    <button onClick={() => setActiveTab('config')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to Config</button>
+                                </div>
+
+                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
+                                    <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 flex items-center justify-center text-xs font-bold text-purple-700 dark:text-purple-300">2</div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm">Import BIM Model</p>
+                                        <p className="text-xs text-muted-foreground">Load an IFC file to auto-detect pipes.</p>
+                                    </div>
+                                    <button onClick={() => setActiveTab('bim')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to BIM</button>
+                                </div>
+
+                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
+                                    <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-700 flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">3</div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm">Add Equipment</p>
+                                        <p className="text-xs text-muted-foreground">Define pumps, chillers, and consumers.</p>
+                                    </div>
+                                    <button onClick={() => setActiveTab('weights')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to Weights</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Real Project Stats */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                                <Package className="w-5 h-5" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Pipe Segments</span>
+                            </div>
+                            <p className="text-3xl font-mono font-bold text-foreground">{segments.length}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {segments.length === 0 ? 'No pipes defined' : 'Active active segments'}
+                            </p>
+                        </div>
+
+                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                                <Zap className="w-5 h-5" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Equipment</span>
+                            </div>
+                            <p className="text-3xl font-mono font-bold text-foreground">{equipmentList.length}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Consumers & pumps</p>
+                        </div>
+
+                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
+                                <Cloud className="w-5 h-5" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Project Cloud</span>
+                            </div>
+                            <p className="text-3xl font-mono font-bold text-foreground">
+                                {projectDetails.projectNumber ? 'Synced' : 'Local'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {projectDetails.projectNumber || 'Not saved to cloud'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Updates */}
+                <div className="lg:col-span-1">
+                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/10 relative overflow-hidden h-full">
                         <div className="relative z-10">
-                            <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                                 <Zap className="w-5 h-5 text-yellow-500" />
                                 What's New
                             </h3>
-                            <ul className="space-y-2">
-                                <li className="text-sm flex items-start gap-2">
-                                    <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5">NEW</span>
-                                    <span>Hydraulic Intelligence Engine: Auto-calculate pressure drop & velocity.</span>
+                            <ul className="space-y-4">
+                                <li className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
+                                        <span className="font-bold text-sm">Hydraulic Engine</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">Auto-calculate pressure drop & velocity for complex loops.</span>
                                 </li>
-                                <li className="text-sm text-muted-foreground">
-                                    • Cloud Library: Save and share your custom equipment & profiles.
+                                <li className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">BETA</span>
+                                        <span className="font-bold text-sm">BIM Integration</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">Import IFC models, view in 3D, and extract pipe data automatically.</span>
+                                </li>
+                                <li className="flex flex-col gap-1">
+                                    <span className="font-bold text-sm">Cloud Library</span>
+                                    <span className="text-xs text-muted-foreground">Save and share your custom equipment & profiles.</span>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
+
             {/* Modal */}
             <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
         </div>
