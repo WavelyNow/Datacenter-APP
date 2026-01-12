@@ -8,7 +8,7 @@ export interface MuproComponent {
     weight?: number; // kg/m for profiles, kg/pc for others
     dimensions?: { h?: number; w?: number; t?: number; length?: number; range?: [number, number] }; // mm
     structural?: { Iy?: number; Wy?: number }; // cm4, cm3
-    manufacturer?: 'MÜPRO' | 'Hilti' | 'OBO Bettermann';
+    manufacturer?: 'MÜPRO' | 'Hilti' | 'OBO Bettermann' | 'Custom (Cloud)';
     material?: 'Galvanized' | 'Hot-Dip Galvanized' | 'Stainless Steel' | 'Sendzimir';
 }
 
