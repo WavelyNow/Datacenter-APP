@@ -9,6 +9,7 @@ interface ProjectState {
     setProjectDetails: (details: ProjectDetails) => void;
     segments: PipeSegment[];
     setSegments: (segments: PipeSegment[]) => void;
+    addSegments: (segments: PipeSegment[]) => void;
     equipmentList: EquipmentItem[];
     setEquipmentList: (list: EquipmentItem[]) => void;
     fluidType: FluidType;
@@ -19,8 +20,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
-    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs') => void;
+    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim';
+    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -106,7 +107,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
     // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Load saved data using useHistory reset
@@ -232,6 +233,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         branding: state.branding, setBranding,
         isInitialized,
         undo, redo, canUndo, canRedo,
+        // Actions
+        addSegments: (newSegments: PipeSegment[]) => set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })),
         // Cloud
         cloudProjectId: state.cloudProjectId,
         saveToCloud,

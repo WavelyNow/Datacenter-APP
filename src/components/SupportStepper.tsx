@@ -31,6 +31,8 @@ export const SupportStepper: React.FC<SupportStepperProps> = ({ currentStep, onS
                         const isCompleted = stepOrder.indexOf(step.id) < currentIndex;
                         const isClickable = idx <= currentIndex + 1;
 
+                        const Icon = step.icon as any; // Cast step.icon to any
+
                         return (
                             <React.Fragment key={step.id}>
                                 <button
@@ -46,7 +48,7 @@ export const SupportStepper: React.FC<SupportStepperProps> = ({ currentStep, onS
                                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                             : 'bg-slate-800 text-slate-500 border border-white/5 group-hover:bg-slate-700'
                                         }`}>
-                                        {isCompleted ? <Check className="w-6 h-6" /> : <step.icon className={`w-6 h-6 ${isActive ? 'animate-pulse' : ''}`} />}
+                                        {isCompleted ? <Check className="w-6 h-6" /> : <Icon className={`w-6 h-6 ${isActive ? 'animate-pulse' : ''}`} />}
 
                                         {/* Activity glow for active step */}
                                         {isActive && <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent animate-shimmer" />}

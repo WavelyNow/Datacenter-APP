@@ -16,6 +16,7 @@ import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
 import { CatalogManager } from '@/components/CatalogManager';
 import { ExportModal } from '@/components/ExportModal';  // Unified Export
 import { Dashboard } from '@/components/Dashboard';
+import { BimPage } from '@/components/BimPage';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.
@@ -349,6 +350,14 @@ const DashboardContent = () => {
                 {activeTab === 'catalogs' && (
                   <CatalogManager />
                 )}
+
+                {/* Tab 7: BIM (New) */}
+                {activeTab === 'bim' && (
+                  <div className="h-full px-6 py-6">
+                    <BimPage />
+                  </div>
+                )}
+
 
               </div>
             </div>

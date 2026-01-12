@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     interface MenuItem {
         id: TabId;
         label: string;
-        icon: React.ElementType;
+        icon: React.ElementType<any>;
         badge?: string;
     }
 
@@ -52,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     const engineeringGroup: MenuItem[] = [
+        { id: 'bim', label: 'BIM Model / 3D Viewer', icon: Box },
         { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
         { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
         { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
@@ -76,15 +77,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
                 {items.map((item) => {
-                    const Icon = item.icon;
+                    const Icon = item.icon as any;
                     const isActive = activeTab === item.id;
                     return (
                         <button
                             key={item.id}
                             onClick={() => onTabChange(item.id)}
                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isActive
-                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 }`}
                         >
                             <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />

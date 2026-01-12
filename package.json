@@ -11,7 +11,10 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@pdf-lib/fontkit": "^1.1.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.90.1",
+    "@types/three": "^0.182.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
@@ -22,6 +25,9 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.0",
     "tailwind-merge": "^3.4.0",
+    "three": "^0.182.0",
+    "web-ifc": "^0.0.74",
+    "web-ifc-three": "^0.0.126",
     "xlsx": "^0.18.5",
     "zod": "^4.3.5"
   },

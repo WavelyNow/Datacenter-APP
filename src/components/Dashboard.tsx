@@ -10,9 +10,11 @@ import {
     Zap,
     Cloud,
     FolderOpen,
-    Plus
+    Plus,
+    FileBox
 } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
+import { BimImportModal } from './bim/BimImportModal';
 
 export const Dashboard = () => {
     const {
@@ -23,12 +25,7 @@ export const Dashboard = () => {
         loadFromCloud
     } = useProject();
 
-    // Mock Recent Projects (In real app, fetch from local storage or cloud)
-    const recentProjects = [
-        { id: '1', name: 'Data Center Cooling A1', location: 'Bucharest', date: '2 hrs ago', status: 'Draft' },
-        { id: '2', name: 'Office Building HVAC', location: 'Cluj-Napoca', date: '1 day ago', status: 'Review' },
-        { id: '3', name: 'Industrial Plant Piping', location: 'Timisoara', date: '3 days ago', status: 'Approved' },
-    ];
+    const [isBimOpen, setIsBimOpen] = React.useState(false);
 
     return (
         <div className="max-w-7xl mx-auto p-8 space-y-12">
@@ -43,6 +40,14 @@ export const Dashboard = () => {
                 </div>
 
                 <div className="flex gap-3">
+
+                    <button
+                        onClick={() => setIsBimOpen(true)}
+                        className="btn btn-secondary h-12 px-6 border-primary/20 hover:border-primary/50 gap-2 text-foreground"
+                    >
+                        <FileBox className="w-5 h-5 text-primary" />
+                        Import BIM
+                    </button>
 
                     <button
                         onClick={() => setActiveTab('config')}
@@ -87,74 +92,34 @@ export const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Recent & News */}
+            {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* Recent Projects */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xl font-bold flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-muted-foreground" />
-                            Recent Projects
-                        </h3>
-                        <button className="text-sm text-primary font-medium hover:underline">View All</button>
-                    </div>
+                {/* Left Column: Stats & Quick Actions */}
+                <div className="lg:col-span-2 space-y-8">
 
-                    <div className="grid gap-4">
-                        {recentProjects.map((project) => (
-                            <div key={project.id} className="group bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all hover:border-primary/30 flex items-center justify-between cursor-pointer">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                        <FileText className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{project.name}</h4>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <span>{project.location}</span>
-                                            <span>•</span>
-                                            <span>{project.date}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${project.status === 'Draft' ? 'bg-secondary text-muted-foreground border-border' :
-                                        project.status === 'Review' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                            'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                        }`}>
-                                        {project.status}
-                                    </span>
-                                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* News / Updates */}
-                <div className="space-y-6">
-                    <h3 className="text-xl font-bold flex items-center gap-2">
-                        <Cloud className="w-5 h-5 text-muted-foreground" />
-                        Updates
-                    </h3>
-
-                    <div className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/10 rounded-xl p-6 relative overflow-hidden">
-                        <div className="relative z-10 space-y-4">
-                            <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-full">NEW FEATURE</span>
-                            <h4 className="text-lg font-bold text-foreground">Hydraulic Intelligence Engine 🚀</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                Introduce flow rates and let the system calculate pressure drops and velocities automatically. Use the new Smart Sizing wizard to optimize pipe diameters.
-                            </p>
-                            <button
-                                onClick={() => setActiveTab('config')}
-                                className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-                            >
-                                Try it now <ArrowRight className="w-3 h-3" />
-                            </button>
+                    {/* Updates Section */}
+                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/10 relative overflow-hidden">
+                        <div className="relative z-10">
+                            <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-500" />
+                                What's New
+                            </h3>
+                            <ul className="space-y-2">
+                                <li className="text-sm flex items-start gap-2">
+                                    <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5">NEW</span>
+                                    <span>Hydraulic Intelligence Engine: Auto-calculate pressure drop & velocity.</span>
+                                </li>
+                                <li className="text-sm text-muted-foreground">
+                                    • Cloud Library: Save and share your custom equipment & profiles.
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-
             </div>
+            {/* Modal */}
+            <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
         </div>
     );
 };
