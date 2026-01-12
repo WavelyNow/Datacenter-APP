@@ -4,6 +4,7 @@ export type PipeMaterial = keyof typeof PIPE_STANDARDS;
 
 export interface PipeSegment {
     id: string;
+    name?: string; // Optional name for identification (e.g. from BIM)
     material: PipeMaterial | 'custom';
     standard: string;
     size: string;
@@ -11,6 +12,11 @@ export interface PipeSegment {
     customInnerDiameter?: number; // mm, used if material === 'custom'
     customWeight?: number; // kg/m, used if material === 'custom'
     flowRate?: number; // m³/h
+    fluid?: string;
+    temperature?: number;
+    roughness?: number;
+    diameter?: number; // Added to support BIM extraction (numeric DN or inner diameter)
+    fittings?: any[]; // Placeholder for future fitting logic
 }
 
 export interface EquipmentItem {

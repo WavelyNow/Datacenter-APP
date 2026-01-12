@@ -1,6 +1,6 @@
 
 import * as WEBIFC from 'web-ifc';
-import { PipeSegment } from '../types';
+import { PipeSegment, PipeMaterial } from '../types';
 
 /**
  * Service to handle IFC file parsing and data extraction.
@@ -127,6 +127,8 @@ export class IfcService {
                 diameter: diameter,
                 material: 'Steel',
                 roughness: 0.045,
+                standard: 'EN 10255',
+                size: 'DN100',
                 fittings: []
             });
         }
