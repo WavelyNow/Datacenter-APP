@@ -10,6 +10,7 @@ export interface PipeSegment {
     length: number; // meters
     customInnerDiameter?: number; // mm, used if material === 'custom'
     customWeight?: number; // kg/m, used if material === 'custom'
+    flowRate?: number; // m³/h
 }
 
 export interface EquipmentItem {
