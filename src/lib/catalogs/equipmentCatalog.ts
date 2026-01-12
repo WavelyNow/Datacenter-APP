@@ -2,7 +2,7 @@
 export interface CatalogEquipment {
     id: string;
     category: string;
-    manufacturer: 'Schneider Electric' | 'Vertiv' | 'Grundfos' | 'Generic';
+    manufacturer: string;
     model: string;
     volume: number; // L (water content)
     weight: number; // kg (empty/dry weight)

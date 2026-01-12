@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { CloudProject } from '@/lib/types';
 import { useProject } from '@/context/ProjectContext';
-import { Cloud, Save, Download, Loader2, Search, Calendar, FolderOpen, AlertTriangle } from 'lucide-react';
+import { Cloud, Save, Download, Loader2, Search, Calendar, FolderOpen, AlertTriangle, X } from 'lucide-react';
 
 export const CloudBrowserAction = () => {
     const { cloudProjectId, saveToCloud, loadFromCloud, projectDetails } = useProject();
@@ -97,8 +97,8 @@ export const CloudBrowserAction = () => {
 
             {/* Modal */}
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border">
+                <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border relative">
                         {/* Header */}
                         <div className="p-4 border-b border-border flex justify-between items-center sticky top-0 bg-background rounded-t-xl z-10">
                             <div>
@@ -108,8 +108,8 @@ export const CloudBrowserAction = () => {
                                 </h2>
                                 <p className="text-sm text-muted-foreground">Wiki-Style: Everyone can read and write projects.</p>
                             </div>
-                            <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
-                                ✕
+                            <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-2 hover:bg-muted rounded-full transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -128,7 +128,7 @@ export const CloudBrowserAction = () => {
                         </div>
 
                         {/* List */}
-                        <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
                                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -150,36 +150,36 @@ export const CloudBrowserAction = () => {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {filteredProjects.map((project) => (
-                                        <div key={project.id} className="group border border-border rounded-lg p-4 hover:border-primary/50 hover:shadow-md transition-all bg-card text-card-foreground flex flex-col gap-3">
-                                            <div className="flex justify-between items-start">
-                                                <div className="font-semibold truncate pr-2 text-lg" title={project.name}>
-                                                    {project.name}
+                                        <div key={project.id} className="group flex flex-col gap-3 p-5 rounded-xl border border-secondary bg-secondary/10 hover:bg-secondary/20 hover:border-primary/30 transition-all relative">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="font-bold text-lg text-zinc-100 break-words leading-tight" title={project.name}>
+                                                    {(project.name && project.name.trim().length > 0) ? project.name : 'Untitled Project'}
                                                 </div>
                                                 {project.id === cloudProjectId && (
-                                                    <span className="text-[10px] bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded border border-green-500/20 whitespace-nowrap">
-                                                        Current
+                                                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
+                                                        ACTIVE
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <div className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5em]">
-                                                {project.description || 'No description'}
+                                            <div className="text-sm text-zinc-400 line-clamp-2 min-h-[2.5em]">
+                                                {project.description || 'No description provided.'}
                                             </div>
 
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto pt-2 border-t border-border/50">
-                                                <Calendar className="w-3 h-3" />
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto pt-3 border-t border-border/10">
+                                                <Calendar className="w-3.5 h-3.5" />
                                                 {new Date(project.updated_at).toLocaleDateString()}
-                                                <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-primary">
-                                                    ID: {project.id.slice(0, 8)}...
+                                                <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-mono text-primary/70">
+                                                    #{project.id.slice(0, 6)}
                                                 </span>
                                             </div>
 
                                             <button
                                                 onClick={() => handleLoad(project.id)}
-                                                className="w-full mt-2 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 rounded py-2 text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                                                className="w-full mt-2 btn btn-secondary hover:bg-primary hover:text-primary-foreground border-primary/20 transition-all flex items-center justify-center gap-2 py-2 text-sm font-bold"
                                             >
                                                 <FolderOpen className="w-4 h-4" />
-                                                Load Project
+                                                Open Project
                                             </button>
                                         </div>
                                     ))}
@@ -187,7 +187,7 @@ export const CloudBrowserAction = () => {
                             )}
                         </div>
                     </div>
-                </div>
+                </div >
             )}
         </>
     );
