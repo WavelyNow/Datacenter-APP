@@ -37,6 +37,14 @@ interface ProjectState {
     cloudProjectId: string | null;
     saveToCloud: () => Promise<string | void>;
     loadFromCloud: (id: string) => Promise<void>;
+
+    // BIM Global State
+    foundPipes: any[];
+    setFoundPipes: (pipes: any[]) => void;
+    bimStatus: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error';
+    setBimStatus: (status: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error') => void;
+    parsingProgress: number;
+    setParsingProgress: (progress: number) => void;
 }
 
 
@@ -112,6 +120,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // UI States (Not in History)
     const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'help'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
+
+    // BIM Global State (Background Processing)
+    const [foundPipes, setFoundPipes] = useState<any[]>([]);
+    const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
+    const [parsingProgress, setParsingProgress] = useState(0);
 
     // Load saved data using useHistory reset
     useEffect(() => {
@@ -246,7 +259,12 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         // Cloud
         cloudProjectId: state.cloudProjectId,
         saveToCloud,
-        loadFromCloud
+        loadFromCloud,
+
+        // BIM Exports
+        foundPipes, setFoundPipes,
+        bimStatus, setBimStatus,
+        parsingProgress, setParsingProgress
     };
 
     return (

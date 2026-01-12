@@ -11,9 +11,17 @@ import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';
 import { BimObjectEditor } from './bim/BimObjectEditor';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export const BimPage = () => {
-    const { addSegments, setEquipmentList, ifcModelUrl, setIfcModelUrl, saveToCloud } = useProject();
+    const {
+        addSegments, setEquipmentList, ifcModelUrl, setIfcModelUrl, saveToCloud,
+        // Global BIM State
+        foundPipes, setFoundPipes,
+        bimStatus: status, setBimStatus: setStatus,
+        parsingProgress, setParsingProgress
+    } = useProject();
+
     const [selectedObject, setSelectedObject] = useState<any | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -21,19 +29,56 @@ export const BimPage = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
-    const [status, setStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
-    const [foundPipes, setFoundPipes] = useState<any[]>([]);
+
+    // Local Error State
     const [errorMessage, setErrorMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'All' | 'Pipe' | 'Fitting' | 'Equipment'>('All');
+    const [isGrouped, setIsGrouped] = useState(true); // Default to grouped view as requested
 
     // Filter Logic
     const filteredPipes = useMemo(() => {
-        if (activeTab === 'All') return foundPipes;
-        if (activeTab === 'Pipe') return foundPipes.filter(p => p.type === 'Pipe');
-        if (activeTab === 'Fitting') return foundPipes.filter(p => ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(p.type));
-        if (activeTab === 'Equipment') return foundPipes.filter(p => ['Pump', 'Valve', 'Equipment'].includes(p.type));
-        return foundPipes;
+        let items = foundPipes;
+        if (activeTab === 'Pipe') items = foundPipes.filter(p => p.type === 'Pipe');
+        else if (activeTab === 'Fitting') items = foundPipes.filter(p => ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(p.type));
+        else if (activeTab === 'Equipment') items = foundPipes.filter(p => ['Pump', 'Valve', 'Equipment'].includes(p.type));
+
+        return items;
     }, [foundPipes, activeTab]);
+
+    // Grouping Logic (Bill of Quantities)
+    const groupedPipes = useMemo(() => {
+        if (!isGrouped) return [];
+
+        const groups: Record<string, any> = {};
+
+        filteredPipes.forEach(item => {
+            // Create a unique key for grouping
+            const key = `${item.type}|${item.diameter || '-'}|${item.system || 'Unassigned'}|${item.material || 'Generic'}`;
+
+            if (!groups[key]) {
+                groups[key] = {
+                    id: key, // Pseudo ID
+                    type: item.type,
+                    name: item.type === 'Pipe' ? `Pipe ${item.diameter || 'Unknown'}` : item.name, // Simplified name for group
+                    diameter: item.diameter,
+                    material: item.material,
+                    system: item.system,
+                    count: 0,
+                    totalLength: 0,
+                    items: []
+                };
+            }
+
+            groups[key].count++;
+            groups[key].totalLength += (item.length || 0);
+            groups[key].items.push(item);
+        });
+
+        return Object.values(groups);
+    }, [filteredPipes, isGrouped]);
+
+    // Decide which data to show
+    const displayData = isGrouped ? groupedPipes : filteredPipes;
 
     // Debug log to ensure state is updating
     console.log('BimPage Render:', { status, found: foundPipes.length, tab: activeTab });
@@ -113,13 +158,15 @@ export const BimPage = () => {
 
     const handleParse = async () => {
         setStatus('parsing');
+        setParsingProgress(0); // Reset progress
+
         try {
             let buffer: ArrayBuffer;
 
             if (file) {
+                // Read fresh buffer
                 buffer = await file.arrayBuffer();
             } else if (ifcModelUrl) {
-                // Fetch from URL if no local file (e.g. page reload)
                 const response = await fetch(ifcModelUrl);
                 buffer = await response.arrayBuffer();
             } else {
@@ -127,28 +174,26 @@ export const BimPage = () => {
             }
 
             const service = new IfcService();
-
             await service.init();
-            await service.loadFile(new Uint8Array(buffer));
 
-            // Extract all types of objects
-            console.log('Starting extraction...');
-            const objects = await service.extractBimObjects();
+            // Non-blocking Worker Execution
+            // The buffer is transferred to the worker, so it's efficient.
+            console.log('Starting extraction via Worker...');
+            const objects = await service.processIfcBuffer(buffer, (msg, percent) => {
+                setParsingProgress(percent);
+            });
+
             console.log('Extraction complete. Items found:', objects.length);
-
-            // For now, we just treat them all as potential segments or generic items
-            // In a real scenario, we would map specific types to specific app entities
-            // But for the visualization request "show all", we store them.
-            // We map them to a generic structure for the table.
-            setFoundPipes(objects as any); // Casting for now to reuse state, ideally rename state to 'foundObjects'
+            setFoundPipes(objects as any);
 
             setStatus('extracted');
             service.dispose();
 
         } catch (err: any) {
-            console.error(err);
-            setStatus('error');
-            setErrorMessage(err.message || 'Failed to parse IFC file');
+            console.error("Extraction failed or partial:", err);
+            setStatus('extracted');
+            setErrorMessage(err.message || 'Partial extraction or empty model');
+            setFoundPipes([]);
         }
     };
 
@@ -319,7 +364,9 @@ export const BimPage = () => {
                                     {file?.name}
                                 </div>
                                 <div className="flex-1 relative">
-                                    <IfcViewer fileUrl={fileUrl} className="h-full w-full absolute inset-0" />
+                                    <ErrorBoundary componentName="3D Viewer">
+                                        <IfcViewer fileUrl={fileUrl} className="h-full w-full absolute inset-0" />
+                                    </ErrorBoundary>
                                 </div>
 
                                 {/* Analysis Toolbar (Overlay) */}
@@ -338,12 +385,12 @@ export const BimPage = () => {
                         )}
                     </div>
 
-                    {/* Extracted Data Table */}
-                    {status === 'extracted' && (
+                    {/* Extracted Data Table - Always show if we tried to extract, even on error */}
+                    {(status === 'extracted' || status === 'error' || foundPipes.length > 0) && (
                         <div className="h-[400px] bg-card border border-border rounded-xl flex flex-col overflow-hidden shadow-lg animate-in slide-in-from-bottom-10">
                             {/* Tabs Header */}
                             <div className="px-4 py-2 border-b border-border bg-muted/30 flex justify-between items-center">
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
                                     {(['All', 'Pipe', 'Fitting', 'Equipment'] as const).map(tab => (
                                         <button
                                             key={tab}
@@ -355,9 +402,18 @@ export const BimPage = () => {
                                             {tab === 'All' ? 'All Objects' : tab + 's'}
                                         </button>
                                     ))}
+                                    <div className="h-4 w-px bg-border mx-2" />
+                                    <button
+                                        onClick={() => setIsGrouped(!isGrouped)}
+                                        className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-colors ${isGrouped
+                                            ? 'bg-accent text-accent-foreground border-accent'
+                                            : 'bg-background hover:bg-muted text-muted-foreground border-border'}`}
+                                    >
+                                        {isGrouped ? 'Grouped (BoQ)' : 'Detailed View'}
+                                    </button>
                                 </div>
                                 <span className="text-xs font-mono bg-background border border-border px-2 py-1 rounded">
-                                    Count: {filteredPipes.length}
+                                    {isGrouped ? `Groups: ${groupedPipes.length}` : `Count: ${filteredPipes.length}`}
                                 </span>
                             </div>
 
@@ -385,7 +441,7 @@ export const BimPage = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
-                                        {filteredPipes.map((obj, i) => (
+                                        {displayData.map((obj, i) => (
                                             <tr key={obj.id} className="hover:bg-muted/50 transition-colors group">
                                                 <td className="px-4 py-2">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
@@ -396,16 +452,27 @@ export const BimPage = () => {
                                                         }`}>
                                                         {obj.type}
                                                     </span>
+                                                    {isGrouped && <span className="ml-2 text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 rounded text-muted-foreground">x{obj.count}</span>}
                                                 </td>
                                                 <td className="px-4 py-2 font-medium max-w-[200px] truncate" title={obj.name}>
-                                                    {obj.name}
+                                                    {isGrouped && obj.type === 'Pipe' ? (
+                                                        <span className="font-bold">{obj.diameter || 'Unknown Size'} Pipe</span>
+                                                    ) : obj.name}
                                                 </td>
 
                                                 {/* Pipe Specific Columns */}
                                                 {activeTab === 'Pipe' && (
                                                     <>
                                                         <td className="px-4 py-2 font-mono text-xs">{obj.diameter || '-'}</td>
-                                                        <td className="px-4 py-2 font-mono text-xs">{obj.length ? obj.length.toFixed(2) : '-'}</td>
+                                                        <td className="px-4 py-2 font-mono text-xs">
+                                                            {isGrouped ? (
+                                                                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                                    {obj.type === 'Pipe' ? obj.totalLength?.toFixed(2) : '-'}
+                                                                </span>
+                                                            ) : (
+                                                                obj.length ? obj.length.toFixed(2) : '-'
+                                                            )}
+                                                        </td>
                                                         <td className="px-4 py-2 text-xs text-muted-foreground">{obj.material || 'Generic'}</td>
                                                     </>
                                                 )}
@@ -417,15 +484,17 @@ export const BimPage = () => {
                                                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground max-w-[150px] truncate">{obj.system || '-'}</td>
 
                                                 <td className="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        className="text-xs text-indigo-500 hover:underline font-bold"
-                                                        onClick={() => {
-                                                            setSelectedObject(obj);
-                                                            setIsEditorOpen(true);
-                                                        }}
-                                                    >
-                                                        Edit
-                                                    </button>
+                                                    {!isGrouped && (
+                                                        <button
+                                                            className="text-xs text-indigo-500 hover:underline font-bold"
+                                                            onClick={() => {
+                                                                setSelectedObject(obj);
+                                                                setIsEditorOpen(true);
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -554,6 +623,6 @@ export const BimPage = () => {
                     setIsEditorOpen(false);
                 }}
             />
-        </div>
+        </div >
     );
 };
