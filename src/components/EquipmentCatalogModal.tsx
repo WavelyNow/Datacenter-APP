@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { EQUIPMENT_CATALOG, CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
-import { Search, X, Box, Plus, FileText, Trash2, Save } from 'lucide-react';
+import { Search, X, Box, Plus, FileText, Trash2, Save, Cloud, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useLibrary } from '@/hooks/useLibrary';
 
 interface EquipmentCatalogModalProps {
     isOpen: boolean;
@@ -18,20 +18,8 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
     // Use useMemo for mounted check instead of useState+useEffect pattern
     const mounted = typeof window !== 'undefined';
 
-    // Custom Database State - lazy initialization
-    const [customCatalog, setCustomCatalog] = useState<CatalogEquipment[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const saved = localStorage.getItem('custom_equipment_catalog');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error("Failed to parse custom catalog", e);
-                return [];
-            }
-        }
-        return [];
-    });
+    // Hook for Cloud Library
+    const { items: cloudItems, loading: cloudLoading, addItem, deleteItem } = useLibrary<CatalogEquipment>('equipment');
 
     // Form State
     const [formData, setFormData] = useState<Partial<CatalogEquipment>>({
@@ -43,13 +31,16 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         technicalSheet: undefined
     });
 
-    const handleSaveCustom = () => {
-        if (!formData.model || !formData.category) return;
+    const [isSaving, setIsSaving] = useState(false);
 
-        const newItem: CatalogEquipment = {
-            id: `custom-${Date.now()}`,
+    const handleSaveCustom = async () => {
+        if (!formData.model || !formData.category) return;
+        setIsSaving(true);
+
+        const newItemData: CatalogEquipment = {
+            id: `cloud-${Date.now()}`, // ID will be replaced/ignored by DB but useful for structure
             category: formData.category || 'Other',
-            manufacturer: 'Generic',
+            manufacturer: 'Custom (Cloud)',
             model: formData.model,
             volume: formData.volume || 0,
             weight: formData.weight || 0,
@@ -57,21 +48,27 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
             technicalSheet: formData.technicalSheet
         };
 
-        const updated = [...customCatalog, newItem];
-        setCustomCatalog(updated);
-        localStorage.setItem('custom_equipment_catalog', JSON.stringify(updated));
+        try {
+            await addItem(formData.model, newItemData);
 
-        // Reset and go back
-        setFormData({ category: 'Chiller', model: '', volume: 0, weight: 0, description: '' });
-        setView('list');
+            // Reset and go back
+            setFormData({ category: 'Chiller', model: '', volume: 0, weight: 0, description: '' });
+            setView('list');
+        } catch (e) {
+            alert('Failed to save to cloud library');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleDeleteCustom = (id: string, e: React.MouseEvent) => {
+    const handleDeleteCustom = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this item from your database?')) {
-            const updated = customCatalog.filter(i => i.id !== id);
-            setCustomCatalog(updated);
-            localStorage.setItem('custom_equipment_catalog', JSON.stringify(updated));
+        if (confirm('Are you sure you want to delete this specific item from the GLOBAL Cloud Library? This affects everyone.')) {
+            try {
+                await deleteItem(id);
+            } catch {
+                alert('Failed to delete item');
+            }
         }
     };
 
@@ -92,7 +89,15 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
     if (!isOpen || !mounted) return null;
 
-    const mergedCatalog = [...customCatalog, ...EQUIPMENT_CATALOG];
+    // Merge Catalogs: Hardcoded + Cloud
+    // Cloud items have structure { id, type, name, data, ... }. We map checks to CatalogEquipment.
+    const mappedCloudItems: CatalogEquipment[] = cloudItems.map(i => ({
+        ...i.data,
+        id: i.id, // Use DB UUID
+        manufacturer: i.data.manufacturer || 'Custom (Cloud)'
+    }));
+
+    const mergedCatalog = [...mappedCloudItems, ...EQUIPMENT_CATALOG];
     const categories = Array.from(new Set(mergedCatalog.map(item => item.category)));
 
     const filteredItems = mergedCatalog.filter(item => {
@@ -113,10 +118,10 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     <div>
                         <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                             <Box className="w-4 h-4 text-foreground" />
-                            {view === 'list' ? 'Equipment Database' : 'Add New Equipment'}
+                            {view === 'list' ? 'Global Equipment Library' : 'Add New Equipment'}
                         </h2>
                         <p className="text-muted-foreground text-xs mt-0.5">
-                            {view === 'list' ? 'Select standard items or manage your custom library.' : 'Create a new item to save in your local database.'}
+                            {view === 'list' ? 'Standard & Cloud items available to all users.' : 'Create a new item visible to everyone.'}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -125,8 +130,9 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                 onClick={() => setView('create')}
                                 className="btn btn-primary btn-sm gap-2 text-xs"
                             >
-                                <Plus className="w-3.5 h-3.5" />
-                                Add New Model
+                                <Cloud className="w-3.5 h-3.5" />
+                                <Plus className="w-3 h-3" />
+                                Add Cloud Item
                             </button>
                         )}
                         <button
@@ -162,53 +168,66 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
                         {/* List */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-muted/10">
-                            {filteredItems.length === 0 ? (
+                            {cloudLoading ? (
+                                <div className="flex justify-center py-10">
+                                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                </div>
+                            ) : filteredItems.length === 0 ? (
                                 <div className="text-center py-20 opacity-50">
                                     <Box className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                                     <p className="text-muted-foreground text-sm">No items found.</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {filteredItems.map(item => (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => { onSelect(item); onClose(); }}
-                                            className="text-left group bg-card p-4 rounded-xl border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all flex flex-col gap-3 relative overflow-hidden"
-                                        >
-                                            {item.id.startsWith('custom-') && (
-                                                <div className="absolute top-2 right-2 flex gap-1">
-                                                    <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-blue-500/20">CUSTOM</span>
-                                                    <div
-                                                        onClick={(e) => handleDeleteCustom(item.id, e)}
-                                                        className="h-5 w-5 bg-destructive/10 text-destructive flex items-center justify-center rounded hover:bg-destructive hover:text-white transition-colors"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
+                                    {filteredItems.map(item => {
+                                        // Identify cloud items by checking ID in cloud map or simple UUID check (if standard are string ids)
+                                        // Standard catalog IDs are string "1", "2"... or similar. Cloud are UUIDs.
+                                        // A safer way is checking if it's NOT in local standard catalog by ID.
+                                        const isCloud = mappedCloudItems.some(c => c.id === item.id);
+
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => { onSelect(item); onClose(); }}
+                                                className="text-left group bg-card p-4 rounded-xl border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all flex flex-col gap-3 relative overflow-hidden"
+                                            >
+                                                {isCloud && (
+                                                    <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                                        <span className="bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-sky-500/20 flex items-center gap-1">
+                                                            <Cloud className="w-3 h-3" /> CLOUD
+                                                        </span>
+                                                        <div
+                                                            onClick={(e) => handleDeleteCustom(item.id, e)}
+                                                            className="h-5 w-5 bg-destructive/10 text-destructive flex items-center justify-center rounded hover:bg-destructive hover:text-white transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div>
+                                                    <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider border border-border px-1.5 py-0.5 rounded mb-2 inline-block">{item.category}</span>
+                                                    <h3 className="text-foreground text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-2">
+                                                        {item.model}
+                                                        {item.technicalSheet && <FileText className="w-3 h-3 text-blue-500" />}
+                                                    </h3>
+                                                </div>
+
+                                                <div className="flex gap-4 text-xs">
+                                                    <div className="bg-secondary/50 px-2 py-1 rounded">
+                                                        <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Vol:</span>
+                                                        <span className="font-mono font-bold">{item.volume} L</span>
+                                                    </div>
+                                                    <div className="bg-secondary/50 px-2 py-1 rounded">
+                                                        <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Weight:</span>
+                                                        <span className="font-mono font-bold">{item.weight} kg</span>
                                                     </div>
                                                 </div>
-                                            )}
 
-                                            <div>
-                                                <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider border border-border px-1.5 py-0.5 rounded mb-2 inline-block">{item.category}</span>
-                                                <h3 className="text-foreground text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-2">
-                                                    {item.model}
-                                                    {item.technicalSheet && <FileText className="w-3 h-3 text-blue-500" />}
-                                                </h3>
-                                            </div>
-
-                                            <div className="flex gap-4 text-xs">
-                                                <div className="bg-secondary/50 px-2 py-1 rounded">
-                                                    <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Vol:</span>
-                                                    <span className="font-mono font-bold">{item.volume} L</span>
-                                                </div>
-                                                <div className="bg-secondary/50 px-2 py-1 rounded">
-                                                    <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Weight:</span>
-                                                    <span className="font-mono font-bold">{item.weight} kg</span>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-[11px] text-muted-foreground line-clamp-2">{item.description}</p>
-                                        </button>
-                                    ))}
+                                                <p className="text-[11px] text-muted-foreground line-clamp-2">{item.description}</p>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -217,6 +236,11 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     /* CREATE VIEW */
                     <div className="flex-1 overflow-y-auto p-6 bg-muted/10">
                         <div className="max-w-lg mx-auto space-y-4">
+                            <div className="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg text-xs text-blue-600 mb-4 flex items-center gap-2">
+                                <Cloud className="w-4 h-4" />
+                                This item will be saved to the Global Library and visible to all users.
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-muted-foreground">Category</label>
@@ -277,9 +301,9 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
                             <div className="flex gap-3 pt-4">
                                 <button onClick={() => setView('list')} className="flex-1 btn btn-secondary h-10">Cancel</button>
-                                <button onClick={handleSaveCustom} className="flex-1 btn btn-primary h-10 gap-2">
-                                    <Save className="w-4 h-4" />
-                                    Save to Database
+                                <button onClick={handleSaveCustom} disabled={isSaving} className="flex-1 btn btn-primary h-10 gap-2">
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                    Save to Global DB
                                 </button>
                             </div>
                         </div>

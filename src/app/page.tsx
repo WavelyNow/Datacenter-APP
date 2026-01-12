@@ -53,16 +53,7 @@ const DashboardContent = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground animate-pulse font-medium">Initializing Engineering Suite...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   // File Handlers - defined before keyboard shortcuts effect
   const saveProject = React.useCallback(() => {
@@ -156,6 +147,17 @@ const DashboardContent = () => {
     reader.readAsText(file);
   };
 
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-muted-foreground animate-pulse font-medium">Initializing Engineering Suite...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">

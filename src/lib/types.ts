@@ -119,3 +119,11 @@ export interface ProjectLoadData {
     glycolPercentage?: number;
     safetyMargin?: boolean;
 }
+
+export interface CloudProject {
+    id: string;
+    name: string;
+    description?: string;
+    data: ProjectLoadData;
+    updated_at: string;
+}

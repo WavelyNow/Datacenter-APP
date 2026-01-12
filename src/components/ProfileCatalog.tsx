@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Box, Plus, Trash2, X, Scale, Ruler } from 'lucide-react';
+import { Search, Box, Plus, Trash2, X, Scale, Ruler, Cloud, Loader2, Save } from 'lucide-react';
 import { MUPRO_MASTER_CATALOG, MuproComponent } from '@/lib/muproVerifiedStandards';
+import { useLibrary } from '@/hooks/useLibrary';
 
 // --- Types ---
 type LoadCapacity = 'Light' | 'Medium' | 'Heavy';
 type ProfileType = 'All' | 'C-Channel' | 'U-Profile' | 'L-Angle' | 'Square';
-
-interface CustomProfile extends MuproComponent {
-    isCustom: true;
-}
 
 // --- Helper to detect profile type from name ---
 const getProfileType = (name: string): ProfileType => {
@@ -21,25 +18,21 @@ const getProfileType = (name: string): ProfileType => {
     return 'C-Channel';
 };
 
+// Define structure for cloud profiles
+// Storing full MuproComponent data in 'data' column
+type CloudProfileData = Omit<MuproComponent, 'isCustom'>;
+
 export const ProfileCatalog: React.FC = () => {
     // --- State ---
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedType, setSelectedType] = useState<ProfileType>('All');
     const [selectedLoad, setSelectedLoad] = useState<LoadCapacity | 'All'>('All');
-    const [customProfiles, setCustomProfiles] = useState<CustomProfile[]>(() => {
-        if (typeof window === 'undefined') return [];
-        const saved = localStorage.getItem('custom_profiles_catalog');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error("Failed to parse custom profiles", e);
-                return [];
-            }
-        }
-        return [];
-    });
     const [isCreateMode, setIsCreateMode] = useState(false);
+
+    // --- Cloud Library Hook ---
+    const { items: cloudItems, loading: cloudLoading, addItem, deleteItem } = useLibrary<CloudProfileData>('profile');
+
+    const [isSaving, setIsSaving] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -52,10 +45,18 @@ export const ProfileCatalog: React.FC = () => {
     });
 
     // --- Combined Catalog ---
-    const allProfiles = useMemo((): (MuproComponent | CustomProfile)[] => {
+    const allProfiles = useMemo(() => {
+        // Map Cloud Items to MuproComponent structure
+        const mappedCloudProfiles: (MuproComponent & { isCustom?: boolean })[] = cloudItems.map(item => ({
+            ...item.data,
+            sku: item.id, // Use DB UUID as SKU
+            manufacturer: 'Custom (Cloud)',
+            isCustom: true
+        }));
+
         const muproProfiles = MUPRO_MASTER_CATALOG.filter(c => c.category === 'profile');
-        return [...customProfiles, ...muproProfiles];
-    }, [customProfiles]);
+        return [...mappedCloudProfiles, ...muproProfiles];
+    }, [cloudItems]);
 
     // --- Filters ---
     const filteredProfiles = useMemo(() => {
@@ -72,34 +73,41 @@ export const ProfileCatalog: React.FC = () => {
     const profileTypes: ProfileType[] = ['All', 'C-Channel', 'U-Profile', 'L-Angle', 'Square'];
 
     // --- Handlers ---
-    const handleSaveCustom = () => {
+    const handleSaveCustom = async () => {
         if (!formData.name) return;
+        setIsSaving(true);
 
-        const newProfile: CustomProfile = {
-            sku: `custom-${Date.now()}`,
+        const newProfileData: CloudProfileData = {
+            sku: `temp-${Date.now()}`, // Placeholder, overwritten by DB ID logic mapping
             name: formData.name,
             description: formData.description,
             category: 'profile',
             loadCapacity: formData.loadCapacity,
             weight: formData.weight,
             dimensions: { h: formData.h, w: formData.w, length: 6000 },
-            isCustom: true
+            manufacturer: 'Custom (Cloud)'
         };
 
-        const updated = [...customProfiles, newProfile];
-        setCustomProfiles(updated);
-        localStorage.setItem('custom_profiles_catalog', JSON.stringify(updated));
+        try {
+            await addItem(formData.name, newProfileData);
 
-        // Reset
-        setFormData({ name: '', description: '', weight: 0, h: 0, w: 0, loadCapacity: 'Medium' });
-        setIsCreateMode(false);
+            // Reset
+            setFormData({ name: '', description: '', weight: 0, h: 0, w: 0, loadCapacity: 'Medium' });
+            setIsCreateMode(false);
+        } catch (error) {
+            alert('Failed to save profile to global library.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleDelete = (sku: string) => {
-        if (confirm('Delete this custom profile?')) {
-            const updated = customProfiles.filter(p => p.sku !== sku);
-            setCustomProfiles(updated);
-            localStorage.setItem('custom_profiles_catalog', JSON.stringify(updated));
+    const handleDelete = async (sku: string) => {
+        if (confirm('Delete this custom profile from GLOBAL Cloud Library? This cannot be undone.')) {
+            try {
+                await deleteItem(sku); // sku is the UUID for cloud items
+            } catch (error) {
+                alert('Failed to delete item.');
+            }
         }
     };
 
@@ -122,15 +130,16 @@ export const ProfileCatalog: React.FC = () => {
                         <Box className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">Profile Metalice</h2>
+                        <h2 className="text-lg font-bold text-foreground">Profile Metalice (Global Library)</h2>
                         <p className="text-xs text-muted-foreground">{filteredProfiles.length} profile disponibile</p>
                     </div>
                 </div>
 
                 {!isCreateMode ? (
                     <button onClick={() => setIsCreateMode(true)} className="btn btn-primary btn-sm gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Custom
+                        <Cloud className="w-4 h-4" />
+                        <Plus className="w-3 h-3" />
+                        Add Cloud Profile
                     </button>
                 ) : (
                     <button onClick={() => setIsCreateMode(false)} className="btn btn-secondary btn-sm gap-2">
@@ -144,6 +153,11 @@ export const ProfileCatalog: React.FC = () => {
                 /* CREATE FORM */
                 <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
                     <div className="max-w-xl mx-auto bg-card border border-border rounded-xl p-8 shadow-sm">
+                        <div className="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg text-xs text-blue-600 mb-6 flex items-center gap-2">
+                            <Cloud className="w-4 h-4" />
+                            This profile will be saved to the Global Library and visible to all users.
+                        </div>
+
                         <h4 className="text-lg font-bold mb-6 text-foreground">Create Custom Profile</h4>
 
                         <div className="space-y-5">
@@ -200,7 +214,10 @@ export const ProfileCatalog: React.FC = () => {
 
                         <div className="flex gap-4 mt-8">
                             <button onClick={() => setIsCreateMode(false)} className="flex-1 btn btn-secondary h-11">Cancel</button>
-                            <button onClick={handleSaveCustom} className="flex-1 btn btn-primary h-11 font-bold">Save Profile</button>
+                            <button onClick={handleSaveCustom} disabled={isSaving} className="flex-1 btn btn-primary h-11 font-bold gap-2">
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                Save Profile
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -249,65 +266,74 @@ export const ProfileCatalog: React.FC = () => {
 
                     {/* Grid */}
                     <div className="flex-1 overflow-y-auto p-5 bg-muted/5 custom-scrollbar">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {filteredProfiles.map((item) => {
-                                const isCustom = 'isCustom' in item && item.isCustom;
+                        {cloudLoading ? (
+                            <div className="flex justify-center py-10">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {filteredProfiles.map((item) => {
+                                    const isCustom = 'isCustom' in item && item.isCustom;
 
-                                return (
-                                    <div
-                                        key={item.sku}
-                                        className="group bg-card border border-border rounded-xl p-5 hover:shadow-lg transition-all hover:border-primary/30 relative"
-                                    >
-                                        {/* Custom Badge & Delete */}
-                                        {isCustom && (
-                                            <div className="absolute top-3 right-3 flex items-center gap-2">
-                                                <span className="bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full">CUSTOM</span>
-                                                <button onClick={() => handleDelete(item.sku)} className="text-muted-foreground hover:text-destructive transition-colors">
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
+                                    return (
+                                        <div
+                                            key={item.sku}
+                                            className="group bg-card border border-border rounded-xl p-5 hover:shadow-lg transition-all hover:border-primary/30 relative"
+                                        >
+                                            {/* Custom Badge & Delete */}
+                                            {isCustom && (
+                                                <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+                                                    <span className="bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                        <Cloud className="w-3 h-3" /> CLOUD
+                                                    </span>
+                                                    <button onClick={() => handleDelete(item.sku)} className="text-muted-foreground hover:text-destructive transition-colors">
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* SKU */}
+                                            <div className="text-[10px] font-mono text-muted-foreground mb-2">#{item.sku.substring(0, 8)}...</div>
+
+                                            {/* Name */}
+                                            <h4 className="text-sm font-bold text-foreground mb-1 pr-16 line-clamp-2 group-hover:text-primary transition-colors">{item.name}</h4>
+
+                                            {/* Manufacturer Badge */}
+                                            {'manufacturer' in item && (item as { manufacturer?: string }).manufacturer && (
+                                                <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 ${(item as { manufacturer?: string }).manufacturer === 'MÜPRO' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                                    (item as { manufacturer?: string }).manufacturer === 'Hilti' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                        (item as { manufacturer?: string }).manufacturer === 'OBO Bettermann' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
+                                                            (item as { manufacturer?: string }).manufacturer === 'Custom (Cloud)' ? 'bg-sky-500/10 text-sky-600 border border-sky-500/20' :
+                                                                'bg-muted text-muted-foreground'
+                                                    }`}>
+                                                    {(item as { manufacturer?: string }).manufacturer}
+                                                </span>
+                                            )}
+
+                                            {/* Description */}
+                                            <p className="text-xs text-muted-foreground mb-4 line-clamp-1">{item.description || '-'}</p>
+
+                                            {/* Metrics */}
+                                            <div className="grid grid-cols-2 gap-2 text-[10px] bg-secondary/50 rounded-lg p-3 border border-border/50 mb-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Scale className="w-3 h-3 text-muted-foreground" />
+                                                    <span className="text-foreground font-mono font-bold">{(item.weight || 0).toFixed(2)} kg/m</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Ruler className="w-3 h-3 text-muted-foreground" />
+                                                    <span className="text-foreground font-mono font-bold">{item.dimensions?.h || 0}x{item.dimensions?.w || 0}</span>
+                                                </div>
                                             </div>
-                                        )}
 
-                                        {/* SKU */}
-                                        <div className="text-[10px] font-mono text-muted-foreground mb-2">#{item.sku}</div>
-
-                                        {/* Name */}
-                                        <h4 className="text-sm font-bold text-foreground mb-1 pr-16 line-clamp-2 group-hover:text-primary transition-colors">{item.name}</h4>
-
-                                        {/* Manufacturer Badge */}
-                                        {'manufacturer' in item && (item as { manufacturer?: string }).manufacturer && (
-                                            <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 ${(item as { manufacturer?: string }).manufacturer === 'MÜPRO' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                                                (item as { manufacturer?: string }).manufacturer === 'Hilti' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                    (item as { manufacturer?: string }).manufacturer === 'OBO Bettermann' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
-                                                        'bg-muted text-muted-foreground'
-                                                }`}>
-                                                {(item as { manufacturer?: string }).manufacturer}
-                                            </span>
-                                        )}
-
-                                        {/* Description */}
-                                        <p className="text-xs text-muted-foreground mb-4 line-clamp-1">{item.description || '-'}</p>
-
-                                        {/* Metrics */}
-                                        <div className="grid grid-cols-2 gap-2 text-[10px] bg-secondary/50 rounded-lg p-3 border border-border/50 mb-3">
-                                            <div className="flex items-center gap-1.5">
-                                                <Scale className="w-3 h-3 text-muted-foreground" />
-                                                <span className="text-foreground font-mono font-bold">{(item.weight || 0).toFixed(2)} kg/m</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Ruler className="w-3 h-3 text-muted-foreground" />
-                                                <span className="text-foreground font-mono font-bold">{item.dimensions?.h || 0}x{item.dimensions?.w || 0}</span>
-                                            </div>
+                                            {/* Load Indicator */}
+                                            <div className={`h-1 w-full rounded-full ${getLoadColor(item.loadCapacity as LoadCapacity)}`} />
                                         </div>
+                                    );
+                                })}
+                            </div>
+                        )}
 
-                                        {/* Load Indicator */}
-                                        <div className={`h-1 w-full rounded-full ${getLoadColor(item.loadCapacity as LoadCapacity)}`} />
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {filteredProfiles.length === 0 && (
+                        {filteredProfiles.length === 0 && !cloudLoading && (
                             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
                                 <Box className="w-12 h-12 mb-4 opacity-30" />
                                 <p className="text-sm">No profiles found</p>

@@ -3,6 +3,7 @@ import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { CloudBrowserAction } from './CloudBrowserAction';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
@@ -140,6 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* Actions */}
                     <div className="flex items-center gap-2">
                         <ThemeToggle />
+                        <CloudBrowserAction />
 
                         <button
                             onClick={onOpenSettings}
