@@ -12,6 +12,7 @@ import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';
 import { BimObjectEditor } from './bim/BimObjectEditor';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { BimObject, GroupedBimObject } from '@/lib/bim/types';
 
 export const BimPage = () => {
     const {
@@ -22,7 +23,7 @@ export const BimPage = () => {
         parsingProgress, setParsingProgress
     } = useProject();
 
-    const [selectedObject, setSelectedObject] = useState<any | null>(null);
+    const [selectedObject, setSelectedObject] = useState<BimObject | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'3d' | 'table'>('3d');
@@ -49,7 +50,7 @@ export const BimPage = () => {
     const groupedPipes = useMemo(() => {
         if (!isGrouped) return [];
 
-        const groups: Record<string, any> = {};
+        const groups: Record<string, GroupedBimObject> = {};
 
         filteredPipes.forEach(item => {
             // Create a unique key for grouping
@@ -79,6 +80,10 @@ export const BimPage = () => {
 
     // Decide which data to show
     const displayData = isGrouped ? groupedPipes : filteredPipes;
+
+    // Performance: Limit displayed items if we have too many and not searching?
+    // For now, let's just use it as is, but memoize the row rendering if needed.
+    const [displayLimit, setDisplayLimit] = useState(100);
 
     // Debug log to ensure state is updating
     console.log('BimPage Render:', { status, found: foundPipes.length, tab: activeTab });
@@ -184,7 +189,7 @@ export const BimPage = () => {
             });
 
             console.log('Extraction complete. Items found:', objects.length);
-            setFoundPipes(objects as any);
+            setFoundPipes(objects as BimObject[]);
 
             setStatus('extracted');
             service.dispose();
@@ -441,7 +446,7 @@ export const BimPage = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
-                                        {displayData.map((obj, i) => (
+                                        {displayData.slice(0, displayLimit).map((obj) => (
                                             <tr key={obj.id} className="hover:bg-muted/50 transition-colors group">
                                                 <td className="px-4 py-2">
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
@@ -452,7 +457,7 @@ export const BimPage = () => {
                                                         }`}>
                                                         {obj.type}
                                                     </span>
-                                                    {isGrouped && <span className="ml-2 text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 rounded text-muted-foreground">x{obj.count}</span>}
+                                                    {isGrouped && <span className="ml-2 text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 rounded text-muted-foreground">x{(obj as GroupedBimObject).count}</span>}
                                                 </td>
                                                 <td className="px-4 py-2 font-medium max-w-[200px] truncate" title={obj.name}>
                                                     {isGrouped && obj.type === 'Pipe' ? (
@@ -467,10 +472,10 @@ export const BimPage = () => {
                                                         <td className="px-4 py-2 font-mono text-xs">
                                                             {isGrouped ? (
                                                                 <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                                                                    {obj.type === 'Pipe' ? obj.totalLength?.toFixed(2) : '-'}
+                                                                    {obj.type === 'Pipe' ? (obj as GroupedBimObject).totalLength?.toFixed(2) : '-'}
                                                                 </span>
                                                             ) : (
-                                                                obj.length ? obj.length.toFixed(2) : '-'
+                                                                (obj as BimObject).length ? (obj as BimObject).length!.toFixed(2) : '-'
                                                             )}
                                                         </td>
                                                         <td className="px-4 py-2 text-xs text-muted-foreground">{obj.material || 'Generic'}</td>
@@ -488,7 +493,7 @@ export const BimPage = () => {
                                                         <button
                                                             className="text-xs text-indigo-500 hover:underline font-bold"
                                                             onClick={() => {
-                                                                setSelectedObject(obj);
+                                                                setSelectedObject(obj as BimObject);
                                                                 setIsEditorOpen(true);
                                                             }}
                                                         >
@@ -498,6 +503,18 @@ export const BimPage = () => {
                                                 </td>
                                             </tr>
                                         ))}
+                                        {displayData.length > displayLimit && (
+                                            <tr>
+                                                <td colSpan={6} className="text-center py-4 bg-muted/20">
+                                                    <button
+                                                        onClick={() => setDisplayLimit(prev => prev + 200)}
+                                                        className="text-xs font-bold text-indigo-500 hover:text-indigo-600"
+                                                    >
+                                                        Show More ({displayData.length - displayLimit} remaining)
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )}
                                         {filteredPipes.length === 0 && (
                                             <tr>
                                                 <td colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
@@ -602,6 +619,7 @@ export const BimPage = () => {
                 onClose={() => setIsEditorOpen(false)}
                 bimObject={selectedObject}
                 onSave={(updates) => {
+                    if (!selectedObject) return;
                     if (updates.applyToAll) {
                         // Batch Update
                         setFoundPipes(prev => prev.map(item => {

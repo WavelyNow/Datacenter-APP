@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig } from '@/lib/types';
+import { BimObject } from '@/lib/bim/types';
 import { useHistory } from '@/hooks/useHistory';
 
 interface ProjectState {
@@ -39,8 +40,8 @@ interface ProjectState {
     loadFromCloud: (id: string) => Promise<void>;
 
     // BIM Global State
-    foundPipes: any[];
-    setFoundPipes: (pipes: any[]) => void;
+    foundPipes: BimObject[];
+    setFoundPipes: React.Dispatch<React.SetStateAction<BimObject[]>>;
     bimStatus: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error';
     setBimStatus: (status: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error') => void;
     parsingProgress: number;
@@ -122,7 +123,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const [isInitialized, setIsInitialized] = useState(false);
 
     // BIM Global State (Background Processing)
-    const [foundPipes, setFoundPipes] = useState<any[]>([]);
+    const [foundPipes, setFoundPipes] = useState<BimObject[]>([]);
     const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
     const [parsingProgress, setParsingProgress] = useState(0);
 

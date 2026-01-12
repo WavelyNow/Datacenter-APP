@@ -26,7 +26,7 @@ interface PipeSegment {
     rawData?: any;     // Added
 }
 
-const ifcApi = new WEBIFC.IfcAPI();
+let ifcApi = new WEBIFC.IfcAPI();
 let modelId: number | null = null;
 let wasmPathSet = false;
 
@@ -190,8 +190,7 @@ async function extractBimObjects(): Promise<any[]> {
                 // Engineering Data
                 length: properties.length || 0,
                 diameter: diameterGuess,
-                material: materialGuess,
-                rawData: props // Note: rawData might be large to pass back, maybe strip?
+                material: materialGuess
             });
         }
     }

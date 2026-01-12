@@ -22,7 +22,7 @@ const Model = ({ fileUrl, onLoaded }: IfcViewerProps) => {
 
         const ifcLoader = new IFCLoader();
         // Use absolute path with origin to ensure correct loading from public/ folder
-        ifcLoader.ifcManager.setWasmPath('../../../../wasm/');
+        ifcLoader.ifcManager.setWasmPath('/wasm/');
 
         // Optimizations to prevent infinite loops on complex geometry
         ifcLoader.ifcManager.applyWebIfcConfig({
