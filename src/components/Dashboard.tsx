@@ -37,13 +37,13 @@ export const Dashboard = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">
-                        Welcome back, <span className="text-primary">{projectDetails.designer.split(' ')[0]}</span>
+                        Engineering <span className="text-primary">Team Workspace</span>
                     </h1>
-                    <p className="text-muted-foreground text-lg">Engineering Suite Dashboard</p>
+                    <p className="text-muted-foreground text-lg">Collaborative Project Hub & Resources</p>
                 </div>
 
                 <div className="flex gap-3">
-                    <CloudBrowserAction />
+
                     <button
                         onClick={() => setActiveTab('config')}
                         className="btn btn-primary h-12 px-6 shadow-lg shadow-primary/20 gap-2"

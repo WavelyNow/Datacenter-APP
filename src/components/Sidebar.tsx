@@ -38,39 +38,90 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onLoad
 }) => {
 
-    const menuItems: { id: TabId; label: string; icon: React.ElementType }[] = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'config', label: 'Configurare', icon: Package },
-        { id: 'supports', label: 'Suporți & Prinderi', icon: Anchor },
-        { id: 'weights', label: 'Sarcini Statice', icon: Scale },
-        { id: 'photos', label: 'Documentație', icon: Camera },
-        { id: 'branding', label: 'Branding', icon: Palette },
+    // --- Navigation Groups ---
+
+    interface MenuItem {
+        id: TabId;
+        label: string;
+        icon: React.ElementType;
+        badge?: string;
+    }
+
+    const mainGroup: MenuItem[] = [
+        { id: 'dashboard', label: 'Acasa / Dashboard', icon: LayoutDashboard },
     ];
 
-    const databaseItems: { id: TabId; label: string; icon: React.ElementType }[] = [
-        { id: 'catalogs', label: 'Catalog Echipamente', icon: Book },
+    const engineeringGroup: MenuItem[] = [
+        { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
+        { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
+        { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
     ];
+
+    const databaseGroup: MenuItem[] = [
+        { id: 'catalogs', label: 'Bibliotecă Tehnică', icon: Book },
+    ];
+
+    const reportsGroup: MenuItem[] = [
+        { id: 'photos', label: 'Galerie Foto', icon: Camera },
+        { id: 'branding', label: 'Personalizare Raport', icon: Palette },
+    ];
+
+    // Helper for rendering a section
+    const NavSection = ({ title, items }: { title?: string, items: MenuItem[] }) => (
+        <div className="mb-6">
+            {title && (
+                <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 opacity-60">
+                    {title}
+                </p>
+            )}
+            <div className="space-y-1">
+                {items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                        <button
+                            key={item.id}
+                            onClick={() => onTabChange(item.id)}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isActive
+                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                }`}
+                        >
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                            <span className="truncate">{item.label}</span>
+                            {item.badge && (
+                                <span className="absolute right-2 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[9px] font-bold">
+                                    {item.badge}
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
 
     return (
-        <aside className="sidebar-panel w-[260px] flex flex-col justify-between p-4 z-50 screen-only">
+        <aside className="sidebar-panel w-[280px] flex flex-col justify-between p-5 z-50 screen-only border-r border-border/40 bg-card/50 backdrop-blur-sm">
 
             {/* 1. Header Area: Logo & Project */}
-            <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto no-scrollbar">
+
                 {/* Brand */}
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-8 h-8 bg-foreground text-background rounded-xl flex items-center justify-center shadow-lg">
+                <div className="flex items-center gap-3 px-2 mb-8">
+                    <div className="w-9 h-9 bg-foreground text-background rounded-xl flex items-center justify-center shadow-lg">
                         <Box className="w-5 h-5" strokeWidth={2.5} />
                     </div>
                     <div>
                         <h1 className="text-sm font-bold tracking-tight">Engineering Suite</h1>
-                        <p className="text-[10px] text-muted-foreground font-mono">PRO v2.4</p>
+                        <p className="text-[10px] text-muted-foreground font-mono">PRO v2.5</p>
                     </div>
                 </div>
 
-                {/* Project Selector (Fake Dropdown feel) */}
+                {/* Project Selector */}
                 <div
                     onClick={onSettingsOpen}
-                    className="group flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 cursor-pointer transition-all mx-1"
+                    className="group flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 cursor-pointer transition-all mb-8 mx-1"
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
@@ -88,48 +139,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
-                {/* Main Navigation */}
-                <nav className="space-y-1">
-                    <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Workspace</p>
-                    {menuItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = activeTab === item.id;
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => onTabChange(item.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                    }`}
-                            >
-                                <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                                {item.label}
-                            </button>
-                        );
-                    })}
-                </nav>
-
-                {/* Database Navigation */}
-                <nav className="space-y-1 pt-6 border-t border-border/50 mt-4">
-                    <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Database</p>
-                    {databaseItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = activeTab === item.id;
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => onTabChange(item.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                    }`}
-                            >
-                                <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                                {item.label}
-                            </button>
-                        );
-                    })}
+                {/* Navigation Sections */}
+                <nav>
+                    <NavSection items={mainGroup} />
+                    <NavSection title="Proiectare & Calcul" items={engineeringGroup} />
+                    <NavSection title="Resurse" items={databaseGroup} />
+                    <NavSection title="Documentație" items={reportsGroup} />
                 </nav>
             </div>
 
