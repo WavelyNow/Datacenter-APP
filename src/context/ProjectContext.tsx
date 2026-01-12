@@ -19,8 +19,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
-    setActiveTab: (tab: 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs') => void;
+    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
+    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -106,7 +106,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
     // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs'>('config');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Load saved data using useHistory reset

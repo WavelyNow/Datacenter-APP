@@ -273,7 +273,7 @@ export const ProfileCatalog: React.FC = () => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {filteredProfiles.map((item) => {
-                                    const isCustom = 'isCustom' in item && item.isCustom;
+                                    const isCustom = !!('isCustom' in item && (item as { isCustom?: boolean }).isCustom);
 
                                     return (
                                         <div

@@ -134,36 +134,57 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
 
     return (
         <div className="bg-card border border-border p-6 sm:p-8 rounded-2xl relative overflow-hidden shadow-sm">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between spacing-lg mb-8">
-                <div className="flex items-center spacing-md">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm">
+            {/* Header Redesign */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                {/* Title Section */}
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm shrink-0">
                         <Settings2 className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-foreground flex items-center spacing-sm">
+                        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                             Pipe Manager
                             <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
                                 {segments.length}
                             </span>
                         </h2>
-                        <p className="text-muted-foreground text-sm">Configure pipe segments and calculate hydraulics.</p>
+                        <p className="text-muted-foreground text-sm">Configure segments & analyze flow.</p>
                     </div>
                 </div>
 
-                <div className="flex bg-muted rounded-lg p-1 border border-border">
-                    <button
-                        onClick={() => setViewMode('config')}
-                        className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'config' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        Configuration
-                    </button>
-                    <button
-                        onClick={() => setViewMode('hydraulics')}
-                        className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === 'hydraulics' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Activity className="w-3.5 h-3.5" /> Hydraulics
-                    </button>
+                {/* Actions Toolbar */}
+                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-xl border border-border/50 self-start md:self-auto">
+                    {/* View Switcher */}
+                    <div className="flex bg-muted rounded-lg p-1 border border-border relative">
+                        <button
+                            onClick={() => setViewMode('config')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 z-10 ${viewMode === 'config' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <Box className="w-3.5 h-3.5" />
+                            Config
+                        </button>
+                        <button
+                            onClick={() => setViewMode('hydraulics')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 z-10 ${viewMode === 'hydraulics' ? 'bg-blue-500/10 text-blue-600 border border-blue-200 dark:border-blue-900 shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <Activity className="w-3.5 h-3.5" />
+                            Hydraulics
+                        </button>
+                    </div>
+
+                    {/* Add Button (Only in Config) */}
+                    {viewMode === 'config' && (
+                        <>
+                            <div className="w-px h-6 bg-border mx-1" />
+                            <button
+                                onClick={addSegment}
+                                className="btn btn-primary btn-sm h-9 gap-2 shadow-sm"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span className="hidden sm:inline">Add Pipe</span>
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -455,15 +476,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                 )}
             </div>
 
-            {/* FAB for Add Segment */}
-            <button
-                onClick={addSegment}
-                className="btn btn-primary btn-md spacing-xs group absolute top-8 right-8"
-                style={{ display: viewMode === 'config' ? 'flex' : 'none' }}
-            >
-                <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                <span>Add Segment</span>
-            </button>
+
         </div>
     );
 };

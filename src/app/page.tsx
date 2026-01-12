@@ -15,6 +15,7 @@ import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
 import { CatalogManager } from '@/components/CatalogManager';
 import { ExportModal } from '@/components/ExportModal';  // Unified Export
+import { Dashboard } from '@/components/Dashboard';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.
@@ -227,127 +228,131 @@ const DashboardContent = () => {
         />
 
         <div className="flex-1 overflow-y-auto scroll-smooth pb-32">
-          <div className="spacing-page py-8">
+          {activeTab === 'dashboard' ? (
+            <Dashboard />
+          ) : (
+            <div className="spacing-page py-8">
 
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards ease-out">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards ease-out">
 
-              {/* Tab 1: Configuration & Volume */}
-              {activeTab === 'config' && (
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-                  {/* Left: Input */}
-                  <div className="xl:col-span-8 space-y-8">
-                    <PipeManager
-                      segments={segments}
-                      onSegmentsChange={setSegments}
-                      fluidType={fluidType}
-                      glycolPercentage={glycolPercentage}
-                    />
-                    <EquipmentManager
-                      equipmentList={equipmentList}
-                      onEquipmentChange={setEquipmentList}
-                      viewMode="volume"
-                    />
-                    <FluidComposition />
-                  </div>
-
-                  {/* Right: Results Sticky */}
-                  <div className="xl:col-span-4">
-                    <div className="sticky top-8 space-y-6">
-                      <ResultsDisplay />
-
-                      {/* Helper Card */}
-                      <div className="card-premium p-5 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-100 dark:border-blue-900/50">
-                        <h4 className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                          System Status
-                        </h4>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          Sistemul calculează automat volumul total incluzând o rezervă de siguranță.
-                          Verificați diametrele nominale înainte de export.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Supports */}
-              {activeTab === 'supports' && (
-                <div className="max-w-5xl mx-auto">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Dimensionare Suporți</h2>
-                    <p className="text-muted-foreground">Calculul necesarului de materiale pentru prinderi.</p>
-                  </div>
-                  <SupportManager />
-                </div>
-              )}
-
-              {/* Tab 3: Weights */}
-              {activeTab === 'weights' && (
-                <div className="max-w-5xl mx-auto">
-                  <div className="card-premium p-8 relative overflow-hidden">
-                    <div className="relative z-10">
-                      <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
-                        <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
-                          <Scale className="w-6 h-6 text-foreground" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-foreground">Gestionare Greutăți</h2>
-                          <p className="text-muted-foreground text-sm mt-1">Introduceți greutatea proprie a echipamentelor.</p>
-                        </div>
-                      </div>
+                {/* Tab 1: Configuration & Volume */}
+                {activeTab === 'config' && (
+                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+                    {/* Left: Input */}
+                    <div className="xl:col-span-8 space-y-8">
+                      <PipeManager
+                        segments={segments}
+                        onSegmentsChange={setSegments}
+                        fluidType={fluidType}
+                        glycolPercentage={glycolPercentage}
+                      />
                       <EquipmentManager
                         equipmentList={equipmentList}
                         onEquipmentChange={setEquipmentList}
-                        viewMode="weights"
+                        viewMode="volume"
                       />
+                      <FluidComposition />
                     </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Tab 4: Photos */}
-              {activeTab === 'photos' && (
-                <div className="max-w-5xl mx-auto">
-                  <div className="card-premium p-8 relative overflow-hidden">
-                    <div className="relative z-10">
-                      <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
-                        <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
-                          <Camera className="w-6 h-6 text-foreground" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold text-foreground">Documentație Vizuală</h2>
-                          <p className="text-muted-foreground text-sm mt-1">Încărcați fotografii pentru raportul tehnic.</p>
+                    {/* Right: Results Sticky */}
+                    <div className="xl:col-span-4">
+                      <div className="sticky top-8 space-y-6">
+                        <ResultsDisplay />
+
+                        {/* Helper Card */}
+                        <div className="card-premium p-5 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-100 dark:border-blue-900/50">
+                          <h4 className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            System Status
+                          </h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Sistemul calculează automat volumul total incluzând o rezervă de siguranță.
+                            Verificați diametrele nominale înainte de export.
+                          </p>
                         </div>
                       </div>
-                      <EquipmentManager
-                        equipmentList={equipmentList}
-                        onEquipmentChange={setEquipmentList}
-                        viewMode="photos"
-                      />
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Tab 5: Branding */}
-              {activeTab === 'branding' && (
-                <div className="max-w-4xl mx-auto">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Identitate Vizuală</h2>
-                    <p className="text-muted-foreground">Personalizați aspectul rapoartelor generate.</p>
+                {/* Tab 2: Supports */}
+                {activeTab === 'supports' && (
+                  <div className="max-w-5xl mx-auto">
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold tracking-tight text-foreground">Dimensionare Suporți</h2>
+                      <p className="text-muted-foreground">Calculul necesarului de materiale pentru prinderi.</p>
+                    </div>
+                    <SupportManager />
                   </div>
-                  <BrandingManager />
-                </div>
-              )}
+                )}
 
-              {/* Tab 6: Catalogs (New) */}
-              {activeTab === 'catalogs' && (
-                <CatalogManager />
-              )}
+                {/* Tab 3: Weights */}
+                {activeTab === 'weights' && (
+                  <div className="max-w-5xl mx-auto">
+                    <div className="card-premium p-8 relative overflow-hidden">
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
+                          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
+                            <Scale className="w-6 h-6 text-foreground" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground">Gestionare Greutăți</h2>
+                            <p className="text-muted-foreground text-sm mt-1">Introduceți greutatea proprie a echipamentelor.</p>
+                          </div>
+                        </div>
+                        <EquipmentManager
+                          equipmentList={equipmentList}
+                          onEquipmentChange={setEquipmentList}
+                          viewMode="weights"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
+                {/* Tab 4: Photos */}
+                {activeTab === 'photos' && (
+                  <div className="max-w-5xl mx-auto">
+                    <div className="card-premium p-8 relative overflow-hidden">
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
+                          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
+                            <Camera className="w-6 h-6 text-foreground" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-foreground">Documentație Vizuală</h2>
+                            <p className="text-muted-foreground text-sm mt-1">Încărcați fotografii pentru raportul tehnic.</p>
+                          </div>
+                        </div>
+                        <EquipmentManager
+                          equipmentList={equipmentList}
+                          onEquipmentChange={setEquipmentList}
+                          viewMode="photos"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 5: Branding */}
+                {activeTab === 'branding' && (
+                  <div className="max-w-4xl mx-auto">
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold tracking-tight text-foreground">Identitate Vizuală</h2>
+                      <p className="text-muted-foreground">Personalizați aspectul rapoartelor generate.</p>
+                    </div>
+                    <BrandingManager />
+                  </div>
+                )}
+
+                {/* Tab 6: Catalogs (New) */}
+                {activeTab === 'catalogs' && (
+                  <CatalogManager />
+                )}
+
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { ProjectDetails } from '@/lib/types';
 import {
     Box,
+    LayoutDashboard,
     Book,
     Package,
     Scale,
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
-export type TabId = 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -38,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
 
     const menuItems: { id: TabId; label: string; icon: React.ElementType }[] = [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'config', label: 'Configurare', icon: Package },
         { id: 'supports', label: 'Suporți & Prinderi', icon: Anchor },
         { id: 'weights', label: 'Sarcini Statice', icon: Scale },
