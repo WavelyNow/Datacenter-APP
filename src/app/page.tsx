@@ -18,6 +18,7 @@ import { ExportModal } from '@/components/ExportModal';  // Unified Export
 import { Dashboard } from '@/components/Dashboard';
 import { BimPage } from '@/components/BimPage';
 import { EnergyPage } from '@/components/EnergyPage';
+import { HelpPage } from '@/components/HelpPage';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.
@@ -363,6 +364,10 @@ const DashboardContent = () => {
                 {/* Tab 8: Energy (New) */}
                 {activeTab === 'energy' && (
                   <EnergyPage />
+                )}
+
+                {activeTab === 'help' && (
+                  <HelpPage />
                 )}
 
 

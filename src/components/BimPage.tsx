@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileBox, Loader2, Check, AlertTriangle, ArrowRight, MousePointer2, Layers, FileText } from 'lucide-react';
+import { FileUp, Box, Layers, Filter, Maximize2, RotateCcw, Save, Trash2, FileText, Settings, AlertTriangle, ArrowRight, Database, Upload, FileBox, Loader2, Check, MousePointer2 } from 'lucide-react';
+import { HelpBeacon } from './help/HelpBeacon';
 import { useProject } from '@/context/ProjectContext';
 import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
 import { IfcService } from '@/lib/bim/IfcService';
@@ -202,7 +203,8 @@ export const BimPage = () => {
                     {/* 3D Viewer Container */}
                     <div className="flex-1 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative flex flex-col min-h-[400px]">
                         {!fileUrl ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-zinc-700 p-12">
+                            // Empty State / Upload
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-muted/5 rounded-2xl border-2 border-dashed border-border relative">
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full max-w-md border-2 border-dashed border-zinc-800 hover:border-primary/50 hover:bg-zinc-900/50 rounded-2xl p-12 flex flex-col items-center cursor-pointer transition-all group"

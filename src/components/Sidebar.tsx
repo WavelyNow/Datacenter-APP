@@ -10,14 +10,17 @@ import {
     Anchor,
     Palette,
     Settings,
+    HelpCircle,
     Save,
     Upload,
     Printer,
-    Leaf
+    Leaf,
+    GraduationCap
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useHelp } from './help/HelpContext';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'help';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -38,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSave,
     onLoad
 }) => {
+    const { isHelpMode, toggleHelpMode } = useHelp();
 
     // --- Navigation Groups ---
 
@@ -121,34 +125,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 </div>
 
-                {/* Project Selector */}
-                <div
-                    onClick={onSettingsOpen}
-                    className="group flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 cursor-pointer transition-all mb-8 mx-1"
-                >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                            {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors">
-                                {projectDetails.projectName || 'Untitled Project'}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-mono truncate">
-                                Rev. {projectDetails.revision || '0'}
-                            </span>
-                        </div>
-                    </div>
-                    <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                <div className="pt-4 border-t border-border mt-auto space-y-3">
 
-                {/* Navigation Sections */}
-                <nav>
-                    <NavSection items={mainGroup} />
-                    <NavSection title="Proiectare & Calcul" items={engineeringGroup} />
-                    <NavSection title="Resurse" items={databaseGroup} />
-                    <NavSection title="Documentație" items={reportsGroup} />
-                </nav>
+                    <button
+                        onClick={onSettingsOpen}
+                        className="group flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 cursor-pointer transition-all mb-8 mx-1"
+                    >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                                {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors">
+                                    {projectDetails.projectName || 'Untitled Project'}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground font-mono truncate">
+                                    Rev. {projectDetails.revision || '0'}
+                                </span>
+                            </div>
+                        </div>
+                        <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+
+                    {/* Navigation Sections */}
+                    <nav>
+                        <NavSection items={mainGroup} />
+                        <NavSection title="Proiectare & Calcul" items={engineeringGroup} />
+                        <NavSection title="Resurse" items={databaseGroup} />
+                        <NavSection title="Documentație" items={reportsGroup} />
+                    </nav>
+                </div>
             </div>
 
             {/* Bottom Actions */}
@@ -171,20 +177,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </label>
                 </div>
 
-                {/* User/Theme Footer */}
-                <div className="pt-4 border-t border-border flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-inner">
-                            RA
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-semibold">Admin User</span>
-                            <span className="text-[10px] text-muted-foreground">Online</span>
-                        </div>
-                    </div>
-                    <ThemeToggle />
-                </div>
+                <ThemeToggle />
             </div>
+
+            {/* 4. Help & Support Hub - ABSOLUTE BOTTOM */}
+            <button
+                onClick={() => onTabChange('help')}
+                className={`mt-4 w-full flex items-center gap-3 px-3 py-3 rounded-xl border-2 transition-all group ${activeTab === 'help'
+                    ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]'
+                    : 'bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40'
+                    }`}
+            >
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <HelpCircle className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col items-start overflow-hidden">
+                    <span className="text-xs font-bold leading-tight truncate">Centru Ajutor / Docs</span>
+                    <span className="text-[10px] opacity-70">Ghid Tehnic & Suport</span>
+                </div>
+                <div className="ml-auto px-1.5 py-0.5 rounded bg-primary/10 text-[9px] font-mono border border-primary/20">F1</div>
+            </button>
         </aside>
     );
 };

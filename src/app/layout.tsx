@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { HelpProvider } from "@/components/help/HelpContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,7 +49,9 @@ export default function RootLayout({
           enableSystem
         >
           <ErrorBoundary>
-            {children}
+            <HelpProvider>
+              {children}
+            </HelpProvider>
           </ErrorBoundary>
         </ThemeProvider>
       </body>

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { BimImportModal } from './bim/BimImportModal';
+import { HelpBeacon } from './help/HelpBeacon';
 import { PueGauge, EnergyConsumptionChart } from './EnergyWidgets';
 
 export const Dashboard = () => {
@@ -33,6 +34,7 @@ export const Dashboard = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-8 space-y-12">
+
 
             {/* Hero Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -85,7 +87,7 @@ export const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-emerald-500/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('config')}>
+                <div className="card-premium p-6 flex items-center gap-4 hover:border-emerald-500/50 transition-colors cursor-pointer group relative" onClick={() => setActiveTab('config')}>
                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                         <TrendingUp className="w-6 h-6" />
                     </div>

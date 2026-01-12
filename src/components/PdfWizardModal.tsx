@@ -42,19 +42,19 @@ const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; op
         name: 'Basic Report',
         desc: 'Essential volume summary and BoQ.',
         icon: Package,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: false, includeWeights: false, includePhotos: false }
+        options: { includeVolume: true, includeBoQ: true, includeSupports: false, includeWeights: false, includePhotos: false, includeEnergy: false }
     },
     standard: {
         name: 'Standard Report',
         desc: 'Includes supports and mounting details.',
         icon: Anchor,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: false, includePhotos: false }
+        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: false, includePhotos: false, includeEnergy: false }
     },
     full: {
         name: 'Full Report',
         desc: 'Complete documentation with weights & photos.',
         icon: Layers,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: true, includePhotos: true }
+        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: true, includePhotos: true, includeEnergy: true }
     },
     custom: {
         name: 'Custom',
@@ -83,6 +83,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         includeSupports: false,
         includeWeights: false,
         includePhotos: false,
+        includeEnergy: false,
         supportSpacing: 2.0
     });
 
@@ -105,6 +106,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 includeSupports: false,
                 includeWeights: false,
                 includePhotos: false,
+                includeEnergy: false,
                 supportSpacing: 2.0
             });
         }
@@ -267,6 +269,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                 { key: 'includeBoQ', label: 'Bill of Quantities', desc: 'Detailed list of materials and equipment.' },
                                 { key: 'includeSupports', label: 'Supports & Mounting', desc: 'Support calculations and specifications.' },
                                 { key: 'includeWeights', label: 'Weight Table', desc: 'Static load analysis for structural engineering.' },
+                                { key: 'includeEnergy', label: 'Sustainability Report', desc: 'PUE analysis and Carbon Footprint estimation.' },
                                 { key: 'includePhotos', label: 'Photo Documentation', desc: 'Appendix with equipment images and data sheets.' }
                             ].map((opt) => (
                                 <label
