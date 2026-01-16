@@ -1,31 +1,56 @@
 import React from 'react';
-import { Snowflake, Droplets, ThermometerSnowflake, Info } from 'lucide-react';
+import { Snowflake, Droplets, ThermometerSnowflake, Info, Beaker } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
+import { FluidType } from '@/lib/types';
+
+// Fluid type labels and colors
+const FLUID_OPTIONS: { value: FluidType; label: string; color: string }[] = [
+    { value: 'ethylene', label: 'Etilen Glicol', color: 'from-blue-500 to-indigo-600' },
+    { value: 'propylene', label: 'Propilen Glicol', color: 'from-green-500 to-emerald-600' },
+    { value: 'water', label: 'Apă Pură', color: 'from-cyan-400 to-blue-500' },
+];
 
 export const FluidComposition: React.FC = () => {
     const {
         glycolPercentage, setGlycolPercentage,
         safetyMargin, setSafetyMargin,
-        safetyMarginPercentage, setSafetyMarginPercentage
+        safetyMarginPercentage, setSafetyMarginPercentage,
+        fluidType, setFluidType
     } = useProject();
 
-    // Calculate approximate freezing point (Ethylene Glycol estimation)
-    const getFreezingPoint = (pct: number) => {
-        if (pct < 10) return -3;
-        if (pct < 20) return -8;
-        if (pct < 30) return -15;
-        if (pct < 40) return -24;
-        if (pct < 50) return -36;
-        return -45;
+    // Calculate freezing point based on fluid type
+    const getFreezingPoint = (pct: number, type: FluidType) => {
+        if (type === 'water') return 0;
+
+        // Ethylene Glycol freezing points (°C)
+        const ethyleneData = [
+            [0, 0], [10, -4], [20, -8], [30, -15], [40, -24], [50, -36], [60, -52]
+        ];
+
+        // Propylene Glycol freezing points (°C) - slightly higher
+        const propyleneData = [
+            [0, 0], [10, -3], [20, -7], [30, -12], [40, -21], [50, -33], [60, -48]
+        ];
+
+        const data = type === 'ethylene' ? ethyleneData : propyleneData;
+
+        for (let i = 0; i < data.length - 1; i++) {
+            const [p1, t1] = data[i];
+            const [p2, t2] = data[i + 1];
+            if (pct >= p1 && pct <= p2) {
+                const ratio = (pct - p1) / (p2 - p1);
+                return Math.round(t1 + (t2 - t1) * ratio);
+            }
+        }
+        return data[data.length - 1][1];
     };
 
-    const freezingPoint = getFreezingPoint(glycolPercentage);
+    const freezingPoint = getFreezingPoint(glycolPercentage, fluidType);
 
-    // Dynamic color based on concentration
-    const getFluidColor = (pct: number) => {
-        if (pct < 25) return 'from-cyan-400 to-blue-500'; // Dilute
-        if (pct < 40) return 'from-blue-500 to-indigo-600'; // Standard
-        return 'from-indigo-600 to-purple-600'; // Concentrated
+    // Dynamic color based on fluid type
+    const getFluidColor = () => {
+        const option = FLUID_OPTIONS.find(f => f.value === fluidType);
+        return option?.color || 'from-blue-500 to-indigo-600';
     };
 
     return (
@@ -54,32 +79,60 @@ export const FluidComposition: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Fluid Type Selector */}
+                <div className="mt-4 flex gap-2">
+                    {FLUID_OPTIONS.map(option => (
+                        <button
+                            key={option.value}
+                            onClick={() => {
+                                setFluidType(option.value);
+                                if (option.value === 'water') {
+                                    setGlycolPercentage(0);
+                                }
+                            }}
+                            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border ${fluidType === option.value
+                                ? `bg-gradient-to-r ${option.color} text-white border-transparent shadow-md`
+                                : 'bg-muted/30 text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground'
+                                }`}
+                        >
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Beaker className="w-3.5 h-3.5" />
+                                {option.label}
+                            </div>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Main Control Section */}
             <div className="p-8 relative">
                 {/* Background Decor */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${getFluidColor(glycolPercentage)} opacity-[0.03] pointer-events-none`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-br ${getFluidColor()} opacity-[0.03] pointer-events-none`}></div>
 
                 <div className="flex flex-col gap-8">
                     {/* Large Percentage Display */}
                     <div className="flex items-center justify-center relative py-4">
-                        <div className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-foreground to-muted-foreground drop-shadow-sm tracking-tighter">
-                            {glycolPercentage}%
+                        <div className={`text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br drop-shadow-sm tracking-tighter ${fluidType === 'water'
+                                ? 'from-muted-foreground to-muted-foreground/50'
+                                : 'from-foreground to-muted-foreground'
+                            }`}>
+                            {fluidType === 'water' ? '100%' : `${glycolPercentage}%`}
                         </div>
                         <div className="absolute top-0 right-1/4 translate-x-8 text-xs font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 uppercase tracking-wider">
-                            Concentration
+                            {fluidType === 'water' ? 'Pure Water' : 'Concentration'}
                         </div>
                     </div>
 
                     {/* Slider Container */}
-                    <div className="relative w-full h-14 bg-muted/30 rounded-2xl border border-border p-1.5 shadow-inner backdrop-blur-sm">
+                    <div className={`relative w-full h-14 bg-muted/30 rounded-2xl border border-border p-1.5 shadow-inner backdrop-blur-sm ${fluidType === 'water' ? 'opacity-50 pointer-events-none' : ''
+                        }`}>
 
                         {/* Interactive Track Area */}
                         <div className="relative w-full h-full rounded-xl overflow-hidden">
                             {/* Filled Part */}
                             <div
-                                className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r ${getFluidColor(glycolPercentage)} transition-all duration-300 ease-out shadow-[0_0_20px_rgba(37,99,235,0.3)]`}
+                                className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r ${getFluidColor()} transition-all duration-300 ease-out shadow-[0_0_20px_rgba(37,99,235,0.3)]`}
                                 style={{ width: `${glycolPercentage}%` }}
                             >
                                 {/* Fluid Texture/Shine */}

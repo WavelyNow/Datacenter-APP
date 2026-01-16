@@ -44,8 +44,21 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
             const service = new IfcService();
 
             await service.init();
-            await service.loadFile(new Uint8Array(buffer));
-            const pipes = await service.extractPipes();
+            // Use processIfcBuffer which handles both loading and extraction
+            const bimObjects = await service.processIfcBuffer(buffer);
+
+            // Convert BIM objects to PipeSegments
+            const pipes: PipeSegment[] = bimObjects
+                .filter((obj: any) => obj.type?.toLowerCase().includes('pipe') || obj.ifcType === 3758099475) // IfcPipeSegment
+                .map((obj: any) => ({
+                    id: `bim-${obj.id}`,
+                    name: obj.name || 'BIM Pipe',
+                    material: 'custom' as const,
+                    standard: 'BIM Import',
+                    size: obj.diameter || 'Unknown',
+                    length: obj.length || 1,
+                    customInnerDiameter: typeof obj.diameter === 'number' ? obj.diameter : undefined,
+                }));
 
             setFoundPipes(pipes);
             setStatus('extracted');

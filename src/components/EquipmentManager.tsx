@@ -2,11 +2,12 @@
 
 import React, { useRef, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink } from 'lucide-react';
+import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink, AlertCircle } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
+import { isValidVolume, isValidWeight } from '@/lib/validation/schemas';
 
 interface EquipmentManagerProps {
     equipmentList: EquipmentItem[];
@@ -295,11 +296,24 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                             <input
                                                 type="number"
                                                 min="0"
-                                                className="w-full bg-card border border-border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 focus:ring-primary/20 focus:border-primary/20 font-bold"
+                                                max="100000"
+                                                className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidVolume(item.volume)
+                                                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                    : 'border-border focus:ring-primary/20 focus:border-primary/20'
+                                                    }`}
                                                 value={item.volume}
-                                                onChange={(e) => updateItem(item.id, 'volume', parseFloat(e.target.value) || 0)}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value);
+                                                    updateItem(item.id, 'volume', isNaN(val) ? 0 : val);
+                                                }}
                                             />
+                                            {!isValidVolume(item.volume) && (
+                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                            )}
                                         </div>
+                                        {!isValidVolume(item.volume) && (
+                                            <p className="text-[10px] text-red-500">0 - 100,000 L</p>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -309,13 +323,28 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 <>
                                     <div className="md:col-span-3 space-y-1.5">
                                         <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Empty Weight (kg)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            className="w-full bg-card border border-border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 focus:ring-primary/20 focus:border-primary/20 font-bold"
-                                            value={item.weight || 0}
-                                            onChange={(e) => updateItem(item.id, 'weight', parseFloat(e.target.value) || 0)}
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="100000"
+                                                className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidWeight(item.weight || 0)
+                                                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                    : 'border-border focus:ring-primary/20 focus:border-primary/20'
+                                                    }`}
+                                                value={item.weight || 0}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value);
+                                                    updateItem(item.id, 'weight', isNaN(val) ? 0 : val);
+                                                }}
+                                            />
+                                            {!isValidWeight(item.weight || 0) && (
+                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                            )}
+                                        </div>
+                                        {!isValidWeight(item.weight || 0) && (
+                                            <p className="text-[10px] text-red-500">0 - 100,000 kg</p>
+                                        )}
                                     </div>
                                     <div className="md:col-span-2 text-right pb-2">
                                         <div className="text-[10px] text-muted-foreground font-mono">

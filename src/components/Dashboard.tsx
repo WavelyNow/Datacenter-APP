@@ -13,12 +13,14 @@ import {
     Plus,
     FileBox,
     Package,
-    Leaf
+    Leaf,
+    Sparkles
 } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { BimImportModal } from './bim/BimImportModal';
 import { HelpBeacon } from './help/HelpBeacon';
 import { PueGauge, EnergyConsumptionChart } from './EnergyWidgets';
+import { TemplateSelector } from './TemplateSelector';
 
 export const Dashboard = () => {
     const {
@@ -31,6 +33,7 @@ export const Dashboard = () => {
     } = useProject();
 
     const [isBimOpen, setIsBimOpen] = React.useState(false);
+    const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
     return (
         <div className="max-w-7xl mx-auto p-8 space-y-12">
@@ -46,6 +49,13 @@ export const Dashboard = () => {
                 </div>
 
                 <div className="flex gap-3">
+                    <button
+                        onClick={() => setIsTemplateOpen(true)}
+                        className="btn btn-secondary h-12 px-6 border-amber-500/30 hover:border-amber-500/60 gap-2 text-foreground bg-amber-500/10 hover:bg-amber-500/20"
+                    >
+                        <Sparkles className="w-5 h-5 text-amber-500" />
+                        Quick Start
+                    </button>
 
                     <button
                         onClick={() => setIsBimOpen(true)}
@@ -223,8 +233,9 @@ export const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Modals */}
             <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
+            <TemplateSelector isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
         </div>
     );
 };

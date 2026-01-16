@@ -3,11 +3,12 @@
 import React, { useMemo, useState } from 'react';
 import {
     Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown,
-    Copy, Activity, Droplets, ArrowRight, Gauge, LayoutList, Workflow
+    Copy, Activity, Droplets, ArrowRight, Gauge, LayoutList, Workflow, AlertCircle
 } from 'lucide-react';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment, FluidType } from '@/lib/types';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { isValidLength } from '@/lib/validation/schemas';
 
 interface PipeManagerProps {
     segments: PipeSegment[];
@@ -283,14 +284,29 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                     <div className="relative max-w-[120px]">
                                                         <input
                                                             type="number"
-                                                            min="0"
+                                                            min="0.1"
+                                                            max="10000"
                                                             step="0.1"
-                                                            className="w-full bg-transparent text-sm font-medium text-foreground border-b border-border focus:border-primary focus:outline-none py-1 pe-6 transition-colors"
+                                                            className={`w-full bg-transparent text-sm font-medium text-foreground border-b focus:outline-none py-1 pe-6 transition-colors ${!isValidLength(segment.length)
+                                                                    ? 'border-red-500 text-red-500'
+                                                                    : 'border-border focus:border-primary'
+                                                                }`}
                                                             value={segment.length}
-                                                            onChange={(e) => updateSegment(segment.id, { length: parseFloat(e.target.value) || 0 })}
+                                                            onChange={(e) => {
+                                                                const val = parseFloat(e.target.value);
+                                                                // Allow the change but mark as invalid via styling
+                                                                updateSegment(segment.id, { length: isNaN(val) ? 0 : val });
+                                                            }}
                                                         />
-                                                        <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">m</span>
+                                                        {!isValidLength(segment.length) ? (
+                                                            <AlertCircle className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                                        ) : (
+                                                            <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">m</span>
+                                                        )}
                                                     </div>
+                                                    {!isValidLength(segment.length) && (
+                                                        <p className="text-[10px] text-red-500 mt-1">Lungime invalidă (0.1 - 10,000m)</p>
+                                                    )}
                                                 </div>
 
                                                 {/* Details Readout */}
