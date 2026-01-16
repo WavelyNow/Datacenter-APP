@@ -15,12 +15,14 @@ import {
     Upload,
     Printer,
     Leaf,
-    GraduationCap
+    GraduationCap,
+    Calculator,
+    ClipboardCheck
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useHelp } from './help/HelpContext';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'help';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'costs' | 'checklist' | 'help';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -62,6 +64,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'energy', label: 'Eficiență Energetică', icon: Leaf, badge: 'NEW' },
         { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
         { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
+        { id: 'costs', label: 'Estimare Costuri', icon: Calculator, badge: 'NEW' },
+        { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck, badge: 'NEW' },
     ];
 
     const databaseGroup: MenuItem[] = [
