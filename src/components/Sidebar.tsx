@@ -17,12 +17,13 @@ import {
     Leaf,
     GraduationCap,
     Calculator,
-    ClipboardCheck
+    ClipboardCheck,
+    Wrench
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useHelp } from './help/HelpContext';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'costs' | 'checklist' | 'help';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -61,11 +62,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const engineeringGroup: MenuItem[] = [
         { id: 'bim', label: 'BIM Model / 3D Viewer', icon: Box },
         { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
-        { id: 'energy', label: 'Eficiență Energetică', icon: Leaf, badge: 'NEW' },
+        { id: 'hydraulics', label: 'Instrumente Hidraulice', icon: Wrench, badge: 'NEW' },
+        { id: 'energy', label: 'Eficiență Energetică', icon: Leaf },
         { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
         { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
-        { id: 'costs', label: 'Estimare Costuri', icon: Calculator, badge: 'NEW' },
-        { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck, badge: 'NEW' },
+        { id: 'costs', label: 'Estimare Costuri', icon: Calculator },
+        { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck },
     ];
 
     const databaseGroup: MenuItem[] = [
@@ -79,13 +81,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     // Helper for rendering a section
     const NavSection = ({ title, items }: { title?: string, items: MenuItem[] }) => (
-        <div className="mb-6">
+        <div className="mb-8">
             {title && (
-                <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 opacity-60">
+                <p className="px-3 text-[11px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-3">
                     {title}
                 </p>
             )}
-            <div className="space-y-1">
+            <div className="space-y-1.5">
                 {items.map((item) => {
                     const Icon = item.icon as any;
                     const isActive = activeTab === item.id;
@@ -93,15 +95,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <button
                             key={item.id}
                             onClick={() => onTabChange(item.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative ${isActive
-                                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${isActive
+                                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10 translate-x-1'
+                                : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:translate-x-1'
                                 }`}
                         >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                            <span className="truncate">{item.label}</span>
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground'}`} />
+                            <span className="truncate tracking-wide">{item.label}</span>
                             {item.badge && (
-                                <span className="absolute right-2 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[9px] font-bold">
+                                <span className="absolute right-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[9px] font-bold ring-1 ring-primary/20">
                                     {item.badge}
                                 </span>
                             )}

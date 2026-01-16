@@ -1,14 +1,7 @@
 
-export interface CatalogEquipment {
-    id: string;
-    category: string;
-    manufacturer: string;
-    model: string;
-    volume: number; // L (water content)
-    weight: number; // kg (empty/dry weight)
-    description: string;
-    technicalSheet?: string; // Base64 or URL
-}
+import { CatalogEquipment } from '@/lib/types';
+import { WILO_PUMPS } from './manufacturers/wilo';
+import { VICTAULIC_EQUIPMENT } from './manufacturers/victaulic';
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
@@ -259,5 +252,15 @@ export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
         volume: 28,
         weight: 120,
         description: 'Schimbător căldură cu plăci, 200kW.'
-    }
+    },
+
+    // ==========================================================================
+    // WILO - Added via Catalog Expansion
+    // ==========================================================================
+    ...WILO_PUMPS,
+
+    // ==========================================================================
+    // VICTAULIC - Series 761, 716, 731
+    // ==========================================================================
+    ...VICTAULIC_EQUIPMENT
 ];

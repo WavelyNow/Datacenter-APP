@@ -1,9 +1,32 @@
-import React from 'react';
-import { Scale, ClipboardList, Droplet, ArrowRight, FileSpreadsheet } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Scale, ClipboardList, Droplet, ArrowRight, FileSpreadsheet, PieChart as PieIcon } from 'lucide-react';
 import { generateBoQ, getDetailedWeightReport, calculatePipeVolume } from '@/lib/calculations';
 import { useProject } from '@/context/ProjectContext';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { motion, useSpring, useTransform, useMotionValue, animate } from 'framer-motion';
 
-export const ResultsDisplay: React.FC = () => {
+// --- Animated Number Component ---
+function AnimatedNumber({ value, unit, className }: { value: number, unit?: string, className?: string }) {
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, (latest) => Math.round(latest * 10) / 10);
+
+    React.useEffect(() => {
+        const controls = animate(count, value, { duration: 1, ease: 'easeOut' });
+        return controls.stop;
+    }, [value, count]);
+
+    return (
+        <span className={className}>
+            <motion.span>{rounded}</motion.span>
+            {unit && <span className="opacity-70 ml-1">{unit}</span>}
+        </span>
+    );
+}
+
+// --- Donut Chart Stats ---
+const COLORS = ['#f59e0b', '#0d9488', '#64748b']; // Amber, Teal, Slate
+
+export const ResultsDisplay: React.FC = React.memo(() => {
     const {
         segments,
         equipmentList,
@@ -12,18 +35,45 @@ export const ResultsDisplay: React.FC = () => {
         safetyMarginPercentage
     } = useProject();
 
-    const pipesVolume = segments.reduce((sum, seg) => sum + (seg ? calculatePipeVolume(seg) : 0), 0);
-    const equipmentVolume = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
-    const totalSystemVolume = pipesVolume + equipmentVolume;
+    // Optimize heavy calculations
+    const { pipesVolume, equipmentVolume, totalSystemVolume } = useMemo(() => {
+        const pVol = segments.reduce((sum, seg) => sum + (seg ? calculatePipeVolume(seg) : 0), 0);
+        const eVol = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
+        return {
+            pipesVolume: pVol,
+            equipmentVolume: eVol,
+            totalSystemVolume: pVol + eVol
+        };
+    }, [segments, equipmentList]);
 
-    const boqItems = generateBoQ(segments);
+    const boqItems = useMemo(() => generateBoQ(segments), [segments]);
 
-    const detailedWeights = getDetailedWeightReport(segments, equipmentList, glycolPercentage);
-    const totalWeight = detailedWeights.reduce((sum, item) => sum + item.totalWeight, 0);
+    const totalWeight = useMemo(() => {
+        const detailedWeights = getDetailedWeightReport(segments, equipmentList, glycolPercentage);
+        return detailedWeights.reduce((sum, item) => sum + item.totalWeight, 0);
+    }, [segments, equipmentList, glycolPercentage]);
 
-    const marginMultiplier = safetyMargin ? (1 + (safetyMarginPercentage / 100)) : 1;
-    const bufferedVolume = totalSystemVolume * marginMultiplier;
-    const toOrderVolume = Math.ceil(bufferedVolume / 50) * 50;
+    const { toOrderVolume } = useMemo(() => {
+        const marginMultiplier = safetyMargin ? (1 + (safetyMarginPercentage / 100)) : 1;
+        const buffered = totalSystemVolume * marginMultiplier;
+        const finalVal = Math.ceil(buffered / 50) * 50;
+        return {
+            toOrderVolume: finalVal === 0 ? 0 : finalVal
+        };
+    }, [totalSystemVolume, safetyMargin, safetyMarginPercentage]);
+
+    // Data for Chart
+    const chartData = useMemo(() => [
+        { name: 'Pipe Volume', value: pipesVolume },
+        { name: 'Equipment', value: equipmentVolume },
+    ], [pipesVolume, equipmentVolume]);
+
+    // Filter out zero values for cleaner chart
+    const activeChartData = chartData.filter(d => d.value > 0);
+    if (activeChartData.length === 0 && totalSystemVolume === 0) {
+        // Placeholder
+        activeChartData.push({ name: 'Empty', value: 100 });
+    }
 
     const exportToCSV = () => {
         if (boqItems.length === 0) return;
@@ -52,115 +102,177 @@ export const ResultsDisplay: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-10">
+            {/* Main Dashboard Card with Chart */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-card border border-border/40 p-1.5 rounded-3xl relative overflow-hidden shadow-2xl shadow-stone-200/40 dark:shadow-none hover:shadow-xl transition-all"
+            >
+                <div className="bg-background/40 backdrop-blur-2xl rounded-2xl overflow-hidden p-8 relative z-10">
 
-            {/* Main Stats Card */}
-            <div className="bg-card border border-border p-1 rounded-2xl relative group overflow-hidden shadow-sm">
-
-                <div className="bg-background/50 backdrop-blur-xl rounded-xl overflow-hidden p-6 relative z-10">
+                    {/* Header */}
                     <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                                <Scale className="w-5 h-5 text-amber-500" />
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-inner">
+                                <Scale className="w-6 h-6 text-amber-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-foreground leading-tight">System Totals</h3>
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Real-time Calculation</p>
+                                <h3 className="text-xl font-bold text-foreground leading-none tracking-tight">System Overview</h3>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-1.5 opacity-70">Weight & Volume Distribution</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Hero Metric: Weight */}
-                    <div className="text-center py-6 relative">
-                        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent rounded-full blur-xl -z-10"></div>
-                        <div className="text-xs text-amber-600 dark:text-amber-400 font-bold uppercase tracking-widest mb-2 opacity-80">Estimated Operating Weight</div>
-                        <div className="flex items-baseline justify-center gap-1.5">
-                            <span className="text-5xl font-black text-foreground tracking-tighter text-glow drop-shadow-sm">
-                                {totalWeight.toFixed(1)}
-                            </span>
-                            <span className="text-lg font-bold text-amber-500/80">kg</span>
-                        </div>
-                        <div className="text-[10px] text-muted-foreground font-medium mt-2">Pipe Network + Fluid + Equipment</div>
-                    </div>
+                    {/* Content Grid: Left Stats, Right Chart */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
 
-                    {/* Secondary Metrics Grid */}
-                    <div className="grid grid-cols-3 gap-3 mt-8">
-                        <div className="p-3 rounded-xl bg-muted/20 border border-border hover:bg-muted/30 transition-colors">
-                            <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Volum Țevi</div>
-                            <div className="text-lg font-bold text-foreground font-mono">{pipesVolume.toFixed(0)} <span className="text-[10px] font-normal text-muted-foreground">L</span></div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-muted/20 border border-border hover:bg-muted/30 transition-colors">
-                            <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Volum Utilaje</div>
-                            <div className="text-lg font-bold text-teal-500 font-mono">{equipmentVolume.toFixed(0)} <span className="text-[10px] font-normal text-muted-foreground">L</span></div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-muted/20 border border-border hover:bg-muted/30 transition-colors">
-                            <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Total Brut</div>
-                            <div className="text-lg font-bold text-foreground font-mono">{totalSystemVolume.toFixed(0)} <span className="text-[10px] font-normal text-muted-foreground">L</span></div>
-                        </div>
-                    </div>
-
-                    {/* Order Suggestion */}
-                    <div className="mt-8 pt-6 border-t border-border">
-                        <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-xl p-4 relative overflow-hidden group/order cursor-default">
-                            <div className="absolute right-0 top-0 p-3 opacity-20 group-hover/order:opacity-40 transition-opacity">
-                                <Droplet className="w-12 h-12 rotate-[-15deg] text-purple-400" />
+                        {/* Text Stats */}
+                        <div>
+                            <div className="text-center lg:text-left py-4 relative">
+                                <div className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-[0.2em] mb-2 opacity-80">Total Operating Weight</div>
+                                <div className="flex items-baseline justify-center lg:justify-start gap-1">
+                                    <AnimatedNumber value={totalWeight} className="text-5xl lg:text-6xl font-black text-foreground tracking-tighter" />
+                                    <span className="text-xl font-bold text-amber-500/80 ml-1">kg</span>
+                                </div>
+                                <div className="text-xs text-muted-foreground font-medium mt-2">
+                                    Includes pipes, fluid ({glycolPercentage}% Glycol), and equipment.
+                                </div>
                             </div>
 
+                            {/* Detailed Volume Text */}
+                            <div className="mt-6 space-y-3">
+                                <div className="flex justify-between items-center p-3 rounded-xl bg-muted/30 border border-border/40">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                                        <span className="text-xs font-medium">Pipe Volume</span>
+                                    </div>
+                                    <span className="font-mono font-bold">{pipesVolume.toFixed(0)} L</span>
+                                </div>
+                                <div className="flex justify-between items-center p-3 rounded-xl bg-muted/30 border border-border/40">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-teal-500" />
+                                        <span className="text-xs font-medium">Equipment</span>
+                                    </div>
+                                    <span className="font-mono font-bold">{equipmentVolume.toFixed(0)} L</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Chart */}
+                        <div className="h-[200px] w-full relative">
+                            {totalSystemVolume > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
+                                            itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                        />
+                                        <Pie
+                                            data={activeChartData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            stroke="none"
+                                        >
+                                            {activeChartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30">
+                                    <PieIcon className="w-12 h-12 mb-2 opacity-50" strokeWidth={1} />
+                                    <span className="text-xs font-medium">Add data to visualize</span>
+                                </div>
+                            )}
+
+                            {/* Center Text in Donut */}
+                            {totalSystemVolume > 0 && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total</span>
+                                    <span className="text-xl font-bold font-mono text-foreground">{totalSystemVolume.toFixed(0)}L</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Order Suggestion Banner */}
+                    <div className="mt-8 pt-6 border-t border-border/40">
+                        <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/20 rounded-2xl p-5 relative overflow-hidden group/order flex items-center justify-between">
                             <div className="relative z-10">
-                                <div className="text-xs text-purple-600 dark:text-purple-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-                                    To Order {safetyMargin ? `(Incl. +${safetyMarginPercentage}% & Rounding)` : '(Incl. Rounding)'} <ArrowRight className="w-3 h-3" />
+                                <div className="text-[10px] text-purple-600 dark:text-purple-300 font-bold uppercase tracking-widest mb-1">
+                                    Recommended Order Volume
                                 </div>
-                                <div className="text-2xl font-black text-foreground tracking-tight">
-                                    {toOrderVolume.toLocaleString('ro-RO')} L
+                                <div className="text-3xl font-black text-foreground tracking-tight">
+                                    {toOrderVolume.toLocaleString('ro-RO')} <span className="text-lg text-muted-foreground font-bold">L</span>
                                 </div>
-                                <div className="text-[10px] text-purple-700/60 dark:text-purple-200/60 font-medium mt-1">
-                                    Antigel Premix {glycolPercentage}%
-                                </div>
+                                {safetyMargin && <div className="text-[10px] text-muted-foreground mt-1">Include {safetyMarginPercentage}% marja de siguranță</div>}
+                            </div>
+                            <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center group-hover/order:scale-110 transition-transform">
+                                <Droplet className="w-6 h-6 text-purple-600 dark:text-purple-300" />
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* BoQ Summary */}
-            <div className="bg-card border border-border p-5 rounded-2xl shadow-sm">
-                <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-                    <div className="flex items-center gap-2.5">
-                        <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                        <h3 className="text-sm font-bold text-foreground">Bill of Quantities</h3>
+                </div>
+            </motion.div>
+
+            {/* BoQ Summary Card */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="bg-card border border-border/40 p-8 rounded-3xl shadow-lg shadow-stone-200/20 dark:shadow-none"
+            >
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-border/40">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-muted rounded-xl">
+                            <ClipboardList className="w-5 h-5 text-foreground" />
+                        </div>
+                        <h3 className="text-base font-bold text-foreground">Bill of Quantities</h3>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={exportToCSV}
-                            title="Export CSV pentru Excel"
-                            className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20"
+                            title="Export CSV"
+                            disabled={boqItems.length === 0}
+                            className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <FileSpreadsheet className="w-3.5 h-3.5" />
+                            <FileSpreadsheet className="w-4 h-4" />
                         </button>
-                        <span className="text-[10px] font-bold text-muted-foreground bg-muted/20 px-2 py-0.5 rounded-full border border-border">{boqItems.length} Items</span>
+                        <span className="text-[10px] font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border/50">{boqItems.length} Items</span>
                     </div>
                 </div>
 
-                <div className="max-h-[250px] overflow-y-auto pr-1 space-y-1 custom-scrollbar">
+                <div className="max-h-[350px] overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                     {boqItems.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground text-xs italic">
-                            No items calculated yet.
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-50">
+                            {/* <ClipboardList className="w-8 h-8 mb-2" /> */}
+                            <div className="text-sm italic">Add pipes to generate BoQ.</div>
                         </div>
                     ) : (
                         boqItems.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/30 transition-colors group/item">
+                            <div key={item.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/50 transition-colors group/item border border-transparent hover:border-border/40">
                                 <div>
-                                    <div className="text-xs font-medium text-foreground group-hover/item:text-primary transition-colors">{item.materialName}</div>
-                                    <div className="text-[10px] text-muted-foreground font-mono">{item.size}</div>
+                                    <div className="text-sm font-semibold text-foreground group-hover/item:text-primary transition-colors">{item.materialName}</div>
+                                    <div className="text-[10px] text-muted-foreground font-mono tracking-wide uppercase opacity-70">{item.size}</div>
                                 </div>
-                                <div className="text-sm font-bold text-teal-600 dark:text-teal-400 font-mono">
+                                <div className="text-sm font-bold text-teal-600 dark:text-teal-400 font-mono bg-teal-500/10 px-2 py-1 rounded-lg">
                                     {item.totalLength.toFixed(1)}m
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
-};
+});
+
+ResultsDisplay.displayName = 'ResultsDisplay';

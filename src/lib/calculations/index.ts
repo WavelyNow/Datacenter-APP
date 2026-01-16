@@ -5,3 +5,8 @@ export * from './supports';
 export * from './energy';
 export * from './pressureDrop';
 export * from './costEstimate';
+export * from './expansionVessel';
+export * from './thermalExpansion';
+export * from './valveSizing';
+export * from './fittings';
+export * from './pumpSizing';

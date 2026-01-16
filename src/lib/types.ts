@@ -140,3 +140,14 @@ export interface CloudProject {
     data: ProjectLoadData;
     updated_at: string;
 }
+
+export interface CatalogEquipment {
+    id: string;
+    category: string;
+    manufacturer: string;
+    model: string;
+    volume: number; // L (water content)
+    weight: number; // kg (empty/dry weight)
+    description: string;
+    technicalSheet?: string; // Base64 or URL
+}

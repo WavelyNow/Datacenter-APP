@@ -21,6 +21,7 @@ import { EnergyPage } from '@/components/EnergyPage';
 import { HelpPage } from '@/components/HelpPage';
 import { CostEstimator } from '@/components/CostEstimator';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
+import { HydraulicsPage } from '@/components/HydraulicsPage';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.
@@ -376,6 +377,11 @@ const DashboardContent = () => {
                 {/* Tab 10: Commissioning Checklist */}
                 {activeTab === 'checklist' && (
                   <CommissioningChecklist />
+                )}
+
+                {/* Tab 11: Hydraulic Tools (Unified) */}
+                {activeTab === 'hydraulics' && (
+                  <HydraulicsPage />
                 )}
 
                 {activeTab === 'help' && (
