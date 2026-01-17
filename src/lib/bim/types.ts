@@ -10,7 +10,7 @@ export interface BimObject {
     length?: number;
     diameter?: string;
     material?: string;
-    rawData?: any;
+    rawData?: unknown;
 }
 
 export interface GroupedBimObject {

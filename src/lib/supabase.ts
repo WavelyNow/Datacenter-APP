@@ -12,5 +12,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = (supabaseUrl && supabaseAnonKey)
     ? createClient(supabaseUrl, supabaseAnonKey)
-    : null as any; // Using 'any' here to avoid ripple effects in TS, but it's risky if called.
+    : null as unknown as ReturnType<typeof createClient>; // Using a cast to avoid ripple effects if variables are missing
 

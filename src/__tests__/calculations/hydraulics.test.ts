@@ -62,8 +62,8 @@ describe('Hydraulics Calculations', () => {
         });
 
         it('returns 0 for null or invalid segment', () => {
-            expect(calculatePipeVolume(null as any)).toBe(0);
-            expect(calculatePipeVolume({} as any)).toBe(0);
+            expect(calculatePipeVolume(null as unknown as PipeSegment)).toBe(0);
+            expect(calculatePipeVolume({} as unknown as PipeSegment)).toBe(0);
         });
 
         it('uses explicit diameter if provided', () => {
@@ -104,7 +104,7 @@ describe('Hydraulics Calculations', () => {
         });
 
         it('handles null equipment list', () => {
-            const volume = calculateTotalVolume(mockSegments, null as any, false);
+            const volume = calculateTotalVolume(mockSegments, null as unknown as EquipmentItem[], false);
             expect(volume).toBeGreaterThan(0);
         });
     });

@@ -16,7 +16,7 @@ export interface PipeSegment {
     temperature?: number;
     roughness?: number;
     diameter?: number; // Added to support BIM extraction (numeric DN or inner diameter)
-    fittings?: any[]; // Placeholder for future fitting logic
+    fittings?: unknown[]; // Placeholder for future fitting logic
 }
 
 export interface EquipmentItem {
