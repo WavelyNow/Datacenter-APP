@@ -17,8 +17,8 @@ describe('Hydraulics Calculations', () => {
     // Test data
     const mockSegments: PipeSegment[] = [
         { id: '1', material: 'steel_light', standard: 'EN 10255', size: 'DN50', length: 10 },
-        { id: '2', material: 'steel_light', size: 'DN80', length: 15 },
-        { id: '3', material: 'copper', size: 'DN25', length: 5 },
+        { id: '2', material: 'steel_light', standard: 'EN 10255', size: 'DN80', length: 15 },
+        { id: '3', material: 'copper', standard: 'EN 1057', size: 'DN25', length: 5 },
     ];
 
     const mockEquipment: EquipmentItem[] = [
@@ -31,6 +31,7 @@ describe('Hydraulics Calculations', () => {
             const segment: PipeSegment = {
                 id: 'test',
                 material: 'steel_light',
+                standard: 'EN 10255',
                 size: 'DN50',
                 length: 10
             };
@@ -47,6 +48,7 @@ describe('Hydraulics Calculations', () => {
             const segment: PipeSegment = {
                 id: 'custom',
                 material: 'custom',
+                standard: 'custom',
                 size: 'custom',
                 length: 10,
                 customInnerDiameter: 50
@@ -68,6 +70,7 @@ describe('Hydraulics Calculations', () => {
             const segment: PipeSegment = {
                 id: 'test',
                 material: 'steel_light',
+                standard: 'EN 10255',
                 size: 'DN50',
                 length: 10,
                 diameter: 100  // Override with 100mm
@@ -187,6 +190,7 @@ describe('Hydraulics Calculations', () => {
                 {
                     id: 'custom',
                     material: 'custom',
+                    standard: 'custom',
                     size: 'custom',
                     length: 10,
                     customWeight: 5  // 5 kg/m

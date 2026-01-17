@@ -9,6 +9,7 @@ import {
     calculatePressureDrop,
     calculateSegmentPressureDrop,
 } from '@/lib/calculations/pressureDrop';
+import { PipeSegment } from '@/lib/types';
 
 // Mock getPipeData function for tests
 const mockGetPipeData = (material: string, size: string): { id: number } | null => {
@@ -124,9 +125,10 @@ describe('Pressure Drop Calculations', () => {
 
     describe('calculateSegmentPressureDrop', () => {
         it('returns pressure drop result for a pipe segment', () => {
-            const segment = {
+            const segment: PipeSegment = {
                 id: 'test-1',
                 material: 'steel_light',
+                standard: 'EN 10255',
                 size: 'DN50',
                 length: 10,
                 flowRate: 5,
@@ -144,9 +146,10 @@ describe('Pressure Drop Calculations', () => {
         });
 
         it('returns zero pressure drop for zero flow rate', () => {
-            const segment = {
+            const segment: PipeSegment = {
                 id: 'test-2',
                 material: 'steel_light',
+                standard: 'EN 10255',
                 size: 'DN50',
                 length: 10,
                 flowRate: 0,
@@ -159,9 +162,10 @@ describe('Pressure Drop Calculations', () => {
         });
 
         it('handles segments with custom diameter', () => {
-            const segment = {
+            const segment: PipeSegment = {
                 id: 'test-3',
                 material: 'custom',
+                standard: 'custom',
                 size: 'custom',
                 length: 10,
                 flowRate: 5,
