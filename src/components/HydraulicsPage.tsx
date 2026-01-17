@@ -18,7 +18,7 @@ type HydraulicTool = 'expansion' | 'thermal' | 'valve' | 'fittings' | 'pump';
 interface ToolTab {
     id: HydraulicTool;
     label: string;
-    icon: React.ElementType;
+    icon: React.ElementType<{ className?: string }>;
     description: string;
 }
 

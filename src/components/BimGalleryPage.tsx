@@ -1,40 +1,82 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { Box, Maximize2, Cuboid, ShieldCheck, Plus, Import } from 'lucide-react';
+import { Box, Maximize2, Cuboid, Plus, Import, Filter, Layers, Search, Factory, Trash2, CheckCircle, X } from 'lucide-react';
+import { toast } from 'sonner';
 import Equipment3DViewer from './Equipment3DViewer';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
-import { EquipmentItem } from '@/lib/types';
+import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 
 export const BimGalleryPage = () => {
     const { equipmentList, setEquipmentList } = useProject();
 
-    // Filter items that have a 3D model
+    // Project Items
     const bimItems = equipmentList.filter(item => item.model3d && item.model3d.length > 0);
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
-    // Filter Catalog Items with 3D Models
-    const catalogBimItems = useMemo(() =>
+    // View State
+    const [activeView, setActiveView] = useState<'project' | 'catalog'>(bimItems.length > 0 ? 'project' : 'catalog');
+
+    // Filters
+    const [filterManufacturer, setFilterManufacturer] = useState('All');
+    const [filterCategory, setFilterCategory] = useState('All');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Catalog Data Processing
+    // Extract unique manufacturers and categories from Catalog items that have 3D models
+    const catalog3DItems = useMemo(() =>
         EQUIPMENT_CATALOG.filter(item => item.model3d && item.model3d.length > 0),
         []);
 
+    const manufacturers = useMemo(() => {
+        const m = new Set(catalog3DItems.map(i => i.manufacturer || 'Generic'));
+        return ['All', ...Array.from(m)].sort();
+    }, [catalog3DItems]);
+
+    const categories = useMemo(() => {
+        const c = new Set(catalog3DItems.map(i => i.category || 'Other'));
+        return ['All', ...Array.from(c)].sort();
+    }, [catalog3DItems]);
+
+    // Filtered Catalog Items
+    const filteredCatalogItems = useMemo(() => {
+        return catalog3DItems.filter(item => {
+            if (filterManufacturer !== 'All' && (item.manufacturer || 'Generic') !== filterManufacturer) return false;
+            if (filterCategory !== 'All' && (item.category || 'Other') !== filterCategory) return false;
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                return (
+                    item.model.toLowerCase().includes(term) ||
+                    item.description?.toLowerCase().includes(term) ||
+                    item.manufacturer.toLowerCase().includes(term)
+                );
+            }
+            return true;
+        });
+    }, [catalog3DItems, filterManufacturer, filterCategory, searchTerm]);
+
     const addToProject = (catalogItem: any) => {
         const newItem: EquipmentItem = {
-            id: `eq-import-${Date.now()}`,
+            id: `eq-import-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             type: catalogItem.category || 'Altele',
             name: catalogItem.model,
+            manufacturer: catalogItem.manufacturer,
             volume: catalogItem.volume || 0,
             weight: catalogItem.weight || 0,
             model3d: catalogItem.model3d,
             technicalSheet: catalogItem.technicalSheet,
-            notes: catalogItem.description
+            notes: catalogItem.description,
+            // Keep specs if compatible
+            specifications: catalogItem.specifications
         };
-        // Functional update to ensure fresh state
         setEquipmentList((prev: EquipmentItem[]) => [...prev, newItem]);
+        toast.success(`added ${newItem.name} to project`, {
+            description: 'You can now view it in "My Gallery" tab.',
+            icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+        });
     };
 
-    // Helper to extract SRC if iframe code is stored (fallback)
     const getModelSrc = (val: string) => {
         if (!val) return '';
         if (val.includes('<iframe')) {
@@ -44,12 +86,11 @@ export const BimGalleryPage = () => {
         return val;
     };
 
-    const renderCard = (item: EquipmentItem | any, isCatalog: boolean = false) => {
+    // Card Renderer (Shared)
+    const renderCard = (item: EquipmentItem | CatalogEquipment | any, isCatalog: boolean = false) => {
         const rawSrc = getModelSrc(item.model3d!);
         const isEmbed = rawSrc.includes('sketchfab.com') || rawSrc.includes('youtube') || rawSrc.includes('vimeo');
         const isExpanded = expandedId === item.id;
-        // Catalog items don't expand, they just add
-        const interactive = !isCatalog;
 
         return (
             <div
@@ -58,14 +99,16 @@ export const BimGalleryPage = () => {
             >
                 {/* Header */}
                 <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm flex justify-between items-center sticky top-0 z-20">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center border border-border ${isCatalog ? 'bg-green-500/10 border-green-500/20' : 'bg-secondary/50'}`}>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-green-500/10 border-green-500/20' : 'bg-secondary/50'}`}>
                             {isCatalog ? <Import className="w-4 h-4 text-green-500" /> : <Cuboid className="w-4 h-4 text-blue-400" />}
                         </div>
-                        <div>
-                            <h3 className="font-bold text-foreground text-sm truncate max-w-[200px]">{item.name || item.model}</h3>
+                        <div className="min-w-0">
+                            <h3 className="font-bold text-foreground text-sm truncate">{item.name || item.model}</h3>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className="bg-secondary px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">{item.type || item.category}</span>
+                                <span className="bg-secondary px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider truncate">
+                                    {item.manufacturer ? `${item.manufacturer} • ` : ''}{item.type || item.category}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -73,22 +116,37 @@ export const BimGalleryPage = () => {
                     {isCatalog ? (
                         <button
                             onClick={() => addToProject(item)}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors shadow-sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md flex-shrink-0 flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-3.5 h-3.5" /> Adaugă
                         </button>
                     ) : (
-                        <button
-                            onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                            className={`p-2 rounded-lg transition-colors ${isExpanded ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}
-                            title={isExpanded ? "Collapse View" : "Expand View"}
-                        >
-                            <Maximize2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const confirm = window.confirm('Are you sure you want to remove this model from your project?');
+                                    if (confirm) {
+                                        setEquipmentList((prev: EquipmentItem[]) => prev.filter(i => i.id !== item.id));
+                                    }
+                                }}
+                                className="p-2 rounded-lg hover:bg-red-500/10 text-destructive transition-colors flex-shrink-0"
+                                title="Remove Model"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isExpanded ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}
+                                title={isExpanded ? "Collapse View" : "Expand View"}
+                            >
+                                <Maximize2 className="w-4 h-4" />
+                            </button>
+                        </div>
                     )}
                 </div>
 
-                {/* Viewer Area */}
+                {/* Viewer */}
                 <div className={`relative bg-black ${isExpanded ? 'h-[600px]' : 'h-[350px]'} transition-all duration-300 w-full`}>
                     {item.model3d && (
                         isEmbed ? (
@@ -103,13 +161,9 @@ export const BimGalleryPage = () => {
                             <Equipment3DViewer modelUrl={rawSrc} className="!h-full rounded-none border-0" />
                         )
                     )}
-
-                    {/* Overlay info */}
                     <div className="absolute bottom-4 left-4 pointer-events-none flex gap-2">
                         <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-green-900/60' : 'bg-black/60'}`}>
-                            {isCatalog ? 'Catalog Preview' : (
-                                <> <Box className="w-3 h-3" /> 3D Interactive </>
-                            )}
+                            {isCatalog ? 'Catalog Preview' : <><Box className="w-3 h-3" /> 3D Interactive</>}
                         </span>
                     </div>
                 </div>
@@ -118,60 +172,123 @@ export const BimGalleryPage = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-            {/* Header */}
-            <div className="flex flex-col gap-2 border-b border-border pb-6">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                        <Box className="w-8 h-8 text-blue-500" />
-                    </div>
-                    3D Model Gallery
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                    Interactive visualization of your project's BIM Equipment.
-                </p>
-            </div>
-
-            {/* Empty State + Recommendations */}
-            {bimItems.length === 0 && (
-                <div className="space-y-8">
-                    <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed border-border rounded-2xl bg-muted/10">
-                        <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                            <Cuboid className="w-8 h-8 text-muted-foreground opacity-50" />
-                        </div>
-                        <h3 className="text-xl font-medium text-foreground">Project Gallery Empty</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Added equipment with 3D models will appear here.
+        <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+            {/* Header & Tabs */}
+            <div className="flex flex-col gap-6 border-b border-border pb-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                            <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                <Box className="w-8 h-8 text-blue-500" />
+                            </div>
+                            3D Model Gallery
+                        </h1>
+                        <p className="text-muted-foreground text-sm mt-1">
+                            Visualize project equipment and explore BIM library.
                         </p>
                     </div>
+                    {/* View Switcher */}
+                    <div className="flex bg-secondary/50 p-1 rounded-lg border border-border">
+                        <button
+                            onClick={() => setActiveView('project')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'project' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            My Gallery ({bimItems.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveView('catalog')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'catalog' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            Explore Library
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                    {catalogBimItems.length > 0 && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
-                                    <span className="w-1.5 h-6 bg-green-500 rounded-full" />
-                                    Available 3D Models in Catalog
-                                </h2>
-                                <span className="text-xs font-mono text-muted-foreground bg-secondary px-2 py-1 rounded">
-                                    {catalogBimItems.length} found
-                                </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                We found these manufacturer items with pre-configured 3D models. Add them to your project to verify the gallery.
+            {/* View Content */}
+            {activeView === 'project' && (
+                <div className="space-y-6">
+                    {bimItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-2xl bg-muted/10 text-center">
+                            <Cuboid className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                            <h3 className="text-lg font-medium">Gallery Empty</h3>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                You haven't added any 3D models to your project yet.
                             </p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {catalogBimItems.map(item => renderCard(item, true))}
-                            </div>
+                            <button onClick={() => setActiveView('catalog')} className="btn btn-primary gap-2">
+                                <Search className="w-4 h-4" /> Browse Catalog
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {bimItems.map(item => renderCard(item, false))}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Project Items Grid */}
-            {bimItems.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {bimItems.map(item => renderCard(item, false))}
+            {activeView === 'catalog' && (
+                <div className="space-y-6">
+                    {/* Filters Toolbar */}
+                    <div className="flex flex-col md:flex-row gap-4 p-4 bg-muted/20 rounded-xl border border-border items-center">
+                        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground mr-auto">
+                            <Filter className="w-4 h-4" /> Filters:
+                            {(filterManufacturer !== 'All' || filterCategory !== 'All' || searchTerm) && (
+                                <button
+                                    onClick={() => {
+                                        setFilterManufacturer('All');
+                                        setFilterCategory('All');
+                                        setSearchTerm('');
+                                    }}
+                                    className="ml-2 px-2 py-0.5 rounded-md bg-secondary text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors flex items-center gap-1"
+                                >
+                                    <X className="w-3 h-3" /> Clear
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+                            {/* Category Filter */}
+                            <select
+                                value={filterCategory}
+                                onChange={(e) => setFilterCategory(e.target.value)}
+                                className="bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none min-w-[150px]"
+                            >
+                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+
+                            {/* Manufacturer Filter */}
+                            <select
+                                value={filterManufacturer}
+                                onChange={(e) => setFilterManufacturer(e.target.value)}
+                                className="bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none min-w-[150px]"
+                            >
+                                {manufacturers.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+
+                            {/* Search */}
+                            <div className="relative">
+                                <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-muted-foreground pointer-events-none" />
+                                <input
+                                    type="text"
+                                    placeholder="Search models..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="bg-background border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none w-full md:w-[200px]"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between px-1">
+                        <span className="text-xs text-muted-foreground font-mono">
+                            Showing {filteredCatalogItems.length} available models
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {filteredCatalogItems.map(item => renderCard(item, true))}
+                    </div>
                 </div>
             )}
         </div>

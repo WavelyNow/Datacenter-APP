@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { EQUIPMENT_CATALOG, CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
+import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
+import { CatalogEquipment } from '@/lib/types';
 import { Search, X, Box, Plus, FileText, Trash2, Save, Cloud, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useLibrary } from '@/hooks/useLibrary';

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CatalogEquipment, EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
+import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
+import { CatalogEquipment } from '@/lib/types';
 import { Search, Plus, Trash2, FileText, Download, Box, Book, Layers, Edit2, Check, X, Weight } from 'lucide-react';
 import { PipeCatalogModal } from './PipeCatalogModal';
 import { ProfileCatalogModal } from './ProfileCatalogModal';

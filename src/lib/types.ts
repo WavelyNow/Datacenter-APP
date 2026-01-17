@@ -42,6 +42,7 @@ export interface EquipmentItem {
     photos?: string[]; // Array of Base64 strings for the gallery
     technicalSheet?: string; // Base64 string (PDF) or URL
     model3d?: string; // URL to .glb/.gltf (BIM Model)
+    specifications?: Record<string, string | number>;
 }
 
 export type FluidType = 'ethylene' | 'propylene' | 'water';

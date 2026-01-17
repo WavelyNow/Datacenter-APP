@@ -5,6 +5,7 @@ import { VICTAULIC_EQUIPMENT } from './manufacturers/victaulic';
 import { BELIMO_VALVES } from './manufacturers/belimo';
 import { VERTIV_CATALOG } from './manufacturers/vertiv';
 import { SCHNEIDER_CATALOG } from './manufacturers/schneider';
+import { GENERAL_CATALOG } from './manufacturers/general';
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
@@ -231,5 +232,10 @@ export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
     // SCHNEIDER ELECTRIC - Integrated Systems
     // ==========================================================================
-    ...SCHNEIDER_CATALOG
+    ...SCHNEIDER_CATALOG,
+
+    // ==========================================================================
+    // GENERAL INFRASTRUCTURE - Generators, Fire, Power
+    // ==========================================================================
+    ...GENERAL_CATALOG
 ];
