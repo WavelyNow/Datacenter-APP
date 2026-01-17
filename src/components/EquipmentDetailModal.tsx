@@ -8,6 +8,7 @@ import {
     Upload, Trash2, Plus, Check, Settings, Download
 } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
+import Equipment3DViewer from './Equipment3DViewer';
 
 interface EquipmentDetailModalProps {
     isOpen: boolean;
@@ -222,8 +223,8 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                         key={option}
                                         onClick={() => toggleOption(option)}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${isActive
-                                                ? 'bg-primary text-primary-foreground border-primary'
-                                                : 'bg-card border-border text-muted-foreground hover:border-primary/50'
+                                            ? 'bg-primary text-primary-foreground border-primary'
+                                            : 'bg-card border-border text-muted-foreground hover:border-primary/50'
                                             }`}
                                     >
                                         {isActive && <Check className="w-3 h-3 inline mr-1" />}
@@ -232,6 +233,57 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                 );
                             })}
                         </div>
+                    </div>
+
+                    {/* 3D BIM Model */}
+                    <div className="bg-muted/20 p-5 rounded-xl border border-border">
+                        <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                            <Box className="w-4 h-4 text-blue-500" /> 3D BIM Model
+                        </h3>
+
+                        {!equipment.model3d ? (
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-muted-foreground">Paste Local Path (.glb) OR Sketchfab Embed Code</label>
+                                <textarea
+                                    placeholder='Paste <iframe...> code from Sketchfab OR /models/file.glb'
+                                    className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-1 focus:ring-primary h-20 resize-none font-mono text-xs"
+                                    onBlur={(e) => {
+                                        let val = e.target.value.trim();
+                                        if (val.includes('<iframe')) {
+                                            const match = val.match(/src="([^"]+)"/);
+                                            if (match) val = match[1];
+                                        }
+                                        if (val) onUpdate({ model3d: val });
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {equipment.model3d.includes('sketchfab.com') ? (
+                                    <div className="w-full aspect-video rounded-xl overflow-hidden border border-white/10 shadow-md bg-black relative">
+                                        <iframe
+                                            src={equipment.model3d}
+                                            className="w-full h-full"
+                                            frameBorder="0"
+                                            allowFullScreen
+                                            allow="autoplay; fullscreen; xr-spatial-tracking"
+                                        />
+                                    </div>
+                                ) : (
+                                    <Equipment3DViewer modelUrl={equipment.model3d} />
+                                )}
+
+                                <div className="flex justify-between items-center bg-card p-2 rounded-lg border border-border">
+                                    <code className="text-[10px] text-muted-foreground truncate max-w-[200px]">{equipment.model3d}</code>
+                                    <button
+                                        onClick={() => onUpdate({ model3d: undefined })}
+                                        className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
+                                    >
+                                        <Trash2 className="w-3 h-3" /> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Technical Sheet */}

@@ -3,10 +3,10 @@
 import React, { useRef, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink, AlertCircle } from 'lucide-react';
-import { EquipmentItem } from '@/lib/types';
+import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
-import { CatalogEquipment } from '@/lib/catalogs/equipmentCatalog';
+
 import { isValidVolume, isValidWeight } from '@/lib/validation/schemas';
 
 interface EquipmentManagerProps {

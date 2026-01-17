@@ -17,6 +17,7 @@ import { CatalogManager } from '@/components/CatalogManager';
 import { ExportModal } from '@/components/ExportModal';  // Unified Export
 import { Dashboard } from '@/components/Dashboard';
 import { BimPage } from '@/components/BimPage';
+import { BimGalleryPage } from '@/components/BimGalleryPage';
 import { EnergyPage } from '@/components/EnergyPage';
 import { HelpPage } from '@/components/HelpPage';
 import { CostEstimator } from '@/components/CostEstimator';
@@ -361,6 +362,13 @@ const DashboardContent = () => {
                 {activeTab === 'bim' && (
                   <div className="h-full px-6 py-6">
                     <BimPage />
+                  </div>
+                )}
+
+                {/* Tab: BIM Gallery (Interactive) */}
+                {activeTab === 'bim_gallery' && (
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <BimGalleryPage />
                   </div>
                 )}
 

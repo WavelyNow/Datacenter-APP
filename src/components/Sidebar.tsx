@@ -18,12 +18,13 @@ import {
     GraduationCap,
     Calculator,
     ClipboardCheck,
-    Wrench
+    Wrench,
+    Cuboid
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useHelp } from './help/HelpContext';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help';
 
 interface SidebarProps {
     activeTab: TabId;
@@ -60,7 +61,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
 
     const engineeringGroup: MenuItem[] = [
-        { id: 'bim', label: 'BIM Model / 3D Viewer', icon: Box },
+        { id: 'bim', label: 'Import IFC / Analiză', icon: Box },
+        { id: 'bim_gallery', label: 'Galerie Modele 3D', icon: Cuboid, badge: '3D' },
         { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
         { id: 'hydraulics', label: 'Instrumente Hidraulice', icon: Wrench, badge: 'NEW' },
         { id: 'energy', label: 'Eficiență Energetică', icon: Leaf },

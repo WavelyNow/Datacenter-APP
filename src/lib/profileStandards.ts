@@ -156,9 +156,54 @@ export const IPE_PROFILES: StructuralProfile[] = [
 
 export const STRUT_PROFILES: StructuralProfile[] = [
     // OBO US Series (U-Stiel) Standards
-    { name: "US 3 (50x30)", h: 30, w: 50, tw: 2.0, tf: 2.0, weight: 1.83, surface: 0.22, Iy: 6.2, Iz: 8.5, Wy: 2.9, Wz: 4.1, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Medium' },
-    { name: "US 5 (50x50)", h: 50, w: 50, tw: 2.5, tf: 2.5, weight: 2.65, surface: 0.30, Iy: 13.5, Iz: 13.5, Wy: 5.4, Wz: 5.4, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Medium' },
-    { name: "US 7 (50x70)", h: 70, w: 50, tw: 2.5, tf: 2.5, weight: 3.62, surface: 0.38, Iy: 25.1, Iz: 16.8, Wy: 7.2, Wz: 6.7, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Medium' },
+    {
+        name: "US 3 (50x30)", h: 30, w: 50, tw: 2.0, tf: 2.0, weight: 1.83, surface: 0.22, Iy: 6.2, Iz: 8.5, Wy: 2.9, Wz: 4.1, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Medium',
+        accessories: [
+            { name: "Head Plate KU 3", type: "base_plate", sku: "6348874", image: "base" },
+            { name: "Protective Cap US 3", type: "cap", sku: "6338458" },
+            { name: "Wall Bracket AW 15", type: "conn", sku: "6420680" } // Compatible light bracket
+        ]
+    },
+    {
+        name: "US 5 (50x50)", h: 50, w: 50, tw: 2.5, tf: 2.5, weight: 2.65, surface: 0.30, Iy: 13.5, Iz: 13.5, Wy: 5.4, Wz: 5.4, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Medium',
+        accessories: [
+            { name: "Head Plate KUS 5", type: "base_plate", sku: "6348904", image: "base" },
+            { name: "Protective Cap US 5", type: "cap", sku: "6338462" },
+            { name: "Wall Bracket AW 30", type: "conn", sku: "6419704" }
+        ]
+    },
+    {
+        name: "US 7 (50x70)", h: 70, w: 50, tw: 4.0, tf: 4.0, weight: 5.20, surface: 0.38, Iy: 25.1, Iz: 16.8, Wy: 7.2, Wz: 6.7, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Heavy',
+        accessories: [
+            { name: "Head Plate KU 7", type: "base_plate", sku: "6349102", image: "base" },
+            { name: "Protective Cap US 7", type: "cap", sku: "6338466" },
+            { name: "Heavy Wall Bracket AW 55", type: "conn", sku: "6418554" }
+        ]
+    },
+
+    // Niedax U-Profiles (Romania/EU Market)
+    {
+        name: "Niedax U 50 (50x22)", h: 22, w: 50, tw: 2.0, tf: 2.0, weight: 1.25, surface: 0.18, Iy: 2.5, Iz: 6.0, Wy: 2.0, Wz: 3.5, vendor: 'Generic', material: 'Galvanized', loadCapacity: 'Light',
+        accessories: [
+            { name: "Console KTA 100", type: "conn", sku: "KTA 100" },
+            { name: "Console KTA 200", type: "conn", sku: "KTA 200" }
+        ]
+    },
+    {
+        name: "Niedax U 50/50", h: 50, w: 50, tw: 2.5, tf: 2.5, weight: 2.43, surface: 0.30, Iy: 12.0, Iz: 15.0, Wy: 5.2, Wz: 5.5, vendor: 'Generic', material: 'Galvanized', loadCapacity: 'Medium',
+        accessories: [
+            { name: "Console KTA 300", type: "conn", sku: "KTA 300" },
+            { name: "Console KTA 400", type: "conn", sku: "KTA 400" },
+            { name: "Protective Cap K 50", type: "cap", sku: "K 50" }
+        ]
+    },
+    {
+        name: "Niedax U 60/40", h: 60, w: 40, tw: 4.0, tf: 4.0, weight: 3.40, surface: 0.25, Iy: 18.0, Iz: 10.0, Wy: 6.5, Wz: 4.5, vendor: 'Generic', material: 'Galvanized', loadCapacity: 'Heavy',
+        accessories: [
+            { name: "Console KTA 500", type: "conn", sku: "KTA 500" },
+            { name: "Console KTA 600", type: "conn", sku: "KTA 600" }
+        ]
+    },
 
     // Hilti MQ System Equivalents (Reference)
     { name: "MQ-21 (41x21)", h: 21, w: 41, tw: 2.0, tf: 2.0, weight: 1.50, surface: 0.12, Iy: 1.83, Iz: 6.42, Wy: 1.48, Wz: 3.13, vendor: 'Hilti', material: 'Galvanized', loadCapacity: 'Medium' },
@@ -167,5 +212,10 @@ export const STRUT_PROFILES: StructuralProfile[] = [
     { name: "MQ-72 (41x72)", h: 72, w: 41, tw: 2.75, tf: 2.75, weight: 4.80, surface: 0.23, Iy: 28.3, Iz: 18.2, Wy: 7.8, Wz: 8.9, vendor: 'Hilti', material: 'Galvanized', loadCapacity: 'Medium' },
 
     // Double / Special
-    { name: "US 7D (Double 50x140)", h: 140, w: 50, tw: 2.5, tf: 2.5, weight: 7.24, surface: 0.70, Iy: 200, Iz: 33.6, Wy: 35, Wz: 13.4, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Heavy' },
+    {
+        name: "US 7D (Double 50x140)", h: 140, w: 50, tw: 4.0, tf: 4.0, weight: 10.4, surface: 0.70, Iy: 200, Iz: 33.6, Wy: 35, Wz: 13.4, vendor: 'OBO', material: 'Galvanized', loadCapacity: 'Heavy',
+        accessories: [
+            { name: "Head Plate KU 7 D", type: "base_plate", sku: "6349152", image: "base" }
+        ]
+    },
 ];

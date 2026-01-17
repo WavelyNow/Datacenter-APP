@@ -2,57 +2,11 @@
 import { CatalogEquipment } from '@/lib/types';
 import { WILO_PUMPS } from './manufacturers/wilo';
 import { VICTAULIC_EQUIPMENT } from './manufacturers/victaulic';
+import { BELIMO_VALVES } from './manufacturers/belimo';
+import { VERTIV_CATALOG } from './manufacturers/vertiv';
+import { SCHNEIDER_CATALOG } from './manufacturers/schneider';
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
-    // ==========================================================================
-    // SCHNEIDER ELECTRIC - InRow Cooling
-    // ==========================================================================
-    {
-        id: 'se-inrow-rd-300',
-        category: 'CRAH / CCU',
-        manufacturer: 'Schneider Electric',
-        model: 'InRow RD 300mm (ACRD200)',
-        volume: 15,
-        weight: 199,
-        description: 'Fluid Cooled, 300mm width, In-Row precision cooling.'
-    },
-    {
-        id: 'se-inrow-rd-600',
-        category: 'CRAH / CCU',
-        manufacturer: 'Schneider Electric',
-        model: 'InRow RD 600mm (ACRD100)',
-        volume: 25,
-        weight: 285,
-        description: 'Fluid Cooled, 600mm width, High capacity In-Row.'
-    },
-    {
-        id: 'se-inrow-rc',
-        category: 'CRAH / CCU',
-        manufacturer: 'Schneider Electric',
-        model: 'InRow RC (ACRC502)',
-        volume: 35,
-        weight: 345,
-        description: 'Chilled Water, 600mm width, Row-based cooling.'
-    },
-    {
-        id: 'se-inrow-sc',
-        category: 'CRAH / CCU',
-        manufacturer: 'Schneider Electric',
-        model: 'InRow SC (Direct Expansion)',
-        volume: 8,
-        weight: 220,
-        description: 'Self-contained DX cooling, 300mm width.'
-    },
-    {
-        id: 'se-uniflair-cdu-12',
-        category: 'Unitate internă (CDU)',
-        manufacturer: 'Schneider Electric',
-        model: 'Uniflair CDU 12-Circuit',
-        volume: 45,
-        weight: 270,
-        description: 'Coolant Distribution Unit, 12 circuits.'
-    },
-
     // ==========================================================================
     // VERTIV - Liebert Precision Cooling
     // ==========================================================================
@@ -262,5 +216,20 @@ export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
     // VICTAULIC - Series 761, 716, 731
     // ==========================================================================
-    ...VICTAULIC_EQUIPMENT
+    ...VICTAULIC_EQUIPMENT,
+
+    // ==========================================================================
+    // BELIMO - Control Valves
+    // ==========================================================================
+    ...BELIMO_VALVES,
+
+    // ==========================================================================
+    // VERTIV - Integrated Systems
+    // ==========================================================================
+    ...VERTIV_CATALOG,
+
+    // ==========================================================================
+    // SCHNEIDER ELECTRIC - Integrated Systems
+    // ==========================================================================
+    ...SCHNEIDER_CATALOG
 ];

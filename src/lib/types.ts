@@ -41,6 +41,7 @@ export interface EquipmentItem {
     proofImage?: string; // Base64 string - Legacy, keep for now but prefer photos array
     photos?: string[]; // Array of Base64 strings for the gallery
     technicalSheet?: string; // Base64 string (PDF) or URL
+    model3d?: string; // URL to .glb/.gltf (BIM Model)
 }
 
 export type FluidType = 'ethylene' | 'propylene' | 'water';
@@ -150,4 +151,11 @@ export interface CatalogEquipment {
     weight: number; // kg (empty/dry weight)
     description: string;
     technicalSheet?: string; // Base64 or URL
+    model3d?: string; // URL to .glb/.gltf (BIM Model)
+    // Extended properties for detailed catalogs
+    power?: number;
+    flowRate?: number;
+    specifications?: Record<string, string | number>;
+    options?: string[];
+    type?: string; // Specific type if different from category
 }
