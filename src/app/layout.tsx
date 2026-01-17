@@ -5,6 +5,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelpProvider } from "@/components/help/HelpContext";
 import { Toaster } from "sonner";
+import { AICopilot } from "@/components/AICopilot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
           <ErrorBoundary>
             <HelpProvider>
               {children}
+              <AICopilot />
             </HelpProvider>
           </ErrorBoundary>
           <Toaster position="bottom-right" richColors theme="system" />

@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { ProjectDetails } from '@/lib/types';
 import {
@@ -15,14 +17,13 @@ import {
     Upload,
     Printer,
     Leaf,
-    GraduationCap,
     Calculator,
     ClipboardCheck,
     Wrench,
     Cuboid
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import { useHelp } from './help/HelpContext';
+// import { useHelp } from './help/HelpContext'; // Assuming this exists or kept if needed
 
 export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help';
 
@@ -45,10 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSave,
     onLoad
 }) => {
-    const { isHelpMode, toggleHelpMode } = useHelp();
-
-    // --- Navigation Groups ---
-
+    // Navigation Groups
     interface MenuItem {
         id: TabId;
         label: string;
@@ -57,39 +55,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
 
     const mainGroup: MenuItem[] = [
-        { id: 'dashboard', label: 'Acasa / Dashboard', icon: LayoutDashboard },
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     ];
 
     const engineeringGroup: MenuItem[] = [
-        { id: 'bim', label: 'Import IFC / Analiză', icon: Box },
-        { id: 'bim_gallery', label: 'Galerie Modele 3D', icon: Cuboid, badge: '3D' },
-        { id: 'config', label: 'Trasee Țevi & Hidraulică', icon: Package },
-        { id: 'hydraulics', label: 'Instrumente Hidraulice', icon: Wrench, badge: 'NEW' },
-        { id: 'energy', label: 'Eficiență Energetică', icon: Leaf },
-        { id: 'supports', label: 'Sisteme de Susținere', icon: Anchor },
-        { id: 'weights', label: 'Calcul Încărcări', icon: Scale },
-        { id: 'costs', label: 'Estimare Costuri', icon: Calculator },
+        { id: 'bim', label: 'BIM Analysis', icon: Box },
+        { id: 'bim_gallery', label: '3D Gallery', icon: Cuboid, badge: 'PRO' },
+        { id: 'config', label: 'Piping & Routing', icon: Package },
+        { id: 'hydraulics', label: 'Hydraulics', icon: Wrench },
+        { id: 'energy', label: 'Energy Efficiency', icon: Leaf },
+        { id: 'supports', label: 'Supports', icon: Anchor },
+        { id: 'weights', label: 'Load Calc', icon: Scale },
+        { id: 'costs', label: 'Cost Estimation', icon: Calculator },
         { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck },
     ];
 
     const databaseGroup: MenuItem[] = [
-        { id: 'catalogs', label: 'Bibliotecă Tehnică', icon: Book },
+        { id: 'catalogs', label: 'Tech Library', icon: Book },
     ];
 
     const reportsGroup: MenuItem[] = [
-        { id: 'photos', label: 'Galerie Foto', icon: Camera },
-        { id: 'branding', label: 'Personalizare Raport', icon: Palette },
+        { id: 'photos', label: 'Site Photos', icon: Camera },
+        { id: 'branding', label: 'Report Branding', icon: Palette },
     ];
 
     // Helper for rendering a section
     const NavSection = ({ title, items }: { title?: string, items: MenuItem[] }) => (
-        <div className="mb-8">
+        <div className="mb-6">
             {title && (
-                <p className="px-3 text-[11px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-3">
+                <p className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">
                     {title}
                 </p>
             )}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
                 {items.map((item) => {
                     const Icon = item.icon as any;
                     const isActive = activeTab === item.id;
@@ -97,15 +95,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <button
                             key={item.id}
                             onClick={() => onTabChange(item.id)}
-                            className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${isActive
-                                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/10 translate-x-1'
-                                : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:translate-x-1'
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 mx-1 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden ${isActive
+                                ? 'text-primary-foreground font-semibold shadow-lg shadow-primary/10'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                                 }`}
                         >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground'}`} />
-                            <span className="truncate tracking-wide">{item.label}</span>
+                            {isActive && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-100 z-0" />
+                            )}
+
+                            <Icon className={`w-4 h-4 z-10 transition-colors ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'}`} />
+                            <span className="z-10 tracking-wide relative">
+                                {item.label}
+                            </span>
+
                             {item.badge && (
-                                <span className="absolute right-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[9px] font-bold ring-1 ring-primary/20">
+                                <span className={`z-10 ml-auto px-1.5 py-0.5 rounded text-[9px] font-bold border ${isActive
+                                    ? 'bg-white/20 text-white border-white/20'
+                                    : 'bg-primary/10 text-primary border-primary/20'
+                                    }`}>
                                     {item.badge}
                                 </span>
                             )}
@@ -117,94 +125,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
 
     return (
-        <aside className="sidebar-panel w-[280px] flex flex-col justify-between p-5 z-50 screen-only border-r border-border/40 bg-card/50 backdrop-blur-sm">
-
-            {/* 1. Header Area: Logo & Project */}
+        <aside className="sidebar-panel w-[280px] flex flex-col justify-between p-4 z-50">
+            {/* Header Area */}
             <div className="flex-1 overflow-y-auto no-scrollbar">
 
-                {/* Brand */}
-                <div className="flex items-center gap-3 px-2 mb-8">
-                    <div className="w-9 h-9 bg-foreground text-background rounded-xl flex items-center justify-center shadow-lg">
-                        <Box className="w-5 h-5" strokeWidth={2.5} />
+                {/* Brand Logo */}
+                <div className="flex items-center gap-3 px-2 mb-10 pt-2">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/20 ring-1 ring-white/10 group cursor-default">
+                        <Box className="w-5 h-5 text-white group-hover:scale-110 transition-transform" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h1 className="text-sm font-bold tracking-tight">Engineering Suite</h1>
-                        <p className="text-[10px] text-muted-foreground font-mono">PRO v2.5</p>
+                        <h1 className="text-sm font-bold tracking-tight text-foreground/90">Engineering Suite</h1>
+                        <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            SYSTEM V3.0
+                        </p>
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-border mt-auto space-y-3">
-
-                    <button
-                        onClick={onSettingsOpen}
-                        className="group flex items-center justify-between p-3 rounded-xl bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50 cursor-pointer transition-all mb-8 mx-1"
-                    >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                                {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors">
-                                    {projectDetails.projectName || 'Untitled Project'}
-                                </span>
-                                <span className="text-[10px] text-muted-foreground font-mono truncate">
-                                    Rev. {projectDetails.revision || '0'}
-                                </span>
-                            </div>
+                {/* Project Selector */}
+                <button
+                    onClick={onSettingsOpen}
+                    className="w-full group flex items-center justify-between p-3 rounded-2xl bg-secondary/30 hover:bg-secondary/50 border border-white/5 hover:border-white/10 transition-all mb-8 backdrop-blur-sm"
+                >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-gray-300 font-bold text-xs shrink-0 border border-white/5">
+                            {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
                         </div>
-                        <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </button>
+                        <div className="flex flex-col min-w-0 items-start">
+                            <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors text-foreground">
+                                {projectDetails.projectName || 'Untitled Project'}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-mono truncate">
+                                PROJ-{projectDetails.projectNumber || '000'}
+                            </span>
+                        </div>
+                    </div>
+                    <Settings className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                </button>
 
-                    {/* Navigation Sections */}
-                    <nav>
-                        <NavSection items={mainGroup} />
-                        <NavSection title="Proiectare & Calcul" items={engineeringGroup} />
-                        <NavSection title="Resurse" items={databaseGroup} />
-                        <NavSection title="Documentație" items={reportsGroup} />
-                    </nav>
-                </div>
+                {/* Navigation Sections */}
+                <nav className="-mx-2">
+                    <NavSection items={mainGroup} />
+                    <NavSection title="Engineering" items={engineeringGroup} />
+                    <NavSection title="Resources" items={databaseGroup} />
+                    <NavSection title="Output" items={reportsGroup} />
+                </nav>
             </div>
 
             {/* Bottom Actions */}
-            <div className="space-y-4">
+            <div className="mt-4 pt-4 border-t border-white/5 space-y-3">
 
                 {/* Action Grid */}
-                <div className="bg-secondary/30 rounded-xl p-2 grid grid-cols-2 gap-2">
-                    <button onClick={onExportOpen} className="col-span-2 flex items-center justify-center gap-2 bg-foreground text-background h-9 rounded-lg text-xs font-bold shadow-sm hover:brightness-110 transition-all">
+                <div className="grid grid-cols-4 gap-2">
+                    <button onClick={onExportOpen} className="col-span-2 flex items-center justify-center gap-2 bg-foreground text-background h-9 rounded-xl text-xs font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                         <Printer className="w-3.5 h-3.5" />
-                        Export Raport
+                        Export
                     </button>
 
-                    <button onClick={onSave} className="flex items-center justify-center h-8 rounded-lg bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all" title="Save JSON">
+                    <button onClick={onSave} className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-white/5 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-white/10 transition-all" title="Save JSON">
                         <Save className="w-3.5 h-3.5" />
                     </button>
 
-                    <label className="flex items-center justify-center h-8 rounded-lg bg-background border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all cursor-pointer" title="Load JSON">
+                    <label className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-white/5 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-white/10 transition-all cursor-pointer" title="Load JSON">
                         <Upload className="w-3.5 h-3.5" />
                         <input type="file" accept=".json" onChange={onLoad} className="hidden" />
                     </label>
                 </div>
 
-                <ThemeToggle />
-            </div>
+                <div className="flex items-center justify-between gap-2">
+                    <ThemeToggle />
+                    <button
+                        onClick={() => onTabChange('help')}
+                        className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-all"
+                    >
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        Help
+                    </button>
+                </div>
 
-            {/* 4. Help & Support Hub - ABSOLUTE BOTTOM */}
-            <button
-                onClick={() => onTabChange('help')}
-                className={`mt-4 w-full flex items-center gap-3 px-3 py-3 rounded-xl border-2 transition-all group ${activeTab === 'help'
-                    ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]'
-                    : 'bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/40'
-                    }`}
-            >
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                    <HelpCircle className="w-5 h-5" />
+                <div className="text-[9px] text-center text-muted-foreground/20 font-mono mt-2">
+                    Datacenter OS v2026.1
                 </div>
-                <div className="flex flex-col items-start overflow-hidden">
-                    <span className="text-xs font-bold leading-tight truncate">Centru Ajutor / Docs</span>
-                    <span className="text-[10px] opacity-70">Ghid Tehnic & Suport</span>
-                </div>
-                <div className="ml-auto px-1.5 py-0.5 rounded bg-primary/10 text-[9px] font-mono border border-primary/20">F1</div>
-            </button>
+            </div>
         </aside>
     );
 };

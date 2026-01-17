@@ -87,10 +87,11 @@ export function ExpansionVesselCalculator() {
                         <div className="grid grid-cols-2 gap-4">
                             {/* System Volume */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">
+                                <label htmlFor="systemVolume" className="block text-xs text-zinc-400 mb-1">
                                     Volum Sistem (L)
                                 </label>
                                 <input
+                                    id="systemVolume"
                                     type="number"
                                     value={input.systemVolume}
                                     onChange={(e) => handleInputChange('systemVolume', parseFloat(e.target.value) || 0)}
@@ -103,10 +104,11 @@ export function ExpansionVesselCalculator() {
 
                             {/* Glycol Percentage */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">
+                                <label htmlFor="glycolPercentage" className="block text-xs text-zinc-400 mb-1">
                                     Concentrație Glicol (%)
                                 </label>
                                 <input
+                                    id="glycolPercentage"
                                     type="number"
                                     value={input.glycolPercentage}
                                     onChange={(e) => handleInputChange('glycolPercentage', parseFloat(e.target.value) || 0)}
@@ -118,11 +120,12 @@ export function ExpansionVesselCalculator() {
 
                             {/* Min Temperature */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="minTemperature" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
                                     <Thermometer className="w-3 h-3" />
                                     T min / Umplere (°C)
                                 </label>
                                 <input
+                                    id="minTemperature"
                                     type="number"
                                     value={input.minTemperature}
                                     onChange={(e) => handleInputChange('minTemperature', parseFloat(e.target.value) || 0)}
@@ -132,11 +135,12 @@ export function ExpansionVesselCalculator() {
 
                             {/* Max Temperature */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="maxTemperature" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
                                     <Thermometer className="w-3 h-3 text-red-400" />
                                     T max / Operare (°C)
                                 </label>
                                 <input
+                                    id="maxTemperature"
                                     type="number"
                                     value={input.maxTemperature}
                                     onChange={(e) => handleInputChange('maxTemperature', parseFloat(e.target.value) || 0)}
@@ -146,11 +150,12 @@ export function ExpansionVesselCalculator() {
 
                             {/* Static Height */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="staticHeight" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
                                     <ArrowUp className="w-3 h-3" />
                                     Înălțime Statică (m)
                                 </label>
                                 <input
+                                    id="staticHeight"
                                     type="number"
                                     value={input.staticHeight}
                                     onChange={(e) => handleInputChange('staticHeight', parseFloat(e.target.value) || 0)}
@@ -164,11 +169,12 @@ export function ExpansionVesselCalculator() {
 
                             {/* Safety Valve */}
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="safetyValvePressure" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
                                     <Gauge className="w-3 h-3" />
                                     Supapa Siguranță (bar)
                                 </label>
                                 <select
+                                    id="safetyValvePressure"
                                     value={input.safetyValvePressure}
                                     onChange={(e) => handleInputChange('safetyValvePressure', parseFloat(e.target.value))}
                                     className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
@@ -206,8 +212,8 @@ export function ExpansionVesselCalculator() {
                 <div className="space-y-4">
                     {/* Main Result */}
                     <div className={`rounded-xl p-6 border ${result.isValid
-                            ? 'bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border-emerald-500/30'
-                            : 'bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/30'
+                        ? 'bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border-emerald-500/30'
+                        : 'bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/30'
                         }`}>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm text-zinc-400">Vas Recomandat</span>

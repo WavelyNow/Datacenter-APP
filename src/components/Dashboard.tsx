@@ -1,241 +1,266 @@
 
+"use client";
+
 import React from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { motion } from 'framer-motion';
 import {
-    Clock,
-    FileText,
-    ArrowRight,
-    TrendingUp,
     Activity,
     Zap,
-    Cloud,
-    FolderOpen,
+    TrendingUp,
+    Leaf,
     Plus,
     FileBox,
+    Sparkles,
     Package,
-    Leaf,
-    Sparkles
+    Cloud,
+    ArrowRight
 } from 'lucide-react';
-import { CloudBrowserAction } from './CloudBrowserAction';
 import { BimImportModal } from './bim/BimImportModal';
-import { HelpBeacon } from './help/HelpBeacon';
-import { PueGauge, EnergyConsumptionChart } from './EnergyWidgets';
 import { TemplateSelector } from './TemplateSelector';
 
 export const Dashboard = () => {
     const {
         projectDetails,
-        setProjectDetails,
-        setActiveTab,
         segments,
         equipmentList,
-        loadFromCloud
+        setActiveTab
     } = useProject();
 
     const [isBimOpen, setIsBimOpen] = React.useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="max-w-7xl mx-auto p-8 space-y-12">
-
-
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="max-w-[1600px] mx-auto p-8 space-y-12"
+        >
             {/* Hero Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">
-                        Engineering <span className="text-primary">Team Workspace</span>
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">
+                <div className="relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-4"
+                    >
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        </span>
+                        SYSTEM ACTIVE
+                    </motion.div>
+                    <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+                        Engineering <span className="text-primary">Workspace</span>
                     </h1>
-                    <p className="text-muted-foreground text-lg">Collaborative Project Hub & Resources</p>
+                    <p className="text-muted-foreground text-lg max-w-2xl">
+                        Welcome to your collaborative command center. Manage piping, equipment, and energy analysis in real-time.
+                    </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 relative z-10">
                     <button
                         onClick={() => setIsTemplateOpen(true)}
-                        className="btn btn-secondary h-12 px-6 border-amber-500/30 hover:border-amber-500/60 gap-2 text-foreground bg-amber-500/10 hover:bg-amber-500/20"
+                        className="btn btn-secondary h-12 px-6 border-amber-500/30 hover:border-amber-500/60 gap-2 text-foreground bg-amber-500/5 hover:bg-amber-500/10"
                     >
-                        <Sparkles className="w-5 h-5 text-amber-500" />
+                        <Sparkles className="w-4 h-4 text-amber-500" />
                         Quick Start
                     </button>
 
                     <button
                         onClick={() => setIsBimOpen(true)}
-                        className="btn btn-secondary h-12 px-6 border-primary/20 hover:border-primary/50 gap-2 text-foreground"
+                        className="btn btn-secondary h-12 px-6 gap-2"
                     >
-                        <FileBox className="w-5 h-5 text-primary" />
-                        Import BIM
+                        <FileBox className="w-4 h-4 text-emerald-500" />
+                        Scan BIM
                     </button>
 
                     <button
                         onClick={() => setActiveTab('config')}
-                        className="btn btn-primary h-12 px-6 shadow-lg shadow-primary/20 gap-2"
+                        className="btn btn-primary h-12 px-6 gap-2 group"
                     >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                         New Project
                     </button>
                 </div>
-            </div>
+
+                {/* Background Decoration */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary/5 blur-[100px] rounded-full pointer-events-none -z-0" />
+            </motion.div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('config')}>
-                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <Activity className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold">{segments.length}</div>
-                        <div className="text-sm text-muted-foreground font-medium">Active Pipe Segments</div>
-                    </div>
-                </div>
-
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-orange-500/50 transition-colors cursor-pointer group" onClick={() => setActiveTab('catalogs')}>
-                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
-                        <Zap className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold">1,240+</div>
-                        <div className="text-sm text-muted-foreground font-medium">Catalog Items Available</div>
-                    </div>
-                </div>
-
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-emerald-500/50 transition-colors cursor-pointer group relative" onClick={() => setActiveTab('config')}>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                        <TrendingUp className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold">Safe</div>
-                        <div className="text-sm text-muted-foreground font-medium">System Status</div>
-                    </div>
-                </div>
-
-                <div className="card-premium p-6 flex items-center gap-4 hover:border-emerald-500/50 transition-colors cursor-pointer group relative overflow-hidden" onClick={() => setActiveTab('energy')}>
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-500 text-white text-[9px] font-bold rounded-full animate-pulse">NEW</div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
-                        <Leaf className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold text-emerald-600">1.42</div>
-                        <div className="text-sm text-muted-foreground font-medium">Auto-Calc PUE</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Content Grid (Below Stats) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                {/* Left Column: Project Overview & Stats */}
-                <div className="lg:col-span-2 space-y-8">
-
-                    {/* Getting Started Guide (Show if project is empty-ish) */}
-                    {segments.length === 0 && equipmentList.length === 0 && (
-                        <div className="bg-muted/30 border border-border rounded-2xl p-6">
-                            <h3 className="font-bold text-lg mb-4">Getting Started Checklist</h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
-                                    <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-300">1</div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">Configure Fluid</p>
-                                        <p className="text-xs text-muted-foreground">Set your glycol type and concentration.</p>
-                                    </div>
-                                    <button onClick={() => setActiveTab('config')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to Config</button>
-                                </div>
-
-                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
-                                    <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 flex items-center justify-center text-xs font-bold text-purple-700 dark:text-purple-300">2</div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">Import BIM Model</p>
-                                        <p className="text-xs text-muted-foreground">Load an IFC file to auto-detect pipes.</p>
-                                    </div>
-                                    <button onClick={() => setActiveTab('bim')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to BIM</button>
-                                </div>
-
-                                <div className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/50">
-                                    <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-700 flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300">3</div>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">Add Equipment</p>
-                                        <p className="text-xs text-muted-foreground">Define pumps, chillers, and consumers.</p>
-                                    </div>
-                                    <button onClick={() => setActiveTab('weights')} className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold hover:bg-primary/20 transition-colors">Go to Weights</button>
-                                </div>
-                            </div>
+            <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-blue-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
+                    <div className="flex justify-between items-start">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                            <Activity className="w-5 h-5" />
                         </div>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-blue-500 transition-colors" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">{segments.length}</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Active Segments</div>
+                    </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-orange-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('catalogs')}>
+                    <div className="flex justify-between items-start">
+                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                            <Zap className="w-5 h-5" />
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-orange-500 transition-colors" />
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">1,240+</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Catalog Items</div>
+                    </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-emerald-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex justify-between items-start relative z-10">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                            <TrendingUp className="w-5 h-5" />
+                        </div>
+                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold border border-emerald-500/20">98% OPTIMAL</div>
+                    </div>
+                    <div className="relative z-10">
+                        <div className="text-xl font-bold text-emerald-500">System Stable</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Status Check</div>
+                    </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('energy')}>
+                    <div className="flex justify-between items-start">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <Leaf className="w-5 h-5" />
+                        </div>
+                        <div className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold border border-primary/20">AI CALC</div>
+                    </div>
+                    <div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">1.42</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Proj. PUE Score</div>
+                    </div>
+                </motion.div>
+            </motion.div>
+
+            {/* Content Grid */}
+            <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Getting Started (Conditional) */}
+                    {segments.length === 0 && equipmentList.length === 0 && (
+                        <motion.div variants={itemVariants} className="glass-panel p-8 rounded-3xl border border-primary/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                            <h3 className="font-bold text-xl mb-6 relative z-10">Initialize Project</h3>
+                            <div className="grid gap-4 relative z-10">
+                                <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold border border-blue-500/20 group-hover:scale-110 transition-transform">1</div>
+                                    <div>
+                                        <div className="font-bold text-sm">Configure Fluids</div>
+                                        <div className="text-xs text-muted-foreground">Set glycol concentration and temperature.</div>
+                                    </div>
+                                    <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </button>
+
+                                <button onClick={() => setActiveTab('bim')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold border border-purple-500/20 group-hover:scale-110 transition-transform">2</div>
+                                    <div>
+                                        <div className="font-bold text-sm">Import Architecture</div>
+                                        <div className="text-xs text-muted-foreground">Load IFC models for auto-routing.</div>
+                                    </div>
+                                    <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </button>
+                            </div>
+                        </motion.div>
                     )}
 
-                    {/* Real Project Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
-                                <Package className="w-5 h-5" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Pipe Segments</span>
+                    {/* Project Stats Detail */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <motion.div variants={itemVariants} className="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                            <div className="p-3 bg-secondary rounded-2xl">
+                                <Package className="w-6 h-6 text-muted-foreground" />
                             </div>
-                            <p className="text-3xl font-mono font-bold text-foreground">{segments.length}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {segments.length === 0 ? 'No pipes defined' : 'Active active segments'}
-                            </p>
-                        </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Total Piping</p>
+                                <p className="text-2xl font-bold">{segments.reduce((acc, seg) => acc + (seg.length || 0), 0).toFixed(1)} <span className="text-sm font-normal text-muted-foreground">meters</span></p>
+                            </div>
+                        </motion.div>
 
-                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
-                                <Zap className="w-5 h-5" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Equipment</span>
+                        <motion.div variants={itemVariants} className="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                            <div className="p-3 bg-secondary rounded-2xl">
+                                <Cloud className="w-6 h-6 text-muted-foreground" />
                             </div>
-                            <p className="text-3xl font-mono font-bold text-foreground">{equipmentList.length}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Consumers & pumps</p>
-                        </div>
-
-                        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 text-muted-foreground mb-2">
-                                <Cloud className="w-5 h-5" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Project Cloud</span>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">Sync Status</p>
+                                <p className="text-2xl font-bold">{projectDetails.projectNumber ? 'Cloud Active' : 'Local Only'}</p>
                             </div>
-                            <p className="text-3xl font-mono font-bold text-foreground">
-                                {projectDetails.projectNumber ? 'Synced' : 'Local'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {projectDetails.projectNumber || 'Not saved to cloud'}
-                            </p>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
-                {/* Right Column: Updates */}
-                <div className="lg:col-span-1">
-                    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6 border border-primary/10 relative overflow-hidden h-full">
-                        <div className="relative z-10">
-                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                <Zap className="w-5 h-5 text-yellow-500" />
-                                What's New
-                            </h3>
-                            <ul className="space-y-4">
-                                <li className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
-                                        <span className="font-bold text-sm">Energy Dashboard</span>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">Monitor PUE and Carbon Footprint in real-time.</span>
-                                </li>
-                                <li className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">NEW</span>
-                                        <span className="font-bold text-sm">Hydraulic Engine</span>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">Auto-calculate pressure drop & velocity for complex loops.</span>
-                                </li>
-                                <li className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">BETA</span>
-                                        <span className="font-bold text-sm">BIM Integration</span>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">Import IFC models, view in 3D, and extract pipe data automatically.</span>
-                                </li>
-                            </ul>
+                {/* Right Panel: AI & Updates */}
+                <motion.div variants={itemVariants} className="lg:col-span-1">
+                    <div className="h-full glass-panel-heavy rounded-3xl p-6 relative overflow-hidden flex flex-col">
+                        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+
+                        <div className="flex items-center gap-2 mb-6 relative z-10">
+                            <Sparkles className="w-4 h-4 text-primary" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider">System Updates</h3>
+                        </div>
+
+                        <div className="space-y-6 relative z-10 flex-1">
+                            <div className="group">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold text-foreground">Energy Engine v2.1</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">LIVE</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Real-time carbon footprint monitoring enabled.</p>
+                            </div>
+
+                            <div className="w-full h-px bg-white/5" />
+
+                            <div className="group">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold text-foreground">Hydraulic Solver</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">BETA</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">New pressure drop calculation algorithm available.</p>
+                            </div>
+
+                            <div className="mt-auto pt-6">
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                                    <p className="text-[10px] font-mono text-primary mb-2">AI INSIGHT</p>
+                                    <p className="text-xs text-muted-foreground italic">"Optimization opportunities detected in Loop A-1. Consider increasing pipe diameter to reduce pump head."</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
 
             {/* Modals */}
             <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
             <TemplateSelector isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
-        </div>
+        </motion.div>
     );
 };

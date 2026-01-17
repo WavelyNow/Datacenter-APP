@@ -35,89 +35,127 @@
 
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+
+  /* Custom Animations */
+  --animate-slow-pan: slow-pan 20s linear infinite;
+  --animate-shine: shine 8s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes slow-pan {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes shine {
+    0% {
+      background-position: 200% center;
+    }
+
+    100% {
+      background-position: -200% center;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }
 
 :root {
   /* 
     LIGHT MODE: "Warm Alabaster"
-    Soft, paper-like, comfortable.
+    Soft, paper-like, comfortable. (Preserved for print/daytime)
   */
   --background: #fafaf9;
   /* Stone 50 */
-  --foreground: #292524;
-  /* Stone 800 */
+  --foreground: #0a0a0b;
+  /* Zinc 950 */
 
   --card: #ffffff;
-  --card-foreground: #292524;
+  --card-foreground: #0a0a0b;
 
   --popover: #ffffff;
-  --popover-foreground: #292524;
+  --popover-foreground: #0a0a0b;
 
-  --primary: #44403c;
-  /* Stone 700 - Warm Charcoal */
+  --primary: #18181b;
+  /* Zinc 900 */
   --primary-foreground: #fafaf9;
 
-  --secondary: #f5f5f4;
-  /* Stone 100 */
-  --secondary-foreground: #1c1917;
+  --secondary: #f4f4f5;
+  /* Zinc 100 */
+  --secondary-foreground: #18181b;
 
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-  /* Stone 500 */
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  /* Zinc 500 */
 
-  --accent: #f5f5f4;
-  --accent-foreground: #1c1917;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
 
   --destructive: #ef4444;
   --destructive-foreground: #fafaf9;
 
-  --border: #e7e5e4;
-  /* Stone 200 */
-  --input: #f5f5f4;
-  /* Stone 100 - Filled Inputs */
-  --ring: #44403c;
+  --border: #e4e4e7;
+  /* Zinc 200 */
+  --input: #f4f4f5;
+  --ring: #18181b;
 
   --radius: 0.75rem;
 }
 
 .dark {
   /*
-    DARK MODE: "Obsidian Emerald"
-    Luxury, sophisticated, premium.
-    Neutral graphite base with rich Emerald Green accents.
+    DARK MODE: "Deep Space 2026"
+    Holographic, Neon, Void-like.
+    Deepest blue-blacks with vibrant Emerald/Teal/Cyan accents.
   */
-  --background: #111113;
-  /* Pure Neutral Dark */
-  --foreground: #fafafa;
+  --background: #000000;
+  /* Absolute Void */
+  --foreground: #ffffff;
 
-  --card: #1a1a1d;
-  /* Neutral Charcoal */
-  --card-foreground: #fafafa;
+  --card: #0a0a0c;
+  /* Deep Void */
+  --card-foreground: #ffffff;
 
-  --popover: #1a1a1d;
-  --popover-foreground: #fafafa;
+  --popover: #0a0a0c;
+  --popover-foreground: #ffffff;
 
-  --primary: #10b981;
-  /* Emerald 500 - Luxury Green */
-  --primary-foreground: #022c22;
+  /* Primary Accent: Neon Cyan/Teal mix */
+  --primary: #00e0b8;
+  --primary-foreground: #000000;
 
-  --secondary: #252528;
-  /* Warm Neutral Grey */
-  --secondary-foreground: #fafafa;
+  --secondary: #121214;
+  --secondary-foreground: #ffffff;
 
-  --muted: #252528;
+  --muted: #121214;
   --muted-foreground: #a1a1aa;
 
-  --accent: #2a2a2e;
-  --accent-foreground: #fafafa;
+  --accent: #1c1c1f;
+  --accent-foreground: #ffffff;
 
-  --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
+  --destructive: #ff453a;
+  --destructive-foreground: #ffffff;
 
-  --border: #2a2a2e;
-  /* Subtle Neutral Border */
-  --input: #1a1a1d;
-  --ring: #10b981;
+  --border: #1c1c1f;
+  --input: #121214;
+  --ring: #00e0b8;
 }
 
 /* Base Styles */
@@ -133,52 +171,85 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    /* Subtle noise texture for depth */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    background-attachment: fixed;
   }
 
-  /* IOS-Style Filled Inputs */
+  /* Modern Inputs */
   input,
   select,
   textarea {
-    @apply bg-input border-transparent text-foreground placeholder-muted-foreground rounded-xl px-4 py-2.5 shadow-sm transition-all duration-200;
-    @apply focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none;
+    @apply bg-input/50 backdrop-blur-sm border border-transparent text-foreground placeholder-muted-foreground rounded-xl px-4 py-2.5 shadow-sm transition-all duration-300;
+    @apply focus:bg-input focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none hover:bg-input/80;
   }
 }
 
 /* Premium Utilities */
 @layer utilities {
   .glass-panel {
-    @apply bg-card/80 backdrop-blur-xl border border-border shadow-sm dark:shadow-none;
+    @apply bg-card/60 backdrop-blur-2xl border border-white/5 dark:border-white/5 shadow-2xl;
+  }
+
+  .glass-panel-heavy {
+    @apply bg-card/90 backdrop-blur-3xl border border-white/10 shadow-2xl;
   }
 
   .sidebar-panel {
-    @apply bg-background border-r border-border h-screen sticky top-0;
+    @apply bg-background/80 backdrop-blur-xl border-r border-border/50 h-screen sticky top-0;
   }
 
+  /* Holographic Text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-muted-foreground;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-neutral-200 to-neutral-400 dark:from-white dark:via-primary dark:to-emerald-400 animate-slow-pan bg-[length:200%_auto];
   }
 
   .card-premium {
-    @apply bg-card rounded-3xl border border-border/40 shadow-2xl shadow-stone-200/40 dark:shadow-none transition-shadow hover:shadow-lg;
+    @apply bg-card/40 backdrop-blur-md rounded-3xl border border-white/5 shadow-lg transition-all duration-300 hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1 relative overflow-hidden;
+  }
+
+  /* Subtle inner glow for premium cards */
+  .card-premium::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none;
+  }
+
+  .card-premium:hover::before {
+    @apply opacity-100;
   }
 
   .spacing-page {
-    @apply max-w-[1600px] mx-auto px-8 py-10 xl:px-12 xl:py-12;
+    @apply max-w-[1800px] mx-auto px-6 py-8 xl:px-10 xl:py-10;
+  }
+
+  /* Neon Glow Text */
+  .text-glow {
+    text-shadow: 0 0 20px theme('colors.primary'), 0 0 10px theme('colors.primary');
   }
 
   /* =====================
-     PREMIUM APPLE BUTTONS
+     FUTURISTIC BUTTONS
      ===================== */
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl text-sm font-medium tracking-wide transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-xl text-sm font-medium tracking-wide transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2;
   }
 
   .btn-primary {
-    @apply bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:brightness-110 hover:shadow-primary/30 hover:-translate-y-0.5;
+    @apply relative overflow-hidden bg-primary text-primary-foreground shadow-[0_0_20px_-5px_var(--color-primary)] hover:shadow-[0_0_30px_-5px_var(--color-primary)] hover:brightness-110;
+  }
+
+  /* Shine effect for primary buttons */
+  .btn-primary::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000;
+  }
+
+  .btn-primary:hover::after {
+    @apply translate-x-full;
   }
 
   .btn-secondary {
-    @apply bg-secondary/80 backdrop-blur-sm text-secondary-foreground hover:bg-secondary hover:-translate-y-0.5 border border-transparent hover:border-border/50;
+    @apply bg-secondary/80 backdrop-blur-sm text-secondary-foreground hover:bg-secondary border border-white/5 hover:border-white/10;
   }
 
   .btn-ghost {
@@ -186,7 +257,7 @@
   }
 
   .btn-icon {
-    @apply h-11 w-11 p-0 rounded-xl;
+    @apply h-11 w-11 p-0 rounded-xl flex items-center justify-center;
   }
 
   /* Sizes */
@@ -202,7 +273,7 @@
     @apply h-14 px-8 text-base rounded-2xl;
   }
 
-  /* Custom Scrollbar - Minimal */
+  /* Custom Scrollbar - Minimal & Dark */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -213,7 +284,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+    @apply bg-white/10 rounded-full hover:bg-primary/50 transition-colors;
   }
 }
 
