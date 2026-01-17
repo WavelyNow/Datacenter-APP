@@ -4,9 +4,7 @@
 
 import {
     generateBoQ,
-    getDetailedWeightReport,
-    BoQItem,
-    DetailedWeightItem
+    getDetailedWeightReport
 } from '@/lib/calculations/boq';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 

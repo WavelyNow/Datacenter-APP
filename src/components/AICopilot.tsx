@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, X, Bot, Zap, BarChart3, FileText, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Assuming standard cn utility exists
+import { Sparkles, Send, X, Bot, Zap, BarChart3, FileText } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface Message {
     id: string;
@@ -38,7 +38,7 @@ export const AICopilot: React.FC = () => {
     const handleSendMessage = (text: string) => {
         if (!text.trim()) return;
 
-        const newUserMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
+        const newUserMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text };
         setMessages(prev => [...prev, newUserMsg]);
         setInputValue("");
         setIsTyping(true);
@@ -53,7 +53,7 @@ export const AICopilot: React.FC = () => {
             ];
             const randomResponse = responses[Math.floor(Math.random() * responses.length)];
 
-            const newAiMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: randomResponse };
+            const newAiMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: randomResponse };
             setMessages(prev => [...prev, newAiMsg]);
             setIsTyping(false);
         }, 1500);

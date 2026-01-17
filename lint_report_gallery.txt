@@ -1,0 +1,30 @@
+
+/Users/robialexz/Documents/GitHub/Datacenter-APP/src/components/BimGalleryPage.tsx
+   61:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/robialexz/Documents/GitHub/Datacenter-APP/src/components/BimGalleryPage.tsx:61:30
+  59 |     const addToProject = (catalogItem: CatalogEquipment) => {
+  60 |         const newItem: EquipmentItem = {
+> 61 |             id: `eq-import-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+     |                              ^^^^^^^^^^ Cannot call impure function
+  62 |             type: catalogItem.category || 'Altele',
+  63 |             name: catalogItem.model,
+  64 |             manufacturer: catalogItem.manufacturer,                      react-hooks/purity
+   61:44  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/robialexz/Documents/GitHub/Datacenter-APP/src/components/BimGalleryPage.tsx:61:44
+  59 |     const addToProject = (catalogItem: CatalogEquipment) => {
+  60 |         const newItem: EquipmentItem = {
+> 61 |             id: `eq-import-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+     |                                            ^^^^^^^^^^^^^ Cannot call impure function
+  62 |             type: catalogItem.category || 'Altele',
+  63 |             name: catalogItem.model,
+  64 |             manufacturer: catalogItem.manufacturer,  react-hooks/purity
+  216:42  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react/no-unescaped-entities
+
+✖ 3 problems (3 errors, 0 warnings)
+

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { Box, Maximize2, Cuboid, Plus, Import, Filter, Layers, Search, Factory, Trash2, CheckCircle, X } from 'lucide-react';
+import { Box, Maximize2, Cuboid, Plus, Import, Filter, Search, Trash2, CheckCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Equipment3DViewer from './Equipment3DViewer';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
@@ -56,9 +56,9 @@ export const BimGalleryPage = () => {
         });
     }, [catalog3DItems, filterManufacturer, filterCategory, searchTerm]);
 
-    const addToProject = (catalogItem: any) => {
+    const addToProject = (catalogItem: CatalogEquipment) => {
         const newItem: EquipmentItem = {
-            id: `eq-import-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            id: `eq-import-${crypto.randomUUID()}`,
             type: catalogItem.category || 'Altele',
             name: catalogItem.model,
             manufacturer: catalogItem.manufacturer,
@@ -72,7 +72,7 @@ export const BimGalleryPage = () => {
         };
         setEquipmentList((prev: EquipmentItem[]) => [...prev, newItem]);
         toast.success(`added ${newItem.name} to project`, {
-            description: 'You can now view it in "My Gallery" tab.',
+            description: 'You can now view it in &quot;My Gallery&quot; tab.',
             icon: <CheckCircle className="w-4 h-4 text-green-500" />,
         });
     };
@@ -87,10 +87,14 @@ export const BimGalleryPage = () => {
     };
 
     // Card Renderer (Shared)
-    const renderCard = (item: EquipmentItem | CatalogEquipment | any, isCatalog: boolean = false) => {
+    const renderCard = (item: EquipmentItem | CatalogEquipment, isCatalog: boolean = false) => {
         const rawSrc = getModelSrc(item.model3d!);
         const isEmbed = rawSrc.includes('sketchfab.com') || rawSrc.includes('youtube') || rawSrc.includes('vimeo');
         const isExpanded = expandedId === item.id;
+
+        // Resolve names/types based on the source (Project vs Catalog)
+        const displayName = isCatalog ? (item as CatalogEquipment).model : (item as EquipmentItem).name;
+        const displayType = isCatalog ? (item as CatalogEquipment).category : (item as EquipmentItem).type;
 
         return (
             <div
@@ -104,10 +108,10 @@ export const BimGalleryPage = () => {
                             {isCatalog ? <Import className="w-4 h-4 text-green-500" /> : <Cuboid className="w-4 h-4 text-blue-400" />}
                         </div>
                         <div className="min-w-0">
-                            <h3 className="font-bold text-foreground text-sm truncate">{item.name || item.model}</h3>
+                            <h3 className="font-bold text-foreground text-sm truncate">{displayName}</h3>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <span className="bg-secondary px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider truncate">
-                                    {item.manufacturer ? `${item.manufacturer} • ` : ''}{item.type || item.category}
+                                    {item.manufacturer ? `${item.manufacturer} • ` : ''}{displayType}
                                 </span>
                             </div>
                         </div>
@@ -115,7 +119,7 @@ export const BimGalleryPage = () => {
 
                     {isCatalog ? (
                         <button
-                            onClick={() => addToProject(item)}
+                            onClick={() => addToProject(item as CatalogEquipment)}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md flex-shrink-0 flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-3.5 h-3.5" /> Adaugă
@@ -213,7 +217,7 @@ export const BimGalleryPage = () => {
                             <Cuboid className="w-12 h-12 text-muted-foreground/30 mb-4" />
                             <h3 className="text-lg font-medium">Gallery Empty</h3>
                             <p className="text-sm text-muted-foreground mb-6">
-                                You haven't added any 3D models to your project yet.
+                                You haven&apos;t added any 3D models to your project yet.
                             </p>
                             <button onClick={() => setActiveView('catalog')} className="btn btn-primary gap-2">
                                 <Search className="w-4 h-4" /> Browse Catalog

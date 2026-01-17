@@ -4,8 +4,7 @@
 
 import {
     calculateCostEstimate,
-    formatCurrency,
-    CostBreakdown,
+    formatCurrency
 } from '@/lib/calculations/costEstimate';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 

@@ -112,7 +112,7 @@ const DashboardContent = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveProject]);
+  }, [saveProject, redo, undo]);
 
   // Auto-save to localStorage every 30 seconds
   React.useEffect(() => {

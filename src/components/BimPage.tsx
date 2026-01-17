@@ -3,8 +3,7 @@
 import { supabase } from '@/lib/supabase';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { FileUp, Box, Layers, Filter, Maximize2, RotateCcw, Save, Trash2, FileText, Settings, AlertTriangle, ArrowRight, Database, Upload, FileBox, Loader2, Check, MousePointer2 } from 'lucide-react';
-import { HelpBeacon } from './help/HelpBeacon';
+import { FileUp, Box, Layers, Filter, Maximize2, RotateCcw, Save, Trash2, FileText, AlertTriangle, Upload, FileBox, Loader2, Check } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
 import { IfcService } from '@/lib/bim/IfcService';
@@ -20,19 +19,17 @@ export const BimPage = () => {
         // Global BIM State
         foundPipes, setFoundPipes,
         bimStatus: status, setBimStatus: setStatus,
-        parsingProgress, setParsingProgress
+        setParsingProgress
     } = useProject();
 
     const [selectedObject, setSelectedObject] = useState<BimObject | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<'3d' | 'table'>('3d');
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
 
     // Local Error State
-    const [errorMessage, setErrorMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'All' | 'Pipe' | 'Fitting' | 'Equipment'>('All');
     const [isGrouped, setIsGrouped] = useState(true); // Default to grouped view as requested
 
@@ -123,9 +120,10 @@ export const BimPage = () => {
                 .getPublicUrl(filePath);
 
             return publicUrl;
-        } catch (error: any) {
-            console.error('Upload failed:', error);
-            throw new Error(error.message || 'Failed to upload to cloud');
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Upload failed:', err);
+            throw new Error(err.message || 'Failed to upload to cloud');
         }
     };
 
@@ -144,7 +142,7 @@ export const BimPage = () => {
                 const publicUrl = await uploadToSupabase(selectedFile);
 
                 if (publicUrl === 'too_large') {
-                    setErrorMessage("File exceeds 50MB cloud limit. Loaded locally only - will not be synced.");
+                    
                     setStatus('idle');
                     // Don't set IfcModelUrl for cloud, just keep localUrl
                 } else if (publicUrl) {
@@ -153,9 +151,10 @@ export const BimPage = () => {
                     await saveToCloud();
                     setStatus('idle');
                 }
-            } catch (err: any) {
-                console.error("Cloud upload failed, continuing locally:", err);
-                setErrorMessage("Cloud upload failed, but you can still view locally. " + err.message);
+            } catch (err: unknown) {
+                const error = err as Error;
+                console.error("Cloud upload failed, continuing locally:", error);
+                
                 setStatus('idle');
             }
         }
@@ -194,10 +193,11 @@ export const BimPage = () => {
             setStatus('extracted');
             service.dispose();
 
-        } catch (err: any) {
-            console.error("Extraction failed or partial:", err);
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error("Extraction failed or partial:", error);
             setStatus('extracted');
-            setErrorMessage(err.message || 'Partial extraction or empty model');
+            
             setFoundPipes([]);
         }
     };
@@ -210,7 +210,7 @@ export const BimPage = () => {
                 id: crypto.randomUUID(),
                 name: p.name || 'Imported Pipe',
                 // Use the material set by the Editor, or default to Steel
-                material: (p.material as any) || 'Steel - Carbon',
+                material: (p.material as PipeSegment['material']) || 'Steel - Carbon',
                 fluid: 'water',
                 temperature: 15,
                 flowRate: 0,
@@ -548,7 +548,7 @@ export const BimPage = () => {
                             <div className="space-y-2">
                                 <h4 className="font-medium text-foreground">2. Property Sets</h4>
                                 <p className="text-muted-foreground text-xs leading-relaxed">
-                                    Ensure <strong>"Export Property Sets"</strong> is CHECKED in your export settings. We need this to read flow rates, diameters, and system types.
+                                    Ensure <strong>&quot;Export Property Sets&quot;</strong> is CHECKED in your export settings. We need this to read flow rates, diameters, and system types.
                                 </p>
                                 <div className="p-2 bg-muted rounded border border-border text-xs font-mono">
                                     Export Revit Property Sets: ☑<br />
