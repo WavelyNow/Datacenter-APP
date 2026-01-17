@@ -7,13 +7,15 @@ import { toast } from 'sonner';
 import Equipment3DViewer from './Equipment3DViewer';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
 import { EquipmentItem, CatalogEquipment } from '@/lib/types';
+import { BimModelDetailView } from './BimModelDetailView';
+import { AnimatePresence } from 'framer-motion';
 
 export const BimGalleryPage = () => {
     const { equipmentList, setEquipmentList } = useProject();
 
     // Project Items
     const bimItems = equipmentList.filter(item => item.model3d && item.model3d.length > 0);
-    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [selectedDetail, setSelectedDetail] = useState<{ item: EquipmentItem | CatalogEquipment; isCatalog: boolean } | null>(null);
 
     // View State
     const [activeView, setActiveView] = useState<'project' | 'catalog'>(bimItems.length > 0 ? 'project' : 'catalog');
@@ -71,9 +73,9 @@ export const BimGalleryPage = () => {
             specifications: catalogItem.specifications
         };
         setEquipmentList((prev: EquipmentItem[]) => [...prev, newItem]);
-        toast.success(`added ${newItem.name} to project`, {
-            description: 'You can now view it in &quot;My Gallery&quot; tab.',
-            icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+        toast.success(`Adăugat ${newItem.name} în proiect`, {
+            description: 'Puteți vizualiza echipamentul în tab-ul "Galeria Mea".',
+            icon: <CheckCircle className="w-4 h-4 text-indigo-500" />,
         });
     };
 
@@ -90,7 +92,6 @@ export const BimGalleryPage = () => {
     const renderCard = (item: EquipmentItem | CatalogEquipment, isCatalog: boolean = false) => {
         const rawSrc = getModelSrc(item.model3d!);
         const isEmbed = rawSrc.includes('sketchfab.com') || rawSrc.includes('youtube') || rawSrc.includes('vimeo');
-        const isExpanded = expandedId === item.id;
 
         // Resolve names/types based on the source (Project vs Catalog)
         const displayName = isCatalog ? (item as CatalogEquipment).model : (item as EquipmentItem).name;
@@ -99,13 +100,14 @@ export const BimGalleryPage = () => {
         return (
             <div
                 key={item.id}
-                className={`group bg-card border border-border rounded-xl overflow-hidden shadow-sm transition-all hover:border-primary/50 flex flex-col ${isExpanded ? 'md:col-span-2 xl:col-span-2 row-span-2 shadow-2xl z-10' : ''}`}
+                onClick={() => setSelectedDetail({ item, isCatalog })}
+                className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm transition-all hover:border-primary/50 cursor-pointer flex flex-col hover:shadow-xl hover:shadow-primary/5 active:scale-[0.98]"
             >
                 {/* Header */}
                 <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm flex justify-between items-center sticky top-0 z-20">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-green-500/10 border-green-500/20' : 'bg-secondary/50'}`}>
-                            {isCatalog ? <Import className="w-4 h-4 text-green-500" /> : <Cuboid className="w-4 h-4 text-blue-400" />}
+                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-secondary/50'}`}>
+                            {isCatalog ? <Import className="w-4 h-4 text-indigo-500" /> : <Cuboid className="w-4 h-4 text-indigo-400" />}
                         </div>
                         <div className="min-w-0">
                             <h3 className="font-bold text-foreground text-sm truncate">{displayName}</h3>
@@ -140,9 +142,12 @@ export const BimGalleryPage = () => {
                                 <Trash2 className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${isExpanded ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}
-                                title={isExpanded ? "Collapse View" : "Expand View"}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedDetail({ item, isCatalog });
+                                }}
+                                className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors flex-shrink-0"
+                                title="Inspect Model"
                             >
                                 <Maximize2 className="w-4 h-4" />
                             </button>
@@ -151,7 +156,7 @@ export const BimGalleryPage = () => {
                 </div>
 
                 {/* Viewer */}
-                <div className={`relative bg-black ${isExpanded ? 'h-[600px]' : 'h-[350px]'} transition-all duration-300 w-full`}>
+                <div className="relative bg-black h-[300px] w-full">
                     {item.model3d && (
                         isEmbed ? (
                             <iframe
@@ -166,7 +171,7 @@ export const BimGalleryPage = () => {
                         )
                     )}
                     <div className="absolute bottom-4 left-4 pointer-events-none flex gap-2">
-                        <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-green-900/60' : 'bg-black/60'}`}>
+                        <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-indigo-900/60' : 'bg-black/60'}`}>
                             {isCatalog ? 'Catalog Preview' : <><Box className="w-3 h-3" /> 3D Interactive</>}
                         </span>
                     </div>
@@ -182,8 +187,8 @@ export const BimGalleryPage = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                                <Box className="w-8 h-8 text-blue-500" />
+                            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+                                <Box className="w-8 h-8 text-indigo-500" />
                             </div>
                             3D Model Gallery
                         </h1>
@@ -295,6 +300,18 @@ export const BimGalleryPage = () => {
                     </div>
                 </div>
             )}
+
+            {/* Model Detail View Modal */}
+            <AnimatePresence>
+                {selectedDetail && (
+                    <BimModelDetailView
+                        item={selectedDetail.item}
+                        isCatalog={selectedDetail.isCatalog}
+                        onClose={() => setSelectedDetail(null)}
+                        onAddToProject={addToProject}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

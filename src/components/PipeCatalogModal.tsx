@@ -235,7 +235,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                     {/* Cloud Delete Button */}
                                     {standard.isCustom && (
                                         <div className="absolute top-4 right-16 flex gap-2">
-                                            <span className="bg-sky-500/10 text-sky-500 border border-sky-500/20 text-[10px] uppercase font-bold px-2 py-1 rounded">Cloud Custom</span>
+                                            <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[10px] uppercase font-bold px-2 py-1 rounded">Cloud Custom</span>
                                             <button
                                                 onClick={() => standard.id && handleDelete(standard.id)}
                                                 className="bg-destructive/10 text-destructive border border-destructive/20 p-1.5 rounded hover:bg-destructive hover:text-white transition-colors"
@@ -248,17 +248,17 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                     {/* Standard Header */}
                                     <div className="px-5 py-4 border-b border-border bg-secondary/30 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-1.5 h-10 rounded-full ${standard.category === 'metal' ? 'bg-blue-500' :
-                                                standard.category === 'plastic' ? 'bg-green-500' : 'bg-purple-500'
+                                            <div className={`w-1.5 h-10 rounded-full ${standard.category === 'metal' ? 'bg-indigo-500' :
+                                                standard.category === 'plastic' ? 'bg-slate-400' : 'bg-slate-500'
                                                 }`} />
                                             <div>
                                                 <h3 className="text-base font-bold text-foreground">{standard.label}</h3>
                                                 <p className="text-xs text-muted-foreground">{standard.description}</p>
                                             </div>
                                         </div>
-                                        <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${standard.category === 'metal' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
-                                            standard.category === 'plastic' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                                'bg-purple-500/10 text-purple-500 border border-purple-500/20'
+                                        <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${standard.category === 'metal' ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' :
+                                            standard.category === 'plastic' ? 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20' :
+                                                'bg-slate-500/10 text-slate-500 border border-slate-500/20'
                                             }`}>
                                             {standard.category}
                                         </span>
@@ -296,9 +296,9 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                                             <td className="px-4 py-2.5 text-muted-foreground">{pipe.inch || '-'}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.od}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.thickness}</td>
-                                                            <td className="px-4 py-2.5 font-bold text-primary bg-primary/5 font-mono group-hover:bg-primary/10 transition-colors">{pipe.id}</td>
+                                                            <td className="px-4 py-2.5 font-bold text-indigo-600 dark:text-emerald-400 bg-indigo-500/5 font-mono group-hover:bg-indigo-500/10 transition-colors">{pipe.id}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.weight.toFixed(2)}</td>
-                                                            <td className="px-4 py-2.5 font-mono text-emerald-500">{vol.toFixed(3)}</td>
+                                                            <td className="px-4 py-2.5 font-mono text-indigo-500/80">{vol.toFixed(3)}</td>
                                                         </tr>
                                                     );
                                                 })}
@@ -322,7 +322,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                     <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
                         <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl p-8 shadow-sm">
                             <h4 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                                <Cloud className="w-5 h-5 text-sky-500" /> Create Custom Pipe Standard
+                                <Cloud className="w-5 h-5 text-indigo-500" /> Create Custom Pipe Standard
                             </h4>
 
                             <div className="space-y-4 mb-6">

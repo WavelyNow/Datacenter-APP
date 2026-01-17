@@ -66,10 +66,10 @@ export function ExpansionVesselCalculator() {
                     <Droplets className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-semibold text-zinc-100">
+                    <h2 className="text-xl font-semibold text-foreground">
                         Dimensionare Vas Expansiune
                     </h2>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-muted-foreground">
                         Conform EN 12828 pentru sisteme închise
                     </p>
                 </div>
@@ -78,9 +78,9 @@ export function ExpansionVesselCalculator() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Input Section */}
                 <div className="space-y-4">
-                    <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-4 flex items-center gap-2">
-                            <Calculator className="w-4 h-4" />
+                    <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+                            <Calculator className="w-4 h-4 text-indigo-500" />
                             Parametri Sistem
                         </h3>
 
@@ -95,16 +95,16 @@ export function ExpansionVesselCalculator() {
                                     type="number"
                                     value={input.systemVolume}
                                     onChange={(e) => handleInputChange('systemVolume', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 />
-                                <p className="text-xs text-zinc-500 mt-1">
+                                <p className="text-xs text-muted-foreground mt-1">
                                     Din proiect: {systemVolume.toFixed(0)} L
                                 </p>
                             </div>
 
                             {/* Glycol Percentage */}
                             <div>
-                                <label htmlFor="glycolPercentage" className="block text-xs text-zinc-400 mb-1">
+                                <label htmlFor="glycolPercentage" className="block text-xs text-muted-foreground mb-1">
                                     Concentrație Glicol (%)
                                 </label>
                                 <input
@@ -114,13 +114,13 @@ export function ExpansionVesselCalculator() {
                                     onChange={(e) => handleInputChange('glycolPercentage', parseFloat(e.target.value) || 0)}
                                     min={0}
                                     max={60}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
                             {/* Min Temperature */}
                             <div>
-                                <label htmlFor="minTemperature" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="minTemperature" className="block text-xs text-muted-foreground mb-1 flex items-center gap-1">
                                     <Thermometer className="w-3 h-3" />
                                     T min / Umplere (°C)
                                 </label>
@@ -129,13 +129,13 @@ export function ExpansionVesselCalculator() {
                                     type="number"
                                     value={input.minTemperature}
                                     onChange={(e) => handleInputChange('minTemperature', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
                             {/* Max Temperature */}
                             <div>
-                                <label htmlFor="maxTemperature" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="maxTemperature" className="block text-xs text-muted-foreground mb-1 flex items-center gap-1">
                                     <Thermometer className="w-3 h-3 text-red-400" />
                                     T max / Operare (°C)
                                 </label>
@@ -144,13 +144,13 @@ export function ExpansionVesselCalculator() {
                                     type="number"
                                     value={input.maxTemperature}
                                     onChange={(e) => handleInputChange('maxTemperature', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
                             {/* Static Height */}
                             <div>
-                                <label htmlFor="staticHeight" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="staticHeight" className="block text-xs text-muted-foreground mb-1 flex items-center gap-1">
                                     <ArrowUp className="w-3 h-3" />
                                     Înălțime Statică (m)
                                 </label>
@@ -160,9 +160,9 @@ export function ExpansionVesselCalculator() {
                                     value={input.staticHeight}
                                     onChange={(e) => handleInputChange('staticHeight', parseFloat(e.target.value) || 0)}
                                     step={0.5}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                                 />
-                                <p className="text-xs text-zinc-500 mt-1">
+                                <p className="text-xs text-muted-foreground mt-1">
                                     Cel mai înalt punct față de vas
                                 </p>
                             </div>

@@ -155,8 +155,8 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         )}
 
                         {status === 'error' && (
-                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-600 text-sm">
-                                <p className="font-bold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Error</p>
+                            <div className="p-4 bg-slate-500/10 border border-slate-500/20 rounded-lg text-slate-600 dark:text-slate-400 text-sm">
+                                <p className="font-bold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Eroare</p>
                                 {errorMessage}
                             </div>
                         )}
@@ -164,11 +164,11 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         {/* 3. Results */}
                         {status === 'extracted' && (
                             <div className="space-y-4 animate-in slide-in-from-bottom-4">
-                                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-600">
+                                <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-600 dark:text-emerald-400">
                                     <p className="font-bold text-lg flex items-center gap-2">
-                                        <Check className="w-5 h-5" /> Success!
+                                        <Check className="w-5 h-5" /> Succes!
                                     </p>
-                                    <p className="text-sm">Found {foundPipes.length} pipe segments.</p>
+                                    <p className="text-sm">S-au găsit {foundPipes.length} segmente de țeavă.</p>
                                 </div>
 
                                 <div className="bg-background rounded-lg border border-border overflow-hidden">

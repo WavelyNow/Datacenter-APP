@@ -201,8 +201,8 @@ export const HelpPage = () => {
                                     <p className="text-[9px] font-bold text-indigo-600">Apă</p>
                                     <p className="text-[10px]">998 kg/m³</p>
                                 </div>
-                                <div className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                                    <p className="text-[9px] font-bold text-emerald-600">Glicol 30%</p>
+                                <div className="p-2 rounded-lg bg-slate-500/5 border border-slate-500/10">
+                                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">Glicol 30%</p>
                                     <p className="text-[10px]">1045 kg/m³</p>
                                 </div>
                             </div>

@@ -256,9 +256,6 @@ export function findOperatingPoint(
         const sysHead2 = systemCurve[i + 1].headM;
 
         // Check flows within pump range
-        const midFlow = (sysFlow1 + sysFlow2) / 2;
-        const pumpHeadAtMid = interpolatePumpHead(pumpData.curve, midFlow);
-        const sysHeadAtMid = sysHead1 + (sysHead2 - sysHead1) * 0.5;
 
         // Check for crossover
         const pumpHead1 = interpolatePumpHead(pumpData.curve, sysFlow1);

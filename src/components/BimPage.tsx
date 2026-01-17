@@ -2,8 +2,8 @@
 
 import { supabase } from '@/lib/supabase';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { FileUp, Box, Layers, Filter, Maximize2, RotateCcw, Save, Trash2, FileText, AlertTriangle, Upload, FileBox, Loader2, Check } from 'lucide-react';
+import React, { useState, useRef, useMemo } from 'react';
+import { Layers, FileText, AlertTriangle, Upload, FileBox, Loader2, Check } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
 import { IfcService } from '@/lib/bim/IfcService';
@@ -142,7 +142,7 @@ export const BimPage = () => {
                 const publicUrl = await uploadToSupabase(selectedFile);
 
                 if (publicUrl === 'too_large') {
-                    
+
                     setStatus('idle');
                     // Don't set IfcModelUrl for cloud, just keep localUrl
                 } else if (publicUrl) {
@@ -154,7 +154,7 @@ export const BimPage = () => {
             } catch (err: unknown) {
                 const error = err as Error;
                 console.error("Cloud upload failed, continuing locally:", error);
-                
+
                 setStatus('idle');
             }
         }
@@ -197,7 +197,7 @@ export const BimPage = () => {
             const error = err as Error;
             console.error("Extraction failed or partial:", error);
             setStatus('extracted');
-            
+
             setFoundPipes([]);
         }
     };
@@ -310,7 +310,7 @@ export const BimPage = () => {
                     {foundPipes.length > 0 && (
                         <button
                             onClick={handleExportBOM}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
                         >
                             <FileText className="w-4 h-4" />
                             Export BOM
@@ -338,19 +338,19 @@ export const BimPage = () => {
                 <div className="flex-1 flex flex-col gap-4 min-w-0">
 
                     {/* 3D Viewer Container */}
-                    <div className="flex-1 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl relative flex flex-col min-h-[400px]">
+                    <div className="flex-1 bg-background rounded-2xl overflow-hidden border border-border shadow-sm relative flex flex-col min-h-[400px]">
                         {!fileUrl ? (
                             // Empty State / Upload
-                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-muted/5 rounded-2xl border-2 border-dashed border-border relative">
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-muted/20 rounded-2xl border-2 border-dashed border-border relative">
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full max-w-md border-2 border-dashed border-zinc-800 hover:border-primary/50 hover:bg-zinc-900/50 rounded-2xl p-12 flex flex-col items-center cursor-pointer transition-all group"
+                                    className="w-full max-w-md border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/50 rounded-2xl p-12 flex flex-col items-center cursor-pointer transition-all group"
                                 >
-                                    <div className="w-20 h-20 rounded-3xl bg-zinc-900 flex items-center justify-center mb-6 shadow-inner border border-zinc-800 group-hover:scale-110 transition-transform">
-                                        <Upload className="w-10 h-10 text-zinc-600 group-hover:text-primary" />
+                                    <div className="w-20 h-20 rounded-3xl bg-card flex items-center justify-center mb-6 shadow-sm border border-border group-hover:scale-110 transition-transform">
+                                        <Upload className="w-10 h-10 text-muted-foreground group-hover:text-primary" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-zinc-400 group-hover:text-white">Upload IFC File</h3>
-                                    <p className="text-zinc-600 text-center mt-2 text-sm">
+                                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary">Upload IFC File</h3>
+                                    <p className="text-muted-foreground text-center mt-2 text-sm">
                                         Supports Revit, ArchiCAD, Tekla exports (.ifc)
                                     </p>
                                     <input

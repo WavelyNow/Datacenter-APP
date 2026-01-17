@@ -99,7 +99,7 @@ export const AICopilot: React.FC = () => {
                                 <div>
                                     <h3 className="font-bold text-sm text-foreground">Engineering Copilot</h3>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
                                         <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Online</span>
                                     </div>
                                 </div>
@@ -138,8 +138,8 @@ export const AICopilot: React.FC = () => {
                                     <div className={cn(
                                         "p-3 rounded-2xl text-sm leading-relaxed",
                                         msg.role === 'assistant'
-                                            ? "bg-secondary/50 text-foreground border border-white/5 rounded-tl-none"
-                                            : "bg-primary text-primary-foreground rounded-tr-none shadow-lg shadow-primary/20"
+                                            ? "bg-muted text-foreground border border-border rounded-tl-none shadow-sm"
+                                            : "bg-primary text-primary-foreground rounded-tr-none shadow-md shadow-primary/10"
                                     )}>
                                         {msg.content}
                                     </div>

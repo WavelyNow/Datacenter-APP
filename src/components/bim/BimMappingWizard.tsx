@@ -55,11 +55,11 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                     {/* Step 1: Enrich Data */}
                     {step === 1 && (
                         <div className="space-y-6">
-                            <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl flex gap-3 text-sm text-orange-700 dark:text-orange-300">
+                            <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex gap-3 text-sm text-indigo-700 dark:text-emerald-300">
                                 <AlertCircle className="w-5 h-5 shrink-0" />
                                 <div>
-                                    <p className="font-bold">Missing Engineering Data</p>
-                                    <p className="opacity-90">This BIM object lacks Flow Rate and Head Pressure data. Please input them manually to find a matching product.</p>
+                                    <p className="font-bold uppercase tracking-wider">Date Tehnice Lipsă</p>
+                                    <p className="opacity-90">Acest obiect BIM nu are definit Debit și Cădere de Presiune. Vă rugăm să le introduceți manual.</p>
                                 </div>
                             </div>
 
@@ -100,7 +100,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                                         <div>
                                             <div className="font-bold flex items-center gap-2">
                                                 {item.manufacturer} {item.model}
-                                                {item.efficient && <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-[10px] rounded-full border border-emerald-500/20 uppercase font-bold">High Eff</span>}
+                                                {item.efficient && <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[10px] rounded-full border border-indigo-500/20 uppercase font-bold">Eficiență Ridicată</span>}
                                             </div>
                                             <div className="text-xs text-muted-foreground mt-1">Power: {item.power} • Matches operating point</div>
                                         </div>
@@ -118,8 +118,8 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                     {/* Step 3: Confirm */}
                     {step === 3 && (
                         <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
-                            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center">
-                                <CheckCircle className="w-8 h-8 text-green-600" />
+                            <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center">
+                                <CheckCircle className="w-8 h-8 text-indigo-600" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold">Ready to Map</h3>
@@ -150,9 +150,9 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                         </button>
                     )}
                     {step === 3 && (
-                        <button onClick={() => onSave({ ...bimObject, mappedProduct: selectedCatalogItem, engineeringData: manualData })} className="btn btn-primary bg-green-600 hover:bg-green-700">
+                        <button onClick={() => onSave({ ...bimObject, mappedProduct: selectedCatalogItem, engineeringData: manualData })} className="btn btn-primary bg-indigo-600 hover:bg-indigo-700">
                             <Save className="w-4 h-4 ml-2" />
-                            Confirm Mapping
+                            Confirmare Mapping
                         </button>
                     )}
                     <button onClick={onClose} className="btn btn-ghost">Cancel</button>

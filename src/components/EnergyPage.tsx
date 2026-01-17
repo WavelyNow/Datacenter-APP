@@ -31,8 +31,8 @@ export const EnergyPage = () => {
     const getRecommendationColor = (priority: string) => {
         switch (priority) {
             case 'high': return 'bg-red-500/5 border-red-500/20 text-red-700 dark:text-red-400';
-            case 'medium': return 'bg-yellow-500/5 border-yellow-500/20 text-yellow-700 dark:text-yellow-400';
-            case 'low': return 'bg-blue-500/5 border-blue-500/20 text-blue-700 dark:text-blue-400';
+            case 'medium': return 'bg-amber-500/5 border-amber-500/20 text-amber-700 dark:text-amber-400';
+            case 'low': return 'bg-indigo-500/5 border-indigo-500/20 text-indigo-700 dark:text-emerald-400';
             default: return 'bg-muted/50 border-border text-muted-foreground';
         }
     };
@@ -43,7 +43,7 @@ export const EnergyPage = () => {
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                        <Leaf className="w-8 h-8 text-emerald-500" />
+                        <Leaf className="w-8 h-8 text-indigo-500" />
                         Energy & Sustainability
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">
@@ -68,21 +68,21 @@ export const EnergyPage = () => {
             {/* Power Breakdown Cards */}
             {metrics.totalFacilityPower > 0 && (
                 <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                    <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
                         <div className="text-xs text-muted-foreground uppercase font-bold mb-1">IT Load</div>
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        <div className="text-2xl font-bold text-indigo-600 dark:text-emerald-400">
                             {metrics.totalITLoad.toFixed(1)} <span className="text-sm">kW</span>
                         </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                    <div className="p-4 rounded-xl bg-slate-500/5 border border-slate-500/10">
                         <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Cooling Infrastructure</div>
-                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        <div className="text-2xl font-bold text-slate-600 dark:text-slate-400">
                             {metrics.totalCoolingInfrastructure.toFixed(1)} <span className="text-sm">kW</span>
                         </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-teal-500/5 border border-teal-500/10">
+                    <div className="p-4 rounded-xl bg-slate-400/5 border border-slate-400/10">
                         <div className="text-xs text-muted-foreground uppercase font-bold mb-1">Pumping</div>
-                        <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                        <div className="text-2xl font-bold text-slate-500 dark:text-slate-400">
                             {metrics.totalPumpPower.toFixed(1)} <span className="text-sm">kW</span>
                         </div>
                     </div>
@@ -95,7 +95,7 @@ export const EnergyPage = () => {
                 <div className="md:col-span-1">
                     <div className="h-full flex flex-col gap-4">
                         <h3 className="font-bold text-lg flex items-center gap-2">
-                            <Zap className="w-5 h-5 text-yellow-500" />
+                            <Zap className="w-5 h-5 text-indigo-500" />
                             Power Usage Effectiveness
                         </h3>
                         <PueGauge
@@ -108,9 +108,9 @@ export const EnergyPage = () => {
                             {metrics.totalFacilityPower > 0 ? (
                                 <>
                                     Based on your current equipment selection, the system achieves a
-                                    <span className={`font-bold ml-1 ${metrics.efficiencyClass === 'Platinum' ? 'text-emerald-500' :
-                                            metrics.efficiencyClass === 'Gold' ? 'text-yellow-500' :
-                                                metrics.efficiencyClass === 'Silver' ? 'text-gray-400' : 'text-orange-500'
+                                    <span className={`font-bold ml-1 ${metrics.efficiencyClass === 'Platinum' ? 'text-indigo-500' :
+                                        metrics.efficiencyClass === 'Gold' ? 'text-indigo-400' :
+                                            metrics.efficiencyClass === 'Silver' ? 'text-slate-400' : 'text-slate-500'
                                         }`}>
                                         {metrics.efficiencyClass}
                                     </span> Efficiency Rating.
@@ -126,7 +126,7 @@ export const EnergyPage = () => {
                 <div className="md:col-span-2">
                     <div className="h-full flex flex-col gap-4">
                         <h3 className="font-bold text-lg flex items-center gap-2">
-                            <Wind className="w-5 h-5 text-blue-500" />
+                            <Wind className="w-5 h-5 text-indigo-500" />
                             Annual Carbon Impact
                         </h3>
                         <div className="flex-1">
@@ -145,7 +145,7 @@ export const EnergyPage = () => {
             {metrics.recommendations.length > 0 && (
                 <div className="pt-6 border-t border-border">
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Lightbulb className="w-5 h-5 text-amber-500" />
+                        <Lightbulb className="w-5 h-5 text-indigo-500" />
                         Optimization Recommendations
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -176,8 +176,8 @@ export const EnergyPage = () => {
             {/* Static Info Cards (when no recommendations) */}
             {metrics.recommendations.length === 0 && metrics.totalFacilityPower > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-border">
-                    <div className="p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
-                        <h4 className="font-bold flex items-center gap-2 mb-2 text-emerald-700 dark:text-emerald-400">
+                    <div className="p-5 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
+                        <h4 className="font-bold flex items-center gap-2 mb-2 text-indigo-700 dark:text-emerald-400">
                             <Fan className="w-4 h-4" />
                             Free Cooling Active
                         </h4>
@@ -186,8 +186,8 @@ export const EnergyPage = () => {
                             free cooling per year in {projectDetails.location || 'your region'}.
                         </p>
                     </div>
-                    <div className="p-5 rounded-xl bg-blue-500/5 border border-blue-500/10">
-                        <h4 className="font-bold flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-400">
+                    <div className="p-5 rounded-xl bg-slate-500/5 border border-slate-500/10">
+                        <h4 className="font-bold flex items-center gap-2 mb-2 text-slate-700 dark:text-slate-400">
                             <Zap className="w-4 h-4" />
                             VSD Pumps Detected
                         </h4>
@@ -195,8 +195,8 @@ export const EnergyPage = () => {
                             Variable speed drives are active. Ensure control logic is set to ΔP-v for maximum savings.
                         </p>
                     </div>
-                    <div className="p-5 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                        <h4 className="font-bold flex items-center gap-2 mb-2 text-purple-700 dark:text-purple-400">
+                    <div className="p-5 rounded-xl bg-slate-400/5 border border-slate-400/10">
+                        <h4 className="font-bold flex items-center gap-2 mb-2 text-slate-600 dark:text-slate-400">
                             <ThermometerSun className="w-4 h-4" />
                             Heat Recovery Potential
                         </h4>

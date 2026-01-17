@@ -4,7 +4,6 @@
  */
 
 import { PipeSegment, EquipmentItem } from '../types';
-import { PIPE_STANDARDS } from '../pipeStandards';
 
 // ============================================================================
 // Price Data (EUR)

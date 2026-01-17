@@ -114,9 +114,9 @@ export const ProfileCatalog: React.FC = () => {
     // Load Capacity Colors
     const getLoadColor = (load: LoadCapacity) => {
         switch (load) {
-            case 'Light': return 'bg-green-500';
-            case 'Medium': return 'bg-amber-500';
-            case 'Heavy': return 'bg-red-500';
+            case 'Light': return 'bg-slate-300 dark:bg-slate-600';
+            case 'Medium': return 'bg-indigo-400 dark:bg-emerald-500';
+            case 'Heavy': return 'bg-indigo-600 dark:bg-emerald-700';
         }
     };
 
@@ -153,7 +153,7 @@ export const ProfileCatalog: React.FC = () => {
                 /* CREATE FORM */
                 <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
                     <div className="max-w-xl mx-auto bg-card border border-border rounded-xl p-8 shadow-sm">
-                        <div className="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg text-xs text-blue-600 mb-6 flex items-center gap-2">
+                        <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-emerald-400 mb-6 flex items-center gap-2">
                             <Cloud className="w-4 h-4" />
                             This profile will be saved to the Global Library and visible to all users.
                         </div>
@@ -283,7 +283,7 @@ export const ProfileCatalog: React.FC = () => {
                                             {/* Custom Badge & Delete */}
                                             {isCustom && (
                                                 <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-                                                    <span className="bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 border border-indigo-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                                         <Cloud className="w-3 h-3" /> CLOUD
                                                     </span>
                                                     <button onClick={() => handleDelete(item.sku)} className="text-muted-foreground hover:text-destructive transition-colors">
@@ -300,10 +300,10 @@ export const ProfileCatalog: React.FC = () => {
 
                                             {/* Manufacturer Badge */}
                                             {'manufacturer' in item && (item as { manufacturer?: string }).manufacturer && (
-                                                <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 ${(item as { manufacturer?: string }).manufacturer === 'MÜPRO' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                                                    (item as { manufacturer?: string }).manufacturer === 'Hilti' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                        (item as { manufacturer?: string }).manufacturer === 'OBO Bettermann' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
-                                                            (item as { manufacturer?: string }).manufacturer === 'Custom (Cloud)' ? 'bg-sky-500/10 text-sky-600 border border-sky-500/20' :
+                                                <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 ${(item as { manufacturer?: string }).manufacturer === 'MÜPRO' ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' :
+                                                    (item as { manufacturer?: string }).manufacturer === 'Hilti' ? 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20' :
+                                                        (item as { manufacturer?: string }).manufacturer === 'OBO Bettermann' ? 'bg-slate-600/10 text-slate-700 dark:text-slate-500 border border-slate-600/20' :
+                                                            (item as { manufacturer?: string }).manufacturer === 'Custom (Cloud)' ? 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/20' :
                                                                 'bg-muted text-muted-foreground'
                                                     }`}>
                                                     {(item as { manufacturer?: string }).manufacturer}

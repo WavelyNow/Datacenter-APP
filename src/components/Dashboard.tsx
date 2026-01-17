@@ -68,7 +68,7 @@ export const Dashboard = () => {
                         </span>
                         SYSTEM ACTIVE
                     </motion.div>
-                    <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+                    <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
                         Engineering <span className="text-primary">Workspace</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">
@@ -79,9 +79,9 @@ export const Dashboard = () => {
                 <div className="flex gap-3 relative z-10">
                     <button
                         onClick={() => setIsTemplateOpen(true)}
-                        className="btn btn-secondary h-12 px-6 border-amber-500/30 hover:border-amber-500/60 gap-2 text-foreground bg-amber-500/5 hover:bg-amber-500/10"
+                        className="btn btn-secondary h-12 px-6 border-indigo-500/30 hover:border-indigo-500/60 gap-2 text-foreground bg-indigo-500/5 hover:bg-indigo-500/10"
                     >
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <Sparkles className="w-4 h-4 text-indigo-500" />
                         Quick Start
                     </button>
 
@@ -89,7 +89,7 @@ export const Dashboard = () => {
                         onClick={() => setIsBimOpen(true)}
                         className="btn btn-secondary h-12 px-6 gap-2"
                     >
-                        <FileBox className="w-4 h-4 text-emerald-500" />
+                        <FileBox className="w-4 h-4 text-indigo-500" />
                         Scan BIM
                     </button>
 
@@ -108,12 +108,12 @@ export const Dashboard = () => {
 
             {/* Quick Stats Grid */}
             <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-blue-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-indigo-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="flex justify-between items-start">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                             <Activity className="w-5 h-5" />
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-blue-500 transition-colors" />
+                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-indigo-500 transition-colors" />
                     </div>
                     <div>
                         <div className="text-3xl font-bold font-mono tracking-tight">{segments.length}</div>
@@ -121,12 +121,12 @@ export const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-orange-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('catalogs')}>
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-slate-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('catalogs')}>
                     <div className="flex justify-between items-start">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-slate-500/10 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
                             <Zap className="w-5 h-5" />
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-orange-500 transition-colors" />
+                        <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-slate-500 transition-colors" />
                     </div>
                     <div>
                         <div className="text-3xl font-bold font-mono tracking-tight">1,240+</div>
@@ -134,16 +134,16 @@ export const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-emerald-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
-                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-indigo-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                    <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-bold border border-emerald-500/20">98% OPTIMAL</div>
+                        <div className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-bold border border-indigo-500/20">98% OPTIMAL</div>
                     </div>
                     <div className="relative z-10">
-                        <div className="text-xl font-bold text-emerald-500">System Stable</div>
+                        <div className="text-xl font-bold text-indigo-600 dark:text-emerald-400">System Stable</div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Status Check</div>
                     </div>
                 </motion.div>
@@ -174,7 +174,7 @@ export const Dashboard = () => {
                             <h3 className="font-bold text-xl mb-6 relative z-10">Initialize Project</h3>
                             <div className="grid gap-4 relative z-10">
                                 <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
-                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold border border-blue-500/20 group-hover:scale-110 transition-transform">1</div>
+                                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold border border-indigo-500/20 group-hover:scale-110 transition-transform">1</div>
                                     <div>
                                         <div className="font-bold text-sm">Configure Fluids</div>
                                         <div className="text-xs text-muted-foreground">Set glycol concentration and temperature.</div>
@@ -183,7 +183,7 @@ export const Dashboard = () => {
                                 </button>
 
                                 <button onClick={() => setActiveTab('bim')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
-                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold border border-purple-500/20 group-hover:scale-110 transition-transform">2</div>
+                                    <div className="w-10 h-10 rounded-full bg-slate-500/10 text-slate-500 flex items-center justify-center font-bold border border-slate-500/20 group-hover:scale-110 transition-transform">2</div>
                                     <div>
                                         <div className="font-bold text-sm">Import Architecture</div>
                                         <div className="text-xs text-muted-foreground">Load IFC models for auto-routing.</div>
@@ -232,7 +232,7 @@ export const Dashboard = () => {
                             <div className="group">
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-xs font-bold text-foreground">Energy Engine v2.1</span>
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">LIVE</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">LIVE</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">Real-time carbon footprint monitoring enabled.</p>
                             </div>
@@ -242,7 +242,7 @@ export const Dashboard = () => {
                             <div className="group">
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-xs font-bold text-foreground">Hydraulic Solver</span>
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">BETA</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-500 border border-slate-500/20">BETA</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground">New pressure drop calculation algorithm available.</p>
                             </div>

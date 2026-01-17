@@ -32,20 +32,20 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
         const segmentWidth = segment.length * scale;
         const startX = index === 0 ? padding : acc[index - 1].endX;
         const endX = startX + segmentWidth;
-        
+
         return [...acc, { segment, startX, endX, width: segmentWidth, index }];
     }, [] as SegmentPosition[]);
 
     return (
-        <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-slate-900/20 overflow-hidden group">
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-sm overflow-hidden group">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                        <Activity className="w-4 h-4 text-indigo-400" />
+                        <Activity className="w-4 h-4 text-indigo-500" />
                     </div>
-                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Pipe Schematic Visualization</h3>
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Pipe Schematic Visualization</h3>
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">
+                <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">
                     Scale: 1m = {scale.toFixed(1)}px
                 </div>
             </div>
@@ -62,11 +62,11 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
 
                     {segmentPositions.map(({ segment, startX, endX, width, index }) => {
                         // Color selection based on material
-                        let color = "#cbd5e1"; // default slate
-                        if (segment.material.includes('steel')) color = "#60a5fa"; // blue
-                        if (segment.material.includes('co')) color = "#fb923c"; // orange (copper)
-                        if (segment.material.includes('pvc') || segment.material.includes('pp')) color = "#4ade80"; // green
-                        if (segment.material === 'custom') color = "#f59e0b"; // amber
+                        let color = "#94a3b8"; // slate-400
+                        if (segment.material.includes('steel')) color = "#6366f1"; // indigo-500
+                        if (segment.material.includes('co')) color = "#64748b"; // slate-500 (copper - more professional)
+                        if (segment.material.includes('pvc') || segment.material.includes('pp')) color = "#475569"; // slate-600
+                        if (segment.material === 'custom') color = "#4f46e5"; // indigo-600
 
                         return (
                             <g key={segment.id} className="group/seg cursor-help transition-all duration-300">
@@ -125,16 +125,16 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
             </div>
 
             {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-white/5">
+            <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-border">
                 {[
-                    { label: 'Steel', color: 'bg-blue-400' },
+                    { label: 'Steel', color: 'bg-indigo-500' },
                     { label: 'Copper', color: 'bg-orange-400' },
-                    { label: 'Plastic', color: 'bg-green-400' },
+                    { label: 'Plastic', color: 'bg-emerald-500' },
                     { label: 'Custom', color: 'bg-amber-500' },
                 ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className={`w-2 h-2 rounded-full ${l.color}`} />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{l.label}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{l.label}</span>
                     </div>
                 ))}
             </div>

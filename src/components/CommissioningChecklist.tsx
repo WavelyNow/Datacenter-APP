@@ -136,19 +136,19 @@ export const CommissioningChecklist: React.FC = () => {
         switch (priority) {
             case 'critical': return 'text-red-500 bg-red-500/10 border-red-500/20';
             case 'high': return 'text-orange-500 bg-orange-500/10 border-orange-500/20';
-            case 'medium': return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
-            case 'low': return 'text-green-500 bg-green-500/10 border-green-500/20';
+            case 'medium': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+            case 'low': return 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20';
             default: return 'text-muted-foreground bg-muted/10';
         }
     };
 
     const getCategoryColor = (color: string) => {
         const colors: Record<string, string> = {
-            'blue': 'from-blue-500/10 to-blue-600/10 border-blue-500/20',
-            'cyan': 'from-cyan-500/10 to-cyan-600/10 border-cyan-500/20',
+            'blue': 'from-indigo-500/10 to-indigo-600/10 border-indigo-500/20',
+            'cyan': 'from-sky-500/10 to-sky-600/10 border-sky-500/20',
             'red': 'from-red-500/10 to-red-600/10 border-red-500/20',
-            'purple': 'from-purple-500/10 to-purple-600/10 border-purple-500/20',
-            'green': 'from-green-500/10 to-green-600/10 border-green-500/20',
+            'purple': 'from-slate-500/10 to-slate-600/10 border-slate-500/20',
+            'green': 'from-emerald-500/10 to-emerald-600/10 border-emerald-500/20',
             'amber': 'from-amber-500/10 to-amber-600/10 border-amber-500/20',
         };
         return colors[color] || colors['blue'];
@@ -235,19 +235,19 @@ export const CommissioningChecklist: React.FC = () => {
                     const isComplete = categoryProgress.completed === categoryProgress.total;
 
                     return (
-                        <div key={category.id} className={`card-premium overflow-hidden ${isComplete ? 'border-green-500/30' : ''}`}>
+                        <div key={category.id} className={`card-premium overflow-hidden ${isComplete ? 'border-emerald-500/30' : ''}`}>
                             {/* Category Header */}
                             <button
                                 onClick={() => toggleCategory(category.id)}
                                 className={`w-full p-5 flex items-center justify-between hover:bg-muted/20 transition-colors bg-gradient-to-r ${getCategoryColor(category.color)}`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isComplete ? 'bg-green-500' : 'bg-background border border-border'
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isComplete ? 'bg-emerald-500' : 'bg-background border border-border'
                                         }`}>
                                         {isComplete ? (
                                             <Check className="w-5 h-5 text-white" />
                                         ) : (
-                                            <Icon className={`w-5 h-5 text-${category.color}-500`} />
+                                            <Icon className={`w-5 h-5 text-indigo-500`} />
                                         )}
                                     </div>
                                     <div className="text-left">
@@ -260,7 +260,7 @@ export const CommissioningChecklist: React.FC = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="w-24 h-2 bg-muted/30 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-primary'}`}
+                                            className={`h-full rounded-full transition-all ${isComplete ? 'bg-emerald-500' : 'bg-primary'}`}
                                             style={{ width: `${(categoryProgress.completed / categoryProgress.total) * 100}%` }}
                                         />
                                     </div>
@@ -284,7 +284,7 @@ export const CommissioningChecklist: React.FC = () => {
                                                 <button
                                                     onClick={() => toggleItem(item.id)}
                                                     className={`mt-0.5 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${isCompleted
-                                                        ? 'bg-green-500 border-green-500'
+                                                        ? 'bg-emerald-500 border-emerald-500'
                                                         : 'border-muted-foreground/30 hover:border-primary'
                                                         }`}
                                                 >
@@ -301,7 +301,7 @@ export const CommissioningChecklist: React.FC = () => {
                                                             {item.priority}
                                                         </span>
                                                         {item.requiresSignoff && (
-                                                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-500">
+                                                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-500`}>
                                                                 Signoff
                                                             </span>
                                                         )}

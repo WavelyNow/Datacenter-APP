@@ -66,10 +66,10 @@ export function HydraulicsPage() {
                     <Wrench className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-100">
+                    <h1 className="text-2xl font-bold text-foreground">
                         Instrumente Hidraulice
                     </h1>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-muted-foreground">
                         Calculatoare pentru proiectare sisteme de răcire
                     </p>
                 </div>
@@ -88,10 +88,10 @@ export function HydraulicsPage() {
                             className={`
                                 flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200
                                 ${isActive
-                                    ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-indigo-500/50 text-white'
-                                    : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/50'
+                                    ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-emerald-400'
+                                    : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted'
                                 }
-                                border
+                                border shadow-sm
                             `}
                         >
                             <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : ''}`} />
@@ -105,7 +105,7 @@ export function HydraulicsPage() {
             </div>
 
             {/* Content Area */}
-            <div className="bg-zinc-900/30 rounded-2xl border border-zinc-800/50 p-6">
+            <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
                 {activeTool === 'expansion' && <ExpansionVesselCalculator />}
 
                 {activeTool === 'thermal' && (
@@ -153,28 +153,28 @@ function ThermalExpansionTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/20">
-                    <Thermometer className="w-5 h-5 text-orange-400" />
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <Thermometer className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-semibold text-zinc-100">Calcul Dilatare Termică</h2>
-                    <p className="text-sm text-zinc-400">ΔL = α × L × ΔT</p>
+                    <h2 className="text-lg font-bold text-foreground">Calcul Dilatare Termică</h2>
+                    <p className="text-sm text-muted-foreground">ΔL = α × L × ΔT</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Inputs */}
                 <div className="space-y-4">
-                    <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-4">Parametri Țeavă</h3>
+                    <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                        <h3 className="text-sm font-bold text-foreground mb-4">Parametri Țeavă</h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
-                                <label className="block text-xs text-zinc-400 mb-1">Material</label>
+                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Material</label>
                                 <select
                                     value={input.material}
                                     onChange={e => setInput(prev => ({ ...prev, material: e.target.value }))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                                 >
                                     <option value="steel_light">Oțel (α = 0.012 mm/m·K)</option>
                                     <option value="copper">Cupru (α = 0.017 mm/m·K)</option>
@@ -185,42 +185,42 @@ function ThermalExpansionTool() {
                             </div>
 
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">Lungime (m)</label>
+                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Lungime (m)</label>
                                 <input
                                     type="number"
                                     value={input.length}
                                     onChange={e => setInput(prev => ({ ...prev, length: parseFloat(e.target.value) || 0 }))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">Diametru Ext. (mm)</label>
+                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Diametru Ext. (mm)</label>
                                 <input
                                     type="number"
                                     value={input.outerDiameter}
                                     onChange={e => setInput(prev => ({ ...prev, outerDiameter: parseFloat(e.target.value) || 0 }))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">T instalare (°C)</label>
+                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">T instalare (°C)</label>
                                 <input
                                     type="number"
                                     value={input.installTemperature}
                                     onChange={e => setInput(prev => ({ ...prev, installTemperature: parseFloat(e.target.value) || 0 }))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs text-zinc-400 mb-1">T operare (°C)</label>
+                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">T operare (°C)</label>
                                 <input
                                     type="number"
                                     value={input.operatingTemperature}
                                     onChange={e => setInput(prev => ({ ...prev, operatingTemperature: parseFloat(e.target.value) || 0 }))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                                 />
                             </div>
 
@@ -230,9 +230,9 @@ function ThermalExpansionTool() {
                                         type="checkbox"
                                         checked={input.isFixedBothEnds}
                                         onChange={e => setInput(prev => ({ ...prev, isFixedBothEnds: e.target.checked }))}
-                                        className="rounded border-zinc-600 bg-zinc-800"
+                                        className="rounded border-border bg-background"
                                     />
-                                    <span className="text-sm text-zinc-300">Ambele capete fixe (ancore)</span>
+                                    <span className="text-sm text-foreground">Ambele capete fixe (ancore)</span>
                                 </label>
                             </div>
                         </div>
@@ -241,43 +241,47 @@ function ThermalExpansionTool() {
 
                 {/* Results */}
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-xl p-6 border border-orange-500/30">
-                        <div className="text-sm text-zinc-400 mb-2">Alungire Termică</div>
-                        <div className="text-4xl font-bold text-white">{result.elongation} mm</div>
-                        <div className="text-sm text-zinc-500 mt-1">
+                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Alungire Termică</div>
+                        <div className="text-4xl font-black text-foreground">{result.elongation} mm</div>
+                        <div className="text-xs text-muted-foreground mt-1">
                             ΔT = {result.temperatureDelta}°C | α = {result.expansionCoefficient} mm/m·K
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Compensator</div>
-                            <div className="text-lg font-semibold text-zinc-100">{result.compensatorType}</div>
+                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Compensator</div>
+                            <div className="text-lg font-bold text-foreground">{result.compensatorType}</div>
                             {result.compensatorLegLength > 0 && (
-                                <div className="text-xs text-zinc-500">Braț: {result.compensatorLegLength} mm</div>
+                                <div className="text-xs text-muted-foreground">Braț: {result.compensatorLegLength} mm</div>
                             )}
                         </div>
 
-                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Ghidaje</div>
-                            <div className="text-lg font-semibold text-zinc-100">{result.guidesRequired} buc</div>
-                            <div className="text-xs text-zinc-500">La {result.guideSpacing} m</div>
+                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Ghidaje</div>
+                            <div className="text-lg font-bold text-foreground">{result.guidesRequired} buc</div>
+                            <div className="text-xs text-muted-foreground">La {result.guideSpacing} m</div>
                         </div>
 
                         {input.isFixedBothEnds && (
-                            <div className="col-span-2 bg-amber-500/10 rounded-lg p-4 border border-amber-500/30">
-                                <div className="text-xs text-amber-400">Forță pe Ancore</div>
-                                <div className="text-lg font-semibold text-white">{result.anchorForce} kN</div>
+                            <div className="col-span-2 bg-amber-500/5 rounded-lg p-4 border border-amber-500/20 shadow-sm">
+                                <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Forță pe Ancore</div>
+                                <div className="text-lg font-bold text-foreground">{result.anchorForce} kN</div>
                             </div>
                         )}
                     </div>
 
                     {result.recommendations.length > 0 && (
-                        <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
-                            <div className="text-sm text-blue-400 mb-2">Recomandări</div>
-                            <ul className="text-sm text-blue-300/80 space-y-1">
+                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
+                            <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Recomandări</div>
+                            <ul className="text-xs text-indigo-600 dark:text-emerald-400 space-y-1">
                                 {result.recommendations.map((rec, i) => (
-                                    <li key={i}>• {rec}</li>
+                                    <li key={i} className="flex items-start gap-2">
+                                        <span className="shrink-0">•</span>
+                                        <span>{rec}</span>
+                                    </li>
                                 ))}
                             </ul>
                         </div>
@@ -309,91 +313,95 @@ function ValveSizingTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/20">
-                    <Gauge className="w-5 h-5 text-purple-400" />
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <Gauge className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-semibold text-zinc-100">Dimensionare Robineți (Kv)</h2>
-                    <p className="text-sm text-zinc-400">Kv = Q × √(ρ/ΔP) conform IEC 60534</p>
+                    <h2 className="text-lg font-bold text-foreground">Dimensionare Robineți (Kv)</h2>
+                    <p className="text-sm text-muted-foreground">Kv = Q × √(ρ/ΔP) conform IEC 60534</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Inputs */}
-                <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                    <h3 className="text-sm font-medium text-zinc-300 mb-4">Parametri Debit</h3>
+                <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <h3 className="text-sm font-bold text-foreground mb-4">Parametri Debit</h3>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Debit (m³/h)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Debit (m³/h)</label>
                             <input
                                 type="number"
                                 value={input.flowRate}
                                 onChange={e => setInput(prev => ({ ...prev, flowRate: parseFloat(e.target.value) || 0 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Cădere Presiune (bar)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Cădere Presiune (bar)</label>
                             <input
                                 type="number"
                                 step={0.1}
                                 value={input.pressureDrop}
                                 onChange={e => setInput(prev => ({ ...prev, pressureDrop: parseFloat(e.target.value) || 0 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Densitate Fluid (kg/m³)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Densitate Fluid (kg/m³)</label>
                             <input
                                 type="number"
                                 value={input.fluidDensity}
                                 onChange={e => setInput(prev => ({ ...prev, fluidDensity: parseFloat(e.target.value) || 1000 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
-                            <p className="text-xs text-zinc-500 mt-1">Apă: 1000, Glicol 30%: 1038</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">Apă: 1000, Glicol 30%: 1038</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Results */}
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl p-6 border border-purple-500/30">
+                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <div className="text-sm text-zinc-400">Kv Necesar</div>
-                                <div className="text-3xl font-bold text-white">{result.kvRequired}</div>
-                                <div className="text-xs text-zinc-500">+15% = {result.kvWithMargin}</div>
+                                <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Kv Necesar</div>
+                                <div className="text-3xl font-black text-foreground">{result.kvRequired}</div>
+                                <div className="text-[10px] text-muted-foreground">+15% = {result.kvWithMargin}</div>
                             </div>
                             <div>
-                                <div className="text-sm text-zinc-400">Dimensiune</div>
-                                <div className="text-3xl font-bold text-purple-400">{result.recommendedDN}</div>
-                                <div className="text-xs text-zinc-500">Kv = {result.kvAvailable}</div>
+                                <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Dimensiune</div>
+                                <div className="text-3xl font-black text-indigo-600 dark:text-emerald-400">{result.recommendedDN}</div>
+                                <div className="text-[10px] text-muted-foreground">Kv = {result.kvAvailable}</div>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Viteză</div>
-                            <div className="text-lg font-semibold text-zinc-100">{result.velocity} m/s</div>
+                        <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Viteză</div>
+                            <div className="text-lg font-bold text-foreground">{result.velocity} m/s</div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Deschidere</div>
-                            <div className="text-lg font-semibold text-zinc-100">{result.openingPercent}%</div>
+                        <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Deschidere</div>
+                            <div className="text-lg font-bold text-foreground">{result.openingPercent}%</div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-3 text-center border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Autoritate</div>
-                            <div className="text-lg font-semibold text-zinc-100">{result.authority}</div>
+                        <div className="bg-muted/30 rounded-lg p-3 text-center border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Autoritate</div>
+                            <div className="text-lg font-bold text-foreground">{result.authority}</div>
                         </div>
                     </div>
 
                     {result.recommendations.length > 0 && (
-                        <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
+                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
                             {result.recommendations.map((rec, i) => (
-                                <p key={i} className="text-sm text-blue-300/80">• {rec}</p>
+                                <p key={i} className="text-xs text-indigo-600 dark:text-emerald-400 flex items-start gap-2">
+                                    <span className="shrink-0">•</span>
+                                    <span>{rec}</span>
+                                </p>
                             ))}
                         </div>
                     )}
@@ -445,84 +453,84 @@ function FittingsTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/20">
-                    <GitBranch className="w-5 h-5 text-green-400" />
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <GitBranch className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-semibold text-zinc-100">Pierderi Locale (K-Factors)</h2>
-                    <p className="text-sm text-zinc-400">ΔP = K × (ρ × v²) / 2</p>
+                    <h2 className="text-lg font-bold text-foreground">Pierderi Locale (K-Factors)</h2>
+                    <p className="text-sm text-muted-foreground">ΔP = K × (ρ × v²) / 2</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Flow Parameters */}
-                <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                    <h3 className="text-sm font-medium text-zinc-300 mb-4">Parametri Debit</h3>
+                <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <h3 className="text-sm font-bold text-foreground mb-4">Parametri Debit</h3>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Debit (m³/h)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Debit (m³/h)</label>
                             <input
                                 type="number"
                                 value={flowRate}
                                 onChange={e => setFlowRate(parseFloat(e.target.value) || 0)}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Diametru Interior (mm)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Diametru Interior (mm)</label>
                             <input
                                 type="number"
                                 value={innerDiameter}
                                 onChange={e => setInnerDiameter(parseFloat(e.target.value) || 0)}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Densitate (kg/m³)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Densitate (kg/m³)</label>
                             <input
                                 type="number"
                                 value={density}
                                 onChange={e => setDensity(parseFloat(e.target.value) || 1000)}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                     </div>
 
                     {/* Results Summary */}
-                    <div className="mt-4 pt-4 border-t border-zinc-700">
+                    <div className="mt-4 pt-4 border-t border-border">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-green-400">{result.totalPressureDropKPa}</div>
-                                <div className="text-xs text-zinc-500">kPa Total</div>
+                                <div className="text-2xl font-black text-indigo-600 dark:text-emerald-400">{result.totalPressureDropKPa}</div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">kPa Total</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-cyan-400">{result.totalEquivalentLength}</div>
-                                <div className="text-xs text-zinc-500">m Echivalent</div>
+                                <div className="text-2xl font-black text-slate-600 dark:text-slate-400">{result.totalEquivalentLength}</div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">m Echivalent</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Fittings List */}
-                <div className="lg:col-span-2 bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
+                <div className="lg:col-span-2 bg-muted/50 rounded-xl p-4 border border-border">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-medium text-zinc-300">Lista Fitinguri</h3>
+                        <h3 className="text-sm font-bold text-foreground">Lista Fitinguri</h3>
                         <button
                             onClick={addFitting}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors text-sm"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 rounded-lg hover:bg-indigo-500/20 transition-colors text-[10px] font-bold uppercase tracking-wider border border-indigo-500/20"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3.5 h-3.5" />
                             Adaugă
                         </button>
                     </div>
 
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                         {fittings.map((fitting, index) => (
-                            <div key={fitting.id} className="flex items-center gap-2 bg-zinc-900/50 rounded-lg p-2">
+                            <div key={fitting.id} className="flex items-center gap-2 bg-card rounded-lg p-2 border border-border shadow-sm">
                                 <select
                                     value={fitting.type}
                                     onChange={e => updateFitting(index, 'type', e.target.value as FittingType)}
-                                    className="flex-1 bg-zinc-800 text-white text-sm px-2 py-1.5 rounded border border-zinc-700"
+                                    className="flex-1 bg-background text-foreground text-sm px-2 py-1.5 rounded border border-border"
                                 >
                                     {fittingTypes.map(ft => (
                                         <option key={ft.type} value={ft.type}>
@@ -534,15 +542,15 @@ function FittingsTool() {
                                     type="number"
                                     value={fitting.quantity}
                                     onChange={e => updateFitting(index, 'quantity', parseInt(e.target.value) || 1)}
-                                    className="w-16 bg-zinc-800 text-white text-sm px-2 py-1.5 rounded border border-zinc-700 text-center"
+                                    className="w-16 bg-background text-foreground text-sm px-2 py-1.5 rounded border border-border text-center font-bold"
                                     min={1}
                                 />
-                                <span className="text-xs text-zinc-500 w-16 text-right">
+                                <span className="text-[10px] font-bold text-muted-foreground w-16 text-right">
                                     {result.fittings[index]?.pressureDropKPa.toFixed(2)} kPa
                                 </span>
                                 <button
                                     onClick={() => removeFitting(index)}
-                                    className="p-1.5 text-red-400 hover:bg-red-500/20 rounded"
+                                    className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -579,54 +587,54 @@ function PumpSizingTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/20">
-                    <Zap className="w-5 h-5 text-blue-400" />
+                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <Zap className="w-5 h-5 text-indigo-500" />
                 </div>
                 <div>
-                    <h2 className="text-lg font-semibold text-zinc-100">Dimensionare Pompă</h2>
-                    <p className="text-sm text-zinc-400">Curba sistem H = H_st + K × Q²</p>
+                    <h2 className="text-lg font-bold text-foreground">Dimensionare Pompă</h2>
+                    <p className="text-sm text-muted-foreground">Curba sistem H = H_st + K × Q²</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Inputs */}
-                <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                    <h3 className="text-sm font-medium text-zinc-300 mb-4">Cerințe Sistem</h3>
+                <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <h3 className="text-sm font-bold text-foreground mb-4">Cerințe Sistem</h3>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Debit Proiectat (m³/h)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Debit Proiectat (m³/h)</label>
                             <input
                                 type="number"
                                 value={input.designFlowM3H}
                                 onChange={e => setInput(prev => ({ ...prev, designFlowM3H: parseFloat(e.target.value) || 0 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Înălțime Statică (m)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Înălțime Statică (m)</label>
                             <input
                                 type="number"
                                 value={input.staticHeadM}
                                 onChange={e => setInput(prev => ({ ...prev, staticHeadM: parseFloat(e.target.value) || 0 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Pierderi Fricțiune (kPa)</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Pierderi Fricțiune (kPa)</label>
                             <input
                                 type="number"
                                 value={input.frictionLossKPa}
                                 onChange={e => setInput(prev => ({ ...prev, frictionLossKPa: parseFloat(e.target.value) || 0 }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-400 mb-1">Factor Siguranță</label>
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Factor Siguranță</label>
                             <select
                                 value={input.safetyFactor}
                                 onChange={e => setInput(prev => ({ ...prev, safetyFactor: parseFloat(e.target.value) }))}
-                                className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700"
+                                className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border"
                             >
                                 <option value={1.0}>1.0 (fără)</option>
                                 <option value={1.1}>1.1 (+10%)</option>
@@ -639,41 +647,42 @@ function PumpSizingTool() {
 
                 {/* Design Point */}
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl p-6 border border-blue-500/30">
-                        <div className="text-sm text-zinc-400 mb-2">Punct de Lucru Proiectat</div>
+                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Punct de Lucru Proiectat</div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <div className="text-3xl font-bold text-white">{result.designFlow} m³/h</div>
-                                <div className="text-xs text-zinc-500">Debit</div>
+                                <div className="text-3xl font-black text-foreground">{result.designFlow} m³/h</div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Debit</div>
                             </div>
                             <div>
-                                <div className="text-3xl font-bold text-cyan-400">{result.designHead} m</div>
-                                <div className="text-xs text-zinc-500">Înălțime</div>
+                                <div className="text-3xl font-black text-indigo-600 dark:text-emerald-400">{result.designHead} m</div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Înălțime</div>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Putere Estimată</div>
-                            <div className="text-xl font-semibold text-zinc-100">{result.requiredPower} kW</div>
+                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Putere Estimată</div>
+                            <div className="text-xl font-bold text-foreground">{result.requiredPower} kW</div>
                         </div>
-                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                            <div className="text-xs text-zinc-500">Tip Pompă</div>
-                            <div className="text-xl font-semibold text-zinc-100">{result.recommendedPumpType}</div>
+                        <div className="bg-muted/30 rounded-lg p-4 border border-border">
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Tip Pompă</div>
+                            <div className="text-xl font-bold text-foreground">{result.recommendedPumpType}</div>
                         </div>
                     </div>
 
                     {bestPump && (
-                        <div className="bg-emerald-500/10 rounded-lg p-4 border border-emerald-500/30">
-                            <div className="text-sm text-emerald-400 mb-2">Pompă Recomandată</div>
-                            <div className="text-lg font-semibold text-white">
+                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10 shadow-sm">
+                            <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Pompă Recomandată</div>
+                            <div className="text-lg font-bold text-foreground">
                                 {bestPump.pump.manufacturer} {bestPump.pump.model}
                             </div>
-                            <div className="text-sm text-zinc-400 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                                 Punct funcționare: {bestPump.operatingPoint.flowM3H} m³/h @ {bestPump.operatingPoint.headM} m
                             </div>
-                            <div className="text-sm text-zinc-500">
+                            <div className="text-xs text-muted-foreground">
                                 Eficiență: {bestPump.operatingPoint.efficiency}% | Putere: {bestPump.operatingPoint.powerKW} kW
                             </div>
                         </div>
@@ -682,15 +691,15 @@ function PumpSizingTool() {
             </div>
 
             {/* System Curve Table */}
-            <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                <h3 className="text-sm font-medium text-zinc-300 mb-3">Curba Sistem</h3>
+            <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                <h3 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">Curba Sistem</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-zinc-700">
-                                <th className="text-left py-2 px-3 text-zinc-400 font-medium">Q (m³/h)</th>
+                            <tr className="border-b border-border">
+                                <th className="text-left py-2 px-3 text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Q (m³/h)</th>
                                 {result.systemCurve.map((point, i) => (
-                                    <th key={i} className="text-center py-2 px-2 text-zinc-300 font-normal">
+                                    <th key={i} className="text-center py-2 px-2 text-foreground font-bold">
                                         {point.flowM3H}
                                     </th>
                                 ))}
@@ -698,9 +707,9 @@ function PumpSizingTool() {
                         </thead>
                         <tbody>
                             <tr>
-                                <td className="py-2 px-3 text-zinc-400">H (m)</td>
+                                <td className="py-2 px-3 text-muted-foreground font-bold uppercase tracking-wider text-[10px]">H (m)</td>
                                 {result.systemCurve.map((point, i) => (
-                                    <td key={i} className="text-center py-2 px-2 text-zinc-100">
+                                    <td key={i} className="text-center py-2 px-2 text-foreground font-medium">
                                         {point.headM}
                                     </td>
                                 ))}
@@ -711,11 +720,14 @@ function PumpSizingTool() {
             </div>
 
             {result.recommendations.length > 0 && (
-                <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
-                    <div className="text-sm text-blue-400 mb-2">Recomandări</div>
-                    <ul className="text-sm text-blue-300/80 space-y-1">
+                <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
+                    <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Recomandări</div>
+                    <ul className="text-xs text-indigo-600 dark:text-emerald-400 space-y-1">
                         {result.recommendations.map((rec, i) => (
-                            <li key={i}>• {rec}</li>
+                            <li key={i} className="flex items-start gap-2">
+                                <span className="shrink-0">•</span>
+                                <span>{rec}</span>
+                            </li>
                         ))}
                     </ul>
                 </div>

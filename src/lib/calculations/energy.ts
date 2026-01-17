@@ -10,13 +10,6 @@ const IT_LOAD_TYPES = ['CRAH / CCU', 'Unitate internă (CDU)'];
 const COOLING_INFRASTRUCTURE_TYPES = ['Chiller', 'Dry Cooler / Turn Răcire'];
 const PUMP_TYPES = ['Grup Pompare'];
 
-// Efficiency factors by equipment type
-const COOLING_EFFICIENCY_FACTORS: Record<string, number> = {
-    'Chiller': 0.85,           // COP ~3.5 average
-    'Dry Cooler / Turn Răcire': 0.95,  // Very efficient
-    'Grup Pompare': 0.75,      // VSD pumps average
-};
-
 // CO2 emission factor (kg CO2 per kWh) - EU average
 const CO2_FACTOR_KG_PER_KWH = 0.233;
 

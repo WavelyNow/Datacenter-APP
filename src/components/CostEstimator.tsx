@@ -46,7 +46,7 @@ export const CostEstimator: React.FC = () => {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                        <Calculator className="w-6 h-6 text-green-500" />
+                        <Calculator className="w-6 h-6 text-indigo-500" />
                         Cost Estimator
                     </h2>
                     <p className="text-muted-foreground mt-1">Project budget estimation based on materials and labor</p>
@@ -140,12 +140,12 @@ export const CostEstimator: React.FC = () => {
             )}
 
             {/* Grand Total Card */}
-            <div className="bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-teal-500/10 border border-green-500/30 rounded-2xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-8 relative overflow-hidden shadow-sm">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
                     <div>
-                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm font-bold uppercase tracking-wider mb-2">
+                        <div className="flex items-center gap-2 text-indigo-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">
                             <DollarSign className="w-5 h-5" />
                             Estimated Total Cost
                         </div>
@@ -178,8 +178,8 @@ export const CostEstimator: React.FC = () => {
                 {/* Materials */}
                 <div className="card-premium p-6">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                            <Package className="w-5 h-5 text-blue-500" />
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                            <Package className="w-5 h-5 text-indigo-500" />
                         </div>
                         <div>
                             <div className="text-sm font-bold text-muted-foreground uppercase">Materials</div>
@@ -194,8 +194,8 @@ export const CostEstimator: React.FC = () => {
                 {/* Equipment */}
                 <div className="card-premium p-6">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                            <Box className="w-5 h-5 text-orange-500" />
+                        <div className="w-10 h-10 rounded-xl bg-slate-500/10 flex items-center justify-center">
+                            <Box className="w-5 h-5 text-slate-500" />
                         </div>
                         <div>
                             <div className="text-sm font-bold text-muted-foreground uppercase">Equipment</div>
@@ -210,8 +210,8 @@ export const CostEstimator: React.FC = () => {
                 {/* Labor */}
                 <div className="card-premium p-6">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                            <Hammer className="w-5 h-5 text-purple-500" />
+                        <div className="w-10 h-10 rounded-xl bg-slate-400/10 flex items-center justify-center">
+                            <Hammer className="w-5 h-5 text-slate-400" />
                         </div>
                         <div>
                             <div className="text-sm font-bold text-muted-foreground uppercase">Labor</div>
@@ -243,7 +243,7 @@ export const CostEstimator: React.FC = () => {
                             {/* Materials Breakdown */}
                             <div>
                                 <h4 className="font-bold text-sm mb-4 flex items-center gap-2">
-                                    <Package className="w-4 h-4 text-blue-500" />
+                                    <Package className="w-4 h-4 text-indigo-500" />
                                     Materials Breakdown
                                 </h4>
                                 <div className="space-y-3">
@@ -277,7 +277,7 @@ export const CostEstimator: React.FC = () => {
                             {/* Labor Breakdown */}
                             <div>
                                 <h4 className="font-bold text-sm mb-4 flex items-center gap-2">
-                                    <Hammer className="w-4 h-4 text-purple-500" />
+                                    <Hammer className="w-4 h-4 text-slate-400" />
                                     Labor Breakdown
                                 </h4>
                                 <div className="space-y-3">

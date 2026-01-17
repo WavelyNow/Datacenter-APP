@@ -5,9 +5,9 @@ import { FluidType } from '@/lib/types';
 
 // Fluid type labels and colors
 const FLUID_OPTIONS: { value: FluidType; label: string; color: string }[] = [
-    { value: 'ethylene', label: 'Etilen Glicol', color: 'from-blue-500 to-indigo-600' },
-    { value: 'propylene', label: 'Propilen Glicol', color: 'from-green-500 to-emerald-600' },
-    { value: 'water', label: 'Apă Pură', color: 'from-cyan-400 to-blue-500' },
+    { value: 'ethylene', label: 'Etilen Glicol', color: 'from-indigo-500 to-indigo-700' },
+    { value: 'propylene', label: 'Propilen Glicol', color: 'from-emerald-500 to-emerald-700' },
+    { value: 'water', label: 'Apă Pură', color: 'from-slate-400 to-slate-600' },
 ];
 
 export const FluidComposition: React.FC = () => {
@@ -59,8 +59,8 @@ export const FluidComposition: React.FC = () => {
             <div className="p-6 pb-4 border-b border-border relative z-10 bg-muted/10">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 flex items-center justify-center border border-blue-500/20 shadow-inner">
-                            <Snowflake className="w-6 h-6 text-blue-500" />
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
+                            <Snowflake className="w-6 h-6 text-indigo-500" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-foreground tracking-tight">Fluid Mix</h2>
@@ -70,7 +70,7 @@ export const FluidComposition: React.FC = () => {
 
                     {/* Freezing Point Badge */}
                     <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">
                             <ThermometerSnowflake className="w-3.5 h-3.5" />
                             Freezing Point
                         </div>
@@ -114,8 +114,8 @@ export const FluidComposition: React.FC = () => {
                     {/* Large Percentage Display */}
                     <div className="flex items-center justify-center relative py-4">
                         <div className={`text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br drop-shadow-sm tracking-tighter ${fluidType === 'water'
-                                ? 'from-muted-foreground to-muted-foreground/50'
-                                : 'from-foreground to-muted-foreground'
+                            ? 'from-muted-foreground to-muted-foreground/50'
+                            : 'from-foreground to-muted-foreground'
                             }`}>
                             {fluidType === 'water' ? '100%' : `${glycolPercentage}%`}
                         </div>
@@ -162,8 +162,8 @@ export const FluidComposition: React.FC = () => {
                 {/* Footer Info */}
                 <div className="mt-8 grid grid-cols-2 gap-4">
                     <div className="bg-muted/10 rounded-xl p-3 border border-border flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <Droplets className="w-4 h-4 text-blue-500" />
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                            <Droplets className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div>
                             <div className="text-[10px] text-muted-foreground uppercase font-bold">Water Vol</div>
@@ -184,12 +184,12 @@ export const FluidComposition: React.FC = () => {
                 <div className="mt-8 pt-6 border-t border-border">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <Info className="w-4 h-4 text-amber-500/70" />
+                            <Info className="w-4 h-4 text-indigo-500/70" />
                             <span className="text-sm font-bold text-foreground">Rezervă de Siguranță</span>
                         </div>
                         <button
                             onClick={() => setSafetyMargin(!safetyMargin)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${safetyMargin ? 'bg-amber-500' : 'bg-muted'}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${safetyMargin ? 'bg-indigo-500' : 'bg-muted'}`}
                         >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${safetyMargin ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
@@ -214,7 +214,7 @@ export const FluidComposition: React.FC = () => {
                                             }
                                             setSafetyMarginPercentage(parseFloat(val));
                                         }}
-                                        className="w-24 bg-card border border-border rounded-xl px-4 py-2 text-center text-base font-bold text-amber-500 focus:outline-none focus:border-amber-500/50 transition-all shadow-inner"
+                                        className="w-24 bg-card border border-border rounded-xl px-4 py-2 text-center text-base font-bold text-indigo-500 focus:outline-none focus:border-indigo-500/50 transition-all shadow-inner"
                                     />
                                     <span className="text-sm font-bold text-muted-foreground select-none">%</span>
                                 </div>

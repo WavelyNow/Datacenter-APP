@@ -59,9 +59,9 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'small': return 'from-cyan-500 to-blue-600';
-            case 'medium': return 'from-violet-500 to-purple-600';
-            case 'enterprise': return 'from-orange-500 to-red-600';
+            case 'small': return 'from-slate-400 to-slate-600';
+            case 'medium': return 'from-indigo-400 to-indigo-600';
+            case 'enterprise': return 'from-slate-700 to-indigo-900';
             default: return 'from-gray-500 to-gray-600';
         }
     };

@@ -131,13 +131,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Brand Logo */}
                 <div className="flex items-center gap-3 px-2 mb-10 pt-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/20 ring-1 ring-white/10 group cursor-default">
+                    <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/20 ring-1 ring-white/10 group cursor-default">
                         <Box className="w-5 h-5 text-white group-hover:scale-110 transition-transform" strokeWidth={2.5} />
                     </div>
                     <div>
                         <h1 className="text-sm font-bold tracking-tight text-foreground/90">Engineering Suite</h1>
                         <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
                             SYSTEM V3.0
                         </p>
                     </div>

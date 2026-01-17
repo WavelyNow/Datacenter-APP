@@ -139,8 +139,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm border border-primary/20">
-                            <Printer className="w-4 h-4 text-primary" />
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center shadow-sm border border-indigo-500/20">
+                            <Printer className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-foreground">Export Center</h3>
@@ -244,8 +244,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
 
                         {mode === 'excel' && (
                             <div className="text-center py-8 space-y-4">
-                                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto border border-emerald-500/20">
-                                    <FileSpreadsheet className="w-8 h-8 text-emerald-500" />
+                                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center mx-auto border border-indigo-500/20">
+                                    <FileSpreadsheet className="w-8 h-8 text-indigo-500" />
                                 </div>
                                 <div className="space-y-1">
                                     <h4 className="text-foreground font-medium text-sm">Full Excel Export</h4>
@@ -304,7 +304,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
                     ) : (
                         <button
                             onClick={handleExcelExport}
-                            className="btn btn-secondary btn-md gap-2 text-xs text-white bg-emerald-600 hover:bg-emerald-500 border-emerald-600"
+                            className="btn btn-primary btn-md gap-2 text-xs shadow-lg shadow-indigo-600/20"
                         >
                             <Download className="w-3.5 h-3.5" />
                             Download Excel

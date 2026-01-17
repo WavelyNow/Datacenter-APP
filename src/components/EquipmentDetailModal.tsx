@@ -173,9 +173,9 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     </div>
 
                     {/* Glycol Recommendation */}
-                    <div className="bg-blue-500/5 p-5 rounded-xl border border-blue-500/20">
+                    <div className="bg-indigo-500/5 p-5 rounded-xl border border-indigo-500/20">
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <Droplets className="w-4 h-4 text-blue-500" /> Recomandare Glicol
+                            <Droplets className="w-4 h-4 text-indigo-500" /> Recomandare Glicol
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -238,7 +238,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     {/* 3D BIM Model */}
                     <div className="bg-muted/20 p-5 rounded-xl border border-border">
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <Box className="w-4 h-4 text-blue-500" /> 3D BIM Model
+                            <Box className="w-4 h-4 text-indigo-500" /> 3D BIM Model
                         </h3>
 
                         {!equipment.model3d ? (
@@ -289,14 +289,14 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     {/* Technical Sheet */}
                     <div className="bg-muted/20 p-5 rounded-xl border border-border">
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-orange-500" /> Technical Data Sheet
+                            <FileText className="w-4 h-4 text-indigo-500" /> Technical Data Sheet
                         </h3>
                         <input type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" ref={pdfInputRef} />
                         {equipment.technicalSheet ? (
                             <div className="flex items-center gap-3">
                                 <div className="flex-1 flex items-center gap-2 bg-card px-4 py-3 rounded-lg border border-border">
-                                    <FileText className="w-5 h-5 text-orange-500" />
-                                    <span className="text-sm text-foreground">PDF Attached</span>
+                                    <FileText className="w-5 h-5 text-indigo-500" />
+                                    <span className="text-sm text-foreground font-bold uppercase tracking-wider">PDF Atasat</span>
                                 </div>
                                 <button onClick={downloadPdf} className="btn btn-secondary btn-sm"><Download className="w-4 h-4 mr-1" /> Download</button>
                                 <button onClick={() => pdfInputRef.current?.click()} className="btn btn-secondary btn-sm"><Upload className="w-4 h-4" /></button>
@@ -312,7 +312,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     {/* Photo Gallery */}
                     <div>
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-emerald-500" /> Galerie Fotografii
+                            <ImageIcon className="w-4 h-4 text-indigo-500" /> Galerie Fotografii
                         </h3>
                         <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" ref={photoInputRef} />
                         <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
@@ -345,7 +345,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
 
                 {/* Footer */}
                 <div className="px-6 py-4 border-t border-border bg-secondary/30 flex justify-end shrink-0">
-                    <button onClick={onClose} className="btn btn-primary">Salvează & Închide</button>
+                    <button onClick={onClose} className="btn btn-primary shadow-lg shadow-primary/20">Salvează & Închide</button>
                 </div>
             </div>
         </div>,

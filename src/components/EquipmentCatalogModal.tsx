@@ -194,7 +194,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                             >
                                                 {isCloud && (
                                                     <div className="absolute top-2 right-2 flex gap-1 z-10">
-                                                        <span className="bg-sky-500/10 text-sky-600 dark:text-sky-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-sky-500/20 flex items-center gap-1">
+                                                        <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
                                                             <Cloud className="w-3 h-3" /> CLOUD
                                                         </span>
                                                         <div
@@ -210,7 +210,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                                     <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider border border-border px-1.5 py-0.5 rounded mb-2 inline-block">{item.category}</span>
                                                     <h3 className="text-foreground text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-2">
                                                         {item.model}
-                                                        {item.technicalSheet && <FileText className="w-3 h-3 text-blue-500" />}
+                                                        {item.technicalSheet && <FileText className="w-3 h-3 text-indigo-500" />}
                                                     </h3>
                                                 </div>
 
@@ -237,7 +237,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     /* CREATE VIEW */
                     <div className="flex-1 overflow-y-auto p-6 bg-muted/10">
                         <div className="max-w-lg mx-auto space-y-4">
-                            <div className="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg text-xs text-blue-600 mb-4 flex items-center gap-2">
+                            <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
                                 <Cloud className="w-4 h-4" />
                                 This item will be saved to the Global Library and visible to all users.
                             </div>
@@ -289,7 +289,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-muted-foreground flex justify-between">
                                     Technical Sheet (PDF)
-                                    {formData.technicalSheet && <span className="text-green-500 flex items-center gap-1 text-[10px]"><FileText className="w-3 h-3" /> Attached</span>}
+                                    {formData.technicalSheet && <span className="text-indigo-500 flex items-center gap-1 text-[10px]"><FileText className="w-3 h-3" /> Attached</span>}
                                 </label>
                                 <div className="border border-dashed border-border rounded-xl p-4 bg-muted/20 hover:bg-muted/40 transition-colors text-center cursor-pointer relative">
                                     <input type="file" accept="application/pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
