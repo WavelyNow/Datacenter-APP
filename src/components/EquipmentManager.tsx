@@ -244,7 +244,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1 flex justify-between">
                                     Name / Tag
                                     {item.technicalSheet ? (
-                                        <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                                        <span className="text-primary flex items-center gap-1">
                                             <FileText className="w-3 h-3" /> Tech Sheet Added
                                         </span>
                                     ) : null}
@@ -269,7 +269,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                         {item.technicalSheet ? (
                                             <button
                                                 onClick={() => downloadPdf(item.technicalSheet!, item.name || 'Equipment')}
-                                                className="h-full aspect-square rounded-md bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors flex items-center justify-center"
+                                                className="h-full aspect-square rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors flex items-center justify-center"
                                                 title="Download Technical Sheet"
                                             >
                                                 <Download className="w-4 h-4" />
@@ -298,7 +298,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                                 min="0"
                                                 max="100000"
                                                 className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidVolume(item.volume)
-                                                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                    ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
                                                     : 'border-border focus:ring-primary/20 focus:border-primary/20'
                                                     }`}
                                                 value={item.volume}
@@ -308,11 +308,11 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                                 }}
                                             />
                                             {!isValidVolume(item.volume) && (
-                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
                                             )}
                                         </div>
                                         {!isValidVolume(item.volume) && (
-                                            <p className="text-[10px] text-red-500">0 - 100,000 L</p>
+                                            <p className="text-[10px] text-destructive">0 - 100,000 L</p>
                                         )}
                                     </div>
                                 </>
@@ -329,7 +329,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                                 min="0"
                                                 max="100000"
                                                 className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidWeight(item.weight || 0)
-                                                    ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                                                    ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
                                                     : 'border-border focus:ring-primary/20 focus:border-primary/20'
                                                     }`}
                                                 value={item.weight || 0}
@@ -339,11 +339,11 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                                 }}
                                             />
                                             {!isValidWeight(item.weight || 0) && (
-                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                                                <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
                                             )}
                                         </div>
                                         {!isValidWeight(item.weight || 0) && (
-                                            <p className="text-[10px] text-red-500">0 - 100,000 kg</p>
+                                            <p className="text-[10px] text-destructive">0 - 100,000 kg</p>
                                         )}
                                     </div>
                                     <div className="md:col-span-2 text-right pb-2">

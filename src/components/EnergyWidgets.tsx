@@ -22,9 +22,9 @@ export const PueGauge = ({
     // Normalize for gauge: 1.0 = 0%, 2.0 = 100% (roughly)
     const percentage = Math.min(Math.max((pue - 1.0) * 100, 0), 100);
 
-    let color = 'text-slate-500';
-    if (pue < 1.4) color = 'text-indigo-500';
-    else if (pue < 1.6) color = 'text-indigo-400';
+    let color = 'text-muted-foreground';
+    if (pue < 1.4) color = 'text-primary';
+    else if (pue < 1.6) color = 'text-primary/80';
 
     const displayClass = efficiencyClass || (pue < 1.2 ? 'Platinum' : pue < 1.4 ? 'Gold' : pue < 1.6 ? 'Silver' : 'Bronze');
 
@@ -42,7 +42,7 @@ export const PueGauge = ({
                 <div className="absolute top-0 left-0 w-40 h-40 rounded-full border-[12px] border-muted/30 border-b-0 rotate-0"></div>
                 {/* Gauge Value */}
                 <div
-                    className={`absolute top-0 left-0 w-40 h-40 rounded-full border-[12px] border-transparent border-b-0 transition-transform duration-1000 ease-out ${pue < 1.4 ? 'border-t-indigo-500 border-l-indigo-500' : pue < 1.6 ? 'border-t-indigo-400 border-l-indigo-400' : 'border-t-slate-500 border-l-slate-500'}`}
+                    className={`absolute top-0 left-0 w-40 h-40 rounded-full border-[12px] border-transparent border-b-0 transition-transform duration-1000 ease-out ${pue < 1.4 ? 'border-t-primary border-l-primary' : pue < 1.6 ? 'border-t-primary/70 border-l-primary/70' : 'border-t-muted-foreground border-l-muted-foreground'}`}
                     style={{ transform: `rotate(${-45 + (percentage * 1.8)}deg)` }}
                 ></div>
             </div>
@@ -61,13 +61,13 @@ export const PueGauge = ({
                 </div>
                 <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden">
                     <div
-                        className={`h-full transition-all ${pue < 1.4 ? 'bg-indigo-500' : pue < 1.6 ? 'bg-indigo-400' : 'bg-slate-500'}`}
+                        className={`h-full transition-all ${pue < 1.4 ? 'bg-primary' : pue < 1.6 ? 'bg-primary/70' : 'bg-muted-foreground'}`}
                         style={{ width: `${efficiencyScore || Math.max(10, 100 - (pue - 1) * 100)}%` }}
                     ></div>
                 </div>
                 {pueIdeal && pueIdeal < pue && (
                     <div className="text-[10px] text-muted-foreground text-center mt-2">
-                        Target PUE with optimizations: <span className="font-bold text-indigo-500">{pueIdeal.toFixed(2)}</span>
+                        Target PUE with optimizations: <span className="font-bold text-primary">{pueIdeal.toFixed(2)}</span>
                     </div>
                 )}
             </div>
@@ -107,7 +107,7 @@ export const EnergyConsumptionChart = ({
     return (
         <div className="p-6 bg-card border border-border rounded-2xl shadow-sm flex flex-col h-full">
             <h3 className="font-bold flex items-center gap-2 mb-6">
-                <Leaf className="w-5 h-5 text-indigo-500" />
+                <Leaf className="w-5 h-5 text-primary" />
                 Carbon Footprint Impact
             </h3>
 
@@ -118,7 +118,7 @@ export const EnergyConsumptionChart = ({
                         return (
                             <div key={i} className="group relative flex-1 max-w-8 bg-muted/30 rounded-t-lg hover:bg-primary/20 transition-all cursor-pointer" style={{ height: '100px' }}>
                                 <div
-                                    className="absolute bottom-0 w-full bg-indigo-500/80 rounded-t-lg transition-all duration-500 group-hover:bg-indigo-600 shadow-sm"
+                                    className="absolute bottom-0 w-full bg-primary/80 rounded-t-lg transition-all duration-500 group-hover:bg-primary shadow-sm"
                                     style={{ height: `${heightPercent}%` }}
                                 ></div>
                                 {/* Tooltip */}
@@ -146,7 +146,7 @@ export const EnergyConsumptionChart = ({
                 <div className="text-right">
                     {potentialReductionPercent > 0 ? (
                         <>
-                            <div className="text-indigo-500 font-bold flex items-center gap-1 justify-end">
+                            <div className="text-primary font-bold flex items-center gap-1 justify-end">
                                 <TrendingDown className="w-4 h-4" />
                                 {potentialReductionPercent.toFixed(0)}%
                             </div>
@@ -154,7 +154,7 @@ export const EnergyConsumptionChart = ({
                         </>
                     ) : hasData ? (
                         <>
-                            <div className="text-slate-500 font-bold flex items-center gap-1 justify-end">
+                            <div className="text-muted-foreground font-bold flex items-center gap-1 justify-end">
                                 <TrendingUp className="w-4 h-4" />
                                 Optimize
                             </div>
@@ -171,7 +171,7 @@ export const EnergyConsumptionChart = ({
 
             {freeCoolingSavingsKwh > 0 && (
                 <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-                    💨 Free Cooling Savings: <span className="font-bold text-indigo-500">{formatEnergy(freeCoolingSavingsKwh)} kWh/yr</span>
+                    💨 Free Cooling Savings: <span className="font-bold text-primary">{formatEnergy(freeCoolingSavingsKwh)} kWh/yr</span>
                 </div>
             )}
         </div>

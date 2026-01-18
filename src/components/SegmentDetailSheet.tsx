@@ -35,15 +35,14 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
         const length_m = segment.length;
         const radius_mm = id_mm / 2;
 
-        // Conversions for Volume (Liters = dm^3)
-        // radius in dm
-        const radius_dm = radius_mm / 100; // mm to dm
-        // length in dm
-        const length_dm = length_m * 10; // m to dm
+        // Area in mm²
+        const area_mm2 = Math.PI * Math.pow(radius_mm, 2);
 
-        // Formula: V = π * r^2 * h
-        const area_dm2 = Math.PI * Math.pow(radius_dm, 2);
-        const volume_liters = area_dm2 * length_dm;
+        // Volume per meter (L/m)
+        // 1 Liter = 1,000,000 mm³
+        const volume_mm3_per_m = area_mm2 * 1000;
+        const liters_per_m = volume_mm3_per_m / 1000000;
+        const volume_liters = liters_per_m * length_m;
 
         // Weight
         // Empty pipe weight
@@ -51,27 +50,26 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
         const totalEmptyWeight = weightPerMeter * length_m;
 
         // Fluid weight
-        const fluidDensity = 1000 + (glycolPercentage * 5); // kg/m^3 approximation from PipeManager
-        // Volume in m^3 for mass
+        const fluidDensity = 1000 + (glycolPercentage * 5); // kg/m³ approximation
+        // 1 m³ = 1000 L
         const volume_m3 = volume_liters / 1000;
         const fluidMass = volume_m3 * fluidDensity;
 
-        // Hydraulics (if flow rate exists)
+        // Hydraulics
         const hydraulics = calculateHydraulics(
             segment.flowRate || 0,
             id_mm,
             0.045, // roughness
             fluidDensity,
-            0.000001 // viscosity approx
+            0.000001
         );
 
         return {
             id_mm,
             radius_mm,
+            area_mm2,
             length_m,
-            radius_dm,
-            length_dm,
-            area_dm2,
+            liters_per_m,
             volume_liters,
             weightPerMeter,
             totalEmptyWeight,
@@ -94,7 +92,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+                        className="fixed inset-0 bg-background/40 backdrop-blur-sm z-40"
                     />
 
                     {/* Sheet */}
@@ -135,61 +133,58 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                             {/* Volume Calculation */}
                             <section className="space-y-4">
                                 <div className="flex items-center gap-2 text-foreground font-semibold pb-2 border-b border-border/50">
-                                    <Box className="w-4 h-4 text-blue-500" />
+                                    <Box className="w-4 h-4 text-primary" />
                                     <h3>Fluid Volume Calculation</h3>
                                 </div>
 
                                 <div className="bg-muted/30 p-4 rounded-xl space-y-4 font-mono text-sm leading-relaxed">
-                                    {/* Formula */}
-                                    <div className="flex justify-between items-center text-muted-foreground">
-                                        <span>Formula</span>
-                                        <span className="text-foreground font-bold">V = π · r² · h</span>
-                                    </div>
-
-                                    <div className="h-px bg-border/50" />
-
-                                    {/* Step 1: Radius */}
+                                    {/* Step 1: Geometry */}
                                     <div className="space-y-1">
                                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <span className="w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center text-[10px]">1</span>
-                                            Determine Radius (dm)
+                                            <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">1</span>
+                                            Pipe Geometry
                                         </div>
-                                        <div className="pl-5 grid grid-cols-2 gap-4">
-                                            <span className="text-muted-foreground">ID (mm)</span>
+                                        <div className="pl-5 grid grid-cols-2 gap-2 text-xs">
+                                            <span className="text-muted-foreground">Inner Diameter (ID)</span>
                                             <span className="text-right">{calculations?.id_mm.toFixed(2)} mm</span>
-                                            <span className="text-muted-foreground">r (mm)</span>
-                                            <span className="text-right">{calculations?.radius_mm.toFixed(2)} mm</span>
-                                            <span className="text-muted-foreground">r (dm)</span>
-                                            <span className="text-right text-blue-400">{calculations?.radius_dm.toFixed(4)} dm</span>
+                                            <span className="text-muted-foreground">Area (A)</span>
+                                            <span className="text-right">{Math.round(calculations?.area_mm2 || 0).toLocaleString()} mm²</span>
                                         </div>
                                     </div>
 
-                                    {/* Step 2: Length */}
+                                    {/* Step 2: Capacity */}
                                     <div className="space-y-1">
                                         <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <span className="w-4 h-4 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center text-[10px]">2</span>
-                                            Convert Length (dm)
+                                            <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">2</span>
+                                            Linear Capacity
                                         </div>
-                                        <div className="pl-5 grid grid-cols-2 gap-4">
-                                            <span className="text-muted-foreground">Length (m)</span>
+                                        <div className="pl-5 flex justify-between items-center bg-primary/5 p-2 rounded border border-primary/10">
+                                            <span className="text-muted-foreground text-xs">Volume / Linear Meter</span>
+                                            <span className="text-right text-primary font-bold">{calculations?.liters_per_m.toFixed(3)} L/m</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Step 3: Total */}
+                                    <div className="space-y-1">
+                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <span className="w-4 h-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px]">3</span>
+                                            Total System Content
+                                        </div>
+                                        <div className="pl-5 grid grid-cols-2 gap-2 text-xs">
+                                            <span className="text-muted-foreground">Pipe Length</span>
                                             <span className="text-right">{calculations?.length_m} m</span>
-                                            <span className="text-muted-foreground">Length (dm)</span>
-                                            <span className="text-right text-blue-400">{calculations?.length_dm.toFixed(2)} dm</span>
+                                            <span className="text-muted-foreground">Calculation</span>
+                                            <span className="text-right italic">{calculations?.liters_per_m.toFixed(3)} L/m × {calculations?.length_m} m</span>
                                         </div>
                                     </div>
 
                                     <div className="h-px bg-border/50" />
 
-                                    {/* Final Calc */}
-                                    <div className="space-y-2">
-                                        <div className="text-xs text-muted-foreground">Final Calculation</div>
-                                        <div className="bg-background border border-border rounded p-3 text-center">
-                                            <div className="text-xs text-muted-foreground mb-1">
-                                                π × ({calculations?.radius_dm.toFixed(3)})² × {calculations?.length_dm.toFixed(1)}
-                                            </div>
-                                            <div className="text-xl font-black text-blue-500">
-                                                = {calculations?.volume_liters.toFixed(4)} L
-                                            </div>
+                                    {/* Final Calc Box */}
+                                    <div className="bg-background border border-border rounded-xl p-4 shadow-inner">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 text-center font-bold">Total Volume</div>
+                                        <div className="text-2xl font-black text-primary text-center">
+                                            {calculations?.volume_liters.toFixed(2)} Liters
                                         </div>
                                     </div>
                                 </div>
@@ -198,7 +193,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                             {/* Weight Analysis */}
                             <section className="space-y-4">
                                 <div className="flex items-center gap-2 text-foreground font-semibold pb-2 border-b border-border/50">
-                                    <Scale className="w-4 h-4 text-emerald-500" />
+                                    <Scale className="w-4 h-4 text-primary" />
                                     <h3>Weight Analysis</h3>
                                 </div>
 
@@ -217,9 +212,9 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                                     </div>
                                 </div>
 
-                                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center">
-                                    <span className="text-sm font-medium text-emerald-600">Total Operating Weight</span>
-                                    <span className="text-xl font-bold text-emerald-500 font-mono">
+                                <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex justify-between items-center">
+                                    <span className="text-sm font-medium text-primary">Total Operating Weight</span>
+                                    <span className="text-xl font-bold text-primary font-mono">
                                         {calculations?.totalOperatingWeight.toFixed(2)} kg
                                     </span>
                                 </div>
@@ -228,7 +223,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                             {/* Specs */}
                             <section className="space-y-4">
                                 <div className="flex items-center gap-2 text-foreground font-semibold pb-2 border-b border-border/50">
-                                    <Ruler className="w-4 h-4 text-orange-500" />
+                                    <Ruler className="w-4 h-4 text-primary" />
                                     <h3>Pipe Specifications</h3>
                                 </div>
 
@@ -256,7 +251,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                             {(segment.flowRate || 0) > 0 && (
                                 <section className="space-y-4">
                                     <div className="flex items-center gap-2 text-foreground font-semibold pb-2 border-b border-border/50">
-                                        <Activity className="w-4 h-4 text-purple-500" />
+                                        <Activity className="w-4 h-4 text-primary" />
                                         <h3>Hydraulics</h3>
                                     </div>
                                     <div className="bg-muted/20 rounded-xl p-4 space-y-2">
@@ -266,7 +261,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-muted-foreground">Velocity</span>
-                                            <span className={`font-mono font-bold ${(calculations?.hydraulics.velocity || 0) > 2.5 ? 'text-red-500' : 'text-purple-500'}`}>
+                                            <span className={`font-mono font-bold ${(calculations?.hydraulics.velocity || 0) > 2.5 ? 'text-destructive' : 'text-primary'}`}>
                                                 {calculations?.hydraulics.velocity} m/s
                                             </span>
                                         </div>
@@ -276,7 +271,7 @@ export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercenta
                                         </div>
                                         <div className="pt-2 mt-2 border-t border-border/30 flex justify-between items-center font-bold">
                                             <span className="text-sm">Total Drop</span>
-                                            <span className="font-mono text-purple-500">
+                                            <span className="font-mono text-primary">
                                                 {(calculations?.hydraulics.pressureDropKpa || 0) * calculations!.length_m} kPa
                                             </span>
                                         </div>

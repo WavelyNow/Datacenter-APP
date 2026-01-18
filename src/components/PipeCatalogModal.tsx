@@ -288,7 +288,8 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                             </thead>
                                             <tbody className="divide-y divide-border/50">
                                                 {standard.dimensions.map((pipe, idx) => {
-                                                    const vol = (Math.PI * Math.pow(pipe.id / 20, 2) * 100) / 1000;
+                                                    const area_mm2 = Math.PI * Math.pow(pipe.id / 2, 2);
+                                                    const vol = (area_mm2 * 1000) / 1000000; // Liter per meter
 
                                                     return (
                                                         <tr key={idx} className="hover:bg-muted/20 transition-colors group">

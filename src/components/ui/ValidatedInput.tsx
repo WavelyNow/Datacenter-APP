@@ -39,27 +39,12 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     disabled = false,
     showSuccessIndicator = false,
 }) => {
-    const [error, setError] = useState<string | null>(null);
     const [touched, setTouched] = useState(false);
-    const [isValid, setIsValid] = useState(false);
 
-    const validateValue = useCallback((val: string | number) => {
-        if (!validate) {
-            setIsValid(true);
-            setError(null);
-            return;
-        }
-
-        const result = validate(val);
-        setIsValid(result.valid);
-        setError(result.valid ? null : result.error || 'Valoare invalidă');
-    }, [validate]);
-
-    useEffect(() => {
-        if (touched) {
-            validateValue(value);
-        }
-    }, [value, touched, validateValue]);
+    const result = validate ? validate(value) : { valid: true };
+    const errorMsg = result.valid ? null : result.error || 'Valoare invalidă';
+    const showError = touched && !result.valid;
+    const showSuccess = showSuccessIndicator && touched && result.valid;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value;
@@ -81,18 +66,14 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
     const handleBlur = () => {
         setTouched(true);
-        validateValue(value);
     };
-
-    const showError = touched && error;
-    const showSuccess = showSuccessIndicator && touched && isValid && !error;
 
     return (
         <div className={`relative ${className}`}>
             {label && (
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
                     {label}
-                    {required && <span className="text-red-500 ml-0.5">*</span>}
+                    {required && <span className="text-destructive ml-0.5">*</span>}
                 </label>
             )}
             <div className="relative">
@@ -109,9 +90,9 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
                     className={`
                         w-full px-3 py-2 rounded-lg border transition-all text-sm
                         ${showError
-                            ? 'border-red-500 bg-red-500/5 focus:border-red-500 focus:ring-red-500/20'
+                            ? 'border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20'
                             : showSuccess
-                                ? 'border-emerald-500 bg-emerald-500/5'
+                                ? 'border-primary bg-primary/5'
                                 : 'border-border bg-background hover:border-primary/50 focus:border-primary focus:ring-primary/20'
                         }
                         focus:outline-none focus:ring-2
@@ -120,15 +101,15 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
                     `}
                 />
                 {showError && (
-                    <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                    <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
                 )}
                 {showSuccess && (
-                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
                 )}
             </div>
             {showError && (
-                <p className="text-xs text-red-500 mt-1 animate-in fade-in slide-in-from-top-1">
-                    {error}
+                <p className="text-xs text-destructive mt-1 animate-in fade-in slide-in-from-top-1">
+                    {errorMsg}
                 </p>
             )}
         </div>
@@ -198,7 +179,7 @@ export const ValidationMessage: React.FC<{
 }> = ({ error, success }) => {
     if (error) {
         return (
-            <div className="flex items-center gap-1.5 text-xs text-red-500 mt-1 animate-in fade-in">
+            <div className="flex items-center gap-1.5 text-xs text-destructive mt-1 animate-in fade-in">
                 <AlertCircle className="w-3 h-3" />
                 {error}
             </div>
@@ -207,7 +188,7 @@ export const ValidationMessage: React.FC<{
 
     if (success) {
         return (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-500 mt-1 animate-in fade-in">
+            <div className="flex items-center gap-1.5 text-xs text-primary mt-1 animate-in fade-in">
                 <Check className="w-3 h-3" />
                 {success}
             </div>

@@ -133,10 +133,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const saved = loadFromStorage();
         if (Object.keys(saved).length > 0) {
             // Merge saved with default to populate any missing fields
-            reset({ ...defaultState, ...saved } as any);
+            reset({ ...defaultState, ...saved });
         }
         setIsInitialized(true);
-    }, []);
+    }, [defaultState, reset]);
 
     // persistence logic same as before... (lines 104-141) nothing changes there except cloudProjectId is also saved locally.
 
@@ -219,19 +219,34 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
                 safetyMargin: projectData.safetyMargin ?? defaultState.safetyMargin,
                 ifcModelUrl: projectData.ifcModelUrl || null
             };
-            reset(newState as any);
+            reset(newState);
         }
     };
 
     // Setters Adapters
-    const setProjectDetails = useCallback((val: any) => set(prev => ({ ...prev, projectDetails: typeof val === 'function' ? val(prev.projectDetails) : val })), [set]);
-    const setSegments = useCallback((val: any) => set(prev => ({ ...prev, segments: typeof val === 'function' ? val(prev.segments) : val })), [set]);
-    const setEquipmentList = useCallback((val: any) => set(prev => ({ ...prev, equipmentList: typeof val === 'function' ? val(prev.equipmentList) : val })), [set]);
-    const setFluidType = useCallback((val: any) => set(prev => ({ ...prev, fluidType: typeof val === 'function' ? val(prev.fluidType) : val })), [set]);
-    const setIfcModelUrl = useCallback((val: any) => set(prev => ({ ...prev, ifcModelUrl: typeof val === 'function' ? val(prev.ifcModelUrl) : val })), [set]);
-    const setGlycolPercentage = useCallback((val: any) => set(prev => ({ ...prev, glycolPercentage: typeof val === 'function' ? val(prev.glycolPercentage) : val })), [set]);
-    const setSafetyMargin = useCallback((val: any) => set(prev => ({ ...prev, safetyMargin: typeof val === 'function' ? val(prev.safetyMargin) : val })), [set]);
-    const setSafetyMarginPercentage = useCallback((val: any) => set(prev => ({ ...prev, safetyMarginPercentage: typeof val === 'function' ? val(prev.safetyMarginPercentage) : val })), [set]);
+    const setProjectDetails = useCallback((val: ProjectDetails | ((prev: ProjectDetails) => ProjectDetails)) =>
+        set(prev => ({ ...prev, projectDetails: typeof val === 'function' ? val(prev.projectDetails) : val })), [set]);
+
+    const setSegments = useCallback((val: PipeSegment[] | ((prev: PipeSegment[]) => PipeSegment[])) =>
+        set(prev => ({ ...prev, segments: typeof val === 'function' ? val(prev.segments) : val })), [set]);
+
+    const setEquipmentList = useCallback((val: EquipmentItem[] | ((prev: EquipmentItem[]) => EquipmentItem[])) =>
+        set(prev => ({ ...prev, equipmentList: typeof val === 'function' ? val(prev.equipmentList) : val })), [set]);
+
+    const setFluidType = useCallback((val: FluidType | ((prev: FluidType) => FluidType)) =>
+        set(prev => ({ ...prev, fluidType: typeof val === 'function' ? val(prev.fluidType) : val })), [set]);
+
+    const setIfcModelUrl = useCallback((val: string | null | ((prev: string | null) => string | null)) =>
+        set(prev => ({ ...prev, ifcModelUrl: typeof val === 'function' ? val(prev.ifcModelUrl) : val })), [set]);
+
+    const setGlycolPercentage = useCallback((val: number | ((prev: number) => number)) =>
+        set(prev => ({ ...prev, glycolPercentage: typeof val === 'function' ? val(prev.glycolPercentage) : val })), [set]);
+
+    const setSafetyMargin = useCallback((val: boolean | ((prev: boolean) => boolean)) =>
+        set(prev => ({ ...prev, safetyMargin: typeof val === 'function' ? val(prev.safetyMargin) : val })), [set]);
+
+    const setSafetyMarginPercentage = useCallback((val: number | ((prev: number) => number)) =>
+        set(prev => ({ ...prev, safetyMarginPercentage: typeof val === 'function' ? val(prev.safetyMarginPercentage) : val })), [set]);
 
     const setSupportConfig = useCallback((config: Partial<SupportConfig>) => {
         set(prev => ({ ...prev, supportConfig: { ...prev.supportConfig, ...config } }));

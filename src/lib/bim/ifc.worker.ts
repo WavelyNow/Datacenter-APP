@@ -6,25 +6,7 @@ import * as WEBIFC from 'web-ifc';
 // import { PipeSegment } from '../types'; 
 
 // Redefine basic types locally in worker to avoid complex dependency trees
-interface PipeSegment {
-    id: string;
-    name: string;
-    fluid: string;
-    temperature: number;
-    flowRate: number;
-    length: number;
-    diameter: string;
-    material: string;
-    roughness: number;
-    standard: string;
-    size: string;
-    fittings: any[];
-    type?: string;     // Added for categorization
-    system?: string;   // Added
-    connectedTo?: number[]; // Added
-    globalId?: string; // Added
-    rawData?: any;     // Added
-}
+
 
 let ifcApi = new WEBIFC.IfcAPI();
 let modelId: number | null = null;
@@ -68,17 +50,18 @@ self.onmessage = async (e: MessageEvent) => {
                     ifcApi.CloseModel(modelId);
                     modelId = null;
                 }
-                ifcApi = null as any; // forceful cleanup
+                ifcApi = null as unknown as WEBIFC.IfcAPI; // forceful cleanup
                 break;
         }
-    } catch (error: any) {
-        self.postMessage({ type: 'error', id, error: error.message });
+    } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        self.postMessage({ type: 'error', id, error: errorMsg });
     }
 };
 
 // --- Extraction Logic (Copied and Adapted from IfcService) ---
 
-async function extractBimObjects(): Promise<any[]> {
+async function extractBimObjects(): Promise<unknown[]> {
     if (!ifcApi || modelId === null) throw new Error('Worker: Model not loaded');
 
     // We want to extract: Pumps, Valves, Chillers (UnitaryEquipment), etc.
@@ -93,7 +76,7 @@ async function extractBimObjects(): Promise<any[]> {
         WEBIFC.IFCFLOWFITTING
     ];
 
-    const allObjects: any[] = [];
+    const allObjects: unknown[] = [];
     const systemMap = await buildSystemMap();
     const connectionMap = await buildConnectionMap();
 
@@ -216,7 +199,7 @@ function buildSystemMap(): Map<number, string> {
             const systemName = group.Name ? group.Name.value : 'Unnamed System';
 
             if (rel.RelatedObjects && Array.isArray(rel.RelatedObjects)) {
-                rel.RelatedObjects.forEach((r: any) => {
+                rel.RelatedObjects.forEach((r: { value: number }) => {
                     map.set(r.value, systemName);
                 });
             }
@@ -271,7 +254,7 @@ function getProperties(expressID: number): { name: string, length?: number, diam
         const rel = ifcApi.GetLine(modelId, relID);
 
         if (rel.RelatedObjects && Array.isArray(rel.RelatedObjects)) {
-            const relatedIds = rel.RelatedObjects.map((r: any) => r.value);
+            const relatedIds = rel.RelatedObjects.map((r: { value: number }) => r.value);
             if (relatedIds.includes(expressID)) {
                 if (!rel.RelatingPropertyDefinition) continue;
 
@@ -293,7 +276,7 @@ function getProperties(expressID: number): { name: string, length?: number, diam
                             }
 
                             if (['Diameter', 'NominalDiameter', 'Overall Size', 'OverallSize', 'DN', 'Size', 'OuterDiameter'].includes(key)) {
-                                let cleanVal = val.toString().replace(/[^\d.]/g, '');
+                                const cleanVal = val.toString().replace(/[^\d.]/g, '');
                                 const num = parseFloat(cleanVal);
 
                                 if (!isNaN(num)) {

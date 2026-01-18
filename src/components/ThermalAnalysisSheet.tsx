@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Thermometer, Flame, Droplets, AlertTriangle, Wind, Layers } from 'lucide-react';
-import { PipeSegment, FluidType } from '@/lib/types';
+import { X, Thermometer, Flame, Droplets, Wind, Layers, CheckCircle } from 'lucide-react';
+import { PipeSegment } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 
 interface ThermalAnalysisSheetProps {
@@ -95,9 +95,9 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                 transition={{ type: "spring", stiffness: 200, damping: 25 }}
                 className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-border shadow-2xl z-50 overflow-hidden flex flex-col"
             >
-                <div className="p-5 border-b border-border bg-gradient-to-r from-orange-500/10 to-transparent">
+                <div className="p-5 border-b border-border bg-gradient-to-r from-primary/10 to-transparent">
                     <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2 text-orange-600 mb-1">
+                        <div className="flex items-center gap-2 text-primary mb-1">
                             <Flame className="w-5 h-5" />
                             <span className="font-bold uppercase tracking-wider text-xs">Thermal Analysis</span>
                         </div>
@@ -114,12 +114,12 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                     {/* Status Card */}
                     {calculations && (
                         <div className={`p-4 rounded-xl border ${calculations.riskCondensation
-                            ? 'bg-blue-500/10 border-blue-500/50'
-                            : 'bg-emerald-500/10 border-emerald-500/50'}`}>
+                            ? 'bg-destructive/10 border-destructive/50'
+                            : 'bg-primary/10 border-primary/50'}`}>
                             <div className="flex items-center gap-3 mb-2">
                                 {calculations.riskCondensation
-                                    ? <Droplets className="w-6 h-6 text-blue-500" />
-                                    : <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                                    ? <Droplets className="w-6 h-6 text-destructive" />
+                                    : <CheckCircle className="w-6 h-6 text-primary" />
                                 }
                                 <div className="font-bold text-lg">
                                     {calculations.riskCondensation ? 'Condensation RISK' : 'Safe Operation'}
@@ -186,19 +186,19 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                                 </div>
                                 <div className="bg-muted/20 p-2 rounded">
                                     <div className="text-xs text-muted-foreground">Surface Temp</div>
-                                    <div className={`font-mono font-bold ${calculations.riskCondensation ? 'text-blue-500' : 'text-foreground'}`}>
+                                    <div className={`font-mono font-bold ${calculations.riskCondensation ? 'text-destructive' : 'text-foreground'}`}>
                                         {calculations.surfaceTemp.toFixed(1)}°C
                                     </div>
                                 </div>
-                                <div className="col-span-2 bg-gradient-to-r from-orange-500/10 to-transparent p-3 rounded border border-orange-500/20">
+                                <div className="col-span-2 bg-gradient-to-r from-primary/10 to-transparent p-3 rounded border border-primary/20">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="text-xs text-orange-400 font-bold uppercase tracking-wider">Energy Loss</span>
-                                        <Flame className="w-3 h-3 text-orange-500" />
+                                        <span className="text-xs text-primary font-bold uppercase tracking-wider">Energy Loss</span>
+                                        <Flame className="w-3 h-3 text-primary/70" />
                                     </div>
-                                    <div className="text-2xl font-black text-orange-500">
+                                    <div className="text-2xl font-black text-primary">
                                         {calculations.total_heat_transfer.toFixed(1)} <span className="text-sm font-medium opacity-70">Watts</span>
                                     </div>
-                                    <div className="text-[10px] text-orange-400/60 mt-0.5">
+                                    <div className="text-[10px] text-primary/60 mt-0.5">
                                         Per meter: {calculations.q_loss_per_meter.toFixed(1)} W/m
                                     </div>
                                 </div>
@@ -211,23 +211,3 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
     );
 }
 
-// Helper icon
-function CheckCircle2(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <circle cx="12" cy="12" r="10" />
-            <path d="m9 12 2 2 4-4" />
-        </svg>
-    )
-}

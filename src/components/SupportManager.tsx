@@ -6,13 +6,10 @@ import { AnalysisTable } from './AnalysisTable';
 import { SupportOrderSummary } from './SupportOrderSummary';
 import { ChevronDown, ChevronUp, Ruler, Anchor, Calculator, ArrowRight, Layers, Activity } from 'lucide-react';
 
-interface SupportManagerProps {
-    // segments: PipeSegment[]; // Removed as we use hook now
-}
 
 type SupportStep = 'config' | 'summary';
 
-export const SupportManager: React.FC<SupportManagerProps> = () => {
+export const SupportManager: React.FC = () => {
     const { supportConfig, setSupportConfig } = useProject();
     const { report, bom } = useSupportCalculations();
 
@@ -89,7 +86,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                             <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-purple-500/30 transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-secondary/20 text-secondary group-hover:bg-secondary group-hover:text-secondary-foreground transition-colors">
                                             <Layers className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -97,7 +94,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                             <p className="text-xs text-muted-foreground">Lungime consolă / tijă</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-purple-500 font-mono">{supportConfig.height.toFixed(1)}m</span>
+                                    <span className="text-2xl font-bold text-secondary font-mono">{supportConfig.height.toFixed(1)}m</span>
                                 </div>
                                 <input
                                     type="range"
@@ -106,7 +103,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                     step="0.5"
                                     value={supportConfig.height}
                                     onChange={(e) => setSupportConfig({ ...supportConfig, height: parseFloat(e.target.value) })}
-                                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-purple-500 hover:accent-purple-400 transition-all"
+                                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-secondary hover:accent-secondary/80 transition-all"
                                 />
                                 <div className="flex justify-between mt-2 text-xs text-muted-foreground font-mono">
                                     <span>0.5m</span>
@@ -118,7 +115,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                             <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                             <Calculator className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -126,7 +123,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                             <p className="text-xs text-muted-foreground">Număr de țevi pe o consolă</p>
                                         </div>
                                     </div>
-                                    <span className="text-2xl font-bold text-emerald-500 font-mono">x{supportConfig.pipesPerSupport}</span>
+                                    <span className="text-2xl font-bold text-primary font-mono">x{supportConfig.pipesPerSupport}</span>
                                 </div>
                                 <div className="flex gap-3">
                                     {[1, 2, 3, 4].map(num => (
@@ -134,8 +131,8 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                             key={num}
                                             onClick={() => setSupportConfig({ ...supportConfig, pipesPerSupport: num })}
                                             className={`flex-1 py-3 rounded-xl border font-bold transition-all ${supportConfig.pipesPerSupport === num
-                                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg scale-105'
-                                                : 'bg-card border-border text-muted-foreground hover:bg-muted hover:border-emerald-500/30'
+                                                ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105'
+                                                : 'bg-card border-border text-muted-foreground hover:bg-muted hover:border-primary/30'
                                                 }`}
                                         >
                                             {num} {num === 1 ? 'Țeavă' : 'Țevi'}
@@ -161,7 +158,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                             <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-amber-500/30 transition-all group md:col-span-2 animate-in slide-in-from-top-4 fade-in duration-300">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-3 rounded-lg bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                        <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                             <Layers className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -170,7 +167,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-bold text-amber-500 font-mono">{supportConfig.insulationThickness} <span className="text-sm text-muted-foreground">mm</span></div>
+                                        <div className="text-2xl font-bold text-primary font-mono">{supportConfig.insulationThickness} <span className="text-sm text-muted-foreground">mm</span></div>
                                     </div>
                                 </div>
 
@@ -188,7 +185,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                             step="5"
                                             value={supportConfig.insulationThickness}
                                             onChange={(e) => setSupportConfig({ ...supportConfig, insulationThickness: parseInt(e.target.value) })}
-                                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 transition-all"
+                                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
                                         />
                                         <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-mono">
                                             <span>0mm</span>
@@ -213,7 +210,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                                     key={opt.val}
                                                     onClick={() => setSupportConfig({ ...supportConfig, insulationDensity: opt.val })}
                                                     className={`p-2 rounded-lg border text-xs font-bold transition-all ${supportConfig.insulationDensity === opt.val
-                                                        ? 'bg-amber-500 text-white border-amber-500'
+                                                        ? 'bg-primary text-primary-foreground border-primary'
                                                         : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                                         }`}
                                                 >
@@ -229,14 +226,14 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                         {/* Mounting Type Selector */}
                         <div className="bg-muted/10 p-6 rounded-2xl border border-border">
                             <h4 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                                <Anchor className="w-5 h-5 text-amber-500" />
+                                <Anchor className="w-5 h-5 text-primary" />
                                 Mod de Fixare
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'concrete' })}
                                     className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'concrete'
-                                        ? 'bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-400'
+                                        ? 'bg-primary/10 border-primary text-primary'
                                         : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                         }`}
                                 >
@@ -246,7 +243,7 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, mountingType: 'suspended' })}
                                     className={`p-4 rounded-xl border text-left transition-all ${supportConfig.mountingType === 'suspended'
-                                        ? 'bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-400'
+                                        ? 'bg-primary/10 border-primary text-primary'
                                         : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                         }`}
                                 >
@@ -259,15 +256,15 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                         {/* Modular Topology Configuration */}
                         <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all">
                             <h4 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                                <Layers className="w-5 h-5 text-emerald-500" />
+                                <Layers className="w-5 h-5 text-secondary" />
                                 Configurație Modulară (Elemente Adiționale)
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addLeftConsole: !supportConfig.addLeftConsole })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addLeftConsole
-                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                        : 'bg-card border-border text-muted-foreground hover:border-emerald-500/20'
+                                        ? 'bg-secondary/20 border-secondary text-secondary shadow-[0_0_20px_rgba(var(--secondary-rgb),0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-secondary/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Consolă Stânga</div>
@@ -276,8 +273,8 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addRightConsole: !supportConfig.addRightConsole })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addRightConsole
-                                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-                                        : 'bg-card border-border text-muted-foreground hover:border-emerald-500/20'
+                                        ? 'bg-secondary/20 border-secondary text-secondary shadow-[0_0_20px_rgba(var(--secondary-rgb),0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-secondary/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Consolă Dreapta</div>
@@ -286,8 +283,8 @@ export const SupportManager: React.FC<SupportManagerProps> = () => {
                                 <button
                                     onClick={() => setSupportConfig({ ...supportConfig, addUpperRail: !supportConfig.addUpperRail })}
                                     className={`p-4 rounded-xl border text-center transition-all ${supportConfig.addUpperRail
-                                        ? 'bg-blue-500/20 border-blue-500 text-blue-700 dark:text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
-                                        : 'bg-card border-border text-muted-foreground hover:border-blue-500/20'
+                                        ? 'bg-primary/20 border-primary text-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]'
+                                        : 'bg-card border-border text-muted-foreground hover:border-primary/20'
                                         }`}
                                 >
                                     <div className="text-xs font-bold uppercase mb-1">Etaj Superior (Rail)</div>

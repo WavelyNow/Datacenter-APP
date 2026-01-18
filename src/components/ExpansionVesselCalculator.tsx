@@ -67,8 +67,8 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
-                    <Droplets className="w-6 h-6 text-white" />
+                <div className="p-3 rounded-xl bg-primary shadow-lg shadow-primary/20">
+                    <Droplets className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div>
                     <h2 className="text-xl font-semibold text-foreground">
@@ -85,14 +85,14 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                 <div className="space-y-4">
                     <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
                         <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-                            <Calculator className="w-4 h-4 text-indigo-500" />
+                            <Calculator className="w-4 h-4 text-primary" />
                             Parametri Sistem
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             {/* System Volume */}
                             <div>
-                                <label htmlFor="systemVolume" className="block text-xs text-zinc-400 mb-1">
+                                <label htmlFor="systemVolume" className="block text-xs text-muted-foreground mb-1">
                                     Volum Sistem (L)
                                 </label>
                                 <input
@@ -100,7 +100,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     type="number"
                                     value={input.systemVolume}
                                     onChange={(e) => handleInputChange('systemVolume', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 />
                                 <p className="text-xs text-muted-foreground mt-1">
                                     Din proiect: {systemVolume.toFixed(0)} L
@@ -119,7 +119,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     onChange={(e) => handleInputChange('glycolPercentage', parseFloat(e.target.value) || 0)}
                                     min={0}
                                     max={60}
-                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 />
                             </div>
 
@@ -134,14 +134,14 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     type="number"
                                     value={input.minTemperature}
                                     onChange={(e) => handleInputChange('minTemperature', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 />
                             </div>
 
                             {/* Max Temperature */}
                             <div>
                                 <label htmlFor="maxTemperature" className="block text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                                    <Thermometer className="w-3 h-3 text-red-400" />
+                                    <Thermometer className="w-3 h-3 text-destructive" />
                                     T max / Operare (°C)
                                 </label>
                                 <input
@@ -149,7 +149,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     type="number"
                                     value={input.maxTemperature}
                                     onChange={(e) => handleInputChange('maxTemperature', parseFloat(e.target.value) || 0)}
-                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 />
                             </div>
 
@@ -165,7 +165,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     value={input.staticHeight}
                                     onChange={(e) => handleInputChange('staticHeight', parseFloat(e.target.value) || 0)}
                                     step={0.5}
-                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 />
                                 <p className="text-xs text-muted-foreground mt-1">
                                     Cel mai înalt punct față de vas
@@ -174,7 +174,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
 
                             {/* Safety Valve */}
                             <div>
-                                <label htmlFor="safetyValvePressure" className="block text-xs text-zinc-400 mb-1 flex items-center gap-1">
+                                <label htmlFor="safetyValvePressure" className="block text-xs text-muted-foreground mb-1 flex items-center gap-1">
                                     <Gauge className="w-3 h-3" />
                                     Supapa Siguranță (bar)
                                 </label>
@@ -182,7 +182,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                                     id="safetyValvePressure"
                                     value={input.safetyValvePressure}
                                     onChange={(e) => handleInputChange('safetyValvePressure', parseFloat(e.target.value))}
-                                    className="w-full bg-zinc-900 text-white px-3 py-2 rounded-lg border border-zinc-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                    className="w-full bg-background text-foreground px-3 py-2 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                 >
                                     <option value={3}>3 bar</option>
                                     <option value={4}>4 bar</option>
@@ -237,33 +237,33 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                     </div>
 
                     {/* Pressure Details */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                    <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+                        <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                             <Gauge className="w-4 h-4" />
                             Presiuni
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-zinc-900/50 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500">Presiune Statică</div>
-                                <div className="text-lg font-semibold text-zinc-100">
+                            <div className="bg-background/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground">Presiune Statică</div>
+                                <div className="text-lg font-semibold text-foreground">
                                     {result.staticPressure} bar
                                 </div>
                             </div>
-                            <div className="bg-zinc-900/50 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500">Preîncărcare</div>
-                                <div className="text-lg font-semibold text-cyan-400">
+                            <div className="bg-background/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground">Preîncărcare</div>
+                                <div className="text-lg font-semibold text-primary">
                                     {result.prechargePressure} bar
                                 </div>
                             </div>
-                            <div className="bg-zinc-900/50 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500">Umplere</div>
-                                <div className="text-lg font-semibold text-blue-400">
+                            <div className="bg-background/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground">Umplere</div>
+                                <div className="text-lg font-semibold text-primary/80">
                                     {result.fillPressure} bar
                                 </div>
                             </div>
-                            <div className="bg-zinc-900/50 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500">Maximă Admisă</div>
-                                <div className="text-lg font-semibold text-amber-400">
+                            <div className="bg-background/50 rounded-lg p-3">
+                                <div className="text-xs text-muted-foreground">Maximă Admisă</div>
+                                <div className="text-lg font-semibold text-destructive">
                                     {result.maxPressure} bar
                                 </div>
                             </div>
@@ -271,33 +271,33 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                     </div>
 
                     {/* Expansion Details */}
-                    <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700/50">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                    <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+                        <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                             <Droplets className="w-4 h-4" />
                             Dilatare Fluid
                         </h3>
                         <div className="grid grid-cols-3 gap-3">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-cyan-400">
+                                <div className="text-2xl font-bold text-primary">
                                     {result.expansionVolume} L
                                 </div>
-                                <div className="text-xs text-zinc-500">
+                                <div className="text-xs text-muted-foreground">
                                     Volum Dilatare
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-blue-400">
+                                <div className="text-2xl font-bold text-primary/80">
                                     {(result.expansionCoefficient * 100).toFixed(2)}%
                                 </div>
-                                <div className="text-xs text-zinc-500">
+                                <div className="text-xs text-muted-foreground">
                                     Coef. Dilatare
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-emerald-400">
+                                <div className="text-2xl font-bold text-primary/60">
                                     {(result.acceptanceFactor * 100).toFixed(0)}%
                                 </div>
-                                <div className="text-xs text-zinc-500">
+                                <div className="text-xs text-muted-foreground">
                                     Factor Acceptare
                                 </div>
                             </div>

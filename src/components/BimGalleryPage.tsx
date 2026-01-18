@@ -75,7 +75,7 @@ export const BimGalleryPage = () => {
         setEquipmentList((prev: EquipmentItem[]) => [...prev, newItem]);
         toast.success(`Adăugat ${newItem.name} în proiect`, {
             description: 'Puteți vizualiza echipamentul în tab-ul "Galeria Mea".',
-            icon: <CheckCircle className="w-4 h-4 text-indigo-500" />,
+            icon: <CheckCircle className="w-4 h-4 text-primary" />,
         });
     };
 
@@ -106,8 +106,8 @@ export const BimGalleryPage = () => {
                 {/* Header */}
                 <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm flex justify-between items-center sticky top-0 z-20">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-secondary/50'}`}>
-                            {isCatalog ? <Import className="w-4 h-4 text-indigo-500" /> : <Cuboid className="w-4 h-4 text-indigo-400" />}
+                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-primary/10 border-primary/20' : 'bg-secondary/50'}`}>
+                            {isCatalog ? <Import className="w-4 h-4 text-primary" /> : <Cuboid className="w-4 h-4 text-primary/70" />}
                         </div>
                         <div className="min-w-0">
                             <h3 className="font-bold text-foreground text-sm truncate">{displayName}</h3>
@@ -171,7 +171,7 @@ export const BimGalleryPage = () => {
                         )
                     )}
                     <div className="absolute bottom-4 left-4 pointer-events-none flex gap-2">
-                        <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-indigo-900/60' : 'bg-black/60'}`}>
+                        <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-primary/60' : 'bg-black/60'}`}>
                             {isCatalog ? 'Catalog Preview' : <><Box className="w-3 h-3" /> 3D Interactive</>}
                         </span>
                     </div>
@@ -187,8 +187,8 @@ export const BimGalleryPage = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                                <Box className="w-8 h-8 text-indigo-500" />
+                            <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                                <Box className="w-8 h-8 text-primary" />
                             </div>
                             3D Model Gallery
                         </h1>

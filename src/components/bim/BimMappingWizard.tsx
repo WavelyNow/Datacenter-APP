@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import { Settings2, ArrowRight, Search, CheckCircle, AlertCircle, Save } from 'lucide-react';
-import { useProject } from '@/context/ProjectContext'; // Assuming context is available
+import { BimObject } from '@/lib/bim/types';
+
+export interface MappedBimData extends BimObject {
+    mappedProduct: {
+        id: string;
+        manufacturer: string;
+        model: string;
+        power?: string;
+        price?: number;
+        imageUrl?: string;
+    };
+    engineeringData: {
+        flow: number;
+        head: number;
+        temp: number;
+    };
+}
 
 interface BimMappingWizardProps {
     isOpen: boolean;
     onClose: () => void;
-    bimObject: any; // The selected object from BIM
-    onSave: (data: any) => void;
+    bimObject: BimObject | null;
+    onSave: (data: MappedBimData) => void;
 }
 
 export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMappingWizardProps) => {
@@ -16,7 +32,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
         head: 0,
         temp: 7
     });
-    const [selectedCatalogItem, setSelectedCatalogItem] = useState<any>(null);
+    const [selectedCatalogItem, setSelectedCatalogItem] = useState<{ id: string; manufacturer: string; model: string; power: string; efficient: boolean } | null>(null);
 
     // Mock Catalog Results (In real app, search catalogs)
     const mockCatalogResults = [
@@ -55,7 +71,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                     {/* Step 1: Enrich Data */}
                     {step === 1 && (
                         <div className="space-y-6">
-                            <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex gap-3 text-sm text-indigo-700 dark:text-emerald-300">
+                            <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex gap-3 text-sm text-primary">
                                 <AlertCircle className="w-5 h-5 shrink-0" />
                                 <div>
                                     <p className="font-bold uppercase tracking-wider">Date Tehnice Lipsă</p>
@@ -100,7 +116,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                                         <div>
                                             <div className="font-bold flex items-center gap-2">
                                                 {item.manufacturer} {item.model}
-                                                {item.efficient && <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[10px] rounded-full border border-indigo-500/20 uppercase font-bold">Eficiență Ridicată</span>}
+                                                {item.efficient && <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded-full border border-primary/20 uppercase font-bold">Eficiență Ridicată</span>}
                                             </div>
                                             <div className="text-xs text-muted-foreground mt-1">Power: {item.power} • Matches operating point</div>
                                         </div>
@@ -118,8 +134,8 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                     {/* Step 3: Confirm */}
                     {step === 3 && (
                         <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
-                            <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center">
-                                <CheckCircle className="w-8 h-8 text-indigo-600" />
+                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                                <CheckCircle className="w-8 h-8 text-primary" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold">Ready to Map</h3>
@@ -150,7 +166,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                         </button>
                     )}
                     {step === 3 && (
-                        <button onClick={() => onSave({ ...bimObject, mappedProduct: selectedCatalogItem, engineeringData: manualData })} className="btn btn-primary bg-indigo-600 hover:bg-indigo-700">
+                        <button onClick={() => onSave({ ...bimObject, mappedProduct: selectedCatalogItem, engineeringData: manualData })} className="btn btn-primary">
                             <Save className="w-4 h-4 ml-2" />
                             Confirmare Mapping
                         </button>

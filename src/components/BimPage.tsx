@@ -290,7 +290,7 @@ export const BimPage = () => {
             <div className="flex justify-between items-start shrink-0">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <FileBox className="w-6 h-6 text-indigo-500" />
+                        <FileBox className="w-6 h-6 text-primary" />
                         BIM Model Viewer
                     </h2>
                     <p className="text-muted-foreground mt-1">
@@ -303,14 +303,14 @@ export const BimPage = () => {
                         onClick={() => setShowInstructions(!showInstructions)}
                         className="btn btn-ghost border border-border gap-2"
                     >
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        <AlertTriangle className="w-4 h-4 text-primary" />
                         {showInstructions ? 'Hide Guide' : 'Export Guide'}
                     </button>
 
                     {foundPipes.length > 0 && (
                         <button
                             onClick={handleExportBOM}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
                         >
                             <FileText className="w-4 h-4" />
                             Export BOM
@@ -449,11 +449,11 @@ export const BimPage = () => {
                                         {displayData.slice(0, displayLimit).map((obj) => (
                                             <tr key={obj.id} className="hover:bg-muted/50 transition-colors group">
                                                 <td className="px-4 py-2">
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                                                        obj.type === 'Pump' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
-                                                            obj.type === 'Valve' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
-                                                                ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(obj.type) ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
-                                                                    'bg-slate-500/10 text-slate-600 border-slate-500/20'
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase ${obj.type === 'Pipe' ? 'bg-primary/10 text-primary border-primary/20' :
+                                                        obj.type === 'Pump' ? 'bg-primary/10 text-primary border-primary/20' :
+                                                            obj.type === 'Valve' ? 'bg-primary/10 text-primary border-primary/20' :
+                                                                ['Elbow', 'Tee', 'Reducer', 'Cap', 'Fitting'].includes(obj.type) ? 'bg-primary/10 text-primary border-primary/20' :
+                                                                    'bg-secondary/10 text-secondary-foreground border-secondary/20'
                                                         }`}>
                                                         {obj.type}
                                                     </span>
@@ -471,7 +471,7 @@ export const BimPage = () => {
                                                         <td className="px-4 py-2 font-mono text-xs">{obj.diameter || '-'}</td>
                                                         <td className="px-4 py-2 font-mono text-xs">
                                                             {isGrouped ? (
-                                                                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                                <span className="font-bold text-primary">
                                                                     {obj.type === 'Pipe' ? (obj as GroupedBimObject).totalLength?.toFixed(2) : '-'}
                                                                 </span>
                                                             ) : (
@@ -491,7 +491,7 @@ export const BimPage = () => {
                                                 <td className="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {!isGrouped && (
                                                         <button
-                                                            className="text-xs text-indigo-500 hover:underline font-bold"
+                                                            className="text-xs text-primary hover:underline font-bold"
                                                             onClick={() => {
                                                                 setSelectedObject(obj as BimObject);
                                                                 setIsEditorOpen(true);
@@ -508,7 +508,7 @@ export const BimPage = () => {
                                                 <td colSpan={6} className="text-center py-4 bg-muted/20">
                                                     <button
                                                         onClick={() => setDisplayLimit(prev => prev + 200)}
-                                                        className="text-xs font-bold text-indigo-500 hover:text-indigo-600"
+                                                        className="text-xs font-bold text-primary"
                                                     >
                                                         Show More ({displayData.length - displayLimit} remaining)
                                                     </button>
@@ -533,7 +533,7 @@ export const BimPage = () => {
                 {showInstructions && (
                     <div className="w-80 bg-card border border-border rounded-xl p-5 shrink-0 overflow-y-auto hidden xl:block animate-in slide-in-from-right-4">
                         <h3 className="font-bold flex items-center gap-2 mb-4">
-                            <FileBox className="w-5 h-5 text-indigo-500" />
+                            <FileBox className="w-5 h-5 text-primary" />
                             Revit Export Settings
                         </h3>
 
@@ -567,16 +567,16 @@ export const BimPage = () => {
                                 <h4 className="font-bold mb-2">Supported Entities</h4>
                                 <ul className="space-y-2 text-xs text-muted-foreground">
                                     <li className="flex items-center gap-2">
-                                        <Check className="w-3 h-3 text-green-500" /> Pipes (IfcFlowSegment)
+                                        <Check className="w-3 h-3 text-primary" /> Pipes (IfcFlowSegment)
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <Check className="w-3 h-3 text-green-500" /> Fittings (Elbows, Tees)
+                                        <Check className="w-3 h-3 text-primary" /> Fittings (Elbows, Tees)
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <Check className="w-3 h-3 text-green-500" /> Mechanical Equipment (Pumps)
+                                        <Check className="w-3 h-3 text-primary" /> Mechanical Equipment (Pumps)
                                     </li>
                                     <li className="flex items-center gap-2">
-                                        <Check className="w-3 h-3 text-green-500" /> Flow Controllers (Valves)
+                                        <Check className="w-3 h-3 text-primary" /> Flow Controllers (Valves)
                                     </li>
                                 </ul>
                             </div>
@@ -597,14 +597,14 @@ export const BimPage = () => {
                         type: 'Pump',
                         manufacturer: data.mappedProduct.manufacturer,
                         model: data.mappedProduct.model,
-                        power: data.mappedProduct.power,
+                        power: Number(data.mappedProduct.power?.replace(/[^0-9.]/g, '') || 0),
                         weight: data.mappedProduct.weight || 100,
                         dimensions: { length: 0, width: 0, height: 0 },
                         price: data.mappedProduct.price || 0,
                         proofImage: data.mappedProduct.imageUrl,
                         // Custom fields
-                        flowRate: data.flowRate,
-                        head: data.headPressure,
+                        flowRate: data.engineeringData.flow,
+                        head: data.engineeringData.head,
                         volume: 10 // default
                     };
 

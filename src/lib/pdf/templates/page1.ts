@@ -1,6 +1,5 @@
 import { PdfData } from '../types';
 import { drawTable } from '@/lib/pdf/templates/tableDrawer';
-import { calculateTotalVolume, getFluidDensity } from '../../calculations';
 import { calculateSystemResources } from '@/lib/calc/resources';
 import { PDFContext } from './SectionGenerator';
 

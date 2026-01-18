@@ -62,8 +62,8 @@ export function HydraulicsPage() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500">
-                    <Wrench className="w-6 h-6 text-white" />
+                <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-primary/70">
+                    <Wrench className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">
@@ -88,13 +88,13 @@ export function HydraulicsPage() {
                             className={`
                                 flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200
                                 ${isActive
-                                    ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-emerald-400'
+                                    ? 'bg-primary/10 border-primary/30 text-primary'
                                     : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted'
                                 }
                                 border shadow-sm
                             `}
                         >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : ''}`} />
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : ''}`} />
                             <div className="text-left">
                                 <div className="text-sm font-medium">{tab.label}</div>
                                 <div className="text-xs text-zinc-500 hidden sm:block">{tab.description}</div>
@@ -153,8 +153,8 @@ function ThermalExpansionTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                    <Thermometer className="w-5 h-5 text-indigo-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Thermometer className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                     <h2 className="text-lg font-bold text-foreground">Calcul Dilatare Termică</h2>
@@ -241,9 +241,9 @@ function ThermalExpansionTool() {
 
                 {/* Results */}
                 <div className="space-y-4">
-                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Alungire Termică</div>
+                    <div className="bg-primary/5 rounded-xl p-6 border border-primary/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Alungire Termică</div>
                         <div className="text-4xl font-black text-foreground">{result.elongation} mm</div>
                         <div className="text-xs text-muted-foreground mt-1">
                             ΔT = {result.temperatureDelta}°C | α = {result.expansionCoefficient} mm/m·K
@@ -266,17 +266,17 @@ function ThermalExpansionTool() {
                         </div>
 
                         {input.isFixedBothEnds && (
-                            <div className="col-span-2 bg-amber-500/5 rounded-lg p-4 border border-amber-500/20 shadow-sm">
-                                <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Forță pe Ancore</div>
+                            <div className="col-span-2 bg-primary/5 rounded-lg p-4 border border-primary/20 shadow-sm">
+                                <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Forță pe Ancore</div>
                                 <div className="text-lg font-bold text-foreground">{result.anchorForce} kN</div>
                             </div>
                         )}
                     </div>
 
                     {result.recommendations.length > 0 && (
-                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
-                            <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Recomandări</div>
-                            <ul className="text-xs text-indigo-600 dark:text-emerald-400 space-y-1">
+                        <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Recomandări</div>
+                            <ul className="text-xs text-primary/80 space-y-1">
                                 {result.recommendations.map((rec, i) => (
                                     <li key={i} className="flex items-start gap-2">
                                         <span className="shrink-0">•</span>
@@ -313,8 +313,8 @@ function ValveSizingTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                    <Gauge className="w-5 h-5 text-indigo-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Gauge className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                     <h2 className="text-lg font-bold text-foreground">Dimensionare Robineți (Kv)</h2>
@@ -364,17 +364,17 @@ function ValveSizingTool() {
 
                 {/* Results */}
                 <div className="space-y-4">
-                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                    <div className="bg-primary/5 rounded-xl p-6 border border-primary/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Kv Necesar</div>
+                                <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Kv Necesar</div>
                                 <div className="text-3xl font-black text-foreground">{result.kvRequired}</div>
                                 <div className="text-[10px] text-muted-foreground">+15% = {result.kvWithMargin}</div>
                             </div>
                             <div>
-                                <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Dimensiune</div>
-                                <div className="text-3xl font-black text-indigo-600 dark:text-emerald-400">{result.recommendedDN}</div>
+                                <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1">Dimensiune</div>
+                                <div className="text-3xl font-black text-primary">{result.recommendedDN}</div>
                                 <div className="text-[10px] text-muted-foreground">Kv = {result.kvAvailable}</div>
                             </div>
                         </div>
@@ -396,9 +396,9 @@ function ValveSizingTool() {
                     </div>
 
                     {result.recommendations.length > 0 && (
-                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
+                        <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
                             {result.recommendations.map((rec, i) => (
-                                <p key={i} className="text-xs text-indigo-600 dark:text-emerald-400 flex items-start gap-2">
+                                <p key={i} className="text-xs text-primary/80 flex items-start gap-2">
                                     <span className="shrink-0">•</span>
                                     <span>{rec}</span>
                                 </p>
@@ -440,9 +440,9 @@ function FittingsTool() {
         setFittings([...fittings, createFitting('elbow_90_std', 'DN50', 1)]);
     };
 
-    const updateFitting = (index: number, field: keyof Fitting, value: any) => {
+    const updateFitting = <K extends keyof Fitting>(index: number, field: K, value: Fitting[K]) => {
         const updated = [...fittings];
-        (updated[index] as any)[field] = value;
+        updated[index] = { ...updated[index], [field]: value };
         setFittings(updated);
     };
 
@@ -453,8 +453,8 @@ function FittingsTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                    <GitBranch className="w-5 h-5 text-indigo-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <GitBranch className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                     <h2 className="text-lg font-bold text-foreground">Pierderi Locale (K-Factors)</h2>
@@ -500,7 +500,7 @@ function FittingsTool() {
                     <div className="mt-4 pt-4 border-t border-border">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="text-center">
-                                <div className="text-2xl font-black text-indigo-600 dark:text-emerald-400">{result.totalPressureDropKPa}</div>
+                                <div className="text-2xl font-black text-primary">{result.totalPressureDropKPa}</div>
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">kPa Total</div>
                             </div>
                             <div className="text-center">
@@ -517,7 +517,7 @@ function FittingsTool() {
                         <h3 className="text-sm font-bold text-foreground">Lista Fitinguri</h3>
                         <button
                             onClick={addFitting}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 rounded-lg hover:bg-indigo-500/20 transition-colors text-[10px] font-bold uppercase tracking-wider border border-indigo-500/20"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-[10px] font-bold uppercase tracking-wider border border-primary/20"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             Adaugă
@@ -587,8 +587,8 @@ function PumpSizingTool() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                    <Zap className="w-5 h-5 text-indigo-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Zap className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                     <h2 className="text-lg font-bold text-foreground">Dimensionare Pompă</h2>
@@ -647,16 +647,16 @@ function PumpSizingTool() {
 
                 {/* Design Point */}
                 <div className="space-y-4">
-                    <div className="bg-indigo-500/5 rounded-xl p-6 border border-indigo-500/20 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                        <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Punct de Lucru Proiectat</div>
+                    <div className="bg-primary/5 rounded-xl p-6 border border-primary/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                        <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Punct de Lucru Proiectat</div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <div className="text-3xl font-black text-foreground">{result.designFlow} m³/h</div>
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Debit</div>
                             </div>
                             <div>
-                                <div className="text-3xl font-black text-indigo-600 dark:text-emerald-400">{result.designHead} m</div>
+                                <div className="text-3xl font-black text-primary">{result.designHead} m</div>
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Înălțime</div>
                             </div>
                         </div>
@@ -674,8 +674,8 @@ function PumpSizingTool() {
                     </div>
 
                     {bestPump && (
-                        <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10 shadow-sm">
-                            <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Pompă Recomandată</div>
+                        <div className="bg-primary/5 rounded-lg p-4 border border-primary/10 shadow-sm">
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Pompă Recomandată</div>
                             <div className="text-lg font-bold text-foreground">
                                 {bestPump.pump.manufacturer} {bestPump.pump.model}
                             </div>
@@ -720,9 +720,9 @@ function PumpSizingTool() {
             </div>
 
             {result.recommendations.length > 0 && (
-                <div className="bg-indigo-500/5 rounded-lg p-4 border border-indigo-500/10">
-                    <div className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Recomandări</div>
-                    <ul className="text-xs text-indigo-600 dark:text-emerald-400 space-y-1">
+                <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                    <div className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Recomandări</div>
+                    <ul className="text-xs text-primary/80 space-y-1">
                         {result.recommendations.map((rec, i) => (
                             <li key={i} className="flex items-start gap-2">
                                 <span className="shrink-0">•</span>

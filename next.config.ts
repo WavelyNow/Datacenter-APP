@@ -3,9 +3,6 @@ import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['puppeteer'],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
 
 const withPWAConfig = withPWA({

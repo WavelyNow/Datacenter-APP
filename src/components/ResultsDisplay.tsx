@@ -24,7 +24,7 @@ function AnimatedNumber({ value, unit, className }: { value: number, unit?: stri
 }
 
 // --- Donut Chart Stats ---
-const COLORS = ['#4f46e5', '#64748b', '#94a3b8']; // Indigo, Slate, Slate-light
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted-foreground))', 'hsl(var(--muted))'];
 
 export const ResultsDisplay: React.FC = React.memo(() => {
     const {
@@ -108,15 +108,15 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-card border border-border shadow-sm p-1.5 rounded-3xl relative overflow-hidden shadow-indigo-500/5 hover:shadow-xl hover:shadow-indigo-500/10 transition-all"
+                className="bg-card border border-border shadow-sm p-1.5 rounded-3xl relative overflow-hidden shadow-primary/5 hover:shadow-xl hover:shadow-primary/10 transition-all"
             >
                 <div className="bg-background/40 backdrop-blur-2xl rounded-2xl overflow-hidden p-8 relative z-10">
 
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
-                                <Scale className="w-6 h-6 text-indigo-500" />
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+                                <Scale className="w-6 h-6 text-primary" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-foreground leading-none tracking-tight">System Overview</h3>
@@ -131,10 +131,10 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                         {/* Text Stats */}
                         <div>
                             <div className="text-center lg:text-left py-4 relative">
-                                <div className="text-[10px] text-indigo-600 dark:text-emerald-400 font-bold uppercase tracking-[0.2em] mb-2 opacity-80">Total Operating Weight</div>
+                                <div className="text-[10px] text-primary font-bold uppercase tracking-[0.2em] mb-2 opacity-80">Total Operating Weight</div>
                                 <div className="flex items-baseline justify-center lg:justify-start gap-1">
                                     <AnimatedNumber value={totalWeight} className="text-5xl lg:text-6xl font-black text-foreground tracking-tighter" />
-                                    <span className="text-xl font-bold text-indigo-500/80 ml-1">kg</span>
+                                    <span className="text-xl font-bold text-primary/80 ml-1">kg</span>
                                 </div>
                                 <div className="text-xs text-muted-foreground font-medium mt-2">
                                     Includes pipes, fluid ({glycolPercentage}% Glycol), and equipment.
@@ -145,7 +145,7 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                             <div className="mt-6 space-y-3">
                                 <div className="flex justify-between items-center p-3 rounded-xl bg-muted/30 border border-border/40">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                                        <div className="w-2 h-2 rounded-full bg-primary" />
                                         <span className="text-xs font-medium">Pipe Volume</span>
                                     </div>
                                     <span className="font-mono font-bold">{pipesVolume.toFixed(0)} L</span>
@@ -204,9 +204,9 @@ export const ResultsDisplay: React.FC = React.memo(() => {
 
                     {/* Order Suggestion Banner */}
                     <div className="mt-8 pt-6 border-t border-border/40">
-                        <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-5 relative overflow-hidden group/order flex items-center justify-between">
+                        <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 relative overflow-hidden group/order flex items-center justify-between">
                             <div className="relative z-10">
-                                <div className="text-[10px] text-indigo-600 dark:text-emerald-300 font-bold uppercase tracking-widest mb-1">
+                                <div className="text-[10px] text-primary font-bold uppercase tracking-widest mb-1">
                                     Recommended Order Volume
                                 </div>
                                 <div className="text-3xl font-black text-foreground tracking-tight">
@@ -214,8 +214,8 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                                 </div>
                                 {safetyMargin && <div className="text-[10px] text-muted-foreground mt-1">Include {safetyMarginPercentage}% marja de siguranță</div>}
                             </div>
-                            <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover/order:scale-110 transition-transform">
-                                <Droplet className="w-6 h-6 text-indigo-500" />
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center group-hover/order:scale-110 transition-transform">
+                                <Droplet className="w-6 h-6 text-primary" />
                             </div>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                             onClick={exportToCSV}
                             title="Export CSV"
                             disabled={boqItems.length === 0}
-                            className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500 hover:text-white transition-all border border-indigo-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all border border-primary/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <FileSpreadsheet className="w-4 h-4" />
                         </button>
@@ -263,7 +263,7 @@ export const ResultsDisplay: React.FC = React.memo(() => {
                                     <div className="text-sm font-semibold text-foreground group-hover/item:text-primary transition-colors">{item.materialName}</div>
                                     <div className="text-[10px] text-muted-foreground font-mono tracking-wide uppercase opacity-70">{item.size}</div>
                                 </div>
-                                <div className="text-sm font-bold text-indigo-600 dark:text-emerald-400 font-mono bg-indigo-500/10 px-2 py-1 rounded-lg">
+                                <div className="text-sm font-bold text-primary font-mono bg-primary/10 px-2 py-1 rounded-lg">
                                     {item.totalLength.toFixed(1)}m
                                 </div>
                             </div>

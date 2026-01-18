@@ -1,6 +1,6 @@
 // IfcService.ts - Client Wrapper for Web Worker
 
-import { PipeSegment, PipeMaterial } from '../types';
+
 
 /**
  * Service to handle IFC file parsing and data extraction.
@@ -25,7 +25,7 @@ export class IfcService {
             if (!this.worker) return reject('Worker failed to init');
 
             const handler = (e: MessageEvent) => {
-                const { type, data, error, id } = e.data;
+                const { type, error, id } = e.data;
                 if (type === 'response' && id === 'init') {
                     cleanup();
                     resolve();
@@ -56,7 +56,7 @@ export class IfcService {
      * Load an IFC file and extract data
      * This replaces both loadFile and extractBimObjects in one flow for simplicity in Worker
      */
-    async extractBimObjects(onProgress?: (msg: string, percent: number) => void): Promise<any[]> {
+    async extractBimObjects(): Promise<unknown[]> {
         throw new Error("Use processIfcBuffer via Worker instead");
     }
 
@@ -64,7 +64,7 @@ export class IfcService {
      * The main entry point now.
      * Starts the worker job.
      */
-    public async processIfcBuffer(buffer: ArrayBuffer, onProgress?: (msg: string, percent: number) => void): Promise<any[]> {
+    public async processIfcBuffer(buffer: ArrayBuffer, onProgress?: (msg: string, percent: number) => void): Promise<unknown[]> {
         if (!this.worker) throw new Error('Worker not initialized');
 
         return new Promise((resolve, reject) => {
@@ -96,7 +96,7 @@ export class IfcService {
 
     // Legacy method signatures if needed, but we should update BimPage to use processIfcBuffer.
     // For compatibility with existing BimPage structure:
-    async loadFile(buffer: Uint8Array): Promise<void> {
+    async loadFile(_buffer: Uint8Array): Promise<void> {
         // No-op in worker client
         return;
     }

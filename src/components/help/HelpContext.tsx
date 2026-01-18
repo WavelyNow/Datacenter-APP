@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { HelpItem, helpRegistry } from '@/lib/helpContent';
+import { helpRegistry } from '@/lib/helpContent';
 import { X, GraduationCap, Lightbulb } from 'lucide-react';
 
 interface HelpContextType {
@@ -71,15 +71,15 @@ export const HelpProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                             </p>
 
                             {activeContent.tips.length > 0 && (
-                                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-3 text-yellow-600 dark:text-yellow-400 font-bold">
+                                <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                                         <Lightbulb className="w-5 h-5" />
                                         <span>Pro Tips</span>
                                     </div>
                                     <ul className="space-y-2">
                                         {activeContent.tips.map((tip, idx) => (
                                             <li key={idx} className="flex items-start gap-2 text-sm text-foreground/80">
-                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-yellow-500 shrink-0" />
+                                                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                                                 <span>{tip}</span>
                                             </li>
                                         ))}

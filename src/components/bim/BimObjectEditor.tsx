@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Save, Check, Layers, AlertCircle } from 'lucide-react';
 
+import { BimObject } from '@/lib/bim/types';
+
 interface BimObjectEditorProps {
     isOpen: boolean;
     onClose: () => void;
-    bimObject: any;
+    bimObject: BimObject | null;
     onSave: (updates: { name: string, material?: string, applyToAll: boolean }) => void;
 }
 
@@ -18,23 +20,22 @@ const MATERIAL_OPTIONS = [
 ];
 
 export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjectEditorProps) => {
-    const [name, setName] = useState('');
+    const [name, setName] = useState(bimObject?.name || '');
     const [material, setMaterial] = useState('Steel - Carbon');
     const [applyToAll, setApplyToAll] = useState(false);
 
+    // Reset state when bimObject changes
     useEffect(() => {
-        if (bimObject) {
-            setName(bimObject.name || '');
-            // Simple heuristic to guess current material/selection if stored, otherwise default
-            setMaterial('Steel - Carbon');
-            setApplyToAll(false);
-        }
+        setName(bimObject?.name || '');
+        setMaterial('Steel - Carbon');
+        setApplyToAll(false);
     }, [bimObject]);
 
     if (!isOpen || !bimObject) return null;
 
-    const isPipe = bimObject.type === 'Pipe';
-    const isFitting = ['Elbow', 'Tee', 'Reducer', 'Fitting', 'Cap'].includes(bimObject.type);
+    const obj = bimObject;
+    const isPipe = obj?.type === 'Pipe';
+    const isFitting = ['Elbow', 'Tee', 'Reducer', 'Fitting', 'Cap'].includes(obj?.type || '');
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
@@ -47,7 +48,7 @@ export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjec
                         Edit Properties
                     </h3>
                     <div className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-mono border border-primary/20">
-                        ID: {bimObject.globalId?.slice(0, 8)}...
+                        ID: {obj?.globalId?.slice(0, 8)}...
                     </div>
                 </div>
 
@@ -65,7 +66,7 @@ export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjec
                             placeholder="e.g. Tur Centrala 1"
                         />
                         <p className="text-[10px] text-muted-foreground">
-                            Original BIM Name: <span className="font-mono">{bimObject.name}</span>
+                            Original BIM Name: <span className="font-mono">{obj?.name}</span>
                         </p>
                     </div>
 
@@ -84,7 +85,7 @@ export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjec
                                     </option>
                                 ))}
                             </select>
-                            <div className="flex gap-2 items-start p-2 bg-blue-500/5 border border-blue-500/10 rounded text-[10px] text-blue-600">
+                            <div className="flex gap-2 items-start p-2 bg-primary/5 border border-primary/10 rounded text-[10px] text-primary">
                                 <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
                                 Selecting the correct material ensures accurate weight and friction calculations.
                             </div>
@@ -106,7 +107,7 @@ export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjec
                             <div className="text-sm">
                                 <span className="font-semibold text-foreground group-hover:text-primary transition-colors">Apply to all similar items</span>
                                 <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
-                                    Update all <strong>{bimObject.type}s</strong> in system <strong>{bimObject.system}</strong> to use this name format and material.
+                                    Update all <strong>{obj?.type}s</strong> in system <strong>{obj?.system}</strong> to use this name format and material.
                                 </p>
                             </div>
                         </label>

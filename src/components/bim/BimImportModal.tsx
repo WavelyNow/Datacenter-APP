@@ -7,6 +7,7 @@ import { useProject } from '@/context/ProjectContext';
 import { IfcViewer } from './IfcViewer';
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment } from '@/lib/types';
+import { BimObject } from '@/lib/bim/types';
 
 interface BimImportModalProps {
     isOpen: boolean;
@@ -45,29 +46,29 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
 
             await service.init();
             // Use processIfcBuffer which handles both loading and extraction
-            const bimObjects = await service.processIfcBuffer(buffer);
+            const bimObjects = await service.processIfcBuffer(buffer) as BimObject[];
 
-            // Convert BIM objects to PipeSegments
             const pipes: PipeSegment[] = bimObjects
-                .filter((obj: any) => obj.type?.toLowerCase().includes('pipe') || obj.ifcType === 3758099475) // IfcPipeSegment
-                .map((obj: any) => ({
+                .filter(obj => obj.type?.toLowerCase().includes('pipe') || obj.ifcType === 3758099475) // IfcPipeSegment
+                .map(obj => ({
                     id: `bim-${obj.id}`,
                     name: obj.name || 'BIM Pipe',
                     material: 'custom' as const,
                     standard: 'BIM Import',
-                    size: obj.diameter || 'Unknown',
+                    size: String(obj.diameter) || 'Unknown',
                     length: obj.length || 1,
-                    customInnerDiameter: typeof obj.diameter === 'number' ? obj.diameter : undefined,
+                    customInnerDiameter: undefined, // Or handle as needed
                 }));
 
             setFoundPipes(pipes);
             setStatus('extracted');
             service.dispose();
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             setStatus('error');
-            setErrorMessage(err.message || 'Failed to parse IFC file');
+            const msg = err instanceof Error ? err.message : 'Failed to parse IFC file';
+            setErrorMessage(msg);
         }
     };
 
@@ -123,7 +124,7 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                                     <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setFile(null); setFileUrl(null); setStatus('idle'); }}
-                                        className="text-xs text-red-500 hover:underline mt-2"
+                                        className="text-xs text-destructive hover:underline mt-2"
                                     >
                                         Remove
                                     </button>
@@ -155,7 +156,7 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         )}
 
                         {status === 'error' && (
-                            <div className="p-4 bg-slate-500/10 border border-slate-500/20 rounded-lg text-slate-600 dark:text-slate-400 text-sm">
+                            <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
                                 <p className="font-bold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Eroare</p>
                                 {errorMessage}
                             </div>
@@ -164,7 +165,7 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         {/* 3. Results */}
                         {status === 'extracted' && (
                             <div className="space-y-4 animate-in slide-in-from-bottom-4">
-                                <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-600 dark:text-emerald-400">
+                                <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg text-primary">
                                     <p className="font-bold text-lg flex items-center gap-2">
                                         <Check className="w-5 h-5" /> Succes!
                                     </p>

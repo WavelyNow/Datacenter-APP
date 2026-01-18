@@ -25,11 +25,12 @@ export const CloudBrowserAction = () => {
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
-            // Map data to CloudProject interface (ignoring 'data' prop type mismatch if any - mostly matching)
-            setProjects(data as any as CloudProject[] || []);
-        } catch (err: any) {
+            // Map data to CloudProject interface
+            setProjects((data as unknown as CloudProject[]) || []);
+        } catch (err: unknown) {
             console.error('Error fetching projects:', err);
-            setError(err.message || 'Failed to fetch projects');
+            const msg = err instanceof Error ? err.message : 'Failed to fetch projects';
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -48,8 +49,9 @@ export const CloudBrowserAction = () => {
             alert('Project saved to Cloud successfully!');
             // If browser is open, refresh
             if (isOpen) fetchProjects();
-        } catch (err: any) {
-            alert('Error saving: ' + err.message);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            alert('Error saving: ' + msg);
         } finally {
             setSaving(false);
         }
@@ -60,8 +62,9 @@ export const CloudBrowserAction = () => {
             try {
                 await loadFromCloud(id);
                 setIsOpen(false);
-            } catch (err: any) {
-                alert('Error loading: ' + err.message);
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : 'Unknown error';
+                alert('Error loading: ' + msg);
             }
         }
     };
@@ -78,7 +81,7 @@ export const CloudBrowserAction = () => {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
                     title={cloudProjectId ? "Update existing Cloud project" : "Save as new Cloud project"}
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -156,7 +159,7 @@ export const CloudBrowserAction = () => {
                                                     {(project.name && project.name.trim().length > 0) ? project.name : 'Untitled Project'}
                                                 </div>
                                                 {project.id === cloudProjectId && (
-                                                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
+                                                    <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
                                                         ACTIVE
                                                     </span>
                                                 )}

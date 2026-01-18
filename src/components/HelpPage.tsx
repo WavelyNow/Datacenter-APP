@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Book, FileText, Zap, Box, Anchor, ChevronRight, Info } from 'lucide-react';
+import { Search, Book, FileText, Zap, Box, Anchor, ChevronRight, Info, LucideIcon } from 'lucide-react';
 import { helpRegistry } from '@/lib/helpContent';
 
 type Category = 'general' | 'bim' | 'engineering' | 'export';
 
-const categories: { id: Category; label: string; icon: any }[] = [
+const categories: { id: Category; label: string; icon: LucideIcon }[] = [
     { id: 'general', label: 'General & Dashboard', icon: Info },
     { id: 'bim', label: 'BIM & Import', icon: Box },
     { id: 'engineering', label: 'Inginerie & Calcul', icon: Zap },
@@ -197,12 +197,12 @@ export const HelpPage = () => {
                         <div className="pt-4 border-t border-border/50">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Proprietăți Fluid</p>
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="p-2 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
-                                    <p className="text-[9px] font-bold text-indigo-600">Apă</p>
+                                <div className="p-2 rounded-lg bg-primary/5 border border-primary/10">
+                                    <p className="text-[9px] font-bold text-primary">Apă</p>
                                     <p className="text-[10px]">998 kg/m³</p>
                                 </div>
-                                <div className="p-2 rounded-lg bg-slate-500/5 border border-slate-500/10">
-                                    <p className="text-[9px] font-bold text-slate-600 dark:text-slate-400">Glicol 30%</p>
+                                <div className="p-2 rounded-lg bg-secondary/5 border border-secondary/10">
+                                    <p className="text-[9px] font-bold text-secondary-foreground">Glicol 30%</p>
                                     <p className="text-[10px]">1045 kg/m³</p>
                                 </div>
                             </div>

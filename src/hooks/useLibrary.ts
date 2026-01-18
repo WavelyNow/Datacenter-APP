@@ -26,10 +26,10 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
                 .order('name');
 
             if (error) throw error;
-            setItems(data as LibraryItem<T>[] || []);
-        } catch (err: any) {
-            console.error(`Error fetching library items (${type}):`, err.message || JSON.stringify(err));
-            setError(err.message || 'Unknown error');
+            setItems((data as unknown as LibraryItem<T>[]) || []);
+        } catch (err: unknown) {
+            console.error(`Error fetching library items (${type}):`, err instanceof Error ? err.message : JSON.stringify(err));
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }
@@ -52,9 +52,9 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
             if (error) throw error;
 
             // Optimistic update or refetch
-            setItems(prev => [...prev, newItem as LibraryItem<T>]);
+            setItems(prev => [...prev, newItem as unknown as LibraryItem<T>]);
             return newItem;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(`Error adding library item (${type}):`, err);
             throw err;
         }
@@ -70,7 +70,7 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
             if (error) throw error;
 
             setItems(prev => prev.filter(item => item.id !== id));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(`Error deleting library item (${type}):`, err);
             throw err;
         }

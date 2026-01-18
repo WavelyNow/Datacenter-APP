@@ -33,7 +33,6 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     };
 
     const baseFont = { name: 'Arial', size: 10, color: { argb: palette.text } };
-    const headerFont = { name: 'Arial', size: 10, bold: true, color: { argb: palette.secondary } }; // Small caps style
     const titleFont = { name: 'Arial', size: 20, bold: true, color: { argb: palette.text } };
 
     // Helper to init standard sheet
@@ -46,7 +45,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
 
     // Helper for "Apple Style" Table Headers
     // Minimalist: No background, just a clean bottom border, uppercase text
-    const styleTable = (ws: ExcelJS.Worksheet, startRow: number, columns: string[], dataRows: any[][]) => {
+    const styleTable = (ws: ExcelJS.Worksheet, startRow: number, columns: string[], dataRows: (string | number | undefined)[][]) => {
         const headerRow = ws.getRow(startRow);
 
         columns.forEach((col, idx) => {

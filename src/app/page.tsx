@@ -199,9 +199,6 @@ const DashboardContent = () => {
 
       {/* 2. Sidebar Navigation */}
       <Sidebar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        projectDetails={projectDetails}
         onSettingsOpen={() => setIsSettingsOpen(true)}
         onExportOpen={() => setIsExportOpen(true)}
         onSave={saveProject}
