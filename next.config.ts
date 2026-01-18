@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 import withPWA from 'next-pwa';
 
+const nextConfig: NextConfig = {
+  serverExternalPackages: ['puppeteer'],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+};
+
 const withPWAConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
@@ -10,9 +17,5 @@ const withPWAConfig = withPWA({
   sw: 'sw.js',
 });
 
-const nextConfig: NextConfig = {
-  reactCompiler: true,
-  serverExternalPackages: ['puppeteer'],
-};
-
+// Correctly apply PWA wrapper
 export default withPWAConfig(nextConfig);

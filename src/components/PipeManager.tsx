@@ -1,23 +1,32 @@
-'use client';
 
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
     Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown,
-    Copy, Activity, Droplets, ArrowRight, Gauge, LayoutList, Workflow, AlertCircle
+    Copy, Activity, Droplets, ArrowRight, Gauge, LayoutList, Workflow, AlertCircle, ShoppingCart,
+    Calculator, Flame
 } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
-import { PipeSegment, FluidType } from '@/lib/types';
+import { PipeSegment, FluidType, EquipmentItem } from '@/lib/types';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { SegmentDetailSheet } from './SegmentDetailSheet';
+import { PressureDropChart } from './PressureDropChart';
+import { PumpRecommender } from './PumpRecommender';
+import { ThermalAnalysisSheet } from './ThermalAnalysisSheet';
 
 interface PipeManagerProps {
     segments: PipeSegment[];
+    equipmentList?: EquipmentItem[];
     onSegmentsChange: (segments: PipeSegment[]) => void;
     fluidType?: FluidType;
     glycolPercentage?: number;
+    safetyMargin?: boolean;
+    safetyMarginPercentage?: number;
+    className?: string;
 }
 
 // Separate component for row rendering to enable React.memo
@@ -30,7 +39,10 @@ const PipeRow = React.memo(({
     duplicateSegment,
     removeSegment,
     isFirst,
-    isLast
+    isLast,
+    onSelect,
+    onAnalyzeThermal,
+    isSelected
 }: {
     segment: PipeSegment;
     index: number;
@@ -41,6 +53,9 @@ const PipeRow = React.memo(({
     removeSegment: (id: string) => void;
     isFirst: boolean;
     isLast: boolean;
+    onSelect: (id: string) => void;
+    onAnalyzeThermal: (id: string) => void;
+    isSelected: boolean;
 }) => {
     const isCustom = segment.material === 'custom';
     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
@@ -65,7 +80,10 @@ const PipeRow = React.memo(({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2, delay: index * 0.05 }}
-            className="grid grid-cols-12 gap-6 px-8 py-5 items-center hover:bg-muted/40 transition-colors group relative border-b border-border/30 last:border-0"
+            className={`grid grid-cols-12 gap-6 px-8 py-5 items-center transition-all group relative border-b border-border/30 last:border-0 cursor-pointer 
+                ${isSelected ? 'bg-primary/5 border-l-4 border-l-primary shadow-sm' : 'hover:bg-muted/40 border-l-4 border-l-transparent'}
+            `}
+            onClick={() => onSelect(segment.id)}
         >
             {/* Index */}
             <div className="col-span-1 flex items-center justify-center text-muted-foreground/40 font-mono text-xs font-medium">
@@ -144,26 +162,43 @@ const PipeRow = React.memo(({
                     </div>
 
                     {/* Details Readout */}
-                    <div className="col-span-2 flex flex-col justify-center text-xs text-muted-foreground">
-                        <div className="flex flex-col">
-                            <span className="text-[10px] uppercase tracking-wider opacity-50 mb-1">Volum</span>
+                    <div className="col-span-2 flex flex-col justify-center text-xs text-muted-foreground group/vol relative">
+                        <div className="flex flex-col cursor-help items-center md:items-start">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelect(segment.id);
+                                }}
+                                className="text-[10px] uppercase tracking-wider opacity-50 mb-1 flex items-center gap-1 hover:text-primary hover:opacity-100 transition-all"
+                            >
+                                Volum <Calculator className="w-3 h-3 opacity-50" />
+                            </button>
                             <span className="font-mono text-foreground font-medium">
-                                {(Math.PI * Math.pow(id_mm / 2000, 2) * segment.length * 1000).toFixed(1)} <span className="text-muted-foreground font-normal">L</span>
+                                {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(2)} <span className="text-muted-foreground font-normal">L</span>
                             </span>
                         </div>
+
+                        {/* Tooltip removed in favor of Sheet */}
                     </div>
 
                     {/* Actions */}
                     <div className="col-span-1 flex items-center justify-end gap-1">
                         <button
-                            onClick={() => duplicateSegment(segment.id)}
+                            onClick={(e) => { e.stopPropagation(); duplicateSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-xl transition-all hover:scale-105 active:scale-95"
                             title="Duplicate"
                         >
                             <Copy className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={() => removeSegment(segment.id)}
+                            onClick={(e) => { e.stopPropagation(); onAnalyzeThermal(segment.id); }}
+                            className="p-2.5 text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
+                            title="Thermal Analysis"
+                        >
+                            <Flame className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); removeSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
                             title="Remove"
                         >
@@ -232,11 +267,17 @@ PipeRow.displayName = 'PipeRow';
 
 export const PipeManager: React.FC<PipeManagerProps> = ({
     segments,
+    equipmentList = [],
     onSegmentsChange,
     fluidType = 'water',
-    glycolPercentage = 0
+    glycolPercentage = 0,
+    safetyMargin = false,
+    safetyMarginPercentage = 5,
+    className
 }) => {
     const [viewMode, setViewMode] = useState<'config' | 'hydraulics'>('config');
+    const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
+    const [thermalAnalysisId, setThermalAnalysisId] = useState<string | null>(null);
     const parentRef = useRef<HTMLDivElement>(null);
 
     // Virtualizer with slightly larger estimate for "airy" rows
@@ -303,31 +344,28 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     }, [segments, onSegmentsChange]);
 
     // Calculate totals
-    const { totalVolume, totalPressureDrop } = useMemo(() => {
-        return segments.reduce((acc, s) => {
-            let id_mm = 0;
-            if (s.material === 'custom') {
-                id_mm = s.customInnerDiameter || 0;
-            } else {
-                const standard = PIPE_STANDARDS[s.material];
-                const pipe = standard?.dimensions.find(d => d.dn === s.size);
-                if (pipe) id_mm = pipe.id;
-            }
-
-            // Volume
-            const radius_m = id_mm / 2000;
-            const vol = Math.PI * Math.pow(radius_m, 2) * s.length * 1000;
-
-            // Pressure Drop
-            const density = 1000 + (glycolPercentage * 5); // Approx
-            const hydraulics = calculateHydraulics(s.flowRate || 0, id_mm, 0.045, density, 0.000001);
-
-            return {
-                totalVolume: acc.totalVolume + vol,
-                totalPressureDrop: acc.totalPressureDrop + (hydraulics.pressureDropKpa * s.length)
-            };
-        }, { totalVolume: 0, totalPressureDrop: 0 });
+    const totalPressureDrop = useMemo(() => {
+        return segments.reduce((sum, s) => {
+            const id_mm = s.material === 'custom' ? (s.customInnerDiameter || 0) : (PIPE_STANDARDS[s.material]?.dimensions.find(d => d.dn === s.size)?.id || 0);
+            const density = 1000 + (glycolPercentage * 5);
+            const res = calculateHydraulics(s.flowRate || 0, id_mm, 0.045, density, 0.000001);
+            return sum + (res.pressureDropKpa * s.length);
+        }, 0);
     }, [segments, glycolPercentage]);
+
+    // Use centralized resource calculation
+    const resources: SystemResources = useMemo(() => calculateSystemResources(
+        segments,
+        equipmentList,
+        glycolPercentage,
+        { enabled: safetyMargin, percentage: safetyMarginPercentage }
+    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
+
+    // Derived system sizing for pumps
+    const maxFlowRate = useMemo(() => {
+        if (segments.length === 0) return 0;
+        return Math.max(...segments.map(s => s.flowRate || 0));
+    }, [segments]);
 
     return (
         <div className="w-full space-y-10">
@@ -374,7 +412,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
             </div>
 
             {/* Main Content Card */}
-            <div className="card-premium overflow-hidden flex flex-col h-[750px]">
+            <div className={`card-premium overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
                 {segments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
                         <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center border border-border/30">
@@ -430,9 +468,10 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                             >
                                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                                     const segment = segments[virtualRow.index];
+                                    if (!segment) return null;
                                     return (
                                         <div
-                                            key={segment.id}
+                                            key={segment.id || virtualRow.index}
                                             style={{
                                                 position: 'absolute',
                                                 top: 0,
@@ -452,6 +491,9 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                 removeSegment={removeSegment}
                                                 isFirst={virtualRow.index === 0}
                                                 isLast={virtualRow.index === segments.length - 1}
+                                                isSelected={selectedSegmentId === segment.id}
+                                                onSelect={setSelectedSegmentId}
+                                                onAnalyzeThermal={setThermalAnalysisId}
                                             />
                                         </div>
                                     );
@@ -460,31 +502,107 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                         </div>
 
                         {/* Footer / Add Action */}
-                        <div className="p-6 bg-card/80 backdrop-blur-md border-t border-border/30 flex items-center justify-between z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
-                            <button
-                                onClick={addSegment}
-                                className="btn btn-secondary btn-md gap-2 shadow-sm text-foreground/80 hover:text-foreground"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add {viewMode === 'config' ? 'Pipe Segment' : 'Flow Path'}
-                            </button>
+                        <div className="p-6 bg-card/80 backdrop-blur-md border-t border-border/30 z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                <button
+                                    onClick={addSegment}
+                                    className="btn btn-secondary btn-md gap-2 shadow-sm text-foreground/80 hover:text-foreground w-full md:w-auto"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add {viewMode === 'config' ? 'Pipe Segment' : 'Flow Path'}
+                                </button>
 
-                            <div className="flex items-center gap-10 text-sm">
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1 opacity-70">Total Volume</span>
-                                    <span className="font-mono font-bold text-xl">{totalVolume.toFixed(0)} <span className="text-sm font-normal text-muted-foreground">L</span></span>
-                                </div>
-                                {viewMode === 'hydraulics' && (
-                                    <div className="flex flex-col items-end border-l border-border/40 pl-10">
-                                        <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1 opacity-70">System Drop</span>
-                                        <span className="font-mono font-bold text-xl text-primary">{totalPressureDrop.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">kPa</span></span>
+                                <div className="flex flex-wrap items-center justify-end gap-x-8 gap-y-4 text-sm w-full md:w-auto">
+                                    {/* Detailed Breakdown - Purchasing Formula */}
+                                    <div className="flex items-center gap-6 pr-6 border-r border-border/30">
+
+                                        {/* Components */}
+                                        <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
+                                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Piping</span>
+                                            <span className="font-mono font-medium text-sm">{resources.totalPipingVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                        </div>
+
+                                        <div className="text-muted-foreground/30 font-light">+</div>
+
+                                        <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
+                                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Equip</span>
+                                            <span className="font-mono font-medium text-sm">{resources.totalEquipmentVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                        </div>
+
+                                        <div className="text-muted-foreground/30 font-light">+</div>
+
+                                        <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
+                                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Safety {safetyMargin ? `(${safetyMarginPercentage}%)` : ''}</span>
+                                            <span className="font-mono font-medium text-sm">{resources.safetyMarginVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                        </div>
+
+                                        <div className="text-muted-foreground/30 font-light">=</div>
+
+                                        {/* Total to Buy */}
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[9px] text-indigo-400 uppercase tracking-widest font-bold mb-1 flex items-center gap-1.5">
+                                                <ShoppingCart className="w-3 h-3" />
+                                                Total Solution To Buy
+                                            </span>
+                                            <span className="font-mono font-black text-xl text-indigo-500 bg-indigo-500/10 px-2 rounded-md border border-indigo-500/20">
+                                                {resources.totalSystemVolume.toFixed(0)} <span className="text-sm font-normal text-indigo-400">L</span>
+                                            </span>
+                                        </div>
                                     </div>
-                                )}
+
+                                    {/* System Stats */}
+                                    {viewMode === 'hydraulics' && (
+                                        <div className="flex flex-col items-end pl-6">
+                                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1 opacity-70">System Drop</span>
+                                            <span className="font-mono font-bold text-xl text-primary">{totalPressureDrop.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">kPa</span></span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </>
                 )}
             </div>
+
+            {/* Visual Analysis Section (Hydraulics Mode) */}
+            <AnimatePresence>
+                {viewMode === 'hydraulics' && segments.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[400px]"
+                    >
+                        {/* Chart */}
+                        <div className="lg:col-span-2 h-full">
+                            <PressureDropChart
+                                segments={segments}
+                                glycolPercentage={glycolPercentage}
+                            />
+                        </div>
+
+                        {/* Pump Match */}
+                        <div className="lg:col-span-1 h-full">
+                            <PumpRecommender
+                                requiredFlow={maxFlowRate}
+                                requiredHead={totalPressureDrop}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <SegmentDetailSheet
+                segment={segments.find(s => s.id === selectedSegmentId) || null}
+                onClose={() => setSelectedSegmentId(null)}
+                fluidType={fluidType}
+                glycolPercentage={glycolPercentage}
+            />
+
+            <ThermalAnalysisSheet
+                segment={segments.find(s => s.id === thermalAnalysisId) || null}
+                onClose={() => setThermalAnalysisId(null)}
+            />
         </div>
     );
 };

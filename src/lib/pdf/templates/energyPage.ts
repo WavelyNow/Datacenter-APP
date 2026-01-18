@@ -51,45 +51,22 @@ export async function generateEnergyPage(
     const pueValue = 1.42; // Hardcoded or calculated estimate
     const pueColor = theme.accent; // Greenish
 
+    // Center the PUE value since we removed the badge
     ctx.currentPage.drawText('PUE ESTIMAT', {
-        x: 80,
+        x: (width - 100) / 2 + 50 - 40, // Centered roughly
         y: boxY + 65,
         size: 10,
         font: ctx.fontBold,
         color: theme.textLight,
     });
 
+    const pueWidth = ctx.fontBold.widthOfTextAtSize(pueValue.toString(), 36);
     ctx.currentPage.drawText(pueValue.toString(), {
-        x: 80,
+        x: (width - 100) / 2 + 50 - (pueWidth / 2),
         y: boxY + 25,
         size: 36,
         font: ctx.fontBold,
         color: pueColor,
-    });
-
-    // Vertical Divider
-    ctx.currentPage.drawLine({
-        start: { x: 250, y: boxY + 20 },
-        end: { x: 250, y: boxY + 80 },
-        thickness: 1,
-        color: theme.border
-    });
-
-    // Efficiency Class
-    ctx.currentPage.drawText('CLASA EFICIENȚĂ', {
-        x: 280,
-        y: boxY + 65,
-        size: 10,
-        font: ctx.fontBold,
-        color: theme.textLight,
-    });
-
-    ctx.currentPage.drawText('GOLD', {
-        x: 280,
-        y: boxY + 25,
-        size: 36,
-        font: ctx.fontBold,
-        color: theme.primary, // Blueish
     });
 
     ctx.currentY -= (boxHeight + 40);

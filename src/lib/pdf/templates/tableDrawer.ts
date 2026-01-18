@@ -9,6 +9,7 @@ interface TableOptions {
     rowHeight?: number;
     align?: ('left' | 'center' | 'right')[];
     showBorders?: boolean;
+    stripeColors?: (RGB | undefined)[];
 }
 
 export const drawTable = async (
@@ -99,7 +100,17 @@ export const drawTable = async (
         await ctx.checkSpace(actualRowHeight);
         startY = ctx.currentY;
 
-        if (!showBorders && rowIndex % 2 === 1) {
+        // Striping / Custom Colors
+        const customColor = options.stripeColors?.[rowIndex];
+        if (customColor) {
+            page.drawRectangle({
+                x,
+                y: startY - actualRowHeight,
+                width: tableWidth,
+                height: actualRowHeight,
+                color: customColor
+            });
+        } else if (!showBorders && rowIndex % 2 === 1) {
             page.drawRectangle({ x, y: startY - actualRowHeight, width: tableWidth, height: actualRowHeight, color: theme.bgLight });
         }
 

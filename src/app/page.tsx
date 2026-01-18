@@ -23,6 +23,7 @@ import { HelpPage } from '@/components/HelpPage';
 import { CostEstimator } from '@/components/CostEstimator';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
 import { HydraulicsPage } from '@/components/HydraulicsPage';
+import { PipingRoutingPage } from '@/components/PipingRoutingPage';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.
@@ -242,44 +243,9 @@ const DashboardContent = () => {
 
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards ease-out">
 
-                {/* Tab 1: Configuration & Volume */}
+                {/* Tab 1: Piping & Routing (New Design) */}
                 {activeTab === 'config' && (
-                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-                    {/* Left: Input */}
-                    <div className="xl:col-span-8 space-y-8">
-                      <PipeManager
-                        segments={segments}
-                        onSegmentsChange={setSegments}
-                        fluidType={fluidType}
-                        glycolPercentage={glycolPercentage}
-                      />
-                      <EquipmentManager
-                        equipmentList={equipmentList}
-                        onEquipmentChange={setEquipmentList}
-                        viewMode="volume"
-                      />
-                      <FluidComposition />
-                    </div>
-
-                    {/* Right: Results Sticky */}
-                    <div className="xl:col-span-4">
-                      <div className="sticky top-8 space-y-6">
-                        <ResultsDisplay />
-
-                        {/* Helper Card */}
-                        <div className="card-premium p-5 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-100 dark:border-blue-900/50">
-                          <h4 className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            System Status
-                          </h4>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            Sistemul calculează automat volumul total incluzând o rezervă de siguranță.
-                            Verificați diametrele nominale înainte de export.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <PipingRoutingPage />
                 )}
 
                 {/* Tab 2: Supports */}

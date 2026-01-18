@@ -18,13 +18,17 @@ import {
 } from 'lucide-react';
 import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
+import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 
 export const Dashboard = () => {
     const {
         projectDetails,
         segments,
         equipmentList,
-        setActiveTab
+        setActiveTab,
+        glycolPercentage,
+        safetyMargin,
+        safetyMarginPercentage
     } = useProject();
 
     const [isBimOpen, setIsBimOpen] = React.useState(false);
@@ -45,6 +49,13 @@ export const Dashboard = () => {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
     };
+
+    const resources = React.useMemo(() => calculateSystemResources(
+        segments,
+        equipmentList,
+        glycolPercentage,
+        { enabled: safetyMargin, percentage: safetyMarginPercentage || 0 }
+    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
 
     return (
         <motion.div
@@ -216,6 +227,66 @@ export const Dashboard = () => {
                             </div>
                         </motion.div>
                     </div>
+
+                    {/* Fluid Resources Widget */}
+                    <motion.div variants={itemVariants} className="glass-panel p-6 rounded-3xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Package className="w-24 h-24 text-indigo-500 transform rotate-12" />
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-6 relative z-10">
+                            <div className="p-2 bg-indigo-500/10 rounded-lg">
+                                <Activity className="w-5 h-5 text-indigo-500" />
+                            </div>
+                            <h3 className="font-bold text-lg">Fluid & Chemical Requirements</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
+
+                            {/* Total Calculation */}
+                            <div className="bg-background/40 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
+                                <div>
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Base Volume</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-xl font-bold text-foreground">{resources.baseSystemVolume.toFixed(0)}</p>
+                                        <span className="text-xs text-muted-foreground">Liters</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-2 border-t border-border/20 pt-2">
+                                    Pipes + Equipment
+                                </p>
+                            </div>
+
+                            {/* Safety Margin */}
+                            <div className="bg-background/40 rounded-2xl p-4 border border-white/5 flex flex-col justify-between">
+                                <div>
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Safety Reserve</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-xl font-bold text-amber-500/80">+{resources.safetyMarginVolume.toFixed(0)}</p>
+                                        <span className="text-xs text-muted-foreground">Liters</span>
+                                    </div>
+                                </div>
+                                <div className="text-[10px] text-muted-foreground mt-2 border-t border-border/20 pt-2 flex items-center gap-1">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${safetyMargin ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    {safetyMargin ? `${safetyMarginPercentage}% Margin` : 'Disabled'}
+                                </div>
+                            </div>
+
+                            {/* Total Purchase */}
+                            <div className="bg-indigo-500/10 rounded-2xl p-4 border border-indigo-500/20 flex flex-col justify-between shadow-[0_0_30px_-10px_rgba(99,102,241,0.2)]">
+                                <div>
+                                    <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Total Solution To Buy</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-2xl font-black text-indigo-500">{resources.totalSystemVolume.toFixed(0)}</p>
+                                        <span className="text-sm font-medium text-indigo-400">Liters</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-indigo-400/70 mt-2 border-t border-indigo-500/20 pt-2 font-medium">
+                                    Pre-mixed {glycolPercentage}% Glycol
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
 
                 {/* Right Panel: AI & Updates */}

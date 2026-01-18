@@ -87,6 +87,14 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         supportSpacing: 2.0
     });
 
+    // Invalidate preview when options change
+    useEffect(() => {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+        }
+    }, [options, selectedPreset]);
+
     // Cleanup preview URL on unmount or close
     useEffect(() => {
         return () => {

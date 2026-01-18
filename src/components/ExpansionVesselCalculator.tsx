@@ -20,13 +20,18 @@ import {
 import { useProject } from '@/context/ProjectContext';
 import { calculateTotalVolume } from '@/lib/calculations/hydraulics';
 
-export function ExpansionVesselCalculator() {
+interface ExpansionVesselCalculatorProps {
+    externalSystemVolume?: number;
+}
+
+export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVesselCalculatorProps) {
     const { segments, equipmentList, glycolPercentage, fluidType } = useProject();
 
-    // Calculate system volume from project data
+    // Calculate system volume from project data or use external prop
     const systemVolume = useMemo(() => {
+        if (externalSystemVolume !== undefined) return externalSystemVolume;
         return calculateTotalVolume(segments, equipmentList, true);
-    }, [segments, equipmentList]);
+    }, [segments, equipmentList, externalSystemVolume]);
 
     // Input state
     const [input, setInput] = useState<ExpansionVesselInput>({
