@@ -79,7 +79,7 @@ export const Dashboard = () => {
                         </span>
                         SYSTEM ACTIVE
                     </motion.div>
-                    <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+                    <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2">
                         Engineering <span className="text-primary">Workspace</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">
@@ -154,7 +154,7 @@ export const Dashboard = () => {
                         <div className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-bold border border-indigo-500/20">98% OPTIMAL</div>
                     </div>
                     <div className="relative z-10">
-                        <div className="text-xl font-bold text-indigo-600 dark:text-emerald-400">System Stable</div>
+                        <div className="text-xl font-bold text-primary">System Stable</div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Status Check</div>
                     </div>
                 </motion.div>
@@ -275,13 +275,13 @@ export const Dashboard = () => {
                             {/* Total Purchase */}
                             <div className="bg-indigo-500/10 rounded-2xl p-4 border border-indigo-500/20 flex flex-col justify-between shadow-[0_0_30px_-10px_rgba(99,102,241,0.2)]">
                                 <div>
-                                    <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Total Solution To Buy</p>
+                                    <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Total Solution To Buy</p>
                                     <div className="flex items-baseline gap-2">
-                                        <p className="text-2xl font-black text-indigo-500">{resources.totalSystemVolume.toFixed(0)}</p>
-                                        <span className="text-sm font-medium text-indigo-400">Liters</span>
+                                        <p className="text-2xl font-black text-primary">{resources.totalSystemVolume.toFixed(0)}</p>
+                                        <span className="text-sm font-medium text-primary/70">Liters</span>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-indigo-400/70 mt-2 border-t border-indigo-500/20 pt-2 font-medium">
+                                <p className="text-[10px] text-primary/70 mt-2 border-t border-primary/20 pt-2 font-medium">
                                     Pre-mixed {glycolPercentage}% Glycol
                                 </p>
                             </div>

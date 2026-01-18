@@ -140,7 +140,6 @@ export const Header: React.FC<HeaderProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
-                        <ThemeToggle />
                         <CloudBrowserAction />
 
                         <button
