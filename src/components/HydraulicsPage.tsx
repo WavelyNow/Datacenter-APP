@@ -564,7 +564,6 @@ function FittingsTool() {
 // ============================================================================
 // Pump Sizing Tool
 // ============================================================================
-import { useState } from 'react';
 import {
     calculatePumpSizing,
     findBestPump,

@@ -3,14 +3,15 @@ import { Settings2, ArrowRight, Search, CheckCircle, AlertCircle, Save } from 'l
 import { BimObject } from '@/lib/bim/types';
 
 export interface MappedBimData extends BimObject {
-    mappedProduct: {
+    mappedProduct?: {
         id: string;
         manufacturer: string;
         model: string;
         power?: string;
         price?: number;
         imageUrl?: string;
-    };
+        weight?: number;
+    } | null;
     engineeringData: {
         flow: number;
         head: number;
@@ -165,7 +166,7 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                             Select Product <ArrowRight className="w-4 h-4 ml-2" />
                         </button>
                     )}
-                    {step === 3 && (
+                    {step === 3 && selectedCatalogItem && (
                         <button onClick={() => onSave({ ...bimObject, mappedProduct: selectedCatalogItem, engineeringData: manualData })} className="btn btn-primary">
                             <Save className="w-4 h-4 ml-2" />
                             Confirmare Mapping

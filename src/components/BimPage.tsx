@@ -602,6 +602,10 @@ export const BimPage = () => {
                 onClose={() => setIsWizardOpen(false)}
                 bimObject={selectedObject}
                 onSave={(data) => {
+                    if (!data.mappedProduct) {
+                        alert('No product was selected for mapping.');
+                        return;
+                    }
                     const mappedItem: EquipmentItem = {
                         id: data.mappedProduct.id,
                         name: `${data.name} (${data.mappedProduct.model})`,

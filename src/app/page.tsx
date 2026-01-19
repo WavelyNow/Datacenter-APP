@@ -19,6 +19,7 @@ import { PipingRoutingPage } from '@/components/PipingRoutingPage';
 import { SupportManager } from '@/components/SupportManager';
 import { BrandingManager } from '@/components/BrandingManager';
 import { EquipmentManager } from '@/components/EquipmentManager';
+import { BoQPage } from '@/components/BoQPage';
 import { PipeCatalogModal } from '@/components/PipeCatalogModal';
 import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
@@ -354,6 +355,11 @@ const DashboardContent = () => {
 
                 {activeTab === 'help' && (
                   <HelpPage />
+                )}
+
+                {/* Tab: Bill of Quantities */}
+                {activeTab === 'boq' && (
+                  <BoQPage />
                 )}
 
 

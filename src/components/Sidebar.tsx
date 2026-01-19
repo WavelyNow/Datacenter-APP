@@ -21,7 +21,8 @@ import {
     Wrench,
     Cuboid,
     Layers,
-    LucideIcon
+    LucideIcon,
+    ClipboardList
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useProject } from '@/context/ProjectContext';
@@ -115,6 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'supports', label: 'Supports', icon: Anchor },
         { id: 'weights', label: 'Load Calc', icon: Scale },
         { id: 'costs', label: 'Cost Estimation', icon: Calculator },
+        { id: 'boq', label: 'Bill of Quantities', icon: ClipboardList, badge: 'NEW' },
         { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck },
     ];
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig } from '@/lib/types';
+import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem } from '@/lib/types';
 import { BimObject } from '@/lib/bim/types';
 import { useHistory } from '@/hooks/useHistory';
 
@@ -23,8 +23,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help';
-    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help') => void;
+    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq';
+    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -46,6 +46,10 @@ interface ProjectState {
     setBimStatus: (status: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error') => void;
     parsingProgress: number;
     setParsingProgress: (progress: number) => void;
+
+    // BoQ State
+    boqItems: BoQItem[];
+    setBoqItems: (items: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) => void;
 }
 
 
@@ -107,7 +111,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             accentColor: '#10b981',
             pdfTheme: 'modern' as const
         } as BrandingConfig,
-        cloudProjectId: null as string | null
+        cloudProjectId: null as string | null,
+        boqItems: [] as BoQItem[]
     }), []);
 
     // We need to manage cloudProjectId outside of history? Or inside?
@@ -119,7 +124,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
     // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
 
     // BIM Global State (Background Processing)
@@ -259,6 +264,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         set(prev => ({ ...prev, branding: { ...prev.branding, ...config } }));
     }, [set]);
 
+    const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
+        set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
+
     const value = {
         projectDetails: state.projectDetails, setProjectDetails,
         segments: state.segments, setSegments,
@@ -283,7 +291,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         // BIM Exports
         foundPipes, setFoundPipes,
         bimStatus, setBimStatus,
-        parsingProgress, setParsingProgress
+        parsingProgress, setParsingProgress,
+
+        // BoQ
+        boqItems: state.boqItems, setBoqItems
     };
 
     return (

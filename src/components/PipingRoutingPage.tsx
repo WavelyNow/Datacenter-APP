@@ -13,7 +13,8 @@ import {
     ChevronRight,
     Box,
     Weight,
-    Image as ImageIcon
+    Image as ImageIcon,
+    LucideIcon
 } from 'lucide-react';
 
 export function PipingRoutingPage() {
