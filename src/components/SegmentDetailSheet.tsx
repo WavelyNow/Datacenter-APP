@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calculator, Ruler, Scale, Activity, Box } from 'lucide-react';
-import { PipeSegment, FluidType } from '@/lib/types';
+import { PipeSegment } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
 

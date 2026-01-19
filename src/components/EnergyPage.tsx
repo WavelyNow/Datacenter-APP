@@ -47,7 +47,7 @@ export const EnergyPage = () => {
                         Energy & Sustainability
                     </h1>
                     <p className="text-muted-foreground mt-2 text-lg">
-                        Optimize your data center's cooling efficiency and carbon footprint.
+                        Optimize your data center&apos;s cooling efficiency and carbon footprint.
                     </p>
                 </div>
                 <div className="text-right">

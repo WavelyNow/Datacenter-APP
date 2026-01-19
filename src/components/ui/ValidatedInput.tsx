@@ -3,7 +3,7 @@
  * A reusable input component with built-in validation feedback
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { AlertCircle, Check } from 'lucide-react';
 
 interface ValidatedInputProps {

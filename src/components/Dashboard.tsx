@@ -321,7 +321,7 @@ export const Dashboard = () => {
                             <div className="mt-auto pt-6">
                                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
                                     <p className="text-[10px] font-mono text-primary mb-2">AI INSIGHT</p>
-                                    <p className="text-xs text-muted-foreground italic">"Optimization opportunities detected in Loop A-1. Consider increasing pipe diameter to reduce pump head."</p>
+                                    <p className="text-xs text-muted-foreground italic">&quot;Optimization opportunities detected in Loop A-1. Consider increasing pipe diameter to reduce pump head.&quot;</p>
                                 </div>
                             </div>
                         </div>

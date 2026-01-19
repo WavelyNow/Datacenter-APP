@@ -6,8 +6,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
-    ReferenceArea
+    ResponsiveContainer
 } from 'recharts';
 import { PipeSegment } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
@@ -24,8 +23,10 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
         let cumulativeLength = 0;
         let cumulativePressure = 0;
         const density = 1000 + (glycolPercentage * 5);
+        const points = [];
 
-        const points = segments.map((segment, index) => {
+        for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
             // Calculate hydraulic properties for this segment
             const id_mm = segment.material === 'custom'
                 ? (segment.customInnerDiameter || 0)
@@ -41,21 +42,18 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
 
             const segmentPressureDrop = hydraulics.pressureDropKpa * segment.length;
 
-            const startLength = cumulativeLength;
-            const startPressure = cumulativePressure;
-
             cumulativeLength += segment.length;
             cumulativePressure += segmentPressureDrop;
 
-            return {
-                name: `S${index + 1}`,
+            points.push({
+                name: `S${i + 1}`,
                 length: cumulativeLength,
                 pressure: cumulativePressure,
                 velocity: hydraulics.velocity,
-                segmentName: `S${index + 1} (${segment.size})`,
+                segmentName: `S${i + 1} (${segment.size})`,
                 segmentDrop: segmentPressureDrop
-            };
-        });
+            });
+        }
 
         // Add initial point (0,0)
         return [

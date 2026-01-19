@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Upload, MapPin, User, Hash, Settings, Save } from 'lucide-react';
-import Image from 'next/image';
 import { ProjectDetails } from '@/lib/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,7 +37,6 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
         }
     });
 
-    const companyLogo = watch('companyLogo' as any); // Type assertion for non-schema field if needed, or better add to schema as optional string
 
     // Reset form when modal opens or details change externally
     useEffect(() => {

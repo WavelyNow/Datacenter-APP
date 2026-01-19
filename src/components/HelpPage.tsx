@@ -4,6 +4,27 @@ import React, { useState } from 'react';
 import { Search, Book, FileText, Zap, Box, Anchor, ChevronRight, Info, LucideIcon } from 'lucide-react';
 import { helpRegistry } from '@/lib/helpContent';
 
+const QuickStart = () => (
+    <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 mb-8">
+        <h4 className="text-primary font-bold flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4" />
+            Quick Guide: Cum încep un proiect?
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+                { step: '1', text: 'Importă fișierul IFC în tab-ul BIM' },
+                { step: '2', text: 'Configurează fluidul și traseele' },
+                { step: '3', text: 'Exportă raportul tehnic PDF' }
+            ].map(s => (
+                <div key={s.step} className="flex items-center gap-3 text-sm">
+                    <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold shrink-0">{s.step}</span>
+                    <span className="text-muted-foreground">{s.text}</span>
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
 type Category = 'general' | 'bim' | 'engineering' | 'export';
 
 const categories: { id: Category; label: string; icon: LucideIcon }[] = [
@@ -26,26 +47,6 @@ export const HelpPage = () => {
         return item.category === activeCategory;
     });
 
-    const QuickStart = () => (
-        <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 mb-8">
-            <h4 className="text-primary font-bold flex items-center gap-2 mb-3">
-                <Zap className="w-4 h-4" />
-                Quick Guide: Cum încep un proiect?
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                    { step: '1', text: 'Importă fișierul IFC în tab-ul BIM' },
-                    { step: '2', text: 'Configurează fluidul și traseele' },
-                    { step: '3', text: 'Exportă raportul tehnic PDF' }
-                ].map(s => (
-                    <div key={s.step} className="flex items-center gap-3 text-sm">
-                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold shrink-0">{s.step}</span>
-                        <span className="text-muted-foreground">{s.text}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
 
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-8 h-[calc(100vh-2rem)] flex gap-8">
@@ -189,7 +190,7 @@ export const HelpPage = () => {
                             <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Pierderi de Sarcină (Pa/m)</p>
                             <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
                                 <p className="text-[10px] leading-relaxed italic">
-                                    "Dimensionarea optimă țintește o pierdere liniară de **150 - 250 Pa/m** pentru eficiență energetică maximă."
+                                    &quot;Dimensionarea optimă țintește o pierdere liniară de **150 - 250 Pa/m** pentru eficiență energetică maximă.&quot;
                                 </p>
                             </div>
                         </div>

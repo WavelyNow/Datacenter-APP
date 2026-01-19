@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo, FileText } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
+import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 
 interface HeaderProps {

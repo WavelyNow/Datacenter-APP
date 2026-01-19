@@ -134,7 +134,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             // Merge saved with default to populate any missing fields
             reset({ ...defaultState, ...saved });
         }
-        setIsInitialized(true);
+
+        // Push to next tick to avoid cascading render warning in React
+        setTimeout(() => {
+            setIsInitialized(true);
+        }, 0);
     }, [defaultState, reset]);
 
     // persistence logic same as before... (lines 104-141) nothing changes there except cloudProjectId is also saved locally.

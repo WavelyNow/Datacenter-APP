@@ -8,7 +8,6 @@ import { FluidComposition } from './FluidComposition';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutGrid,
-    Settings2,
     Database,
     Droplets,
     ChevronRight,
@@ -22,20 +21,19 @@ export function PipingRoutingPage() {
         segments, setSegments,
         equipmentList, setEquipmentList,
         fluidType, glycolPercentage,
-        safetyMargin, safetyMarginPercentage, setSafetyMargin,
-        projectDetails
+        safetyMargin, safetyMarginPercentage, setSafetyMargin
     } = useProject();
 
     const [activeTab, setActiveTab] = useState<'segments' | 'equipment' | 'fluid'>('segments');
     const [equipmentViewMode, setEquipmentViewMode] = useState<'volume' | 'weights' | 'photos'>('volume');
 
-    const tabs = [
+    const tabs: { id: typeof activeTab; label: string; icon: LucideIcon }[] = [
         { id: 'segments', label: 'Piping Segments', icon: LayoutGrid },
         { id: 'equipment', label: 'Equipment Inventory', icon: Database },
         { id: 'fluid', label: 'Fluid & Environment', icon: Droplets },
     ];
 
-    const equipmentTabs = [
+    const equipmentTabs: { id: typeof equipmentViewMode; label: string; icon: LucideIcon }[] = [
         { id: 'volume', label: 'Volumes & Specs', icon: Box },
         { id: 'weights', label: 'Weights & Loads', icon: Weight },
         { id: 'photos', label: 'Photo Gallery', icon: ImageIcon },
@@ -73,7 +71,7 @@ export function PipingRoutingPage() {
                                 return (
                                     <button
                                         key={tab.id}
-                                        onClick={() => setActiveTab(tab.id as any)}
+                                        onClick={() => setActiveTab(tab.id)}
                                         className={`
                                             relative px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300 outline-none focus:outline-none
                                             ${isActive ? 'text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}
@@ -103,7 +101,7 @@ export function PipingRoutingPage() {
                                 {equipmentTabs.map(t => (
                                     <button
                                         key={t.id}
-                                        onClick={() => setEquipmentViewMode(t.id as any)}
+                                        onClick={() => setEquipmentViewMode(t.id)}
                                         className={`p-2 rounded-md transition-colors ${equipmentViewMode === t.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                         title={t.label}
                                     >

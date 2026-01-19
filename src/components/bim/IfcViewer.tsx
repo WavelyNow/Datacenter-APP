@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Grid } from '@react-three/drei';
 import * as THREE from 'three';
@@ -59,8 +59,8 @@ const Model = ({ fileUrl, onLoaded }: IfcViewerProps) => {
                 scene.add(ifcModel);
                 if (onLoaded) onLoaded();
             },
-            (progress) => {
-                // console.log('Loading progress:', progress);
+            () => {
+                // console.log('Loading progress');
             },
             (error) => {
                 console.error('IFC Loading Error:', error);

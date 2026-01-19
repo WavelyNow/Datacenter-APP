@@ -96,7 +96,7 @@ export class IfcService {
 
     // Legacy method signatures if needed, but we should update BimPage to use processIfcBuffer.
     // For compatibility with existing BimPage structure:
-    async loadFile(_buffer: Uint8Array): Promise<void> {
+    async loadFile(): Promise<void> {
         // No-op in worker client
         return;
     }

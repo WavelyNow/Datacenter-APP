@@ -93,7 +93,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             URL.revokeObjectURL(previewUrl);
             setPreviewUrl(null);
         }
-    }, [options, selectedPreset]);
+    }, [options, selectedPreset, previewUrl]);
 
     // Cleanup preview URL on unmount or close
     useEffect(() => {

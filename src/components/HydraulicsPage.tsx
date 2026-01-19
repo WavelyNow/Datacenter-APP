@@ -133,7 +133,6 @@ export function HydraulicsPage() {
 // ============================================================================
 import {
     calculateThermalExpansion,
-    EXPANSION_COEFFICIENTS,
     ThermalExpansionInput
 } from '@/lib/calculations/thermalExpansion';
 
@@ -297,7 +296,6 @@ function ThermalExpansionTool() {
 // ============================================================================
 import {
     calculateValveSizing,
-    getAvailableSizes,
     ValveSizingInput
 } from '@/lib/calculations/valveSizing';
 
@@ -566,10 +564,10 @@ function FittingsTool() {
 // ============================================================================
 // Pump Sizing Tool
 // ============================================================================
+import { useState } from 'react';
 import {
     calculatePumpSizing,
     findBestPump,
-    getAvailablePumps,
     PumpSizingInput
 } from '@/lib/calculations/pumpSizing';
 

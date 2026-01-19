@@ -4,14 +4,6 @@ import React, { useState } from 'react';
 import { ProjectProvider, useProject } from '@/context/ProjectContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { ResultsDisplay } from '@/components/ResultsDisplay';
-import { PipeManager } from '@/components/PipeManager';
-import { EquipmentManager } from '@/components/EquipmentManager';
-import { FluidComposition } from '@/components/FluidComposition';
-import { SupportManager } from '@/components/SupportManager';
-import { BrandingManager } from '@/components/BrandingManager';
-import { PipeCatalogModal } from '@/components/PipeCatalogModal';
-import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
 import { CatalogManager } from '@/components/CatalogManager';
 import { ExportModal } from '@/components/ExportModal';  // Unified Export
@@ -24,6 +16,11 @@ import { CostEstimator } from '@/components/CostEstimator';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
 import { HydraulicsPage } from '@/components/HydraulicsPage';
 import { PipingRoutingPage } from '@/components/PipingRoutingPage';
+import { SupportManager } from '@/components/SupportManager';
+import { BrandingManager } from '@/components/BrandingManager';
+import { EquipmentManager } from '@/components/EquipmentManager';
+import { PipeCatalogModal } from '@/components/PipeCatalogModal';
+import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
 // but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
 // Actually, let's keep ExportModal as the main entry.

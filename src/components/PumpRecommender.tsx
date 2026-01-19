@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Gauge, CheckCircle2, AlertTriangle, ArrowRight, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Zap } from 'lucide-react';
 
 interface Pump {
     id: string;

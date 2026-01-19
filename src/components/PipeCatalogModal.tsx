@@ -342,7 +342,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                         <select
                                             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
                                             value={formData.category}
-                                            onChange={e => setFormData({ ...formData, category: e.target.value as any })}
+                                            onChange={e => setFormData({ ...formData, category: e.target.value as 'metal' | 'plastic' | 'special' })}
                                         >
                                             <option value="metal">Metal</option>
                                             <option value="plastic">Plastic</option>

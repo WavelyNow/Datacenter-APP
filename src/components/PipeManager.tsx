@@ -1,8 +1,8 @@
 
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
-    Plus, Trash2, Info, Settings2, GripVertical, ChevronUp, ChevronDown,
-    Copy, Activity, Droplets, ArrowRight, Gauge, LayoutList, Workflow, AlertCircle, ShoppingCart,
+    Plus, Trash2,
+    Copy, Activity, LayoutList, Workflow, AlertCircle, ShoppingCart,
     Calculator, Flame
 } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -38,8 +38,6 @@ const PipeRow = React.memo(({
     updateSegment,
     duplicateSegment,
     removeSegment,
-    isFirst,
-    isLast,
     onSelect,
     onAnalyzeThermal,
     isSelected
@@ -51,8 +49,6 @@ const PipeRow = React.memo(({
     updateSegment: (id: string, updates: Partial<PipeSegment>) => void;
     duplicateSegment: (id: string) => void;
     removeSegment: (id: string) => void;
-    isFirst: boolean;
-    isLast: boolean;
     onSelect: (id: string) => void;
     onAnalyzeThermal: (id: string) => void;
     isSelected: boolean;
@@ -269,7 +265,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     segments,
     equipmentList = [],
     onSegmentsChange,
-    fluidType = 'water',
     glycolPercentage = 0,
     safetyMargin = false,
     safetyMarginPercentage = 5,
@@ -489,8 +484,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                 updateSegment={updateSegment}
                                                 duplicateSegment={duplicateSegment}
                                                 removeSegment={removeSegment}
-                                                isFirst={virtualRow.index === 0}
-                                                isLast={virtualRow.index === segments.length - 1}
                                                 isSelected={selectedSegmentId === segment.id}
                                                 onSelect={setSelectedSegmentId}
                                                 onAnalyzeThermal={setThermalAnalysisId}
