@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Pencil, Save, Check, Layers, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Pencil, Save, Check, AlertCircle } from 'lucide-react';
 
 import { BimObject } from '@/lib/bim/types';
 
@@ -21,15 +21,8 @@ const MATERIAL_OPTIONS = [
 
 export const BimObjectEditor = ({ isOpen, onClose, bimObject, onSave }: BimObjectEditorProps) => {
     const [name, setName] = useState(bimObject?.name || '');
-    const [material, setMaterial] = useState('Steel - Carbon');
+    const [material, setMaterial] = useState(bimObject?.material || 'Steel - Carbon');
     const [applyToAll, setApplyToAll] = useState(false);
-
-    // Reset state when bimObject changes
-    useEffect(() => {
-        setName(bimObject?.name || '');
-        setMaterial('Steel - Carbon');
-        setApplyToAll(false);
-    }, [bimObject]);
 
     if (!isOpen || !bimObject) return null;
 

@@ -595,7 +595,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
             <SegmentDetailSheet
                 segment={segments.find(s => s.id === selectedSegmentId) || null}
                 onClose={() => setSelectedSegmentId(null)}
-                fluidType={fluidType}
                 glycolPercentage={glycolPercentage}
             />
 

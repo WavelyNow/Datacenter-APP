@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calculator, Ruler, Info, Scale, ArrowRight, Activity, Box } from 'lucide-react';
+import { X, Calculator, Ruler, Scale, Activity, Box } from 'lucide-react';
 import { PipeSegment, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
@@ -8,11 +8,10 @@ import { calculateHydraulics } from '@/lib/calc/hydraulics';
 interface SegmentDetailSheetProps {
     segment: PipeSegment | null;
     onClose: () => void;
-    fluidType: FluidType;
     glycolPercentage: number;
 }
 
-export function SegmentDetailSheet({ segment, onClose, fluidType, glycolPercentage }: SegmentDetailSheetProps) {
+export function SegmentDetailSheet({ segment, onClose, glycolPercentage }: SegmentDetailSheetProps) {
     const standardData = useMemo(() => {
         if (!segment) return null;
         if (segment.material === 'custom') return null;

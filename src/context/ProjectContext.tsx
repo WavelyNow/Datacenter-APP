@@ -74,7 +74,7 @@ import { ProjectLoadData } from '@/lib/types';
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // Initial State Definition
-    const defaultState = {
+    const defaultState = React.useMemo(() => ({
         projectDetails: {
             projectName: 'Data Center Cooling',
             projectNumber: '2024-001',
@@ -108,7 +108,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             pdfTheme: 'modern' as const
         } as BrandingConfig,
         cloudProjectId: null as string | null
-    };
+    }), []);
 
     // We need to manage cloudProjectId outside of history? Or inside?
     // Ideally inside if undo/redo should track "which project I am working on"? No, linking to cloud is meta-data.
@@ -129,7 +129,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
     // Load saved data using useHistory reset
     useEffect(() => {
-        if (typeof window === 'undefined') return;
         const saved = loadFromStorage();
         if (Object.keys(saved).length > 0) {
             // Merge saved with default to populate any missing fields

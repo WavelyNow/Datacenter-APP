@@ -27,7 +27,7 @@ const Model = ({ fileUrl, onLoaded }: IfcViewerProps) => {
         // Optimizations to prevent infinite loops on complex geometry
         ifcLoader.ifcManager.applyWebIfcConfig({
             COORDINATE_TO_ORIGIN: false,
-            // @ts-ignore -- properties exist in web-ifc but missing in web-ifc-three types
+            // @ts-expect-error -- properties exist in web-ifc but missing in web-ifc-three types
             USE_FAST_BOOLS: true
         });
 
@@ -83,7 +83,7 @@ const Model = ({ fileUrl, onLoaded }: IfcViewerProps) => {
                 });
             }
         };
-    }, [fileUrl, scene]);
+    }, [fileUrl, scene, model, onLoaded]);
 
     return null; // The loader adds to scene directly
 };

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { Scale, ClipboardList, Droplet, ArrowRight, FileSpreadsheet, PieChart as PieIcon } from 'lucide-react';
+import { Scale, ClipboardList, Droplet, FileSpreadsheet, PieChart as PieIcon } from 'lucide-react';
 import { generateBoQ, getDetailedWeightReport, calculatePipeVolume } from '@/lib/calculations';
 import { useProject } from '@/context/ProjectContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { motion, useSpring, useTransform, useMotionValue, animate } from 'framer-motion';
+import { motion, useTransform, useMotionValue, animate } from 'framer-motion';
 
 // --- Animated Number Component ---
 function AnimatedNumber({ value, unit, className }: { value: number, unit?: string, className?: string }) {

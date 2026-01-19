@@ -206,20 +206,31 @@ export const BimPage = () => {
         // 1. Process Pipes
         const pipes = foundPipes.filter(p => p.type === 'Pipe');
         if (pipes.length > 0) {
-            const mappedPipes: PipeSegment[] = pipes.map(p => ({
-                id: crypto.randomUUID(),
-                name: p.name || 'Imported Pipe',
-                // Use the material set by the Editor, or default to Steel
-                material: (p.material as PipeSegment['material']) || 'Steel - Carbon',
-                fluid: 'water',
-                temperature: 15,
-                flowRate: 0,
-                length: 5, // Ideally use p.length from IFC if available
-                diameter: 114.3, // Ideally use p.diameter
-                standard: 'EN 10255',
-                size: 'DN100', // Placeholder
-                fittings: []
-            }));
+            const mappedPipes: PipeSegment[] = pipes.map(p => {
+                // Try to guess a reasonable outer diameter (OD) based on extracted DN size
+                const sizeStr = p.diameter || 'DN100';
+                const numSize = parseInt(sizeStr.replace(/\D/g, '')) || 100;
+
+                // Fallback OD mapping for common DN sizes if not found precisely in standard
+                const commonODs: Record<number, number> = {
+                    15: 21.3, 20: 26.9, 25: 33.7, 32: 42.4, 40: 48.3,
+                    50: 60.3, 65: 76.1, 80: 88.9, 100: 114.3, 125: 139.7, 150: 168.3
+                };
+
+                return {
+                    id: crypto.randomUUID(),
+                    name: p.name || 'Imported Pipe',
+                    material: (p.material as PipeSegment['material']) || 'Steel - Carbon',
+                    fluid: 'water',
+                    temperature: 15,
+                    flowRate: 0,
+                    length: p.length || 1, // Use actual length or 1m fallback
+                    diameter: commonODs[numSize] || numSize * 1.1, // Heuristic OD if not in common list
+                    standard: 'EN 10255',
+                    size: sizeStr,
+                    fittings: []
+                };
+            });
             addSegments(mappedPipes);
         }
 
@@ -615,6 +626,7 @@ export const BimPage = () => {
             />
 
             <BimObjectEditor
+                key={selectedObject?.id || 'new'}
                 isOpen={isEditorOpen}
                 onClose={() => setIsEditorOpen(false)}
                 bimObject={selectedObject}

@@ -21,9 +21,6 @@ import {
     Wrench,
     Cuboid,
     Layers,
-    Share2,
-    Banknote,
-    Database,
     LucideIcon
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
