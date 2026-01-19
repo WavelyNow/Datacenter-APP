@@ -3,6 +3,7 @@ import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['puppeteer'],
+  turbopack: {},
 };
 
 const withPWAConfig = withPWA({
