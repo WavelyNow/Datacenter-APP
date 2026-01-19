@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'supports', label: 'Supports', icon: Anchor },
         { id: 'weights', label: 'Load Calc', icon: Scale },
         { id: 'costs', label: 'Cost Estimation', icon: Calculator },
-        { id: 'boq', label: 'Bill of Quantities', icon: ClipboardList, badge: 'NEW' },
+        { id: 'boq', label: 'Quantities', icon: ClipboardList },
         { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck },
     ];
 
