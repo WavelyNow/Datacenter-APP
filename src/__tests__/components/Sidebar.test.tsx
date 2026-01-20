@@ -63,7 +63,7 @@ describe('Sidebar Component', () => {
 
     it('calls onTabChange("help") when Help button is clicked', () => {
         render(<Sidebar {...defaultProps} />);
-        const helpButton = screen.getByText(/Help Center/i);
+        const helpButton = screen.getByText(/^Help$/i);
         fireEvent.click(helpButton);
         expect(mockSetActiveTab).toHaveBeenCalledWith('help');
     });
