@@ -1,0 +1,380 @@
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useProject } from '@/context/ProjectContext';
+import { TabId } from '@/lib/types';
+import {
+    Search,
+    LayoutDashboard,
+    Package,
+    Wrench,
+    Calculator,
+    ClipboardList,
+    ClipboardCheck,
+    Book,
+    Camera,
+    Palette,
+    Settings,
+    HelpCircle,
+    Save,
+    FileDown,
+    Plus,
+    Leaf,
+    Scale,
+    Anchor,
+    Cuboid,
+    Layers,
+    Command,
+    ArrowRight,
+    X
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface CommandItem {
+    id: string;
+    title: string;
+    subtitle?: string;
+    icon: React.ReactNode;
+    action: () => void;
+    keywords?: string[];
+    category: 'navigation' | 'action' | 'settings';
+}
+
+interface CommandPaletteProps {
+    onSave?: () => void;
+    onExport?: () => void;
+    onSettings?: () => void;
+}
+
+export const CommandPalette: React.FC<CommandPaletteProps> = ({
+    onSave,
+    onExport,
+    onSettings
+}) => {
+    const { setActiveTab } = useProject();
+    const [isOpen, setIsOpen] = useState(false);
+    const [query, setQuery] = useState('');
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+
+    // Define all commands
+    const commands: CommandItem[] = useMemo(() => [
+        // Navigation
+        { id: 'nav-dashboard', title: 'Dashboard', subtitle: 'Go to dashboard', icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard'), keywords: ['home', 'start'], category: 'navigation' },
+        { id: 'nav-bim-gallery', title: 'BIM Gallery', subtitle: 'Browse 3D models', icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery'), keywords: ['3d', 'models'], category: 'navigation' },
+        { id: 'nav-bim', title: 'IFC Mapping', subtitle: 'Configure IFC mappings', icon: <Layers className="w-4 h-4" />, action: () => setActiveTab('bim'), keywords: ['ifc', 'import'], category: 'navigation' },
+        { id: 'nav-config', title: 'Piping & Routing', subtitle: 'Configure pipe segments', icon: <Package className="w-4 h-4" />, action: () => setActiveTab('config'), keywords: ['pipes', 'routing', 'segments'], category: 'navigation' },
+        { id: 'nav-hydraulics', title: 'Hydraulics', subtitle: 'Hydraulic calculations', icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('hydraulics'), keywords: ['flow', 'pressure'], category: 'navigation' },
+        { id: 'nav-energy', title: 'Sustainability', subtitle: 'Energy analysis', icon: <Leaf className="w-4 h-4" />, action: () => setActiveTab('energy'), keywords: ['pue', 'green'], category: 'navigation' },
+        { id: 'nav-supports', title: 'Supports', subtitle: 'Pipe supports design', icon: <Anchor className="w-4 h-4" />, action: () => setActiveTab('supports'), keywords: ['hangers', 'brackets'], category: 'navigation' },
+        { id: 'nav-weights', title: 'Load Calc', subtitle: 'Weight calculations', icon: <Scale className="w-4 h-4" />, action: () => setActiveTab('weights'), keywords: ['mass', 'load'], category: 'navigation' },
+        { id: 'nav-costs', title: 'Cost Estimation', subtitle: 'Project costs', icon: <Calculator className="w-4 h-4" />, action: () => setActiveTab('costs'), keywords: ['budget', 'price'], category: 'navigation' },
+        { id: 'nav-quantities', title: 'Material Quantities', subtitle: 'Bill of materials', icon: <ClipboardList className="w-4 h-4" />, action: () => setActiveTab('boq'), keywords: ['boq', 'materials', 'list'], category: 'navigation' },
+        { id: 'nav-checklist', title: 'Commissioning', subtitle: 'Commissioning checklist', icon: <ClipboardCheck className="w-4 h-4" />, action: () => setActiveTab('checklist'), keywords: ['test', 'verify'], category: 'navigation' },
+        { id: 'nav-catalogs', title: 'Tech Library', subtitle: 'Equipment catalogs', icon: <Book className="w-4 h-4" />, action: () => setActiveTab('catalogs'), keywords: ['library', 'database'], category: 'navigation' },
+        { id: 'nav-photos', title: 'Site Photos', subtitle: 'Photo documentation', icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos'), keywords: ['images', 'pictures'], category: 'navigation' },
+        { id: 'nav-branding', title: 'Report Branding', subtitle: 'Customize reports', icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding'), keywords: ['logo', 'style'], category: 'navigation' },
+        { id: 'nav-help', title: 'Help Center', subtitle: 'Documentation & guides', icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help'), keywords: ['docs', 'support'], category: 'navigation' },
+
+        // Actions
+        { id: 'action-save', title: 'Save Project', subtitle: 'Save to JSON file', icon: <Save className="w-4 h-4" />, action: () => onSave?.(), keywords: ['export', 'backup'], category: 'action' },
+        { id: 'action-export', title: 'Export PDF', subtitle: 'Generate PDF report', icon: <FileDown className="w-4 h-4" />, action: () => onExport?.(), keywords: ['print', 'report'], category: 'action' },
+
+        // Settings
+        { id: 'settings-open', title: 'Settings', subtitle: 'Open project settings', icon: <Settings className="w-4 h-4" />, action: () => onSettings?.(), keywords: ['preferences', 'config'], category: 'settings' },
+    ], [setActiveTab, onSave, onExport, onSettings]);
+
+    // Filter commands based on query
+    const filteredCommands = useMemo(() => {
+        if (!query.trim()) return commands;
+
+        const lowerQuery = query.toLowerCase();
+        return commands.filter(cmd => {
+            const matchTitle = cmd.title.toLowerCase().includes(lowerQuery);
+            const matchSubtitle = cmd.subtitle?.toLowerCase().includes(lowerQuery);
+            const matchKeywords = cmd.keywords?.some(k => k.toLowerCase().includes(lowerQuery));
+            return matchTitle || matchSubtitle || matchKeywords;
+        });
+    }, [commands, query]);
+
+    // Group commands by category
+    const groupedCommands = useMemo(() => {
+        const groups: Record<string, CommandItem[]> = {
+            navigation: [],
+            action: [],
+            settings: []
+        };
+        filteredCommands.forEach(cmd => {
+            groups[cmd.category].push(cmd);
+        });
+        return groups;
+    }, [filteredCommands]);
+
+    // Keyboard shortcut to open
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsOpen(true);
+            }
+            if (e.key === 'Escape') {
+                setIsOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Focus input when opened
+    useEffect(() => {
+        if (isOpen) {
+            inputRef.current?.focus();
+            setQuery('');
+            setSelectedIndex(0);
+        }
+    }, [isOpen]);
+
+    // Navigate with arrow keys
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(i => Math.min(i + 1, filteredCommands.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(i => Math.max(i - 1, 0));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const cmd = filteredCommands[selectedIndex];
+            if (cmd) {
+                cmd.action();
+                setIsOpen(false);
+            }
+        }
+    }, [filteredCommands, selectedIndex]);
+
+    // Scroll selected item into view
+    useEffect(() => {
+        const item = listRef.current?.querySelector(`[data-index="${selectedIndex}"]`);
+        item?.scrollIntoView({ block: 'nearest' });
+    }, [selectedIndex]);
+
+    const executeCommand = (cmd: CommandItem) => {
+        cmd.action();
+        setIsOpen(false);
+    };
+
+    let flatIndex = -1;
+
+    return (
+        <>
+            {/* Trigger Button */}
+            <button
+                onClick={() => setIsOpen(true)}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-muted-foreground text-xs hover:bg-muted hover:border-border transition-all"
+            >
+                <Search className="w-3.5 h-3.5" />
+                <span>Quick search...</span>
+                <kbd className="ml-2 px-1.5 py-0.5 rounded bg-background border border-border text-[10px] font-mono">
+                    ⌘K
+                </kbd>
+            </button>
+
+            {/* Modal */}
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsOpen(false)}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+                        />
+
+                        {/* Palette */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                            transition={{ duration: 0.15 }}
+                            className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-xl z-[101]"
+                        >
+                            <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                                {/* Search Input */}
+                                <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+                                    <Search className="w-5 h-5 text-muted-foreground" />
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        placeholder="Search commands, pages, actions..."
+                                        value={query}
+                                        onChange={e => {
+                                            setQuery(e.target.value);
+                                            setSelectedIndex(0);
+                                        }}
+                                        onKeyDown={handleKeyDown}
+                                        className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 outline-none text-sm"
+                                    />
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-1 rounded hover:bg-muted"
+                                    >
+                                        <X className="w-4 h-4 text-muted-foreground" />
+                                    </button>
+                                </div>
+
+                                {/* Results */}
+                                <div ref={listRef} className="max-h-[400px] overflow-y-auto p-2">
+                                    {filteredCommands.length === 0 ? (
+                                        <div className="py-8 text-center text-muted-foreground text-sm">
+                                            No results found for &quot;{query}&quot;
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {groupedCommands.navigation.length > 0 && (
+                                                <div className="mb-2">
+                                                    <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
+                                                        Navigate
+                                                    </p>
+                                                    {groupedCommands.navigation.map(cmd => {
+                                                        flatIndex++;
+                                                        const idx = flatIndex;
+                                                        return (
+                                                            <button
+                                                                key={cmd.id}
+                                                                data-index={idx}
+                                                                onClick={() => executeCommand(cmd)}
+                                                                onMouseEnter={() => setSelectedIndex(idx)}
+                                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
+                                                                        ? 'bg-primary text-primary-foreground'
+                                                                        : 'hover:bg-muted'
+                                                                    }`}
+                                                            >
+                                                                <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
+                                                                    {cmd.icon}
+                                                                </span>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-medium truncate">{cmd.title}</p>
+                                                                    {cmd.subtitle && (
+                                                                        <p className={`text-xs truncate ${selectedIndex === idx ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                                                            {cmd.subtitle}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                                <ArrowRight className={`w-4 h-4 ${selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground/30'}`} />
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {groupedCommands.action.length > 0 && (
+                                                <div className="mb-2">
+                                                    <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
+                                                        Actions
+                                                    </p>
+                                                    {groupedCommands.action.map(cmd => {
+                                                        flatIndex++;
+                                                        const idx = flatIndex;
+                                                        return (
+                                                            <button
+                                                                key={cmd.id}
+                                                                data-index={idx}
+                                                                onClick={() => executeCommand(cmd)}
+                                                                onMouseEnter={() => setSelectedIndex(idx)}
+                                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
+                                                                        ? 'bg-primary text-primary-foreground'
+                                                                        : 'hover:bg-muted'
+                                                                    }`}
+                                                            >
+                                                                <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
+                                                                    {cmd.icon}
+                                                                </span>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-medium truncate">{cmd.title}</p>
+                                                                    {cmd.subtitle && (
+                                                                        <p className={`text-xs truncate ${selectedIndex === idx ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                                                            {cmd.subtitle}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {groupedCommands.settings.length > 0 && (
+                                                <div className="mb-2">
+                                                    <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
+                                                        Settings
+                                                    </p>
+                                                    {groupedCommands.settings.map(cmd => {
+                                                        flatIndex++;
+                                                        const idx = flatIndex;
+                                                        return (
+                                                            <button
+                                                                key={cmd.id}
+                                                                data-index={idx}
+                                                                onClick={() => executeCommand(cmd)}
+                                                                onMouseEnter={() => setSelectedIndex(idx)}
+                                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
+                                                                        ? 'bg-primary text-primary-foreground'
+                                                                        : 'hover:bg-muted'
+                                                                    }`}
+                                                            >
+                                                                <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
+                                                                    {cmd.icon}
+                                                                </span>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-medium truncate">{cmd.title}</p>
+                                                                    {cmd.subtitle && (
+                                                                        <p className={`text-xs truncate ${selectedIndex === idx ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                                                            {cmd.subtitle}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Footer */}
+                                <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex items-center gap-1">
+                                            <kbd className="px-1 py-0.5 rounded bg-background border border-border">↑</kbd>
+                                            <kbd className="px-1 py-0.5 rounded bg-background border border-border">↓</kbd>
+                                            to navigate
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <kbd className="px-1 py-0.5 rounded bg-background border border-border">↵</kbd>
+                                            to select
+                                        </span>
+                                        <span className="flex items-center gap-1">
+                                            <kbd className="px-1 py-0.5 rounded bg-background border border-border">esc</kbd>
+                                            to close
+                                        </span>
+                                    </div>
+                                    <span className="flex items-center gap-1">
+                                        <Command className="w-3 h-3" />
+                                        Command Palette
+                                    </span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
+    );
+};
+
+export default CommandPalette;

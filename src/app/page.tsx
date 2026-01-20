@@ -20,6 +20,8 @@ import { SupportManager } from '@/components/SupportManager';
 import { BrandingManager } from '@/components/BrandingManager';
 import { EquipmentManager } from '@/components/EquipmentManager';
 import { QuantityListPage } from '@/components/QuantityListPage';
+import { CommandPalette } from '@/components/CommandPalette';
+import { SettingsPage } from '@/components/SettingsPage';
 import { PipeCatalogModal } from '@/components/PipeCatalogModal';
 import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 // Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
@@ -357,9 +359,13 @@ const DashboardContent = () => {
                   <HelpPage />
                 )}
 
-                {/* Tab: Material Quantities */}
                 {activeTab === 'boq' && (
                   <QuantityListPage />
+                )}
+
+                {/* Tab: Settings */}
+                {activeTab === 'settings' && (
+                  <SettingsPage />
                 )}
 
 

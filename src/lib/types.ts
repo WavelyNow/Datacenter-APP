@@ -1,6 +1,6 @@
 import { PIPE_STANDARDS } from './pipeStandards';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings';
 
 export type PipeMaterial = keyof typeof PIPE_STANDARDS;
 

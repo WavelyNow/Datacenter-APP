@@ -18,10 +18,14 @@ import {
     X,
     RefreshCw,
     FileSpreadsheet,
-    MoreHorizontal
+    MoreHorizontal,
+    FileUp,
+    MessageSquare,
+    AlertCircle
 } from 'lucide-react';
 import { MaterialItem, MaterialCategory, MaterialUnit, MaterialStatus } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as XLSX from 'xlsx';
 
 // Constants
 const CATEGORIES: MaterialCategory[] = ['Pipes', 'Fittings', 'Valves', 'Equipment', 'Supports', 'Insulation', 'Other'];
@@ -161,14 +165,31 @@ export const QuantityListPage = () => {
         return mapping[cat] || (CATEGORIES.includes(cat as MaterialCategory) ? cat as MaterialCategory : 'Other');
     }
 
-    // Calculate category counts
-    const categoryCounts = useMemo(() => {
-        const counts: Record<MaterialCategory, number> = {
-            Pipes: 0, Fittings: 0, Valves: 0, Equipment: 0, Supports: 0, Insulation: 0, Other: 0
+    // Calculate category counts AND quantity totals
+    const categoryStats = useMemo(() => {
+        const stats: Record<MaterialCategory, { count: number; quantities: Record<MaterialUnit, number> }> = {
+            Pipes: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Fittings: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Valves: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Equipment: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Supports: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Insulation: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } },
+            Other: { count: 0, quantities: { m: 0, pcs: 0, kg: 0, set: 0, lot: 0, L: 0, sqm: 0, ml: 0 } }
         };
-        materialItems.forEach(item => { counts[item.category]++; });
-        return counts;
+        materialItems.forEach(item => {
+            stats[item.category].count++;
+            stats[item.category].quantities[item.unit] += item.quantity;
+        });
+        return stats;
     }, [materialItems]);
+
+    // Helper to format quantity summary
+    const formatQuantitySummary = (quantities: Record<MaterialUnit, number>): string => {
+        return Object.entries(quantities)
+            .filter(([_, qty]) => qty > 0)
+            .map(([unit, qty]) => `${qty.toFixed(qty % 1 === 0 ? 0 : 1)} ${unit}`)
+            .join(', ') || '-';
+    };
 
     // Filtered and grouped items
     const filteredItems = useMemo(() => {
@@ -259,6 +280,12 @@ export const QuantityListPage = () => {
         ));
     }, [selectedIds, setBoqItems]);
 
+    const handleBulkCategoryChange = useCallback((category: MaterialCategory) => {
+        setBoqItems(prev => prev.map(item =>
+            selectedIds.has(item.id) ? { ...item, category, updatedAt: new Date().toISOString() } : item
+        ));
+    }, [selectedIds, setBoqItems]);
+
     // Selection
     const handleSelectAll = useCallback(() => {
         if (selectedIds.size === filteredItems.length) {
@@ -340,35 +367,88 @@ export const QuantityListPage = () => {
         });
     }, []);
 
-    // Export to CSV
-    const handleExportCSV = useCallback(() => {
+    // Export to Excel
+    const handleExportExcel = useCallback(() => {
         const headers = ['Code', 'Description', 'Category', 'Quantity', 'Unit', 'Specification', 'Manufacturer', 'Part Number', 'Status', 'Notes'];
-        const rows = materialItems.map(item => [
-            item.code,
-            item.description,
-            item.category,
-            item.quantity,
-            item.unit,
-            item.specification || '',
-            item.manufacturer || '',
-            item.partNumber || '',
-            item.status,
-            item.notes || ''
-        ]);
+        const data = [
+            headers,
+            ...materialItems.map(item => [
+                item.code,
+                item.description,
+                item.category,
+                item.quantity,
+                item.unit,
+                item.specification || '',
+                item.manufacturer || '',
+                item.partNumber || '',
+                item.status,
+                item.notes || ''
+            ])
+        ];
 
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-        ].join('\n');
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Materials');
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `material_quantities_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
+        // Auto-size columns
+        const colWidths = headers.map((h, i) => ({
+            wch: Math.max(h.length, ...data.slice(1).map(row => String(row[i]).length))
+        }));
+        ws['!cols'] = colWidths;
+
+        XLSX.writeFile(wb, `material_quantities_${new Date().toISOString().split('T')[0]}.xlsx`);
     }, [materialItems]);
+
+    // Import from Excel
+    const handleImportExcel = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
+
+                const importedItems: MaterialItem[] = jsonData.map((row, index) => {
+                    const category = String(row['Category'] || row['category'] || 'Other');
+                    const unit = String(row['Unit'] || row['unit'] || 'pcs');
+                    const status = String(row['Status'] || row['status'] || 'draft');
+
+                    return {
+                        id: generateId(),
+                        code: String(row['Code'] || row['code'] || ''),
+                        description: String(row['Description'] || row['description'] || 'Imported Item'),
+                        category: (CATEGORIES.includes(category as MaterialCategory) ? category : 'Other') as MaterialCategory,
+                        quantity: Number(row['Quantity'] || row['quantity'] || row['Qty'] || 1),
+                        unit: (UNITS.includes(unit as MaterialUnit) ? unit : 'pcs') as MaterialUnit,
+                        specification: String(row['Specification'] || row['specification'] || row['Spec'] || ''),
+                        manufacturer: String(row['Manufacturer'] || row['manufacturer'] || ''),
+                        partNumber: String(row['Part Number'] || row['partNumber'] || row['Part_Number'] || row['PartNo'] || ''),
+                        status: (STATUSES.includes(status as MaterialStatus) ? status : 'draft') as MaterialStatus,
+                        notes: String(row['Notes'] || row['notes'] || ''),
+                        isAutoGenerated: false,
+                        isOverridden: false,
+                        updatedAt: new Date().toISOString(),
+                        order: materialItems.length + index
+                    };
+                });
+
+                if (importedItems.length > 0) {
+                    setBoqItems([...boqItems, ...importedItems]);
+                    alert(`Successfully imported ${importedItems.length} items!`);
+                }
+            } catch (error) {
+                console.error('Excel import error:', error);
+                alert('Error importing Excel file. Please check the format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        event.target.value = ''; // Reset input
+    }, [boqItems, materialItems.length, setBoqItems]);
 
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
@@ -393,12 +473,21 @@ export const QuantityListPage = () => {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <button onClick={handleSyncFromDesign} className="btn btn-secondary gap-2 h-10">
-                                <RefreshCw className="w-4 h-4" /> Sync from Design
+                                <RefreshCw className="w-4 h-4" /> Sync
                             </button>
-                            <button onClick={handleExportCSV} className="btn btn-secondary gap-2 h-10">
-                                <FileSpreadsheet className="w-4 h-4" /> Export CSV
+                            <label className="btn btn-secondary gap-2 h-10 cursor-pointer">
+                                <FileUp className="w-4 h-4" /> Import
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.xls,.csv"
+                                    onChange={handleImportExcel}
+                                    className="hidden"
+                                />
+                            </label>
+                            <button onClick={handleExportExcel} className="btn btn-secondary gap-2 h-10">
+                                <Download className="w-4 h-4" /> Export
                             </button>
                             <button onClick={() => handleAddItem()} className="btn btn-primary gap-2 h-10">
                                 <Plus className="w-4 h-4" /> Add Item
@@ -462,6 +551,16 @@ export const QuantityListPage = () => {
                                     <option key={s} value={s}>{statusConfig[s].label}</option>
                                 ))}
                             </select>
+                            <select
+                                onChange={e => handleBulkCategoryChange(e.target.value as MaterialCategory)}
+                                className="text-xs bg-background border border-border rounded px-2 py-1"
+                                defaultValue=""
+                            >
+                                <option value="" disabled>Change Category</option>
+                                {CATEGORIES.map(cat => (
+                                    <option key={cat} value={cat}>{categoryConfig[cat].icon} {cat}</option>
+                                ))}
+                            </select>
                         </div>
                         <button onClick={() => setSelectedIds(new Set())} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
                             Clear selection
@@ -481,12 +580,16 @@ export const QuantityListPage = () => {
                                 onClick={() => setCategoryFilter(cat)}
                                 className={`rounded-xl p-4 border cursor-pointer transition-all hover:scale-105 ${categoryConfig[cat].color} ${categoryConfig[cat].darkColor} ${categoryFilter === cat ? 'ring-2 ring-primary' : ''
                                     }`}
+                                title={formatQuantitySummary(categoryStats[cat].quantities)}
                             >
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="text-lg">{categoryConfig[cat].icon}</span>
                                     <span className="text-[10px] font-bold uppercase tracking-wider">{cat}</span>
                                 </div>
-                                <p className="text-2xl font-black">{categoryCounts[cat]}</p>
+                                <p className="text-2xl font-black">{categoryStats[cat].count}</p>
+                                <p className="text-[10px] text-muted-foreground truncate mt-1" title={formatQuantitySummary(categoryStats[cat].quantities)}>
+                                    {formatQuantitySummary(categoryStats[cat].quantities)}
+                                </p>
                             </div>
                         ))}
                     </div>

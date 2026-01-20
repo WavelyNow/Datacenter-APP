@@ -2,6 +2,7 @@ import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
+import { CommandPalette } from './CommandPalette';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
@@ -78,6 +79,13 @@ export const Header: React.FC<HeaderProps> = ({
                             <span className="opacity-70">Rev. {projectDetails.revision}</span>
                         </div>
                     </div>
+
+                    {/* Command Palette */}
+                    <CommandPalette
+                        onSave={onSaveProject}
+                        onExport={onOpenExport}
+                        onSettings={onOpenSettings}
+                    />
                 </div>
 
                 {/* Right: Tools & Catalogs - Scrollable on very small screens or wrapped? No, keep single line. */}

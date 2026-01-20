@@ -23,8 +23,8 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq';
-    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq') => void;
+    activeTab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings';
+    setActiveTab: (tab: 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings') => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -124,7 +124,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
     // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings'>('dashboard');
     const [isInitialized, setIsInitialized] = useState(false);
 
     // BIM Global State (Background Processing)

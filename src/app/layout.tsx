@@ -4,8 +4,9 @@ import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelpProvider } from "@/components/help/HelpContext";
+import { PreferencesProvider } from "@/context/PreferencesContext";
+import { OnlineStatusIndicator } from "@/components/OnlineStatusIndicator";
 import { Toaster } from "sonner";
-import { AICopilot } from "@/components/AICopilot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,15 +52,18 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <ErrorBoundary>
-            <HelpProvider>
-              {children}
-              <AICopilot />
-            </HelpProvider>
-          </ErrorBoundary>
+          <PreferencesProvider>
+            <ErrorBoundary>
+              <HelpProvider>
+                <OnlineStatusIndicator />
+                {children}
+              </HelpProvider>
+            </ErrorBoundary>
+          </PreferencesProvider>
           <Toaster position="bottom-right" richColors theme="system" />
         </ThemeProvider>
       </body>
     </html>
   );
 }
+

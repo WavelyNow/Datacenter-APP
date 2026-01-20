@@ -25,6 +25,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { OnlineStatusBadge } from './OnlineStatusIndicator';
 import { useProject } from '@/context/ProjectContext';
 import { TabId } from '@/lib/types';
 
@@ -127,6 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const reportsGroup: MenuItem[] = [
         { id: 'photos', label: 'Site Photos', icon: Camera },
         { id: 'branding', label: 'Report Branding', icon: Palette },
+        { id: 'settings', label: 'Settings', icon: Settings },
     ];
 
     return (
@@ -196,12 +198,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <div className="flex items-center justify-between gap-2">
                     <ThemeToggle />
+                    <OnlineStatusBadge />
                     <button
                         onClick={() => onTabChange('help')}
                         className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-all"
                     >
                         <HelpCircle className="w-3.5 h-3.5" />
-                        Help Center
+                        Help
                     </button>
                 </div>
 
