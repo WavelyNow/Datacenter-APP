@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { usePreferences, UnitSystem, Language, DateFormat } from '@/context/PreferencesContext';
+import { usePreferences, useTranslation, UnitSystem, Language, DateFormat } from '@/context/PreferencesContext';
 import {
     Settings,
     Globe,
@@ -100,8 +100,8 @@ function SelectButtonGroup<T extends string>({ options, value, onChange }: Selec
                     key={opt.value}
                     onClick={() => onChange(opt.value)}
                     className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${value === opt.value
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-background text-muted-foreground hover:bg-muted'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background text-muted-foreground hover:bg-muted'
                         } ${i > 0 ? 'border-l border-border' : ''}`}
                 >
                     {opt.icon}
@@ -114,15 +114,16 @@ function SelectButtonGroup<T extends string>({ options, value, onChange }: Selec
 
 export const SettingsPage: React.FC = () => {
     const { preferences, updatePreference, resetPreferences } = usePreferences();
+    const { t } = useTranslation();
 
     const unitOptions: SelectOption<UnitSystem>[] = [
-        { value: 'metric', label: 'Metric', icon: <span>🌍</span> },
-        { value: 'imperial', label: 'Imperial', icon: <span>🇺🇸</span> }
+        { value: 'metric', label: t('settingsPage.options.metric'), icon: <span>🌍</span> },
+        { value: 'imperial', label: t('settingsPage.options.imperial'), icon: <span>🇺🇸</span> }
     ];
 
     const languageOptions: SelectOption<Language>[] = [
-        { value: 'ro', label: 'Română', icon: <span>🇷🇴</span> },
-        { value: 'en', label: 'English', icon: <span>🇬🇧</span> }
+        { value: 'ro', label: t('settingsPage.options.romanian'), icon: <span>🇷🇴</span> },
+        { value: 'en', label: t('settingsPage.options.english'), icon: <span>🇬🇧</span> }
     ];
 
     const dateFormatOptions: SelectOption<DateFormat>[] = [
@@ -132,10 +133,10 @@ export const SettingsPage: React.FC = () => {
     ];
 
     const autoSaveOptions: SelectOption<string>[] = [
-        { value: '0', label: 'Off' },
-        { value: '30', label: '30s' },
-        { value: '60', label: '1min' },
-        { value: '300', label: '5min' }
+        { value: '0', label: t('settingsPage.options.off') },
+        { value: '30', label: `30${t('settingsPage.options.seconds')}` },
+        { value: '60', label: `1${t('settingsPage.options.minutes')}` },
+        { value: '300', label: `5${t('settingsPage.options.minutes')}` }
     ];
 
     return (
@@ -144,19 +145,19 @@ export const SettingsPage: React.FC = () => {
             <div className="flex-shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
-                        <span>System</span>
+                        <span>{t('settingsPage.system')}</span>
                         <ChevronRight className="w-3 h-3" />
-                        <span className="text-foreground">Settings</span>
+                        <span className="text-foreground">{t('commandPalette.cmds.projectSettings.title')}</span>
                     </div>
 
                     <div className="flex items-end justify-between">
                         <div>
                             <h1 className="text-3xl font-black text-foreground tracking-tight mb-2 flex items-center gap-3">
                                 <Settings className="w-8 h-8 text-primary" />
-                                User Preferences
+                                {t('settingsPage.title')}
                             </h1>
                             <p className="text-muted-foreground max-w-2xl text-sm font-medium">
-                                Customize your experience with units, language, and display options.
+                                {t('settingsPage.subtitle')}
                             </p>
                         </div>
 
@@ -164,7 +165,7 @@ export const SettingsPage: React.FC = () => {
                             onClick={resetPreferences}
                             className="btn btn-secondary gap-2 h-10"
                         >
-                            <RotateCcw className="w-4 h-4" /> Reset to Defaults
+                            <RotateCcw className="w-4 h-4" /> {t('settingsPage.resetDefaults')}
                         </button>
                     </div>
                 </div>
@@ -175,13 +176,13 @@ export const SettingsPage: React.FC = () => {
                 <div className="max-w-3xl mx-auto">
                     {/* Display Settings */}
                     <SettingsSection
-                        title="Display"
-                        description="Customize how information is displayed"
+                        title={t('settingsPage.sections.display.title')}
+                        description={t('settingsPage.sections.display.description')}
                         icon={<Monitor className="w-5 h-5" />}
                     >
                         <SettingRow
-                            label="Unit System"
-                            description="Choose between metric and imperial measurements"
+                            label={t('settingsPage.rows.unitSystem.label')}
+                            description={t('settingsPage.rows.unitSystem.description')}
                         >
                             <SelectButtonGroup
                                 options={unitOptions}
@@ -191,8 +192,8 @@ export const SettingsPage: React.FC = () => {
                         </SettingRow>
 
                         <SettingRow
-                            label="Date Format"
-                            description="How dates are displayed throughout the app"
+                            label={t('settingsPage.rows.dateFormat.label')}
+                            description={t('settingsPage.rows.dateFormat.description')}
                         >
                             <SelectButtonGroup
                                 options={dateFormatOptions}
@@ -202,8 +203,8 @@ export const SettingsPage: React.FC = () => {
                         </SettingRow>
 
                         <SettingRow
-                            label="Compact Mode"
-                            description="Reduce spacing for more content on screen"
+                            label={t('settingsPage.rows.compactMode.label')}
+                            description={t('settingsPage.rows.compactMode.description')}
                         >
                             <ToggleSwitch
                                 checked={preferences.compactMode}
@@ -214,13 +215,13 @@ export const SettingsPage: React.FC = () => {
 
                     {/* Language Settings */}
                     <SettingsSection
-                        title="Language"
-                        description="Select your preferred language"
+                        title={t('settingsPage.sections.language.title')}
+                        description={t('settingsPage.sections.language.description')}
                         icon={<Globe className="w-5 h-5" />}
                     >
                         <SettingRow
-                            label="Interface Language"
-                            description="Language used for labels and messages"
+                            label={t('settingsPage.rows.interfaceLanguage.label')}
+                            description={t('settingsPage.rows.interfaceLanguage.description')}
                         >
                             <SelectButtonGroup
                                 options={languageOptions}
@@ -232,13 +233,13 @@ export const SettingsPage: React.FC = () => {
 
                     {/* Behavior Settings */}
                     <SettingsSection
-                        title="Behavior"
-                        description="Control app behavior and automation"
+                        title={t('settingsPage.sections.behavior.title')}
+                        description={t('settingsPage.sections.behavior.description')}
                         icon={<Ruler className="w-5 h-5" />}
                     >
                         <SettingRow
-                            label="Auto-Save Interval"
-                            description="Automatically save your work periodically"
+                            label={t('settingsPage.rows.autoSaveInterval.label')}
+                            description={t('settingsPage.rows.autoSaveInterval.description')}
                         >
                             <SelectButtonGroup
                                 options={autoSaveOptions}
@@ -248,8 +249,8 @@ export const SettingsPage: React.FC = () => {
                         </SettingRow>
 
                         <SettingRow
-                            label="Show Welcome on Startup"
-                            description="Display welcome message when opening the app"
+                            label={t('settingsPage.rows.showWelcome.label')}
+                            description={t('settingsPage.rows.showWelcome.description')}
                         >
                             <ToggleSwitch
                                 checked={preferences.showWelcomeOnStartup}
@@ -260,13 +261,13 @@ export const SettingsPage: React.FC = () => {
 
                     {/* Notification Settings */}
                     <SettingsSection
-                        title="Notifications"
-                        description="Manage alerts and notifications"
+                        title={t('settingsPage.sections.notifications.title')}
+                        description={t('settingsPage.sections.notifications.description')}
                         icon={<Bell className="w-5 h-5" />}
                     >
                         <SettingRow
-                            label="Sync Notifications"
-                            description="Show notifications when data is synced"
+                            label={t('settingsPage.rows.syncNotifications.label')}
+                            description={t('settingsPage.rows.syncNotifications.description')}
                         >
                             <ToggleSwitch
                                 checked={preferences.showSyncNotifications}
@@ -275,8 +276,8 @@ export const SettingsPage: React.FC = () => {
                         </SettingRow>
 
                         <SettingRow
-                            label="Offline Warning"
-                            description="Show banner when working offline"
+                            label={t('settingsPage.rows.offlineWarning.label')}
+                            description={t('settingsPage.rows.offlineWarning.description')}
                         >
                             <ToggleSwitch
                                 checked={preferences.showOfflineWarning}
@@ -288,20 +289,20 @@ export const SettingsPage: React.FC = () => {
                     {/* Current Settings Summary */}
                     <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/50">
                         <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
-                            <Check className="w-3 h-3" /> Current Settings Preview
+                            <Check className="w-3 h-3" /> {t('settingsPage.currentSettings')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
-                                {preferences.unitSystem === 'metric' ? '🌍 Metric' : '🇺🇸 Imperial'}
+                                {preferences.unitSystem === 'metric' ? `🌍 ${t('settingsPage.options.metric')}` : `🇺🇸 ${t('settingsPage.options.imperial')}`}
                             </span>
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
-                                {preferences.language === 'ro' ? '🇷🇴 Română' : '🇬🇧 English'}
+                                {preferences.language === 'ro' ? `🇷🇴 ${t('settingsPage.options.romanian')}` : `🇬🇧 ${t('settingsPage.options.english')}`}
                             </span>
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
                                 📅 {preferences.dateFormat}
                             </span>
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
-                                💾 Auto-save: {preferences.autoSaveInterval === 0 ? 'Off' : `${preferences.autoSaveInterval}s`}
+                                💾 Auto-save: {preferences.autoSaveInterval === 0 ? t('settingsPage.options.off') : `${preferences.autoSaveInterval}s`}
                             </span>
                         </div>
                     </div>

@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
 import { CatalogEquipment } from '@/lib/types';
 import { Search, X, Box, Plus, FileText, Trash2, Save, Cloud, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useLibrary } from '@/hooks/useLibrary';
+import { useTranslation } from '@/context/PreferencesContext';
 
 interface EquipmentCatalogModalProps {
     isOpen: boolean;
@@ -12,6 +14,7 @@ interface EquipmentCatalogModalProps {
 }
 
 export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ isOpen, onClose, onSelect }) => {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [view, setView] = useState<'list' | 'create'>('list');
@@ -56,7 +59,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
             setFormData({ category: 'Chiller', model: '', volume: 0, weight: 0, description: '' });
             setView('list');
         } catch (e) {
-            alert('Failed to save to cloud library');
+            alert(t('common.error'));
         } finally {
             setIsSaving(false);
         }
@@ -64,11 +67,11 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
     const handleDeleteCustom = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this specific item from the GLOBAL Cloud Library? This affects everyone.')) {
+        if (confirm(t('common.confirm'))) {
             try {
                 await deleteItem(id);
             } catch {
-                alert('Failed to delete item');
+                alert(t('common.error'));
             }
         }
     };
@@ -119,10 +122,10 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     <div>
                         <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                             <Box className="w-4 h-4 text-foreground" />
-                            {view === 'list' ? 'Global Equipment Library' : 'Add New Equipment'}
+                            {view === 'list' ? t('catalog.globalTitle') : t('catalog.addNew')}
                         </h2>
                         <p className="text-muted-foreground text-xs mt-0.5">
-                            {view === 'list' ? 'Standard & Cloud items available to all users.' : 'Create a new item visible to everyone.'}
+                            {view === 'list' ? t('catalog.globalDesc') : t('catalog.addDesc')}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -133,7 +136,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                             >
                                 <Cloud className="w-3.5 h-3.5" />
                                 <Plus className="w-3 h-3" />
-                                Add Cloud Item
+                                {t('catalog.addCloud')}
                             </button>
                         )}
                         <button
@@ -154,13 +157,13 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                 <input
                                     type="text"
                                     className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-4 text-xs text-foreground focus:border-primary/50 outline-none transition-all placeholder:text-muted-foreground shadow-sm"
-                                    placeholder="Search model, specs..."
+                                    placeholder={t('catalog.searchPlaceholder')}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
                             <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                                <button onClick={() => setSelectedCategory(null)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border shrink-0 ${!selectedCategory ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary border-secondary text-muted-foreground'}`}>All</button>
+                                <button onClick={() => setSelectedCategory(null)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border shrink-0 ${!selectedCategory ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary border-secondary text-muted-foreground'}`}>{t('catalog.all')}</button>
                                 {categories.map(cat => (
                                     <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border shrink-0 ${selectedCategory === cat ? 'bg-primary text-primary-foreground border-primary' : 'bg-secondary border-secondary text-muted-foreground'}`}>{cat}</button>
                                 ))}
@@ -176,7 +179,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                             ) : filteredItems.length === 0 ? (
                                 <div className="text-center py-20 opacity-50">
                                     <Box className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                                    <p className="text-muted-foreground text-sm">No items found.</p>
+                                    <p className="text-muted-foreground text-sm">{t('catalog.noItems')}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -195,7 +198,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                                 {isCloud && (
                                                     <div className="absolute top-2 right-2 flex gap-1 z-10">
                                                         <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
-                                                            <Cloud className="w-3 h-3" /> CLOUD
+                                                            <Cloud className="w-3 h-3" /> {t('catalog.cloudLabel')}
                                                         </span>
                                                         <div
                                                             onClick={(e) => handleDeleteCustom(item.id, e)}
@@ -239,12 +242,12 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                         <div className="max-w-lg mx-auto space-y-4">
                             <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
                                 <Cloud className="w-4 h-4" />
-                                This item will be saved to the Global Library and visible to all users.
+                                {t('catalog.form.notice')}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">Category</label>
+                                    <label className="text-xs font-semibold text-muted-foreground">{t('catalog.form.category')}</label>
                                     <select
                                         className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2"
                                         value={formData.category}
@@ -255,7 +258,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">Model Name</label>
+                                    <label className="text-xs font-semibold text-muted-foreground">{t('catalog.form.modelName')}</label>
                                     <input
                                         className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2"
                                         value={formData.model}
@@ -267,17 +270,17 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">Volume (L)</label>
+                                    <label className="text-xs font-semibold text-muted-foreground">{t('catalog.form.volume')}</label>
                                     <input type="number" className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2" value={formData.volume} onChange={e => setFormData({ ...formData, volume: parseFloat(e.target.value) })} />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">Weight (kg)</label>
+                                    <label className="text-xs font-semibold text-muted-foreground">{t('catalog.form.weight')}</label>
                                     <input type="number" className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2" value={formData.weight} onChange={e => setFormData({ ...formData, weight: parseFloat(e.target.value) })} />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground">Description</label>
+                                <label className="text-xs font-semibold text-muted-foreground">{t('catalog.form.description')}</label>
                                 <textarea
                                     className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2 h-20 resize-none"
                                     value={formData.description}
@@ -288,23 +291,23 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-muted-foreground flex justify-between">
-                                    Technical Sheet (PDF)
-                                    {formData.technicalSheet && <span className="text-indigo-500 flex items-center gap-1 text-[10px]"><FileText className="w-3 h-3" /> Attached</span>}
+                                    {t('catalog.form.techSheet')}
+                                    {formData.technicalSheet && <span className="text-indigo-500 flex items-center gap-1 text-[10px]"><FileText className="w-3 h-3" /> {t('catalog.form.techSheetAttached')}</span>}
                                 </label>
                                 <div className="border border-dashed border-border rounded-xl p-4 bg-muted/20 hover:bg-muted/40 transition-colors text-center cursor-pointer relative">
                                     <input type="file" accept="application/pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     <div className="flex flex-col items-center gap-2">
                                         <FileText className="w-6 h-6 text-muted-foreground" />
-                                        <span className="text-xs text-muted-foreground">Click to upload PDF manual</span>
+                                        <span className="text-xs text-muted-foreground">{t('catalog.form.uploadPrompt')}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => setView('list')} className="flex-1 btn btn-secondary h-10">Cancel</button>
+                                <button onClick={() => setView('list')} className="flex-1 btn btn-secondary h-10">{t('catalog.form.cancel')}</button>
                                 <button onClick={handleSaveCustom} disabled={isSaving} className="flex-1 btn btn-primary h-10 gap-2">
                                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                    Save to Global DB
+                                    {t('catalog.form.saveBtn')}
                                 </button>
                             </div>
                         </div>

@@ -159,49 +159,25 @@ export const useUnitConversion = () => {
     };
 };
 
-// Language strings (basic i18n)
-const translations: Record<Language, Record<string, string>> = {
-    ro: {
-        'dashboard': 'Panou Principal',
-        'quantities': 'Cantități',
-        'save': 'Salvează',
-        'export': 'Exportă',
-        'import': 'Importă',
-        'add': 'Adaugă',
-        'delete': 'Șterge',
-        'edit': 'Editează',
-        'cancel': 'Anulează',
-        'confirm': 'Confirmă',
-        'settings': 'Setări',
-        'offline': 'Offline',
-        'online': 'Online',
-        'syncComplete': 'Sincronizare completă',
-        'noItems': 'Nu există elemente',
-    },
-    en: {
-        'dashboard': 'Dashboard',
-        'quantities': 'Quantities',
-        'save': 'Save',
-        'export': 'Export',
-        'import': 'Import',
-        'add': 'Add',
-        'delete': 'Delete',
-        'edit': 'Edit',
-        'cancel': 'Cancel',
-        'confirm': 'Confirm',
-        'settings': 'Settings',
-        'offline': 'Offline',
-        'online': 'Online',
-        'syncComplete': 'Sync complete',
-        'noItems': 'No items',
-    }
-};
+// Import translations
+import { translations } from '@/lib/translations';
 
 export const useTranslation = () => {
     const { preferences } = usePreferences();
 
     const t = useCallback((key: string): string => {
-        return translations[preferences.language]?.[key] || key;
+        const lang = preferences.language;
+        const dict = translations[lang];
+
+        if (key.includes('.')) {
+            const [section, field] = key.split('.');
+            // @ts-ignore
+            return dict[section]?.[field] || key;
+        }
+
+        // Fallback to common if no dot
+        // @ts-ignore
+        return dict.common?.[key] || key;
     }, [preferences.language]);
 
     return { t, language: preferences.language };

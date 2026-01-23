@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
+import { useTranslation } from '@/context/PreferencesContext';
 import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
@@ -37,30 +38,32 @@ export const Header: React.FC<HeaderProps> = ({
     canUndo,
     canRedo
 }) => {
+    const { t } = useTranslation();
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
     };
 
-    const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLoadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                const data = JSON.parse(e.target?.result as string);
-                onLoadProject(data);
+                const content = e.target?.result as string;
+                const projectData = JSON.parse(content) as ProjectLoadData;
+                onLoadProject(projectData);
             } catch (error) {
-                console.error('Error loading project:', error);
-                alert('Eroare la încărcarea fișierului.');
+                console.error('Failed to parse project file:', error);
+                alert(t('common.error'));
             }
         };
         reader.readAsText(file);
     };
 
     return (
-        <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300">
+        <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300" >
             <div className="px-6 h-18 flex items-center justify-between gap-4">
 
                 {/* Left: Project Title Context */}
@@ -71,12 +74,12 @@ export const Header: React.FC<HeaderProps> = ({
                             value={projectDetails.projectName}
                             onChange={(e) => updateDetail('projectName', e.target.value)}
                             className="bg-transparent border-none p-0 text-base font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-2 -ml-2 transition-all w-full max-w-[180px] md:max-w-[300px] truncate"
-                            placeholder="Project Name"
+                            placeholder={t('header.projectNamePlaceholder')}
                         />
                         <div className="flex items-center gap-2 text-xs text-muted-foreground px-0">
                             <span className="font-mono opacity-70">{projectDetails.projectNumber}</span>
                             <span className="opacity-50">•</span>
-                            <span className="opacity-70">Rev. {projectDetails.revision}</span>
+                            <span className="opacity-70">{t('common.version')} {projectDetails.revision}</span>
                         </div>
                     </div>
 
@@ -88,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
                     />
                 </div>
 
-                {/* Right: Tools & Catalogs - Scrollable on very small screens or wrapped? No, keep single line. */}
+                {/* Right: Tools & Catalogs */}
                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
 
                     {/* Undo/Redo */}
@@ -97,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={onUndo}
                             disabled={!canUndo}
                             className="p-2 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title="Undo (Ctrl+Z)"
+                            title={`${t('common.undo')} (Ctrl+Z)`}
                         >
                             <Undo className="w-4 h-4" />
                         </button>
@@ -106,13 +109,13 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={onRedo}
                             disabled={!canRedo}
                             className="p-2 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title="Redo (Ctrl+Y)"
+                            title={`${t('common.redo')} (Ctrl+Y)`}
                         >
                             <Redo className="w-4 h-4" />
                         </button>
                     </div>
 
-                    {/* Quick Catalogs - Hidden on mobile, Icons only on Tablet, Full on Desktop */}
+                    {/* Quick Catalogs */}
                     <div className="hidden md:flex items-center gap-1 md:gap-2 bg-secondary/40 p-1.5 rounded-xl border border-border/40">
                         <button
                             onClick={onOpenEquipmentCatalog}
@@ -120,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                             title="Equipment Database"
                         >
                             <Box className="w-4 h-4" />
-                            <span className="hidden xl:inline">Equipment</span>
+                            <span className="hidden xl:inline">{t('header.equipment')}</span>
                         </button>
                         <div className="w-px h-4 bg-border/40" />
                         <button
@@ -129,7 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
                             title="Pipe Catalog"
                         >
                             <Book className="w-4 h-4" />
-                            <span className="hidden xl:inline">Pipes</span>
+                            <span className="hidden xl:inline">{t('header.pipes')}</span>
                         </button>
                         <div className="w-px h-4 bg-border/40" />
                         <button
@@ -138,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
                             title="Profile Catalog"
                         >
                             <Layers className="w-4 h-4" />
-                            <span className="hidden xl:inline">Profiles</span>
+                            <span className="hidden xl:inline">{t('header.profiles')}</span>
                         </button>
                     </div>
 
@@ -151,12 +154,12 @@ export const Header: React.FC<HeaderProps> = ({
                         <button
                             onClick={onOpenSettings}
                             className="btn btn-ghost btn-icon h-10 w-10 text-muted-foreground hover:text-foreground"
-                            title="Project Settings"
+                            title={t('common.settings')}
                         >
                             <Settings className="w-5 h-5 transition-transform hover:rotate-45 duration-500" />
                         </button>
 
-                        <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title="Save / Load">
+                        <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title={`${t('common.save')} / ${t('common.import')}`}>
                             <button
                                 onClick={onSaveProject}
                                 className="btn btn-ghost btn-icon h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -166,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
                             <div className="w-px h-4 bg-border/40" />
                             <label className="btn btn-ghost btn-icon h-8 w-8 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted">
                                 <Upload className="w-4 h-4" />
-                                <input type="file" accept=".json" onChange={loadProject} className="hidden" />
+                                <input type="file" accept=".json" onChange={handleLoadProject} className="hidden" />
                             </label>
                         </div>
 
@@ -175,12 +178,12 @@ export const Header: React.FC<HeaderProps> = ({
                             className="btn btn-primary h-10 px-5 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-1 md:ml-3"
                         >
                             <Printer className="w-4 h-4" />
-                            <span className="hidden lg:inline">Export Raport</span>
-                            <span className="lg:hidden">Export</span>
+                            <span className="hidden lg:inline">{t('sidebar.exportRaport')}</span>
+                            <span className="lg:hidden">{t('common.export')}</span>
                         </button>
                     </div>
                 </div>
             </div>
-        </header>
+        </header >
     );
 };

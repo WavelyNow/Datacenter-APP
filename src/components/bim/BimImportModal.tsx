@@ -1,9 +1,11 @@
 
 'use client';
 
+
 import React, { useState, useRef } from 'react';
 import { X, Upload, Check, AlertTriangle, FileBox, Loader2, ArrowRight } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
+import { useTranslation } from '@/context/PreferencesContext';
 import { IfcViewer } from './IfcViewer';
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment } from '@/lib/types';
@@ -16,6 +18,7 @@ interface BimImportModalProps {
 
 export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose }) => {
     const { addSegments } = useProject();
+    const { t } = useTranslation();
     const [file, setFile] = useState<File | null>(null);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
     const [status, setStatus] = useState<'idle' | 'parsing' | 'extracted' | 'error'>('idle');
@@ -88,9 +91,9 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                     <div>
                         <h2 className="text-2xl font-bold flex items-center gap-2">
                             <FileBox className="w-6 h-6 text-primary" />
-                            BIM Import Wizard
+                            {t('bim.title')}
                         </h2>
-                        <p className="text-muted-foreground">Import pipes directly from Revit/IFC files.</p>
+                        <p className="text-muted-foreground">{t('bim.subtitle')}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
                         <X className="w-5 h-5" />
@@ -126,7 +129,7 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                                         onClick={(e) => { e.stopPropagation(); setFile(null); setFileUrl(null); setStatus('idle'); }}
                                         className="text-xs text-destructive hover:underline mt-2"
                                     >
-                                        Remove
+                                        {t('bim.remove')}
                                     </button>
                                 </div>
                             ) : (
@@ -134,8 +137,8 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                                     <div className="w-12 h-12 bg-muted text-muted-foreground rounded-full flex items-center justify-center mx-auto">
                                         <Upload className="w-6 h-6" />
                                     </div>
-                                    <p className="font-bold text-sm">Click to Upload .IFC</p>
-                                    <p className="text-xs text-muted-foreground">Supports Revit Exports</p>
+                                    <p className="font-bold text-sm">{t('bim.uploadTitle')}</p>
+                                    <p className="text-xs text-muted-foreground">{t('bim.uploadSubtitle')}</p>
                                 </div>
                             )}
                         </div>
@@ -143,21 +146,21 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         {/* 2. Action Button */}
                         {file && status === 'idle' && (
                             <button onClick={handleParse} className="w-full btn btn-primary py-6 text-lg shadow-lg shadow-primary/20">
-                                Analyse Model <ArrowRight className="w-5 h-5 ml-2" />
+                                {t('bim.analyze')} <ArrowRight className="w-5 h-5 ml-2" />
                             </button>
                         )}
 
                         {status === 'parsing' && (
                             <div className="flex flex-col items-center justify-center py-8 opacity-70">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
-                                <p className="text-sm font-medium">Parsing Geometry...</p>
-                                <p className="text-xs text-muted-foreground">This matches local processing power.</p>
+                                <p className="text-sm font-medium">{t('bim.parsing')}</p>
+                                <p className="text-xs text-muted-foreground">{t('bim.parsingDesc')}</p>
                             </div>
                         )}
 
                         {status === 'error' && (
                             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-                                <p className="font-bold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Eroare</p>
+                                <p className="font-bold flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {t('bim.error')}</p>
                                 {errorMessage}
                             </div>
                         )}
@@ -167,15 +170,15 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                             <div className="space-y-4 animate-in slide-in-from-bottom-4">
                                 <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg text-primary">
                                     <p className="font-bold text-lg flex items-center gap-2">
-                                        <Check className="w-5 h-5" /> Succes!
+                                        <Check className="w-5 h-5" /> {t('bim.successTitle')}
                                     </p>
-                                    <p className="text-sm">S-au găsit {foundPipes.length} segmente de țeavă.</p>
+                                    <p className="text-sm">{t('bim.successDesc').replace('{count}', String(foundPipes.length))}</p>
                                 </div>
 
                                 <div className="bg-background rounded-lg border border-border overflow-hidden">
                                     <div className="bg-muted px-3 py-2 text-xs font-bold uppercase text-muted-foreground border-b border-border flex justify-between">
-                                        <span>Preview Data</span>
-                                        <span>DN / Len</span>
+                                        <span>{t('bim.preview')}</span>
+                                        <span>{t('bim.previewCols')}</span>
                                     </div>
                                     <div className="max-h-[200px] overflow-y-auto divide-y divide-border/50">
                                         {foundPipes.map((pipe, i) => (
@@ -198,21 +201,21 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-zinc-700 space-y-4">
                                 <FileBox className="w-24 h-24 opacity-20" />
-                                <p>Load a model to see 3D Preview</p>
+                                <p>{t('bim.noModel')}</p>
                             </div>
                         )}
 
                         {/* Footer Action */}
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-zinc-900/80 backdrop-blur border-t border-zinc-800 flex justify-end gap-3">
                             <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors">
-                                Cancel
+                                {t('bim.cancel')}
                             </button>
                             <button
                                 onClick={handleImport}
                                 disabled={status !== 'extracted' || foundPipes.length === 0}
                                 className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
-                                Import {foundPipes.length} Segments
+                                {t('bim.importBtn').replace('{count}', String(foundPipes.length))}
                             </button>
                         </div>
                     </div>

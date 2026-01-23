@@ -1,9 +1,11 @@
 'use client';
 
+
 import React, { useState } from 'react';
 import { X, Server, Building, Building2, FilePlus, ChevronRight, Check, Zap, Thermometer, Box, LucideIcon } from 'lucide-react';
 import { PROJECT_TEMPLATES, ProjectTemplate } from '@/lib/templates';
 import { useProject } from '@/context/ProjectContext';
+import { useTranslation } from '@/context/PreferencesContext';
 
 interface TemplateSelectorProps {
     isOpen: boolean;
@@ -19,6 +21,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onClose }) => {
     const { projectDetails, setProjectDetails, setSegments, setEquipmentList, setGlycolPercentage, setFluidType } = useProject();
+    const { t } = useTranslation();
     const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -74,9 +77,9 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                 <div className="p-6 border-b border-border bg-muted/10">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-2xl font-bold tracking-tight">Quick Start Templates</h2>
+                            <h2 className="text-2xl font-bold tracking-tight">{t('templates.title')}</h2>
                             <p className="text-muted-foreground mt-1">
-                                Choose a pre-configured project to get started quickly.
+                                {t('templates.subtitle')}
                             </p>
                         </div>
                         <button
@@ -136,7 +139,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                                     <div className="mt-4 flex gap-3 flex-wrap">
                                         <div className="flex items-center gap-1.5 text-xs bg-muted/50 px-2 py-1 rounded-md">
                                             <Server className="w-3 h-3 text-muted-foreground" />
-                                            <span>{template.specs.racks} racks</span>
+                                            <span>{template.specs.racks} {t('templates.racks')}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 text-xs bg-muted/50 px-2 py-1 rounded-md">
                                             <Zap className="w-3 h-3 text-muted-foreground" />
@@ -152,7 +155,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                                     {template.id !== 'custom' && (
                                         <div className="mt-3 pt-3 border-t border-border text-xs text-muted-foreground">
                                             <Box className="w-3 h-3 inline mr-1" />
-                                            {template.segments.length} pipe segments, {template.equipment.length} equipment items
+                                            {template.segments.length} {t('templates.pipes')}, {template.equipment.length} {t('templates.equipment')}
                                         </div>
                                     )}
                                 </button>
@@ -166,10 +169,10 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                     <div className="text-sm text-muted-foreground">
                         {selectedTemplate ? (
                             <>
-                                Selected: <span className="font-bold text-foreground">{selectedTemplate.name}</span>
+                                {t('templates.selected')} <span className="font-bold text-foreground">{selectedTemplate.name}</span>
                             </>
                         ) : (
-                            'Select a template to continue'
+                            t('templates.selectPrompt')
                         )}
                     </div>
                     <div className="flex gap-3">
@@ -177,7 +180,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                             onClick={onClose}
                             className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            Cancel
+                            {t('templates.cancel')}
                         </button>
                         <button
                             onClick={handleApplyTemplate}
@@ -187,11 +190,11 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                             {isLoading ? (
                                 <>
                                     <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                                    Applying...
+                                    {t('templates.applying')}
                                 </>
                             ) : (
                                 <>
-                                    Apply Template
+                                    {t('templates.apply')}
                                     <ChevronRight className="w-4 h-4" />
                                 </>
                             )}

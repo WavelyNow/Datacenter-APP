@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useTranslation } from '@/context/PreferencesContext';
 import Image from 'next/image';
 import {
     Layout, GripVertical, Eye, EyeOff, AlignLeft, AlignCenter, AlignRight,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 import { PDFSection, PDFSectionId, PDFAlignment } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
+import { DocumentSkeleton } from '@/components/ui/Skeleton';
 
 const DEFAULT_SECTIONS: PDFSection[] = [
     { id: 'header', label: 'Header & Logo', enabled: true, alignment: 'center', order: 0 },
@@ -26,6 +28,7 @@ export const BrandingManager: React.FC = () => {
         segments, equipmentList, fluidType, glycolPercentage,
         safetyMargin, safetyMarginPercentage, supportConfig, branding
     } = useProject();
+    const { t } = useTranslation();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -152,8 +155,8 @@ export const BrandingManager: React.FC = () => {
                         <Layout className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-foreground">PDF Layout Designer</h2>
-                        <p className="text-sm text-muted-foreground">Customize your PDF report with live preview</p>
+                        <h2 className="text-xl font-bold text-foreground">{t('branding.title')}</h2>
+                        <p className="text-sm text-muted-foreground">{t('branding.subtitle')}</p>
                     </div>
                 </div>
                 <button
@@ -162,9 +165,9 @@ export const BrandingManager: React.FC = () => {
                     className="btn btn-primary btn-md"
                 >
                     {isGenerating ? (
-                        <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Generating...</>
+                        <><Loader2 className="w-4 h-4 animate-spin mr-2" /> {t('branding.generating')}</>
                     ) : (
-                        <><RefreshCcw className="w-4 h-4 mr-2" /> Refresh Preview</>
+                        <><RefreshCcw className="w-4 h-4 mr-2" /> {t('branding.refresh')}</>
                     )}
                 </button>
             </div>
@@ -176,7 +179,7 @@ export const BrandingManager: React.FC = () => {
                     <div className="bg-muted/20 p-3 rounded-xl border border-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm font-medium text-foreground">Logo</span>
+                            <span className="text-sm font-medium text-foreground">{t('branding.logo')}</span>
                         </div>
                         <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" ref={fileInputRef} />
                         {projectDetails.companyLogo ? (
@@ -188,13 +191,13 @@ export const BrandingManager: React.FC = () => {
                                 <button onClick={removeLogo} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
                             </div>
                         ) : (
-                            <button onClick={triggerFileInput} className="text-xs text-primary hover:underline">Upload</button>
+                            <button onClick={triggerFileInput} className="text-xs text-primary hover:underline">{t('branding.upload')}</button>
                         )}
                     </div>
 
                     {/* Section List */}
                     <div className="space-y-1.5">
-                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Sections</h3>
+                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('branding.sections')}</h3>
                         {sortedSections.map((section, idx) => (
                             <div
                                 key={section.id}
@@ -205,7 +208,9 @@ export const BrandingManager: React.FC = () => {
                                 <button onClick={() => toggleSection(section.id)} className={`p-1 rounded ${section.enabled ? 'text-primary' : 'text-muted-foreground'}`}>
                                     {section.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                                 </button>
-                                <span className={`flex-1 text-xs font-medium ${section.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>{section.label}</span>
+                                <span className={`flex-1 text-xs font-medium ${section.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                    {t(`branding.sectionLabels.${section.id}` as any)}
+                                </span>
                                 {section.enabled && (
                                     <div className="flex items-center gap-0.5 bg-muted/20 rounded p-0.5">
                                         {(['left', 'center', 'right'] as PDFAlignment[]).map(align => (
@@ -233,23 +238,22 @@ export const BrandingManager: React.FC = () => {
                     <div className="flex items-center gap-4 pt-2 border-t border-border">
                         <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground">
                             <input type="checkbox" checked={showPageNumbers} onChange={(e) => setShowPageNumbers(e.target.checked)} className="w-3.5 h-3.5 rounded" />
-                            Page #
+                            {t('branding.pageNumbers')}
                         </label>
                         <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground">
                             <input type="checkbox" checked={compactMode} onChange={(e) => setCompactMode(e.target.checked)} className="w-3.5 h-3.5 rounded" />
-                            Compact
+                            {t('branding.compact')}
                         </label>
                     </div>
                 </div>
 
                 {/* Right: Real PDF Preview */}
                 <div className="lg:col-span-7">
-                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Live PDF Preview</h3>
+                    <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('branding.livePreview')}</h3>
                     <div className="bg-muted/20 rounded-xl border border-border overflow-hidden" style={{ height: '600px' }}>
                         {isGenerating ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                                <span className="text-sm text-muted-foreground">Generating PDF...</span>
+                            <div className="w-full h-full bg-white">
+                                <DocumentSkeleton />
                             </div>
                         ) : previewUrl ? (
                             <iframe
@@ -260,7 +264,7 @@ export const BrandingManager: React.FC = () => {
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
                                 <Layout className="w-8 h-8 text-muted-foreground/30" />
-                                <span className="text-sm text-muted-foreground">Click &quot;Refresh Preview&quot; to generate</span>
+                                <span className="text-sm text-muted-foreground">{t('branding.clickToGenerate')}</span>
                             </div>
                         )}
                     </div>

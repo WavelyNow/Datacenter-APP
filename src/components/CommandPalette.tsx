@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useTranslation } from '@/context/PreferencesContext';
 import { TabId } from '@/lib/types';
 import {
     Search,
@@ -52,6 +53,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     onSettings
 }) => {
     const { setActiveTab } = useProject();
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,29 +63,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     // Define all commands
     const commands: CommandItem[] = useMemo(() => [
         // Navigation
-        { id: 'nav-dashboard', title: 'Dashboard', subtitle: 'Go to dashboard', icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard'), keywords: ['home', 'start'], category: 'navigation' },
-        { id: 'nav-bim-gallery', title: 'BIM Gallery', subtitle: 'Browse 3D models', icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery'), keywords: ['3d', 'models'], category: 'navigation' },
-        { id: 'nav-bim', title: 'IFC Mapping', subtitle: 'Configure IFC mappings', icon: <Layers className="w-4 h-4" />, action: () => setActiveTab('bim'), keywords: ['ifc', 'import'], category: 'navigation' },
-        { id: 'nav-config', title: 'Piping & Routing', subtitle: 'Configure pipe segments', icon: <Package className="w-4 h-4" />, action: () => setActiveTab('config'), keywords: ['pipes', 'routing', 'segments'], category: 'navigation' },
-        { id: 'nav-hydraulics', title: 'Hydraulics', subtitle: 'Hydraulic calculations', icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('hydraulics'), keywords: ['flow', 'pressure'], category: 'navigation' },
-        { id: 'nav-energy', title: 'Sustainability', subtitle: 'Energy analysis', icon: <Leaf className="w-4 h-4" />, action: () => setActiveTab('energy'), keywords: ['pue', 'green'], category: 'navigation' },
-        { id: 'nav-supports', title: 'Supports', subtitle: 'Pipe supports design', icon: <Anchor className="w-4 h-4" />, action: () => setActiveTab('supports'), keywords: ['hangers', 'brackets'], category: 'navigation' },
-        { id: 'nav-weights', title: 'Load Calc', subtitle: 'Weight calculations', icon: <Scale className="w-4 h-4" />, action: () => setActiveTab('weights'), keywords: ['mass', 'load'], category: 'navigation' },
-        { id: 'nav-costs', title: 'Cost Estimation', subtitle: 'Project costs', icon: <Calculator className="w-4 h-4" />, action: () => setActiveTab('costs'), keywords: ['budget', 'price'], category: 'navigation' },
-        { id: 'nav-quantities', title: 'Material Quantities', subtitle: 'Bill of materials', icon: <ClipboardList className="w-4 h-4" />, action: () => setActiveTab('boq'), keywords: ['boq', 'materials', 'list'], category: 'navigation' },
-        { id: 'nav-checklist', title: 'Commissioning', subtitle: 'Commissioning checklist', icon: <ClipboardCheck className="w-4 h-4" />, action: () => setActiveTab('checklist'), keywords: ['test', 'verify'], category: 'navigation' },
-        { id: 'nav-catalogs', title: 'Tech Library', subtitle: 'Equipment catalogs', icon: <Book className="w-4 h-4" />, action: () => setActiveTab('catalogs'), keywords: ['library', 'database'], category: 'navigation' },
-        { id: 'nav-photos', title: 'Site Photos', subtitle: 'Photo documentation', icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos'), keywords: ['images', 'pictures'], category: 'navigation' },
-        { id: 'nav-branding', title: 'Report Branding', subtitle: 'Customize reports', icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding'), keywords: ['logo', 'style'], category: 'navigation' },
-        { id: 'nav-help', title: 'Help Center', subtitle: 'Documentation & guides', icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help'), keywords: ['docs', 'support'], category: 'navigation' },
+        { id: 'nav-dashboard', title: t('commandPalette.cmds.dashboard.title'), subtitle: t('commandPalette.cmds.dashboard.subtitle'), icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard'), keywords: ['home', 'start'], category: 'navigation' },
+        { id: 'nav-bim-gallery', title: t('commandPalette.cmds.bimGallery.title'), subtitle: t('commandPalette.cmds.bimGallery.subtitle'), icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery'), keywords: ['3d', 'models'], category: 'navigation' },
+        { id: 'nav-bim', title: t('commandPalette.cmds.ifcMapping.title'), subtitle: t('commandPalette.cmds.ifcMapping.subtitle'), icon: <Layers className="w-4 h-4" />, action: () => setActiveTab('bim'), keywords: ['ifc', 'import'], category: 'navigation' },
+        { id: 'nav-config', title: t('commandPalette.cmds.pipingRouting.title'), subtitle: t('commandPalette.cmds.pipingRouting.subtitle'), icon: <Package className="w-4 h-4" />, action: () => setActiveTab('config'), keywords: ['pipes', 'routing', 'segments'], category: 'navigation' },
+        { id: 'nav-hydraulics', title: t('commandPalette.cmds.hydraulics.title'), subtitle: t('commandPalette.cmds.hydraulics.subtitle'), icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('hydraulics'), keywords: ['flow', 'pressure'], category: 'navigation' },
+        { id: 'nav-energy', title: t('commandPalette.cmds.sustainability.title'), subtitle: t('commandPalette.cmds.sustainability.subtitle'), icon: <Leaf className="w-4 h-4" />, action: () => setActiveTab('energy'), keywords: ['pue', 'green'], category: 'navigation' },
+        { id: 'nav-supports', title: t('commandPalette.cmds.supports.title'), subtitle: t('commandPalette.cmds.supports.subtitle'), icon: <Anchor className="w-4 h-4" />, action: () => setActiveTab('supports'), keywords: ['hangers', 'brackets'], category: 'navigation' },
+        { id: 'nav-weights', title: t('commandPalette.cmds.loadCalc.title'), subtitle: t('commandPalette.cmds.loadCalc.subtitle'), icon: <Scale className="w-4 h-4" />, action: () => setActiveTab('weights'), keywords: ['mass', 'load'], category: 'navigation' },
+        { id: 'nav-costs', title: t('commandPalette.cmds.costEstimation.title'), subtitle: t('commandPalette.cmds.costEstimation.subtitle'), icon: <Calculator className="w-4 h-4" />, action: () => setActiveTab('costs'), keywords: ['budget', 'price'], category: 'navigation' },
+        { id: 'nav-quantities', title: t('commandPalette.cmds.materialQuantities.title'), subtitle: t('commandPalette.cmds.materialQuantities.subtitle'), icon: <ClipboardList className="w-4 h-4" />, action: () => setActiveTab('boq'), keywords: ['boq', 'materials', 'list'], category: 'navigation' },
+        { id: 'nav-checklist', title: t('commandPalette.cmds.commissioning.title'), subtitle: t('commandPalette.cmds.commissioning.subtitle'), icon: <ClipboardCheck className="w-4 h-4" />, action: () => setActiveTab('checklist'), keywords: ['test', 'verify'], category: 'navigation' },
+        { id: 'nav-catalogs', title: t('commandPalette.cmds.techLibrary.title'), subtitle: t('commandPalette.cmds.techLibrary.subtitle'), icon: <Book className="w-4 h-4" />, action: () => setActiveTab('catalogs'), keywords: ['library', 'database'], category: 'navigation' },
+        { id: 'nav-photos', title: t('commandPalette.cmds.sitePhotos.title'), subtitle: t('commandPalette.cmds.sitePhotos.subtitle'), icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos'), keywords: ['images', 'pictures'], category: 'navigation' },
+        { id: 'nav-branding', title: t('commandPalette.cmds.reportBranding.title'), subtitle: t('commandPalette.cmds.reportBranding.subtitle'), icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding'), keywords: ['logo', 'style'], category: 'navigation' },
+        { id: 'nav-help', title: t('commandPalette.cmds.helpCenter.title'), subtitle: t('commandPalette.cmds.helpCenter.subtitle'), icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help'), keywords: ['docs', 'support'], category: 'navigation' },
 
         // Actions
-        { id: 'action-save', title: 'Save Project', subtitle: 'Save to JSON file', icon: <Save className="w-4 h-4" />, action: () => onSave?.(), keywords: ['export', 'backup'], category: 'action' },
-        { id: 'action-export', title: 'Export PDF', subtitle: 'Generate PDF report', icon: <FileDown className="w-4 h-4" />, action: () => onExport?.(), keywords: ['print', 'report'], category: 'action' },
+        { id: 'action-save', title: t('commandPalette.cmds.saveProject.title'), subtitle: t('commandPalette.cmds.saveProject.subtitle'), icon: <Save className="w-4 h-4" />, action: () => onSave?.(), keywords: ['export', 'backup'], category: 'action' },
+        { id: 'action-export', title: t('commandPalette.cmds.exportPdf.title'), subtitle: t('commandPalette.cmds.exportPdf.subtitle'), icon: <FileDown className="w-4 h-4" />, action: () => onExport?.(), keywords: ['print', 'report'], category: 'action' },
 
         // Settings
-        { id: 'settings-open', title: 'Settings', subtitle: 'Open project settings', icon: <Settings className="w-4 h-4" />, action: () => onSettings?.(), keywords: ['preferences', 'config'], category: 'settings' },
-    ], [setActiveTab, onSave, onExport, onSettings]);
+        { id: 'settings-open', title: t('commandPalette.cmds.projectSettings.title'), subtitle: t('commandPalette.cmds.projectSettings.subtitle'), icon: <Settings className="w-4 h-4" />, action: () => onSettings?.(), keywords: ['preferences', 'config'], category: 'settings' },
+    ], [setActiveTab, onSave, onExport, onSettings, t]);
 
     // Filter commands based on query
     const filteredCommands = useMemo(() => {
@@ -175,7 +177,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-muted-foreground text-xs hover:bg-muted hover:border-border transition-all"
             >
                 <Search className="w-3.5 h-3.5" />
-                <span>Quick search...</span>
+                <span>{t('commandPalette.quickSearch')}</span>
                 <kbd className="ml-2 px-1.5 py-0.5 rounded bg-background border border-border text-[10px] font-mono">
                     ⌘K
                 </kbd>
@@ -209,7 +211,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                     <input
                                         ref={inputRef}
                                         type="text"
-                                        placeholder="Search commands, pages, actions..."
+                                        placeholder={t('commandPalette.searchPlaceholder')}
                                         value={query}
                                         onChange={e => {
                                             setQuery(e.target.value);
@@ -230,14 +232,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                 <div ref={listRef} className="max-h-[400px] overflow-y-auto p-2">
                                     {filteredCommands.length === 0 ? (
                                         <div className="py-8 text-center text-muted-foreground text-sm">
-                                            No results found for &quot;{query}&quot;
+                                            {t('commandPalette.noResults')} &quot;{query}&quot;
                                         </div>
                                     ) : (
                                         <>
                                             {groupedCommands.navigation.length > 0 && (
                                                 <div className="mb-2">
                                                     <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
-                                                        Navigate
+                                                        {t('commandPalette.navigate')}
                                                     </p>
                                                     {groupedCommands.navigation.map(cmd => {
                                                         flatIndex++;
@@ -249,8 +251,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                                                 onClick={() => executeCommand(cmd)}
                                                                 onMouseEnter={() => setSelectedIndex(idx)}
                                                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
-                                                                        ? 'bg-primary text-primary-foreground'
-                                                                        : 'hover:bg-muted'
+                                                                    ? 'bg-primary text-primary-foreground'
+                                                                    : 'hover:bg-muted'
                                                                     }`}
                                                             >
                                                                 <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
@@ -274,7 +276,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                             {groupedCommands.action.length > 0 && (
                                                 <div className="mb-2">
                                                     <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
-                                                        Actions
+                                                        {t('commandPalette.actions')}
                                                     </p>
                                                     {groupedCommands.action.map(cmd => {
                                                         flatIndex++;
@@ -286,8 +288,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                                                 onClick={() => executeCommand(cmd)}
                                                                 onMouseEnter={() => setSelectedIndex(idx)}
                                                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
-                                                                        ? 'bg-primary text-primary-foreground'
-                                                                        : 'hover:bg-muted'
+                                                                    ? 'bg-primary text-primary-foreground'
+                                                                    : 'hover:bg-muted'
                                                                     }`}
                                                             >
                                                                 <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
@@ -310,7 +312,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                             {groupedCommands.settings.length > 0 && (
                                                 <div className="mb-2">
                                                     <p className="px-2 py-1 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-wider">
-                                                        Settings
+                                                        {t('commandPalette.settings')}
                                                     </p>
                                                     {groupedCommands.settings.map(cmd => {
                                                         flatIndex++;
@@ -322,8 +324,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                                                 onClick={() => executeCommand(cmd)}
                                                                 onMouseEnter={() => setSelectedIndex(idx)}
                                                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${selectedIndex === idx
-                                                                        ? 'bg-primary text-primary-foreground'
-                                                                        : 'hover:bg-muted'
+                                                                    ? 'bg-primary text-primary-foreground'
+                                                                    : 'hover:bg-muted'
                                                                     }`}
                                                             >
                                                                 <span className={selectedIndex === idx ? 'text-primary-foreground' : 'text-muted-foreground'}>
@@ -352,20 +354,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                         <span className="flex items-center gap-1">
                                             <kbd className="px-1 py-0.5 rounded bg-background border border-border">↑</kbd>
                                             <kbd className="px-1 py-0.5 rounded bg-background border border-border">↓</kbd>
-                                            to navigate
+                                            {t('commandPalette.toNavigate')}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <kbd className="px-1 py-0.5 rounded bg-background border border-border">↵</kbd>
-                                            to select
+                                            {t('commandPalette.toSelect')}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <kbd className="px-1 py-0.5 rounded bg-background border border-border">esc</kbd>
-                                            to close
+                                            {t('commandPalette.toClose')}
                                         </span>
                                     </div>
                                     <span className="flex items-center gap-1">
                                         <Command className="w-3 h-3" />
-                                        Command Palette
+                                        {t('commandPalette.title')}
                                     </span>
                                 </div>
                             </div>

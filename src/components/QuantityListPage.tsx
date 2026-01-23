@@ -26,6 +26,8 @@ import {
 import { MaterialItem, MaterialCategory, MaterialUnit, MaterialStatus } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 
 // Constants
 const CATEGORIES: MaterialCategory[] = ['Pipes', 'Fittings', 'Valves', 'Equipment', 'Supports', 'Insulation', 'Other'];
@@ -137,7 +139,7 @@ const InlineEditCell: React.FC<InlineEditCellProps> = ({ value, type, options, o
 
 // Main Component
 export const QuantityListPage = () => {
-    const { boqItems, setBoqItems, segments, equipmentList } = useProject();
+    const { boqItems, setBoqItems, segments, equipmentList, isInitialized } = useProject();
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'all'>('all');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -572,221 +574,225 @@ export const QuantityListPage = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-8 min-h-0">
                 <div className="max-w-[1800px] mx-auto">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-                        {CATEGORIES.map(cat => (
-                            <div
-                                key={cat}
-                                onClick={() => setCategoryFilter(cat)}
-                                className={`rounded-xl p-4 border cursor-pointer transition-all hover:scale-105 ${categoryConfig[cat].color} ${categoryConfig[cat].darkColor} ${categoryFilter === cat ? 'ring-2 ring-primary' : ''
-                                    }`}
-                                title={formatQuantitySummary(categoryStats[cat].quantities)}
-                            >
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-lg">{categoryConfig[cat].icon}</span>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider">{cat}</span>
-                                </div>
-                                <p className="text-2xl font-black">{categoryStats[cat].count}</p>
-                                <p className="text-[10px] text-muted-foreground truncate mt-1" title={formatQuantitySummary(categoryStats[cat].quantities)}>
-                                    {formatQuantitySummary(categoryStats[cat].quantities)}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Table */}
-                    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-                        {/* Table Header */}
-                        <div className="grid grid-cols-[40px_100px_1fr_100px_80px_60px_150px_120px_100px_100px_80px] gap-2 px-4 py-3 bg-muted/50 border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            <div className="flex items-center justify-center">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.size === filteredItems.length && filteredItems.length > 0}
-                                    onChange={handleSelectAll}
-                                    className="w-4 h-4 rounded border-border"
-                                />
-                            </div>
-                            <div>Code</div>
-                            <div>Description</div>
-                            <div>Category</div>
-                            <div className="text-right">Qty</div>
-                            <div>Unit</div>
-                            <div>Specification</div>
-                            <div>Manufacturer</div>
-                            <div>Part No.</div>
-                            <div>Status</div>
-                            <div className="text-center">Actions</div>
-                        </div>
-
-                        {/* Grouped Rows */}
-                        <div className="divide-y divide-border/30">
-                            {CATEGORIES.map(cat => {
-                                const items = groupedItems[cat];
-                                if (items.length === 0 && categoryFilter !== 'all') return null;
-                                if (items.length === 0) return null;
-
-                                const isExpanded = expandedCategories.has(cat);
-
-                                return (
-                                    <div key={cat}>
-                                        {/* Category Header */}
-                                        <div
-                                            onClick={() => toggleCategory(cat)}
-                                            className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-muted/30 transition-colors ${categoryConfig[cat].color} ${categoryConfig[cat].darkColor}`}
-                                        >
-                                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    {!isInitialized ? (
+                        <TableSkeleton rows={10} />
+                    ) : (
+                        <>
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+                                {CATEGORIES.map(cat => (
+                                    <div
+                                        key={cat}
+                                        onClick={() => setCategoryFilter(cat)}
+                                        className={`rounded-xl p-4 border cursor-pointer transition-all hover:scale-105 ${categoryConfig[cat].color} ${categoryConfig[cat].darkColor} ${categoryFilter === cat ? 'ring-2 ring-primary' : ''
+                                            }`}
+                                        title={formatQuantitySummary(categoryStats[cat].quantities)}
+                                    >
+                                        <div className="flex items-center gap-2 mb-1">
                                             <span className="text-lg">{categoryConfig[cat].icon}</span>
-                                            <span className="font-bold text-sm">{cat}</span>
-                                            <span className="text-xs text-muted-foreground">({items.length} items)</span>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleAddItem(cat); }}
-                                                className="ml-auto text-xs text-primary hover:underline flex items-center gap-1"
-                                            >
-                                                <Plus className="w-3 h-3" /> Add
-                                            </button>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">{cat}</span>
                                         </div>
-
-                                        {/* Items */}
-                                        <AnimatePresence>
-                                            {isExpanded && items.map(item => (
-                                                <motion.div
-                                                    key={item.id}
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    exit={{ opacity: 0, height: 0 }}
-                                                    className={`grid grid-cols-[40px_100px_1fr_100px_80px_60px_150px_120px_100px_100px_80px] gap-2 px-4 py-2 items-center hover:bg-muted/20 transition-colors text-sm ${selectedIds.has(item.id) ? 'bg-primary/5' : ''
-                                                        } ${item.isAutoGenerated && !item.isOverridden ? 'border-l-2 border-l-primary/50' : ''}`}
-                                                >
-                                                    <div className="flex items-center justify-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedIds.has(item.id)}
-                                                            onChange={() => handleSelectItem(item.id, false)}
-                                                            className="w-4 h-4 rounded border-border"
-                                                        />
-                                                    </div>
-                                                    <div className="font-mono text-xs">
-                                                        <InlineEditCell
-                                                            value={item.code}
-                                                            type="text"
-                                                            placeholder="CODE"
-                                                            onSave={v => handleUpdateItem(item.id, { code: String(v) })}
-                                                        />
-                                                    </div>
-                                                    <div className="font-medium">
-                                                        <InlineEditCell
-                                                            value={item.description}
-                                                            type="text"
-                                                            placeholder="Description"
-                                                            onSave={v => handleUpdateItem(item.id, { description: String(v) })}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <InlineEditCell
-                                                            value={item.category}
-                                                            type="select"
-                                                            options={CATEGORIES}
-                                                            onSave={v => handleUpdateItem(item.id, { category: v as MaterialCategory })}
-                                                        />
-                                                    </div>
-                                                    <div className="text-right font-mono">
-                                                        <InlineEditCell
-                                                            value={item.quantity}
-                                                            type="number"
-                                                            onSave={v => handleUpdateItem(item.id, { quantity: Number(v) })}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <InlineEditCell
-                                                            value={item.unit}
-                                                            type="select"
-                                                            options={UNITS}
-                                                            onSave={v => handleUpdateItem(item.id, { unit: v as MaterialUnit })}
-                                                        />
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        <InlineEditCell
-                                                            value={item.specification || ''}
-                                                            type="text"
-                                                            placeholder="e.g., DN50, PN16"
-                                                            onSave={v => handleUpdateItem(item.id, { specification: String(v) })}
-                                                        />
-                                                    </div>
-                                                    <div className="text-xs">
-                                                        <InlineEditCell
-                                                            value={item.manufacturer || ''}
-                                                            type="text"
-                                                            placeholder="Manufacturer"
-                                                            onSave={v => handleUpdateItem(item.id, { manufacturer: String(v) })}
-                                                        />
-                                                    </div>
-                                                    <div className="text-xs font-mono">
-                                                        <InlineEditCell
-                                                            value={item.partNumber || ''}
-                                                            type="text"
-                                                            placeholder="Part #"
-                                                            onSave={v => handleUpdateItem(item.id, { partNumber: String(v) })}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <select
-                                                            value={item.status}
-                                                            onChange={e => handleUpdateItem(item.id, { status: e.target.value as MaterialStatus })}
-                                                            className={`text-[10px] font-bold px-2 py-1 rounded-full border-0 cursor-pointer ${statusConfig[item.status].color}`}
-                                                        >
-                                                            {STATUSES.map(s => (
-                                                                <option key={s} value={s}>{statusConfig[s].label}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <button
-                                                            onClick={() => handleDuplicateItem(item)}
-                                                            className="p-1.5 rounded hover:bg-muted"
-                                                            title="Duplicate"
-                                                        >
-                                                            <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteItem(item.id)}
-                                                            className="p-1.5 rounded hover:bg-destructive/10"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                                        </button>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
+                                        <p className="text-2xl font-black">{categoryStats[cat].count}</p>
+                                        <p className="text-[10px] text-muted-foreground truncate mt-1" title={formatQuantitySummary(categoryStats[cat].quantities)}>
+                                            {formatQuantitySummary(categoryStats[cat].quantities)}
+                                        </p>
                                     </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Empty State */}
-                        {filteredItems.length === 0 && (
-                            <div className="p-12 text-center text-muted-foreground">
-                                <Package className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                <p className="font-bold text-lg mb-2">No materials yet</p>
-                                <p className="text-sm mb-6">Start by adding items manually or sync from your piping design.</p>
-                                <div className="flex items-center justify-center gap-3">
-                                    <button onClick={handleSyncFromDesign} className="btn btn-secondary gap-2">
-                                        <RefreshCw className="w-4 h-4" /> Sync from Design
-                                    </button>
-                                    <button onClick={() => handleAddItem()} className="btn btn-primary gap-2">
-                                        <Plus className="w-4 h-4" /> Add Item
-                                    </button>
-                                </div>
+                                ))}
                             </div>
-                        )}
-                    </div>
 
-                    {/* Footer Stats */}
-                    {filteredItems.length > 0 && (
-                        <div className="mt-4 text-sm text-muted-foreground text-center">
-                            Showing {filteredItems.length} of {materialItems.length} items
-                            {selectedIds.size > 0 && ` • ${selectedIds.size} selected`}
-                        </div>
+                            {/* Table */}
+                            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                                {/* Table Header */}
+                                <div className="grid grid-cols-[40px_100px_1fr_100px_80px_60px_150px_120px_100px_100px_80px] gap-2 px-4 py-3 bg-muted/50 border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    <div className="flex items-center justify-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.size === filteredItems.length && filteredItems.length > 0}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 rounded border-border"
+                                        />
+                                    </div>
+                                    <div>Code</div>
+                                    <div>Description</div>
+                                    <div>Category</div>
+                                    <div className="text-right">Qty</div>
+                                    <div>Unit</div>
+                                    <div>Specification</div>
+                                    <div>Manufacturer</div>
+                                    <div>Part No.</div>
+                                    <div>Status</div>
+                                    <div className="text-center">Actions</div>
+                                </div>
+
+                                {/* Grouped Rows */}
+                                <div className="divide-y divide-border/30">
+                                    {CATEGORIES.map(cat => {
+                                        const items = groupedItems[cat];
+                                        if (items.length === 0 && categoryFilter !== 'all') return null;
+                                        if (items.length === 0) return null;
+
+                                        const isExpanded = expandedCategories.has(cat);
+
+                                        return (
+                                            <div key={cat}>
+                                                {/* Category Header */}
+                                                <div
+                                                    onClick={() => toggleCategory(cat)}
+                                                    className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-muted/30 transition-colors ${categoryConfig[cat].color} ${categoryConfig[cat].darkColor}`}
+                                                >
+                                                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                                    <span className="text-lg">{categoryConfig[cat].icon}</span>
+                                                    <span className="font-bold text-sm">{cat}</span>
+                                                    <span className="text-xs text-muted-foreground">({items.length} items)</span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleAddItem(cat); }}
+                                                        className="ml-auto text-xs text-primary hover:underline flex items-center gap-1"
+                                                    >
+                                                        <Plus className="w-3 h-3" /> Add
+                                                    </button>
+                                                </div>
+
+                                                {/* Items */}
+                                                <AnimatePresence>
+                                                    {isExpanded && items.map(item => (
+                                                        <motion.div
+                                                            key={item.id}
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            className={`grid grid-cols-[40px_100px_1fr_100px_80px_60px_150px_120px_100px_100px_80px] gap-2 px-4 py-2 items-center hover:bg-muted/20 transition-colors text-sm ${selectedIds.has(item.id) ? 'bg-primary/5' : ''
+                                                                } ${item.isAutoGenerated && !item.isOverridden ? 'border-l-2 border-l-primary/50' : ''}`}
+                                                        >
+                                                            <div className="flex items-center justify-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedIds.has(item.id)}
+                                                                    onChange={() => handleSelectItem(item.id, false)}
+                                                                    className="w-4 h-4 rounded border-border"
+                                                                />
+                                                            </div>
+                                                            <div className="font-mono text-xs">
+                                                                <InlineEditCell
+                                                                    value={item.code}
+                                                                    type="text"
+                                                                    placeholder="CODE"
+                                                                    onSave={v => handleUpdateItem(item.id, { code: String(v) })}
+                                                                />
+                                                            </div>
+                                                            <div className="font-medium">
+                                                                <InlineEditCell
+                                                                    value={item.description}
+                                                                    type="text"
+                                                                    placeholder="Description"
+                                                                    onSave={v => handleUpdateItem(item.id, { description: String(v) })}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <InlineEditCell
+                                                                    value={item.category}
+                                                                    type="select"
+                                                                    options={CATEGORIES}
+                                                                    onSave={v => handleUpdateItem(item.id, { category: v as MaterialCategory })}
+                                                                />
+                                                            </div>
+                                                            <div className="text-right font-mono">
+                                                                <InlineEditCell
+                                                                    value={item.quantity}
+                                                                    type="number"
+                                                                    onSave={v => handleUpdateItem(item.id, { quantity: Number(v) })}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <InlineEditCell
+                                                                    value={item.unit}
+                                                                    type="select"
+                                                                    options={UNITS}
+                                                                    onSave={v => handleUpdateItem(item.id, { unit: v as MaterialUnit })}
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                <InlineEditCell
+                                                                    value={item.specification || ''}
+                                                                    type="text"
+                                                                    placeholder="e.g., DN50, PN16"
+                                                                    onSave={v => handleUpdateItem(item.id, { specification: String(v) })}
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs">
+                                                                <InlineEditCell
+                                                                    value={item.manufacturer || ''}
+                                                                    type="text"
+                                                                    placeholder="Manufacturer"
+                                                                    onSave={v => handleUpdateItem(item.id, { manufacturer: String(v) })}
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs font-mono">
+                                                                <InlineEditCell
+                                                                    value={item.partNumber || ''}
+                                                                    type="text"
+                                                                    placeholder="Part #"
+                                                                    onSave={v => handleUpdateItem(item.id, { partNumber: String(v) })}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <select
+                                                                    value={item.status}
+                                                                    onChange={e => handleUpdateItem(item.id, { status: e.target.value as MaterialStatus })}
+                                                                    className={`text-[10px] font-bold px-2 py-1 rounded-full border-0 cursor-pointer ${statusConfig[item.status].color}`}
+                                                                >
+                                                                    {STATUSES.map(s => (
+                                                                        <option key={s} value={s}>{statusConfig[s].label}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                <button
+                                                                    onClick={() => handleDuplicateItem(item)}
+                                                                    className="p-1.5 rounded hover:bg-muted"
+                                                                    title="Duplicate"
+                                                                >
+                                                                    <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteItem(item.id)}
+                                                                    className="p-1.5 rounded hover:bg-destructive/10"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    ))}
+                                                </AnimatePresence>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Empty State */}
+                                {filteredItems.length === 0 && (
+                                    <EmptyState
+                                        icon={Package}
+                                        title="No materials found"
+                                        description="Start by adding items manually or sync from your piping design."
+                                        action={{
+                                            label: 'Add Item',
+                                            onClick: () => handleAddItem(),
+                                            variant: 'primary'
+                                        }}
+                                        className="m-8 border-dashed"
+                                    />
+                                )}
+                            </div>
+
+                            {/* Footer Stats */}
+                            {filteredItems.length > 0 && (
+                                <div className="mt-4 text-sm text-muted-foreground text-center">
+                                    Showing {filteredItems.length} of {materialItems.length} items
+                                    {selectedIds.size > 0 && ` • ${selectedIds.size} selected`}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>

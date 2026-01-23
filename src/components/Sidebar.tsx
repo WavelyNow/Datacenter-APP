@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
+import { usePreferences, useTranslation } from '@/context/PreferencesContext';
 import { useProject } from '@/context/ProjectContext';
 import { TabId } from '@/lib/types';
 
@@ -98,6 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onSave,
     onLoad
 }) => {
+    const { t } = useTranslation();
     const {
         activeTab,
         setActiveTab: onTabChange,
@@ -105,34 +107,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } = useProject();
 
     const mainGroup: MenuItem[] = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
     ];
 
     const engineeringGroup: MenuItem[] = [
-        { id: 'bim_gallery', label: 'BIM Gallery', icon: Cuboid, badge: 'NEW' },
-        { id: 'bim', label: 'IFC Mapping', icon: Layers },
-        { id: 'config', label: 'Piping & Routing', icon: Package },
-        { id: 'hydraulics', label: 'Hydraulics', icon: Wrench },
-        { id: 'energy', label: 'Sustainability', icon: Leaf },
-        { id: 'supports', label: 'Supports', icon: Anchor },
-        { id: 'weights', label: 'Load Calc', icon: Scale },
-        { id: 'costs', label: 'Cost Estimation', icon: Calculator },
-        { id: 'boq', label: 'Quantities', icon: ClipboardList },
-        { id: 'checklist', label: 'Commissioning', icon: ClipboardCheck },
+        { id: 'bim_gallery', label: t('sidebar.bimGallery'), icon: Cuboid, badge: 'NEW' },
+        { id: 'bim', label: t('sidebar.ifcMapping'), icon: Layers },
+        { id: 'config', label: t('sidebar.pipingRouting'), icon: Package },
+        { id: 'hydraulics', label: t('sidebar.hydraulics'), icon: Wrench },
+        { id: 'energy', label: t('sidebar.sustainability'), icon: Leaf },
+        { id: 'supports', label: t('sidebar.supports'), icon: Anchor },
+        { id: 'weights', label: t('sidebar.loadCalc'), icon: Scale },
+        { id: 'costs', label: t('sidebar.costEstimator'), icon: Calculator },
+        { id: 'boq', label: t('sidebar.quantities'), icon: ClipboardList },
+        { id: 'checklist', label: t('sidebar.commissioning'), icon: ClipboardCheck },
     ];
 
     const databaseGroup: MenuItem[] = [
-        { id: 'catalogs', label: 'Tech Library', icon: Book },
+        { id: 'catalogs', label: t('sidebar.techLibrary'), icon: Book },
     ];
 
     const reportsGroup: MenuItem[] = [
-        { id: 'photos', label: 'Site Photos', icon: Camera },
-        { id: 'branding', label: 'Report Branding', icon: Palette },
-        { id: 'settings', label: 'Settings', icon: Settings },
+        { id: 'photos', label: t('sidebar.sitePhotos'), icon: Camera },
+        { id: 'branding', label: t('sidebar.reportBranding'), icon: Palette },
+        { id: 'settings', label: t('common.settings'), icon: Settings },
     ];
 
     return (
-        <aside className="sidebar-panel w-[280px] flex flex-col justify-between p-4 z-50">
+        <aside className="sidebar-panel w-[280px] flex flex-col justify-between p-4 z-50" >
             <div className="flex-1 overflow-y-auto no-scrollbar">
                 {/* Brand Logo */}
                 <div className="flex items-center gap-3 px-2 mb-10 pt-2">
@@ -140,10 +142,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <Box className="w-5 h-5 text-primary-foreground group-hover:scale-110 transition-transform" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h1 className="text-sm font-bold tracking-tight text-foreground/90">Engineering Suite</h1>
+                        <h1 className="text-sm font-bold tracking-tight text-foreground/90">{t('sidebar.brand')}</h1>
                         <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                            SYSTEM V3.0
+                            {t('common.systemActive')}
                         </p>
                     </div>
                 </div>
@@ -159,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                         <div className="flex flex-col min-w-0 items-start">
                             <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors text-foreground">
-                                {projectDetails.projectName || 'Untitled Project'}
+                                {projectDetails.projectName || t('common.project')}
                             </span>
                             <span className="text-[10px] text-muted-foreground font-mono truncate">
                                 PROJ-{projectDetails.projectNumber || '000'}
@@ -172,25 +174,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* Navigation Sections */}
                 <nav className="-mx-2">
                     <NavSection items={mainGroup} activeTab={activeTab} onTabChange={onTabChange} />
-                    <NavSection title="Engineering" items={engineeringGroup} activeTab={activeTab} onTabChange={onTabChange} />
-                    <NavSection title="Resources" items={databaseGroup} activeTab={activeTab} onTabChange={onTabChange} />
-                    <NavSection title="Output" items={reportsGroup} activeTab={activeTab} onTabChange={onTabChange} />
+                    <NavSection title={t('sidebar.engineering')} items={engineeringGroup} activeTab={activeTab} onTabChange={onTabChange} />
+                    <NavSection title={t('sidebar.resources')} items={databaseGroup} activeTab={activeTab} onTabChange={onTabChange} />
+                    <NavSection title={t('sidebar.output')} items={reportsGroup} activeTab={activeTab} onTabChange={onTabChange} />
                 </nav>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+            <div className="mt-4 pt-4 border-t border-border/50 space-y-3" >
                 <div className="grid grid-cols-4 gap-2">
                     <button onClick={onExportOpen} className="col-span-2 flex items-center justify-center gap-2 bg-foreground text-background h-9 rounded-xl text-xs font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
                         <Printer className="w-3.5 h-3.5" />
-                        Export
+                        {t('common.export')}
                     </button>
 
-                    <button onClick={onSave} className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-border/60 transition-all" title="Save JSON">
+                    <button onClick={onSave} className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-border/60 transition-all" title={t('common.save')}>
                         <Save className="w-3.5 h-3.5" />
                     </button>
 
-                    <label className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-border/60 transition-all cursor-pointer" title="Load JSON">
+                    <label className="flex items-center justify-center h-9 rounded-xl bg-secondary/50 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-border/60 transition-all cursor-pointer" title={t('common.import')}>
                         <Upload className="w-3.5 h-3.5" />
                         <input type="file" accept=".json" onChange={onLoad} className="hidden" />
                     </label>
@@ -204,14 +206,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-all"
                     >
                         <HelpCircle className="w-3.5 h-3.5" />
-                        Help
+                        {t('common.help')}
                     </button>
                 </div>
 
                 <div className="text-[9px] text-center text-muted-foreground/20 font-mono mt-2 uppercase tracking-widest">
                     Datacenter OS v2026.1
                 </div>
-            </div>
-        </aside>
+            </div >
+        </aside >
     );
 };
