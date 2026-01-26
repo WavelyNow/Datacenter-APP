@@ -50,6 +50,7 @@ import { BrandingManager } from '@/components/BrandingManager';
 import { EquipmentManager } from '@/components/EquipmentManager';
 import { CommandPalette } from '@/components/CommandPalette';
 import { SettingsPage } from '@/components/SettingsPage';
+import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 
 import { ProjectLoadData } from '@/lib/types';
 
@@ -86,6 +87,7 @@ const DashboardContent = () => {
   const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
 
 
@@ -133,6 +135,11 @@ const DashboardContent = () => {
       if (((e.metaKey || e.ctrlKey) && e.key === 'y') || ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'z')) {
         e.preventDefault();
         redo();
+      }
+      // Shortcuts Help: ?
+      if (e.key === '?' && e.shiftKey) {
+        e.preventDefault();
+        setIsShortcutsOpen(true);
       }
     };
 
@@ -203,6 +210,7 @@ const DashboardContent = () => {
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
       <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
       <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={() => setIsProfileCatalogOpen(false)} />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
       <ProjectSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

@@ -368,7 +368,8 @@
 /* Print Optimization */
 @media print {
   @page {
-    margin: 0.5cm;
+    margin: 1cm;
+    size: A4;
   }
 
   html,
@@ -377,9 +378,53 @@
     color: black !important;
     width: 100%;
     overflow: visible;
+    font-size: 12pt;
   }
 
-  .no-print {
+  /* Hide non-print elements */
+  .no-print,
+  .skip-link,
+  aside,
+  header,
+  nav,
+  button:not([type="submit"]),
+  .sidebar-panel,
+  [role="navigation"] {
     display: none !important;
+  }
+
+  /* Force full width for main content */
+  main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure tables break properly */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Remove shadows and borders for cleaner print */
+  .card-premium,
+  .glass-panel {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Links show URL */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
   }
 }

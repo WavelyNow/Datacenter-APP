@@ -4,47 +4,83 @@
 Datacenter APP is a specialized engineering suite designed for calculating, managing, and generating technical reports for hydraulic cooling systems in data centers.
 
 ## Key Features
-- **Project Management**: Manage details for complex projects including location, beneficiaries, and design parameters.
-- **Hydraulic Calculations**: 
-    - Glycol volume calculation with customizable safety margins.
-    - Automatic weight estimations for structural loading.
-- **Equipment Management**:
-    - Manage catalogs of pipes, profiles, and cooling equipment (chillers, CDUs, etc.).
-    - Drag-and-drop support for equipment proofs and data sheets.
-- **Visual Branding**:
-    - Customizable themes for PDF reports.
-    - Company logo and color scheme integration.
-- **Report Generation**: Export detailed PDF technical reports ready for submission.
+
+### 🔧 Core Functionality
+- **Hydraulic Calculations**: Glycol volume, pressure drop, flow rate calculations
+- **Pipe Management**: Catalog of standard pipe sizes with real hydraulic properties
+- **Equipment Inventory**: Manage chillers, CRAH, CDUs with weight/volume tracking
+- **Support Dimensioning**: Calculate pipe support requirements (Mupro-verified)
+
+### 📊 Advanced Tools
+- **BIM Integration**: IFC model upload and pipe extraction
+- **Cost Estimation**: Material and labor cost calculations
+- **Energy Analysis**: Thermal load and sustainability metrics
+- **Commissioning Checklist**: Pre-startup verification tool
+
+### 📤 Export & Reports
+- **PDF Reports**: Professional multi-page technical reports
+- **Excel Export**: Bill of Quantities spreadsheet export
+- **Project Save/Load**: JSON project files with cloud sync
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘/Ctrl + K` | Open Command Palette |
+| `⌘/Ctrl + S` | Save Project |
+| `⌘/Ctrl + E` | Export Report |
+| `⌘/Ctrl + Z` | Undo |
+| `⌘/Ctrl + ⇧ + Z` | Redo |
+| `?` | Show Shortcuts Help |
 
 ## Tech Stack
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
-- **Styling**: TailwindCSS 4, Lucide React
-- **PDF Generation**: `pdf-lib` with Puppeteer for high-fidelity rendering
-- **State Management**: React Context / Hooks
+- **Styling**: TailwindCSS 4
+- **Icons**: Lucide React
+- **PDF**: html2canvas + jsPDF / Puppeteer
+- **State**: React Context with History (undo/redo)
+- **Animations**: Framer Motion
 
 ## Getting Started
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+```bash
+# Install dependencies
+npm install
 
-2. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+# Run development server
+npm run dev
 
-3. **Open the application:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+# Open http://localhost:3000
+```
 
-## Building for Production
-
-To create an optimized production build:
+## Production Build
 
 ```bash
 npm run build
 npm start
 ```
 
+## Project Structure
+
+```
+src/
+├── app/              # Next.js App Router pages
+├── components/       # React components
+│   ├── ui/          # Reusable UI primitives
+│   └── bim/         # BIM-specific components
+├── context/         # React Context providers
+├── hooks/           # Custom React hooks
+├── lib/             # Utilities and helpers
+│   ├── bim/        # IFC parsing logic
+│   └── excel/      # Excel generation
+└── types/           # TypeScript types
+```
+
+## Accessibility
+- Skip-to-content link
+- ARIA landmarks on navigation
+- Focus trap in modals
+- Keyboard navigation support
+
 ## License
-Private / Proprietary# Updated: Mon Jan 19 23:22:38 EET 2026
+Private / Proprietary

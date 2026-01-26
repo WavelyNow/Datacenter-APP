@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelpProvider } from "@/components/help/HelpContext";
 import { PreferencesProvider } from "@/context/PreferencesContext";
 import { OnlineStatusIndicator } from "@/components/OnlineStatusIndicator";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({
             <ErrorBoundary>
               <HelpProvider>
                 <OnlineStatusIndicator />
+                <InstallPrompt />
                 {children}
               </HelpProvider>
             </ErrorBoundary>

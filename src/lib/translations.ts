@@ -293,6 +293,14 @@ export const translations = {
                 2: 'Add custom equipment',
                 3: 'Attach technical sheets'
             }
+        },
+        pwa: {
+            installTitle: 'Install Engineering Suite',
+            installDescription: 'Get quick access and work offline',
+            notNow: 'Not now',
+            install: 'Install',
+            backOnline: 'Back online',
+            offline: 'You are offline'
         }
     },
     ro: {
@@ -491,6 +499,14 @@ export const translations = {
                 2: 'Adaugă echipament personalizat',
                 3: 'Atașează fișe tehnice'
             }
+        },
+        pwa: {
+            installTitle: 'Instalează Engineering Suite',
+            installDescription: 'Acces rapid și lucru offline',
+            notNow: 'Nu acum',
+            install: 'Instalează',
+            backOnline: 'Din nou online',
+            offline: 'Ești offline'
         }
     },
     settingsPage: {
