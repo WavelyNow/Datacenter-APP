@@ -99,7 +99,7 @@ const PipeRow = React.memo(({
             {viewMode === 'config' ? (
                 <>
                     {/* Material & Size Specs */}
-                    <div className="col-span-5 space-y-3">
+                    <div className="col-span-5 space-y-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-3">
                             <select
                                 className="w-full bg-transparent border-none p-0 text-sm font-medium text-foreground focus:ring-0 cursor-pointer hover:text-primary transition-colors tracking-tight"
@@ -141,7 +141,7 @@ const PipeRow = React.memo(({
                     </div>
 
                     {/* Length */}
-                    <div className="col-span-3">
+                    <div className="col-span-3" onClick={(e) => e.stopPropagation()}>
                         <NumberInput
                             value={segment.length}
                             onChange={(val) => updateSegment(segment.id, { length: val })}
