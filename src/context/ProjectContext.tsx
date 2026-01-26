@@ -50,6 +50,10 @@ interface ProjectState {
     // BoQ State
     boqItems: BoQItem[];
     setBoqItems: (items: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) => void;
+
+    // Search & Highlight
+    highlightedItemId: string | null;
+    setHighlightedItemId: (id: string | null) => void;
 }
 
 
@@ -131,6 +135,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const [foundPipes, setFoundPipes] = useState<BimObject[]>([]);
     const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
     const [parsingProgress, setParsingProgress] = useState(0);
+
+    // Global UI State (Search/Highlight)
+    const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
     // Load saved data using useHistory reset
     useEffect(() => {
@@ -294,7 +301,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         parsingProgress, setParsingProgress,
 
         // BoQ
-        boqItems: state.boqItems, setBoqItems
+        boqItems: state.boqItems, setBoqItems,
+
+        // Search
+        highlightedItemId, setHighlightedItemId
     };
 
     return (

@@ -2,6 +2,8 @@ import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { useTranslation } from '@/context/PreferencesContext';
 import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
+import { useProject } from '@/context/ProjectContext';
+import { User, ChevronRight } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
 
@@ -31,7 +33,6 @@ export const Header: React.FC<HeaderProps> = ({
     onOpenEquipmentCatalog,
     onOpenExport,
     onOpenSettings,
-
     onSaveProject,
     onUndo,
     onRedo,
@@ -39,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
     canRedo
 }) => {
     const { t } = useTranslation();
+    const { activeTab } = useProject();
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
@@ -62,53 +64,77 @@ export const Header: React.FC<HeaderProps> = ({
         reader.readAsText(file);
     };
 
+    // Helper to get readable name for active tab
+    const getTabName = (tab: string) => {
+        const keys: Record<string, string> = {
+            'dashboard': t('sidebar.dashboard'),
+            'bim_gallery': t('sidebar.bimGallery'),
+            'bim': t('sidebar.ifcMapping'),
+            'config': t('sidebar.pipingRouting'),
+            'hydraulics': t('sidebar.hydraulics'),
+            'energy': t('sidebar.sustainability'),
+            'supports': t('sidebar.supports'),
+            'weights': t('sidebar.loadCalc'),
+            'costs': t('sidebar.costEstimator'),
+            'boq': t('sidebar.quantities'),
+            'checklist': t('sidebar.commissioning'),
+            'catalogs': t('sidebar.techLibrary'),
+            'photos': t('sidebar.sitePhotos'),
+            'branding': t('sidebar.reportBranding'),
+            'settings': t('common.settings'),
+            'help': t('common.help')
+        };
+        return keys[tab] || tab;
+    };
+
     return (
         <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300" >
-            <div className="px-6 h-18 flex items-center justify-between gap-4">
+            <div className="px-6 h-18 py-3 flex items-center justify-between gap-4">
 
-                {/* Left: Project Title Context */}
-                <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="flex flex-col min-w-0">
+                {/* Left: Breadcrumbs & Project Title */}
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    {/* Breadcrumbs */}
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                        <span>{projectDetails.projectNumber || 'PR-000'}</span>
+                        <ChevronRight className="w-3 h-3 opacity-50" />
+                        <span className="text-primary">{getTabName(activeTab)}</span>
+                    </div>
+
+                    {/* Project Title Input */}
+                    <div className="flex items-center gap-2">
                         <input
                             type="text"
                             value={projectDetails.projectName}
                             onChange={(e) => updateDetail('projectName', e.target.value)}
-                            className="bg-transparent border-none p-0 text-base font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-2 -ml-2 transition-all w-full max-w-[180px] md:max-w-[300px] truncate"
+                            className="bg-transparent border-none p-0 text-lg font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-1 -ml-1 transition-all w-full max-w-[300px] truncate"
                             placeholder={t('header.projectNamePlaceholder')}
                         />
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground px-0">
-                            <span className="font-mono opacity-70">{projectDetails.projectNumber}</span>
-                            <span className="opacity-50">•</span>
-                            <span className="opacity-70">{t('common.version')} {projectDetails.revision}</span>
-                        </div>
+                        <CommandPalette
+                            onSave={onSaveProject}
+                            onExport={onOpenExport}
+                            onSettings={onOpenSettings}
+                        />
                     </div>
-
-                    {/* Command Palette */}
-                    <CommandPalette
-                        onSave={onSaveProject}
-                        onExport={onOpenExport}
-                        onSettings={onOpenSettings}
-                    />
                 </div>
 
                 {/* Right: Tools & Catalogs */}
                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
 
                     {/* Undo/Redo */}
-                    <div className="flex items-center gap-0.5 bg-secondary/40 p-1 rounded-xl border border-border/40">
+                    <div className="hidden lg:flex items-center gap-0.5 bg-secondary/40 p-1 rounded-xl border border-border/40">
                         <button
                             onClick={onUndo}
                             disabled={!canUndo}
-                            className="p-2 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             title={`${t('common.undo')} (Ctrl+Z)`}
                         >
                             <Undo className="w-4 h-4" />
                         </button>
-                        <div className="w-px h-4 bg-border/40 mx-0.5" />
+                        <div className="w-px h-3 bg-border/40 mx-0.5" />
                         <button
                             onClick={onRedo}
                             disabled={!canRedo}
-                            className="p-2 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             title={`${t('common.redo')} (Ctrl+Y)`}
                         >
                             <Redo className="w-4 h-4" />
@@ -116,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     {/* Quick Catalogs */}
-                    <div className="hidden md:flex items-center gap-1 md:gap-2 bg-secondary/40 p-1.5 rounded-xl border border-border/40">
+                    <div className="hidden xl:flex items-center gap-1 md:gap-2 bg-secondary/40 p-1.5 rounded-xl border border-border/40">
                         <button
                             onClick={onOpenEquipmentCatalog}
                             className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
@@ -145,19 +171,9 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                     </div>
 
-                    <div className="h-6 w-px bg-border/40 mx-1 hidden lg:block" />
-
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
                         <CloudBrowserAction />
-
-                        <button
-                            onClick={onOpenSettings}
-                            className="btn btn-ghost btn-icon h-10 w-10 text-muted-foreground hover:text-foreground"
-                            title={t('common.settings')}
-                        >
-                            <Settings className="w-5 h-5 transition-transform hover:rotate-45 duration-500" />
-                        </button>
 
                         <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title={`${t('common.save')} / ${t('common.import')}`}>
                             <button
@@ -175,12 +191,18 @@ export const Header: React.FC<HeaderProps> = ({
 
                         <button
                             onClick={onOpenExport}
-                            className="btn btn-primary h-10 px-5 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-1 md:ml-3"
+                            className="btn btn-primary h-10 w-10 md:w-auto md:px-5 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-1 md:ml-3 flex items-center justify-center"
                         >
                             <Printer className="w-4 h-4" />
-                            <span className="hidden lg:inline">{t('sidebar.exportRaport')}</span>
-                            <span className="lg:hidden">{t('common.export')}</span>
+                            <span className="hidden md:inline">{t('sidebar.exportRaport')}</span>
                         </button>
+
+                        {/* User Avatar Placeholder */}
+                        <div className="h-10 w-10 ml-2 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md">
+                            <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
+                                <User className="w-5 h-5 text-primary" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

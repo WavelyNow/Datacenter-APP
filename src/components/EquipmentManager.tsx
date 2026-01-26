@@ -8,6 +8,8 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
+import { useTranslation } from '@/context/PreferencesContext';
+import { ValidatedInput, NumberInput } from '@/components/ui/ValidatedInput';
 
 import { isValidVolume, isValidWeight } from '@/lib/validation/schemas';
 
@@ -39,6 +41,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
     viewMode,
     isLoading = false
 }) => {
+    const { t } = useTranslation();
     const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
     const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -144,8 +147,8 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                             <Box className="w-4 h-4 text-foreground" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-semibold text-foreground">Inventory</h3>
-                            <p className="text-[10px] text-muted-foreground">Manage equipment list</p>
+                            <h3 className="text-sm font-semibold text-foreground">{t('equipmentManager.inventory')}</h3>
+                            <p className="text-[10px] text-muted-foreground">{t('equipmentManager.manageList')}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -154,14 +157,15 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                             className="btn btn-secondary btn-sm gap-2 text-xs"
                         >
                             <BookOpen className="w-3.5 h-3.5" />
-                            Catalog
+                            <BookOpen className="w-3.5 h-3.5" />
+                            {t('equipmentManager.catalog')}
                         </button>
                         <button
                             onClick={addEquipment}
                             className="btn btn-primary btn-sm gap-2 text-xs"
                         >
                             <Plus className="w-3.5 h-3.5" />
-                            Add Item
+                            {t('equipmentManager.addItem')}
                         </button>
                     </div>
                 </div>
@@ -180,13 +184,19 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                 ) : equipmentList.length === 0 ? (
                     <EmptyState
                         icon={Box}
-                        title="No equipment added"
-                        description="Start by adding items manually or from the catalog."
+                        title={t('equipmentManager.noEquipment')}
+                        description={t('equipmentManager.startAdding')}
                         action={viewMode === 'volume' ? {
-                            label: 'Add Item',
+                            label: t('equipmentManager.addItem'),
                             onClick: addEquipment,
                             variant: 'primary'
                         } : undefined}
+                        steps={[
+                            t('equipmentManager.steps.1') || "Browse global catalog",
+                            t('equipmentManager.steps.2') || "Add custom equipment",
+                            t('equipmentManager.steps.3') || "Attach technical sheets"
+                        ]}
+                        tipsLabel="Inventory Guide"
                         className="my-8 border-dashed"
                     />
                 ) : null}
@@ -209,7 +219,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                         title="View Details"
                                     >
                                         <ExternalLink className="w-3 h-3" />
-                                        <span className="hidden sm:inline">Details</span>
+                                        <span className="hidden sm:inline">{t('equipmentManager.details')}</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -217,14 +227,14 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                             onEquipmentChange([...equipmentList, newItem]);
                                         }}
                                         className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                                        title="Duplicate"
+                                        title={t('equipmentManager.copy')}
                                     >
                                         <Copy className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => removeItem(item.id)}
                                         className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                        title="Remove"
+                                        title={t('equipmentManager.remove')}
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -232,7 +242,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
                                 {/* Type Selection */}
                                 <div className={`${viewMode === 'photos' ? 'mb-3 w-full' : 'md:col-span-3 space-y-1.5'}`}>
-                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Type</label>
+                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">{t('equipmentManager.type')}</label>
                                     <div className="relative">
                                         <select
                                             className="w-full bg-card border border-border text-foreground text-sm rounded-md py-1.5 pl-3 pr-8 appearance-none focus:ring-1 focus:ring-primary/20 focus:border-primary/20"
@@ -249,79 +259,61 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
                                 {/* Name Input & Tech Sheet */}
                                 <div className={`${viewMode === 'photos' ? 'mb-3 w-full' : 'md:col-span-4 space-y-1.5'}`}>
-                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1 flex justify-between">
-                                        Name / Tag
-                                        {item.technicalSheet ? (
-                                            <span className="text-primary flex items-center gap-1">
-                                                <FileText className="w-3 h-3" /> Tech Sheet Added
+                                    <ValidatedInput
+                                        label={t('equipmentManager.nameTag')}
+                                        value={item.name}
+                                        onChange={(val) => onEquipmentChange(equipmentList.map(i => i.id === item.id ? { ...i, name: String(val) } : i))}
+                                        placeholder="e.g. Pump P-01"
+                                        required
+                                        className="w-full"
+                                    />
+                                    {item.technicalSheet && (
+                                        <div className="absolute top-0 right-0">
+                                            <span className="text-primary text-[10px] font-bold flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
+                                                <FileText className="w-3 h-3" /> {t('equipmentManager.techSheetAdded')}
                                             </span>
-                                        ) : null}
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            className="w-full bg-card border border-border text-foreground text-sm rounded-md py-1.5 px-3 focus:ring-1 focus:ring-primary/20 focus:border-primary/20 placeholder:text-muted-foreground/50"
-                                            placeholder="e.g. Chiller 01"
-                                            value={item.name}
-                                            onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                                        />
-                                        {/* Tech Sheet Button */}
-                                        <div className="relative shrink-0">
-                                            <input
-                                                type="file"
-                                                className="hidden"
-                                                accept="application/pdf"
-                                                ref={el => { pdfInputRefs.current[item.id] = el; }}
-                                                onChange={(e) => handlePdfUpload(item.id, e)}
-                                            />
-                                            {item.technicalSheet ? (
-                                                <button
-                                                    onClick={() => downloadPdf(item.technicalSheet!, item.name || 'Equipment')}
-                                                    className="h-full aspect-square rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors flex items-center justify-center"
-                                                    title="Download Technical Sheet"
-                                                >
-                                                    <Download className="w-4 h-4" />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => triggerPdfInput(item.id)}
-                                                    className="h-full aspect-square rounded-md bg-secondary text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 transition-colors flex items-center justify-center"
-                                                    title="Upload Technical Sheet (PDF)"
-                                                >
-                                                    <FileText className="w-4 h-4" />
-                                                </button>
-                                            )}
                                         </div>
+                                    )}    {/* Tech Sheet Button */}
+                                    <div className="relative shrink-0">
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="application/pdf"
+                                            ref={el => { pdfInputRefs.current[item.id] = el; }}
+                                            onChange={(e) => handlePdfUpload(item.id, e)}
+                                        />
+                                        {item.technicalSheet ? (
+                                            <button
+                                                onClick={() => downloadPdf(item.technicalSheet!, item.name || 'Equipment')}
+                                                className="h-full aspect-square rounded-md bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors flex items-center justify-center"
+                                                title={t('equipmentManager.downloadPdf')}
+                                            >
+                                                <Download className="w-4 h-4" />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => triggerPdfInput(item.id)}
+                                                className="h-full aspect-square rounded-md bg-secondary text-muted-foreground border border-border hover:text-foreground hover:border-primary/50 transition-colors flex items-center justify-center"
+                                                title={t('equipmentManager.uploadPdf')}
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Volume Mode Inputs */}
                                 {viewMode === 'volume' && (
                                     <>
-                                        <div className="md:col-span-3 space-y-1.5">
-                                            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Volume (L)</label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    max="100000"
-                                                    className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidVolume(item.volume)
-                                                        ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
-                                                        : 'border-border focus:ring-primary/20 focus:border-primary/20'
-                                                        }`}
-                                                    value={item.volume}
-                                                    onChange={(e) => {
-                                                        const val = parseFloat(e.target.value);
-                                                        updateItem(item.id, 'volume', isNaN(val) ? 0 : val);
-                                                    }}
-                                                />
-                                                {!isValidVolume(item.volume) && (
-                                                    <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
-                                                )}
-                                            </div>
-                                            {!isValidVolume(item.volume) && (
-                                                <p className="text-[10px] text-destructive">0 - 100,000 L</p>
-                                            )}
+                                        <div className="md:col-span-3">
+                                            <NumberInput
+                                                label={`${t('equipmentManager.volumeL')} (Internal)`}
+                                                value={item.volume}
+                                                onChange={(val) => onEquipmentChange(equipmentList.map(i => i.id === item.id ? { ...i, volume: val } : i))}
+                                                min={0}
+                                                max={100000}
+                                                errorMessage={t('equipmentManager.rangeVolume')}
+                                            />
                                         </div>
                                     </>
                                 )}
@@ -329,34 +321,19 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 {/* Weights Mode Inputs */}
                                 {viewMode === 'weights' && (
                                     <>
-                                        <div className="md:col-span-3 space-y-1.5">
-                                            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Empty Weight (kg)</label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    max="100000"
-                                                    className={`w-full bg-card border text-foreground text-center font-mono text-sm rounded-md py-1.5 px-3 focus:ring-1 font-bold ${!isValidWeight(item.weight || 0)
-                                                        ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
-                                                        : 'border-border focus:ring-primary/20 focus:border-primary/20'
-                                                        }`}
-                                                    value={item.weight || 0}
-                                                    onChange={(e) => {
-                                                        const val = parseFloat(e.target.value);
-                                                        updateItem(item.id, 'weight', isNaN(val) ? 0 : val);
-                                                    }}
-                                                />
-                                                {!isValidWeight(item.weight || 0) && (
-                                                    <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
-                                                )}
-                                            </div>
-                                            {!isValidWeight(item.weight || 0) && (
-                                                <p className="text-[10px] text-destructive">0 - 100,000 kg</p>
-                                            )}
+                                        <div className="md:col-span-3">
+                                            <NumberInput
+                                                label={t('equipmentManager.weightKg')}
+                                                value={item.weight || 0}
+                                                onChange={(val) => onEquipmentChange(equipmentList.map(i => i.id === item.id ? { ...i, weight: val } : i))}
+                                                min={0}
+                                                max={100000}
+                                                errorMessage={t('equipmentManager.rangeWeight')}
+                                            />
                                         </div>
-                                        <div className="md:col-span-2 text-right pb-2">
+                                        <div className="md:col-span-2 text-right pb-2 flex flex-col justify-end h-full">
                                             <div className="text-[10px] text-muted-foreground font-mono">
-                                                +{(item.volume * 1.05).toFixed(1)}kg fluid
+                                                +{(item.volume * 1.05).toFixed(1)}kg {t('equipmentManager.fluid')}
                                             </div>
                                         </div>
                                     </>
@@ -392,7 +369,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                                 className="flex-grow flex flex-col items-center justify-center gap-2 w-full h-40 border border-dashed border-border hover:border-muted-foreground rounded-lg bg-muted/20 hover:bg-muted/40 transition-all group/btn"
                                             >
                                                 <ImageIcon className="w-5 h-5 text-muted-foreground group-hover/btn:text-foreground" />
-                                                <span className="text-[10px] font-bold text-muted-foreground group-hover/btn:text-foreground uppercase tracking-wider">Upload Image</span>
+                                                <span className="text-[10px] font-bold text-muted-foreground group-hover/btn:text-foreground uppercase tracking-wider">{t('equipmentManager.uploadImage')}</span>
                                             </button>
                                         )}
                                     </div>
@@ -408,10 +385,10 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                     <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
                         <div className="flex items-center gap-2 text-muted-foreground text-xs">
                             <Info className="w-3.5 h-3.5" />
-                            <span>Calculated Volume</span>
+                            <span>{t('equipmentManager.calculatedVolume')}</span>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Total</span>
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">{t('equipmentManager.total')}</span>
                             <span className="text-2xl font-bold text-foreground font-mono">{totalVolume.toFixed(2)} <span className="text-base text-muted-foreground">L</span></span>
                         </div>
                     </div>
@@ -427,8 +404,8 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 <ShieldCheck className="w-4 h-4" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-medium text-foreground">Safety Buffer</h4>
-                                <p className="text-[10px] text-muted-foreground">Adds 5% to volume calculations</p>
+                                <h4 className="text-sm font-medium text-foreground">{t('equipmentManager.safetyBuffer')}</h4>
+                                <p className="text-[10px] text-muted-foreground">{t('equipmentManager.bufferDesc')}</p>
                             </div>
                         </div>
 
@@ -439,7 +416,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
                                 }`}
                         >
-                            {safetyMargin ? 'ENABLED' : 'DISABLED'}
+                            {safetyMargin ? t('equipmentManager.enabled') : t('equipmentManager.disabled')}
                         </button>
                     </div>
                 )

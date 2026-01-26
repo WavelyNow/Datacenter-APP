@@ -1,32 +1,57 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ProjectProvider, useProject } from '@/context/ProjectContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
 import { CatalogManager } from '@/components/CatalogManager';
-import { ExportModal } from '@/components/ExportModal';  // Unified Export
+import { PdfWizardModal } from '@/components/PdfWizardModal';
 import { Dashboard } from '@/components/Dashboard';
-import { BimPage } from '@/components/BimPage';
-import { BimGalleryPage } from '@/components/BimGalleryPage';
-import { EnergyPage } from '@/components/EnergyPage';
+import { PipeCatalogModal } from '@/components/PipeCatalogModal';
+import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { TableSkeleton } from '@/components/ui/Skeleton';
+
+// Dynamic imports for heavy components (code splitting)
+const BimPage = dynamic(() => import('@/components/BimPage').then(m => ({ default: m.BimPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>,
+  ssr: false
+});
+
+const BimGalleryPage = dynamic(() => import('@/components/BimGalleryPage').then(m => ({ default: m.BimGalleryPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>,
+  ssr: false
+});
+
+const EnergyPage = dynamic(() => import('@/components/EnergyPage').then(m => ({ default: m.EnergyPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
+});
+
+const HydraulicsPage = dynamic(() => import('@/components/HydraulicsPage').then(m => ({ default: m.HydraulicsPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
+});
+
+const QuantityListPage = dynamic(() => import('@/components/QuantityListPage').then(m => ({ default: m.QuantityListPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>
+});
+
+const CostEstimator = dynamic(() => import('@/components/CostEstimator').then(m => ({ default: m.CostEstimator })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
+});
+
+// Lighter components - keep static
 import { HelpPage } from '@/components/HelpPage';
-import { CostEstimator } from '@/components/CostEstimator';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
-import { HydraulicsPage } from '@/components/HydraulicsPage';
 import { PipingRoutingPage } from '@/components/PipingRoutingPage';
 import { SupportManager } from '@/components/SupportManager';
 import { BrandingManager } from '@/components/BrandingManager';
 import { EquipmentManager } from '@/components/EquipmentManager';
-import { QuantityListPage } from '@/components/QuantityListPage';
 import { CommandPalette } from '@/components/CommandPalette';
 import { SettingsPage } from '@/components/SettingsPage';
-import { PipeCatalogModal } from '@/components/PipeCatalogModal';
-import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
-// Note: PdfWizardModal is now internal or accessed via ExportModal if needed, 
-// but user requested SINGLE export button. We'll use ExportModal for now which allows reports.
-// Actually, let's keep ExportModal as the main entry.
+
+import { ProjectLoadData } from '@/lib/types';
 
 import {
   Scale,
@@ -170,6 +195,10 @@ const DashboardContent = () => {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+      {/* Skip Link for Accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
       <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
@@ -180,7 +209,7 @@ const DashboardContent = () => {
         projectDetails={projectDetails}
         onProjectDetailsChange={setProjectDetails}
       />
-      <ExportModal
+      <PdfWizardModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         data={{
@@ -206,13 +235,13 @@ const DashboardContent = () => {
       />
 
       {/* 3. Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+      <main id="main-content" className="flex-1 flex flex-col h-screen overflow-hidden relative">
 
         {/* Header (Top Bar) */}
         <Header
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
-          onLoadProject={(data) => {
+          onLoadProject={(data: ProjectLoadData) => {
             if (data.segments) setSegments(data.segments);
             if (data.equipmentList) setEquipmentList(data.equipmentList);
             if (data.projectDetails) setProjectDetails(data.projectDetails);
@@ -233,145 +262,146 @@ const DashboardContent = () => {
         />
 
         <div className="flex-1 overflow-y-auto scroll-smooth pb-32">
-          {activeTab === 'dashboard' ? (
-            <Dashboard />
-          ) : (
-            <div className="spacing-page py-8">
+          <PageTransition pageKey={activeTab}>
+            {activeTab === 'dashboard' ? (
+              <Dashboard />
+            ) : (
+              <div className="spacing-page py-8">
+                <div className="animate-in fade-in duration-300">
 
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-forwards ease-out">
+                  {/* Tab 1: Piping & Routing (New Design) */}
+                  {activeTab === 'config' && (
+                    <PipingRoutingPage />
+                  )}
 
-                {/* Tab 1: Piping & Routing (New Design) */}
-                {activeTab === 'config' && (
-                  <PipingRoutingPage />
-                )}
-
-                {/* Tab 2: Supports */}
-                {activeTab === 'supports' && (
-                  <div className="max-w-5xl mx-auto">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight text-foreground">Dimensionare Suporți</h2>
-                      <p className="text-muted-foreground">Calculul necesarului de materiale pentru prinderi.</p>
+                  {/* Tab 2: Supports */}
+                  {activeTab === 'supports' && (
+                    <div className="max-w-5xl mx-auto">
+                      <div className="mb-6">
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground">Dimensionare Suporți</h2>
+                        <p className="text-muted-foreground">Calculul necesarului de materiale pentru prinderi.</p>
+                      </div>
+                      <SupportManager />
                     </div>
-                    <SupportManager />
-                  </div>
-                )}
+                  )}
 
-                {/* Tab 3: Weights */}
-                {activeTab === 'weights' && (
-                  <div className="max-w-5xl mx-auto">
-                    <div className="card-premium p-8 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
-                          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
-                            <Scale className="w-6 h-6 text-foreground" />
+                  {/* Tab 3: Weights */}
+                  {activeTab === 'weights' && (
+                    <div className="max-w-5xl mx-auto">
+                      <div className="card-premium p-8 relative overflow-hidden">
+                        <div className="relative z-10">
+                          <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
+                            <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
+                              <Scale className="w-6 h-6 text-foreground" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground">Gestionare Greutăți</h2>
+                              <p className="text-muted-foreground text-sm mt-1">Introduceți greutatea proprie a echipamentelor.</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground">Gestionare Greutăți</h2>
-                            <p className="text-muted-foreground text-sm mt-1">Introduceți greutatea proprie a echipamentelor.</p>
-                          </div>
+                          <EquipmentManager
+                            equipmentList={equipmentList}
+                            onEquipmentChange={setEquipmentList}
+                            viewMode="weights"
+                          />
                         </div>
-                        <EquipmentManager
-                          equipmentList={equipmentList}
-                          onEquipmentChange={setEquipmentList}
-                          viewMode="weights"
-                        />
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Tab 4: Photos */}
-                {activeTab === 'photos' && (
-                  <div className="max-w-5xl mx-auto">
-                    <div className="card-premium p-8 relative overflow-hidden">
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
-                          <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
-                            <Camera className="w-6 h-6 text-foreground" />
+                  {/* Tab 4: Photos */}
+                  {activeTab === 'photos' && (
+                    <div className="max-w-5xl mx-auto">
+                      <div className="card-premium p-8 relative overflow-hidden">
+                        <div className="relative z-10">
+                          <div className="flex items-center gap-4 mb-8 pb-8 border-b border-border/50">
+                            <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shadow-inner">
+                              <Camera className="w-6 h-6 text-foreground" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-foreground">Documentație Vizuală</h2>
+                              <p className="text-muted-foreground text-sm mt-1">Încărcați fotografii pentru raportul tehnic.</p>
+                            </div>
                           </div>
-                          <div>
-                            <h2 className="text-xl font-bold text-foreground">Documentație Vizuală</h2>
-                            <p className="text-muted-foreground text-sm mt-1">Încărcați fotografii pentru raportul tehnic.</p>
-                          </div>
+                          <EquipmentManager
+                            equipmentList={equipmentList}
+                            onEquipmentChange={setEquipmentList}
+                            viewMode="photos"
+                          />
                         </div>
-                        <EquipmentManager
-                          equipmentList={equipmentList}
-                          onEquipmentChange={setEquipmentList}
-                          viewMode="photos"
-                        />
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Tab 5: Branding */}
-                {activeTab === 'branding' && (
-                  <div className="max-w-4xl mx-auto">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight text-foreground">Identitate Vizuală</h2>
-                      <p className="text-muted-foreground">Personalizați aspectul rapoartelor generate.</p>
+                  {/* Tab 5: Branding */}
+                  {activeTab === 'branding' && (
+                    <div className="max-w-4xl mx-auto">
+                      <div className="mb-6">
+                        <h2 className="text-2xl font-bold tracking-tight text-foreground">Identitate Vizuală</h2>
+                        <p className="text-muted-foreground">Personalizați aspectul rapoartelor generate.</p>
+                      </div>
+                      <BrandingManager />
                     </div>
-                    <BrandingManager />
-                  </div>
-                )}
+                  )}
 
-                {/* Tab 6: Catalogs (New) */}
-                {activeTab === 'catalogs' && (
-                  <CatalogManager />
-                )}
+                  {/* Tab 6: Catalogs (New) */}
+                  {activeTab === 'catalogs' && (
+                    <CatalogManager />
+                  )}
 
-                {/* Tab 7: BIM (New) */}
-                {/* Tab 7: BIM (New) */}
-                {activeTab === 'bim' && (
-                  <div className="h-full px-6 py-6">
-                    <BimPage />
-                  </div>
-                )}
+                  {/* Tab 7: BIM (New) */}
+                  {/* Tab 7: BIM (New) */}
+                  {activeTab === 'bim' && (
+                    <div className="h-full px-6 py-6">
+                      <BimPage />
+                    </div>
+                  )}
 
-                {/* Tab: BIM Gallery (Interactive) */}
-                {activeTab === 'bim_gallery' && (
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <BimGalleryPage />
-                  </div>
-                )}
+                  {/* Tab: BIM Gallery (Interactive) */}
+                  {activeTab === 'bim_gallery' && (
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                      <BimGalleryPage />
+                    </div>
+                  )}
 
-                {/* Tab 8: Energy (New) */}
-                {activeTab === 'energy' && (
-                  <EnergyPage />
-                )}
+                  {/* Tab 8: Energy (New) */}
+                  {activeTab === 'energy' && (
+                    <EnergyPage />
+                  )}
 
-                {/* Tab 9: Cost Estimator */}
-                {activeTab === 'costs' && (
-                  <CostEstimator />
-                )}
+                  {/* Tab 9: Cost Estimator */}
+                  {activeTab === 'costs' && (
+                    <CostEstimator />
+                  )}
 
-                {/* Tab 10: Commissioning Checklist */}
-                {activeTab === 'checklist' && (
-                  <CommissioningChecklist />
-                )}
+                  {/* Tab 10: Commissioning Checklist */}
+                  {activeTab === 'checklist' && (
+                    <CommissioningChecklist />
+                  )}
 
-                {/* Tab 11: Hydraulic Tools (Unified) */}
-                {activeTab === 'hydraulics' && (
-                  <HydraulicsPage />
-                )}
+                  {/* Tab 11: Hydraulic Tools (Unified) */}
+                  {activeTab === 'hydraulics' && (
+                    <HydraulicsPage />
+                  )}
 
-                {activeTab === 'help' && (
-                  <HelpPage />
-                )}
+                  {activeTab === 'help' && (
+                    <HelpPage />
+                  )}
 
-                {activeTab === 'boq' && (
-                  <QuantityListPage />
-                )}
+                  {activeTab === 'boq' && (
+                    <QuantityListPage />
+                  )}
 
-                {/* Tab: Settings */}
-                {activeTab === 'settings' && (
-                  <SettingsPage />
-                )}
+                  {/* Tab: Settings */}
+                  {activeTab === 'settings' && (
+                    <SettingsPage />
+                  )}
 
 
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </PageTransition>
         </div>
       </main>
     </div>

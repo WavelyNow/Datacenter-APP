@@ -21,6 +21,8 @@ interface ValidatedInputProps {
     required?: boolean;
     disabled?: boolean;
     showSuccessIndicator?: boolean;
+    startAdornment?: React.ReactNode;
+    endAdornment?: React.ReactNode;
 }
 
 export const ValidatedInput: React.FC<ValidatedInputProps> = ({
@@ -38,6 +40,8 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     required = false,
     disabled = false,
     showSuccessIndicator = false,
+    startAdornment,
+    endAdornment,
 }) => {
     const [touched, setTouched] = useState(false);
 
@@ -69,14 +73,20 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     };
 
     return (
-        <div className={`relative ${className}`}>
+        <div className={`relative ${className} group`}>
             {label && (
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                <label className="block text-xs font-bold text-muted-foreground/70 uppercase tracking-wider mb-1.5 transition-colors group-focus-within:text-primary">
                     {label}
                     {required && <span className="text-destructive ml-0.5">*</span>}
                 </label>
             )}
             <div className="relative">
+                {startAdornment && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none z-10">
+                        {startAdornment}
+                    </div>
+                )}
+
                 <input
                     type={type}
                     value={type === 'number' && value === 0 ? '' : value}
@@ -88,27 +98,43 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
                     step={step}
                     disabled={disabled}
                     className={`
-                        w-full px-3 py-2 rounded-lg border transition-all text-sm
+                        w-full py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium
+                        bg-background/50 backdrop-blur-sm
+                        placeholder:text-muted-foreground/40
+                        ${startAdornment ? 'pl-9' : 'px-3'}
+                        ${endAdornment ? 'pr-9' : 'px-3'}
                         ${showError
-                            ? 'border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20'
+                            ? 'border-destructive/50 bg-destructive/5 focus:border-destructive focus:ring-4 focus:ring-destructive/10'
                             : showSuccess
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border bg-background hover:border-primary/50 focus:border-primary focus:ring-primary/20'
+                                ? 'border-primary/50 bg-primary/5 focus:border-primary focus:ring-4 focus:ring-primary/10'
+                                : 'border-border/60 hover:border-primary/40 hover:bg-background/80 focus:border-primary focus:ring-4 focus:ring-primary/10'
                         }
-                        focus:outline-none focus:ring-2
-                        disabled:opacity-50 disabled:cursor-not-allowed
+                        focus:outline-none scroll-my-2
+                        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border/60
                         ${inputClassName}
                     `}
                 />
-                {showError && (
-                    <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />
+
+                {endAdornment && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none z-10 text-xs">
+                        {endAdornment}
+                    </div>
                 )}
-                {showSuccess && (
-                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+
+                {!endAdornment && showError && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 bg-background rounded-full shadow-sm">
+                        <AlertCircle className="w-4 h-4 text-destructive" />
+                    </div>
+                )}
+                {!endAdornment && showSuccess && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 bg-background rounded-full shadow-sm">
+                        <Check className="w-4 h-4 text-primary" />
+                    </div>
                 )}
             </div>
             {showError && (
-                <p className="text-xs text-destructive mt-1 animate-in fade-in slide-in-from-top-1">
+                <p className="text-[10px] font-medium text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1 flex items-center gap-1">
+                    <span className="w-1 h-1 rounded-full bg-destructive flex-shrink-0" />
                     {errorMsg}
                 </p>
             )}
@@ -131,6 +157,8 @@ interface NumberInputProps {
     inputClassName?: string;
     disabled?: boolean;
     showSuccessIndicator?: boolean;
+    startAdornment?: React.ReactNode;
+    endAdornment?: React.ReactNode;
 }
 
 export const NumberInput: React.FC<NumberInputProps> = ({

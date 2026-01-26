@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet, Leaf } from 'lucide-react';
-import { createPortal } from 'react-dom';
+import { FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet, Leaf } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
@@ -130,31 +130,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
         onClose();
     };
 
-    return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose} />
-
-            <div className={`relative bg-card w-full ${previewUrl ? 'max-w-6xl h-[90vh]' : 'max-w-lg'} rounded-xl shadow-2xl overflow-hidden flex flex-col border border-border transition-all`}>
-
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm border border-primary/20">
-                            <Printer className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-bold text-foreground">Export Center</h3>
-                            <p className="text-[10px] text-muted-foreground">Generate documentation</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Export Center"
+            description="Generate documentation"
+            size={previewUrl ? '2xl' : 'md'}
+            className={previewUrl ? 'h-[90vh]' : ''}
+        >
+            <div className={`flex flex-col h-full ${previewUrl ? 'min-h-[500px]' : ''}`}>
                 {/* Tabs */}
                 <div className="px-6 py-4 border-b border-border bg-muted/30">
                     <div className="flex p-0.5 bg-muted rounded-lg border border-border">
@@ -180,7 +165,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-muted/10">
+                <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-muted/10 min-h-0">
 
                     {/* Settings Panel */}
                     <div className={`p-6 space-y-6 overflow-y-auto custom-scrollbar ${previewUrl ? 'w-full md:w-80 border-r border-border shrink-0' : 'w-full'}`}>
@@ -312,7 +297,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data 
                     )}
                 </div>
             </div>
-        </div>,
-        document.body
+        </Modal>
     );
 };

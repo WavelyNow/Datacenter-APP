@@ -233,7 +233,65 @@ export const translations = {
                 techSheetAttached: 'Attached',
                 uploadPrompt: 'Click to upload PDF manual',
                 saveBtn: 'Save to Global DB',
-                cancel: 'Cancel'
+                cancel: 'Cancel',
+                customCloud: 'Custom (Cloud)',
+                other: 'Other',
+                pdfOnly: 'Please upload PDF files only.',
+                modelPlaceholder: 'e.g. SuperChiller 5000',
+                descPlaceholder: 'Technical specs...',
+                saveSuccess: 'Item saved successfully.',
+                deleteSuccess: 'Item deleted.'
+            }
+        },
+        pipingRoutingPage: {
+            title: 'System Configuration',
+            subtitle: 'Manage hydraulic network topology, equipment inventory, and fluid properties.',
+            breadcrumbs: {
+                design: 'Design',
+                physicConfig: 'Physic Configuration'
+            },
+            tabs: {
+                segments: 'Piping Segments',
+                equipment: 'Equipment Inventory',
+                fluid: 'Fluid & Environment'
+            },
+            equipmentTabs: {
+                volume: 'Volumes & Specs',
+                weights: 'Weights & Loads',
+                photos: 'Photo Gallery'
+            }
+        },
+        equipmentManager: {
+            inventory: 'Inventory',
+            manageList: 'Manage equipment list',
+            catalog: 'Catalog',
+            addItem: 'Add Item',
+            noEquipment: 'No equipment added',
+            startAdding: 'Start by adding items manually or from the catalog.',
+            details: 'Details',
+            type: 'Type',
+            nameTag: 'Name / Tag',
+            techSheetAdded: 'Tech Sheet Added',
+            volumeL: 'Volume (L)',
+            weightKg: 'Empty Weight (kg)',
+            fluid: 'fluid',
+            uploadImage: 'Upload Image',
+            calculatedVolume: 'Calculated Volume',
+            total: 'Total',
+            safetyBuffer: 'Safety Buffer',
+            bufferDesc: 'Adds 5% to volume calculations',
+            enabled: 'ENABLED',
+            disabled: 'DISABLED',
+            downloadPdf: 'Download Technical Sheet',
+            uploadPdf: 'Upload Technical Sheet (PDF)',
+            copy: 'Duplicate',
+            remove: 'Remove',
+            rangeVolume: '0 - 100,000 L',
+            rangeWeight: '0 - 100,000 kg',
+            steps: {
+                1: 'Browse global catalog',
+                2: 'Add custom equipment',
+                3: 'Attach technical sheets'
             }
         }
     },
@@ -373,7 +431,65 @@ export const translations = {
                 techSheetAttached: 'Atașat',
                 uploadPrompt: 'Click pentru încărcare manual PDF',
                 saveBtn: 'Salvează în DB Global',
-                cancel: 'Anulează'
+                cancel: 'Anulează',
+                customCloud: 'Personalizat (Cloud)',
+                other: 'Altele',
+                pdfOnly: 'Vă rugăm să încărcați doar fișiere PDF.',
+                modelPlaceholder: 'ex. SuperChiller 5000',
+                descPlaceholder: 'Specificații tehnice...',
+                saveSuccess: 'Articol salvat cu succes.',
+                deleteSuccess: 'Articol șters.'
+            }
+        },
+        pipingRoutingPage: {
+            title: 'Configurare Sistem',
+            subtitle: 'Gestionează topologia rețelei hidraulice, inventarul echipamentelor și proprietățile fluidului.',
+            breadcrumbs: {
+                design: 'Proiectare',
+                physicConfig: 'Configurare Fizică'
+            },
+            tabs: {
+                segments: 'Segmente Tubulatură',
+                equipment: 'Inventar Echipamente',
+                fluid: 'Fluid & Mediu'
+            },
+            equipmentTabs: {
+                volume: 'Volume & Specificații',
+                weights: 'Greutăți & Încărcări',
+                photos: 'Galerie Foto'
+            }
+        },
+        equipmentManager: {
+            inventory: 'Inventar',
+            manageList: 'Gestionează lista de echipamente',
+            catalog: 'Catalog',
+            addItem: 'Adaugă Element',
+            noEquipment: 'Niciun echipament adăugat',
+            startAdding: 'Începe prin a adăuga elemente manual sau din catalog.',
+            details: 'Detalii',
+            type: 'Tip',
+            nameTag: 'Nume / Etichetă',
+            techSheetAdded: 'Fișă Tehnică Adăugată',
+            volumeL: 'Volum (L)',
+            weightKg: 'Greutate Goală (kg)',
+            fluid: 'fluid',
+            uploadImage: 'Încarcă Imagine',
+            calculatedVolume: 'Volum Calculat',
+            total: 'Total',
+            safetyBuffer: 'Buffer Siguranță',
+            bufferDesc: 'Adaugă 5% la calculele de volum',
+            enabled: 'ACTIVAT',
+            disabled: 'DEZACTIVAT',
+            downloadPdf: 'Descarcă Fișă Tehnică',
+            uploadPdf: 'Încarcă Fișă Tehnică (PDF)',
+            copy: 'Duplică',
+            remove: 'Elimină',
+            rangeVolume: '0 - 100,000 L',
+            rangeWeight: '0 - 100,000 kg',
+            steps: {
+                1: 'Răsfoiește catalogul global',
+                2: 'Adaugă echipament personalizat',
+                3: 'Atașează fișe tehnice'
             }
         }
     },
@@ -438,4 +554,8 @@ export type TranslationKey =
     | `common.${keyof typeof translations.en.common & string}`
     | `sidebar.${keyof typeof translations.en.sidebar & string}`
     | `header.${keyof typeof translations.en.header & string}`
-    | `dashboard.${keyof typeof translations.en.dashboard & string}`;
+    | `dashboard.${keyof typeof translations.en.dashboard & string}`
+    | `pipingRoutingPage.${keyof typeof translations.en.pipingRoutingPage & string}`
+    | `pipingRoutingPage.breadcrumbs.${keyof typeof translations.en.pipingRoutingPage.breadcrumbs & string}`
+    | `pipingRoutingPage.tabs.${keyof typeof translations.en.pipingRoutingPage.tabs & string}`
+    | `equipmentManager.${keyof typeof translations.en.equipmentManager & string}`;

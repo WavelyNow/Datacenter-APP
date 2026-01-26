@@ -42,7 +42,7 @@ setInterval(() => {
     }
 }, 5 * 60 * 1000);
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Only rate limit API routes

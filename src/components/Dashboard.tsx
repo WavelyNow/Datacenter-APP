@@ -21,6 +21,7 @@ import {
 import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
+import { calculateCostEstimate } from '@/lib/calculations/costEstimate';
 
 export const Dashboard = () => {
     const {
@@ -75,13 +76,18 @@ export const Dashboard = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-4"
+                        className="flex items-center gap-3 mb-4"
                     >
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                        </span>
-                        {t('common.systemActive')}
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-bold">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            {t('common.systemActive')}
+                        </div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-bold">
+                            PLANNING PHASE
+                        </div>
                     </motion.div>
                     <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2">
                         Engineering <span className="text-primary">Workspace</span>
@@ -136,7 +142,7 @@ export const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-secondary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('catalogs')}>
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-secondary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('weights')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
                             <Zap className="w-5 h-5" />
@@ -144,22 +150,24 @@ export const Dashboard = () => {
                         <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-secondary transition-colors" />
                     </div>
                     <div>
-                        <div className="text-3xl font-bold font-mono tracking-tight">1,240+</div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">{t('dashboard.catalogItems')}</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">{equipmentList.length}</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Active Equipment</div>
                     </div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold border border-primary/20">98% OPTIMAL</div>
+                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">ESTIMATED</div>
                     </div>
                     <div className="relative z-10">
-                        <div className="text-xl font-bold text-primary">{t('dashboard.systemStable')}</div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">{t('dashboard.statusCheck')}</div>
+                        <div className="text-2xl font-black text-foreground tracking-tight">
+                            €{(calculateCostEstimate(segments, equipmentList).grandTotal).toLocaleString('en-US')}
+                        </div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Total Project Cost</div>
                     </div>
                 </motion.div>
 

@@ -1,0 +1,167 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface ModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    title?: string;
+    description?: string;
+    children: React.ReactNode;
+    className?: string;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+}
+
+export const Modal: React.FC<ModalProps> = ({
+    isOpen,
+    onClose,
+    title,
+    description,
+    children,
+    className = '',
+    size = 'md'
+}) => {
+    const [mounted, setMounted] = useState(false);
+    const modalRef = useRef<HTMLDivElement>(null);
+    const previousActiveElement = useRef<HTMLElement | null>(null);
+    const titleId = useRef(`modal-title-${Math.random().toString(36).substring(2, 9)}`);
+    const descId = useRef(`modal-desc-${Math.random().toString(36).substring(2, 9)}`);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    // Focus management
+    useEffect(() => {
+        if (isOpen) {
+            previousActiveElement.current = document.activeElement as HTMLElement;
+            // Focus first focusable element in modal
+            setTimeout(() => {
+                const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable && focusable.length > 0) {
+                    focusable[0].focus();
+                }
+            }, 50);
+        } else if (previousActiveElement.current) {
+            previousActiveElement.current.focus();
+        }
+    }, [isOpen]);
+
+    // Handle ESC key
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (isOpen) window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [isOpen, onClose]);
+
+    // Focus trap
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleTab = (e: KeyboardEvent) => {
+            if (e.key !== 'Tab' || !modalRef.current) return;
+
+            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+
+        window.addEventListener('keydown', handleTab);
+        return () => window.removeEventListener('keydown', handleTab);
+    }, [isOpen]);
+
+    if (!mounted) return null;
+
+    const sizeClasses = {
+        sm: 'max-w-sm',
+        md: 'max-w-lg',
+        lg: 'max-w-2xl',
+        xl: 'max-w-4xl',
+        '2xl': 'max-w-6xl',
+        full: 'max-w-[95vw] h-[95vh]'
+    };
+
+    return createPortal(
+        <AnimatePresence>
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={title ? titleId.current : undefined}
+                    aria-describedby={description ? descId.current : undefined}
+                >
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={onClose}
+                        aria-hidden="true"
+                    />
+
+                    {/* Content */}
+                    <motion.div
+                        ref={modalRef}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className={`relative w-full ${sizeClasses[size]} bg-card rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden max-h-[90vh] ${className}`}
+                    >
+                        {/* Header (Optional) */}
+                        {(title || description) && (
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/20">
+                                <div>
+                                    {title && <h3 id={titleId.current} className="text-lg font-bold text-foreground">{title}</h3>}
+                                    {description && <p id={descId.current} className="text-sm text-muted-foreground">{description}</p>}
+                                </div>
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    aria-label="Close dialog"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
+                        {!title && !description && (
+                            <button
+                                onClick={onClose}
+                                className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                aria-label="Close dialog"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
+
+                        {/* Body */}
+                        <div className="flex-1 overflow-y-auto">
+                            {children}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>,
+        document.body
+    );
+};

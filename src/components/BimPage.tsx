@@ -12,6 +12,8 @@ import { BimMappingWizard } from './bim/BimMappingWizard';
 import { BimObjectEditor } from './bim/BimObjectEditor';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { BimObject, GroupedBimObject } from '@/lib/bim/types';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 
 export const BimPage = () => {
     const {
@@ -352,26 +354,31 @@ export const BimPage = () => {
                     <div className="flex-1 bg-background rounded-2xl overflow-hidden border border-border shadow-sm relative flex flex-col min-h-[400px]">
                         {!fileUrl ? (
                             // Empty State / Upload
-                            <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-muted/20 rounded-2xl border-2 border-dashed border-border relative">
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-full max-w-md border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/50 rounded-2xl p-12 flex flex-col items-center cursor-pointer transition-all group"
-                                >
-                                    <div className="w-20 h-20 rounded-3xl bg-card flex items-center justify-center mb-6 shadow-sm border border-border group-hover:scale-110 transition-transform">
-                                        <Upload className="w-10 h-10 text-muted-foreground group-hover:text-primary" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary">Upload IFC File</h3>
-                                    <p className="text-muted-foreground text-center mt-2 text-sm">
-                                        Supports Revit, ArchiCAD, Tekla exports (.ifc)
-                                    </p>
-                                    <input
-                                        type="file"
-                                        accept=".ifc"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        onChange={handleFileChange}
-                                    />
-                                </div>
+                            <div className="flex-1 flex items-center justify-center p-8 bg-muted/20">
+                                <EmptyState
+                                    icon={Upload}
+                                    title="Upload IFC Model"
+                                    description="Supports Revit, ArchiCAD, and Tekla exports (.ifc standard). Drag & drop or click to browse."
+                                    action={{
+                                        label: 'Select File',
+                                        onClick: () => fileInputRef.current?.click(),
+                                        variant: 'primary'
+                                    }}
+                                    steps={[
+                                        "Export as IFC 2x3 or IFC4",
+                                        "Include Property Sets for data",
+                                        "Set Detail Level to Medium/High"
+                                    ]}
+                                    tipsLabel="Export Requirements"
+                                    className="max-w-xl w-full"
+                                />
+                                <input
+                                    type="file"
+                                    accept=".ifc"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
                             </div>
                         ) : (
                             <>
@@ -401,7 +408,17 @@ export const BimPage = () => {
                         )}
                     </div>
 
-                    {/* Extracted Data Table - Always show if we tried to extract, even on error */}
+                    {/* Extracted Data Table */}
+                    {status === 'parsing' && (
+                        <div className="h-[400px] bg-card border border-border rounded-xl p-6 shadow-lg">
+                            <h3 className="text-sm font-bold text-primary flex items-center gap-2 mb-4">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Analyzing BIM Geometry...
+                            </h3>
+                            <TableSkeleton rows={8} />
+                        </div>
+                    )}
+
                     {(status === 'extracted' || status === 'error' || foundPipes.length > 0) && (
                         <div className="h-[400px] bg-card border border-border rounded-xl flex flex-col overflow-hidden shadow-lg animate-in slide-in-from-bottom-10">
                             {/* Tabs Header */}

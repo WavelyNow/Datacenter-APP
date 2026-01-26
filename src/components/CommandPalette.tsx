@@ -52,7 +52,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     onExport,
     onSettings
 }) => {
-    const { setActiveTab } = useProject();
+    const { setActiveTab, segments, equipmentList, setHighlightedItemId } = useProject();
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -60,8 +60,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
 
-    // Define all commands
-    const commands: CommandItem[] = useMemo(() => [
+    // Define static commands
+    const staticCommands: CommandItem[] = useMemo(() => [
         // Navigation
         { id: 'nav-dashboard', title: t('commandPalette.cmds.dashboard.title'), subtitle: t('commandPalette.cmds.dashboard.subtitle'), icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard'), keywords: ['home', 'start'], category: 'navigation' },
         { id: 'nav-bim-gallery', title: t('commandPalette.cmds.bimGallery.title'), subtitle: t('commandPalette.cmds.bimGallery.subtitle'), icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery'), keywords: ['3d', 'models'], category: 'navigation' },
@@ -87,20 +87,71 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         { id: 'settings-open', title: t('commandPalette.cmds.projectSettings.title'), subtitle: t('commandPalette.cmds.projectSettings.subtitle'), icon: <Settings className="w-4 h-4" />, action: () => onSettings?.(), keywords: ['preferences', 'config'], category: 'settings' },
     ], [setActiveTab, onSave, onExport, onSettings, t]);
 
-    // Filter commands based on query
+    // Combine static and dynamic commands
     const filteredCommands = useMemo(() => {
-        if (!query.trim()) return commands;
+        if (!query.trim()) return staticCommands;
 
         const lowerQuery = query.toLowerCase();
-        return commands.filter(cmd => {
+
+        // Filter Static
+        const staticMatches = staticCommands.filter(cmd => {
             const matchTitle = cmd.title.toLowerCase().includes(lowerQuery);
             const matchSubtitle = cmd.subtitle?.toLowerCase().includes(lowerQuery);
             const matchKeywords = cmd.keywords?.some(k => k.toLowerCase().includes(lowerQuery));
             return matchTitle || matchSubtitle || matchKeywords;
         });
-    }, [commands, query]);
 
-    // Group commands by category
+        // Search dynamic content (Segments & Equipment)
+        const dynamicMatches: CommandItem[] = [];
+
+        // Search Equipment
+        equipmentList.forEach(eq => {
+            if (
+                eq.name.toLowerCase().includes(lowerQuery) ||
+                eq.manufacturer?.toLowerCase().includes(lowerQuery) ||
+                eq.model?.toLowerCase().includes(lowerQuery) ||
+                eq.type.toLowerCase().includes(lowerQuery)
+            ) {
+                dynamicMatches.push({
+                    id: `eq-${eq.id}`,
+                    title: eq.name,
+                    subtitle: `${eq.manufacturer} ${eq.model} (${eq.type})`,
+                    icon: <Cuboid className="w-4 h-4 hover:text-primary" />,
+                    category: 'navigation', // Treat as nav to item
+                    action: () => {
+                        setActiveTab('boq');
+                        setHighlightedItemId(eq.id); // Context highlight
+                    }
+                });
+            }
+        });
+
+        // Search Segments
+        segments.forEach((seg, index) => {
+            const name = seg.name || `Segment ${index + 1}`;
+            if (
+                name.toLowerCase().includes(lowerQuery) ||
+                seg.material.toLowerCase().includes(lowerQuery) ||
+                seg.size.toLowerCase().includes(lowerQuery)
+            ) {
+                dynamicMatches.push({
+                    id: `seg-${seg.id}`,
+                    title: name,
+                    subtitle: `${seg.material} ${seg.size} - ${seg.length}m`,
+                    icon: <Package className="w-4 h-4 hover:text-primary" />,
+                    category: 'navigation',
+                    action: () => {
+                        setActiveTab('boq');
+                        setHighlightedItemId(seg.id);
+                    }
+                });
+            }
+        });
+
+        return [...staticMatches, ...dynamicMatches];
+    }, [staticCommands, query, equipmentList, segments, setActiveTab, setHighlightedItemId]);
+
+    // Group commands by category (Keep this logic)
     const groupedCommands = useMemo(() => {
         const groups: Record<string, CommandItem[]> = {
             navigation: [],
@@ -108,7 +159,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             settings: []
         };
         filteredCommands.forEach(cmd => {
-            groups[cmd.category].push(cmd);
+            // Default to navigation if category unknown (safety)
+            const cat = groups[cmd.category] ? cmd.category : 'navigation';
+            groups[cat].push(cmd);
         });
         return groups;
     }, [filteredCommands]);

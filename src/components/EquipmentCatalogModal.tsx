@@ -80,7 +80,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         const file = e.target.files?.[0];
         if (file) {
             if (file.type !== 'application/pdf') {
-                alert('Please upload PDF files only.');
+                alert(t('catalog.form.pdfOnly'));
                 return;
             }
             const reader = new FileReader();
@@ -254,7 +254,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                         onChange={e => setFormData({ ...formData, category: e.target.value })}
                                     >
                                         {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                        <option value="Other">Other</option>
+                                        <option value="Other">{t('catalog.form.other')}</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
@@ -263,7 +263,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                         className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2"
                                         value={formData.model}
                                         onChange={e => setFormData({ ...formData, model: e.target.value })}
-                                        placeholder="e.g. SuperChiller 5000"
+                                        placeholder={t('catalog.form.modelPlaceholder')}
                                     />
                                 </div>
                             </div>
@@ -285,7 +285,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                     className="w-full bg-card border border-border rounded-lg text-sm px-3 py-2 h-20 resize-none"
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Technical specs..."
+                                    placeholder={t('catalog.form.descPlaceholder')}
                                 />
                             </div>
 

@@ -2,11 +2,14 @@ import React from 'react';
 
 interface SkeletonProps {
     className?: string;
+    shimmer?: boolean;
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => {
+export const Skeleton: React.FC<SkeletonProps> = ({ className = '', shimmer = true }) => {
     return (
-        <div className={`animate-pulse rounded-md bg-muted/50 ${className}`} />
+        <div
+            className={`rounded-md bg-muted/50 ${shimmer ? 'skeleton-shimmer' : 'animate-pulse'} ${className}`}
+        />
     );
 };
 

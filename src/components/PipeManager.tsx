@@ -16,7 +16,11 @@ import { toast } from 'sonner';
 import { SegmentDetailSheet } from './SegmentDetailSheet';
 import { PressureDropChart } from './PressureDropChart';
 import { PumpRecommender } from './PumpRecommender';
+// Duplicate imports removed
 import { ThermalAnalysisSheet } from './ThermalAnalysisSheet';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TableSkeleton } from '@/components/ui/Skeleton';
+import { NumberInput } from '@/components/ui/ValidatedInput';
 
 interface PipeManagerProps {
     segments: PipeSegment[];
@@ -27,6 +31,7 @@ interface PipeManagerProps {
     safetyMargin?: boolean;
     safetyMarginPercentage?: number;
     className?: string;
+    isLoading?: boolean;
 }
 
 // Separate component for row rendering to enable React.memo
@@ -105,14 +110,14 @@ const PipeRow = React.memo(({
                         <div className="flex items-center gap-2">
                             {isCustom ? (
                                 <div className="flex items-center gap-2 w-full">
-                                    <input
-                                        type="number"
-                                        className="w-24 bg-muted/40 border border-border/50 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-primary/50 outline-none"
-                                        placeholder="ID mm"
-                                        value={segment.customInnerDiameter || ''}
-                                        onChange={(e) => updateSegment(segment.id, { customInnerDiameter: parseFloat(e.target.value) || 0 })}
+                                    <NumberInput
+                                        value={segment.customInnerDiameter || 0}
+                                        onChange={(val) => updateSegment(segment.id, { customInnerDiameter: val })}
+                                        placeholder="ID"
+                                        endAdornment="mm"
+                                        min={0}
+                                        className="w-28"
                                     />
-                                    <span className="text-xs text-muted-foreground">mm ID</span>
                                 </div>
                             ) : (
                                 <select
@@ -132,29 +137,15 @@ const PipeRow = React.memo(({
 
                     {/* Length */}
                     <div className="col-span-3">
-                        <div className="relative max-w-[160px]">
-                            <input
-                                type="number"
-                                min="0.1"
-                                max="10000"
-                                step="0.1"
-                                className={`w-full bg-transparent text-sm font-medium text-foreground border-b focus:outline-none py-2 pe-8 transition-colors ${isInvalidLen ? 'border-red-500 text-red-500' : 'border-border/50 focus:border-primary'
-                                    }`}
-                                value={segment.length}
-                                onChange={(e) => {
-                                    const val = parseFloat(e.target.value);
-                                    updateSegment(segment.id, { length: isNaN(val) ? 0 : val });
-                                }}
-                            />
-                            {isInvalidLen ? (
-                                <AlertCircle className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
-                            ) : (
-                                <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">m</span>
-                            )}
-                        </div>
-                        {isInvalidLen && (
-                            <p className="text-[10px] text-red-500 mt-1.5 font-medium">Lungime invalidă</p>
-                        )}
+                        <NumberInput
+                            value={segment.length}
+                            onChange={(val) => updateSegment(segment.id, { length: val })}
+                            min={0.1}
+                            max={10000}
+                            endAdornment="m"
+                            className="max-w-[160px]"
+                            errorMessage="Lungime invalidă"
+                        />
                     </div>
 
                     {/* Details Readout */}
@@ -215,18 +206,13 @@ const PipeRow = React.memo(({
                     </div>
 
                     <div className="col-span-3">
-                        <div className="relative max-w-[160px]">
-                            <input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                className="w-full bg-transparent text-sm font-medium text-foreground border-b border-border/50 focus:border-primary focus:outline-none py-2 pe-8 transition-colors"
-                                value={segment.flowRate || ''}
-                                onChange={(e) => updateSegment(segment.id, { flowRate: parseFloat(e.target.value) || 0 })}
-                                placeholder="0.0"
-                            />
-                            <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">m³/h</span>
-                        </div>
+                        <NumberInput
+                            value={segment.flowRate || 0}
+                            onChange={(val) => updateSegment(segment.id, { flowRate: val })}
+                            min={0}
+                            endAdornment="m³/h"
+                            className="max-w-[160px]"
+                        />
                     </div>
 
                     <div className="col-span-3">
@@ -268,7 +254,8 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     glycolPercentage = 0,
     safetyMargin = false,
     safetyMarginPercentage = 5,
-    className
+    className,
+    isLoading = false
 }) => {
     const [viewMode, setViewMode] = useState<'config' | 'hydraulics'>('config');
     const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
@@ -408,24 +395,28 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
 
             {/* Main Content Card */}
             <div className={`card-premium overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
-                {segments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
-                        <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center border border-border/30">
-                            <Workflow className="w-10 h-10 text-muted-foreground/30" />
-                        </div>
-                        <div className="space-y-3">
-                            <h3 className="font-semibold text-foreground text-xl tracking-tight">No Segments Defined</h3>
-                            <p className="text-base text-muted-foreground/80 max-w-md mx-auto font-light">
-                                Start by adding your first pipe segment to begin the hydraulic calculation.
-                            </p>
-                        </div>
-                        <button
-                            onClick={addSegment}
-                            className="btn btn-primary btn-md gap-3 shadow-xl shadow-primary/20"
-                        >
-                            <Plus className="w-5 h-5" />
-                            Initialize Network
-                        </button>
+                {isLoading ? (
+                    <div className="p-8">
+                        <TableSkeleton rows={8} />
+                    </div>
+                ) : segments.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center p-8">
+                        <EmptyState
+                            icon={Workflow}
+                            title="No Segments Defined"
+                            description="Start by adding your first pipe segment to begin the hydraulic calculation."
+                            action={{
+                                label: 'Initialize Network',
+                                onClick: addSegment,
+                                variant: 'primary'
+                            }}
+                            steps={[
+                                "Define pipe material and dimensions",
+                                "Set length and flow rates",
+                                "Analyze pressure drops automatically"
+                            ]}
+                            tipsLabel="Design Process"
+                        />
                     </div>
                 ) : (
                     <>

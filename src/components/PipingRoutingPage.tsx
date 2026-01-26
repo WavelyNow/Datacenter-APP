@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useTranslation } from '@/context/PreferencesContext';
 import { PipeManager } from './PipeManager';
 import { EquipmentManager } from './EquipmentManager';
 import { FluidComposition } from './FluidComposition';
@@ -22,22 +23,24 @@ export function PipingRoutingPage() {
         segments, setSegments,
         equipmentList, setEquipmentList,
         fluidType, glycolPercentage,
-        safetyMargin, safetyMarginPercentage, setSafetyMargin
+        safetyMargin, safetyMarginPercentage, setSafetyMargin,
+        isInitialized
     } = useProject();
 
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'segments' | 'equipment' | 'fluid'>('segments');
     const [equipmentViewMode, setEquipmentViewMode] = useState<'volume' | 'weights' | 'photos'>('volume');
 
     const tabs: { id: typeof activeTab; label: string; icon: LucideIcon }[] = [
-        { id: 'segments', label: 'Piping Segments', icon: LayoutGrid },
-        { id: 'equipment', label: 'Equipment Inventory', icon: Database },
-        { id: 'fluid', label: 'Fluid & Environment', icon: Droplets },
+        { id: 'segments', label: t('pipingRoutingPage.tabs.segments'), icon: LayoutGrid },
+        { id: 'equipment', label: t('pipingRoutingPage.tabs.equipment'), icon: Database },
+        { id: 'fluid', label: t('pipingRoutingPage.tabs.fluid'), icon: Droplets },
     ];
 
     const equipmentTabs: { id: typeof equipmentViewMode; label: string; icon: LucideIcon }[] = [
-        { id: 'volume', label: 'Volumes & Specs', icon: Box },
-        { id: 'weights', label: 'Weights & Loads', icon: Weight },
-        { id: 'photos', label: 'Photo Gallery', icon: ImageIcon },
+        { id: 'volume', label: t('pipingRoutingPage.equipmentTabs.volume'), icon: Box },
+        { id: 'weights', label: t('pipingRoutingPage.equipmentTabs.weights'), icon: Weight },
+        { id: 'photos', label: t('pipingRoutingPage.equipmentTabs.photos'), icon: ImageIcon },
     ];
 
     return (
@@ -47,18 +50,18 @@ export function PipingRoutingPage() {
                 <div className="flex flex-col gap-6">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
-                        <span>Design</span>
+                        <span>{t('pipingRoutingPage.breadcrumbs.design')}</span>
                         <ChevronRight className="w-3 h-3" />
-                        <span className="text-foreground">Physic Configuration</span>
+                        <span className="text-foreground">{t('pipingRoutingPage.breadcrumbs.physicConfig')}</span>
                     </div>
 
                     <div className="flex items-end justify-between">
                         <div>
                             <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">
-                                System Configuration
+                                {t('pipingRoutingPage.title')}
                             </h1>
                             <p className="text-muted-foreground max-w-2xl text-sm font-medium">
-                                Manage hydraulic network topology, equipment inventory, and fluid properties.
+                                {t('pipingRoutingPage.subtitle')}
                             </p>
                         </div>
                     </div>
@@ -134,8 +137,8 @@ export function PipingRoutingPage() {
                                     onSegmentsChange={setSegments}
                                     fluidType={fluidType}
                                     glycolPercentage={glycolPercentage}
-                                    safetyMargin={safetyMargin}
                                     safetyMarginPercentage={safetyMarginPercentage}
+                                    isLoading={!isInitialized}
                                     className="h-[calc(100vh-320px)] min-h-[600px]"
                                 />
                             )}
@@ -146,6 +149,7 @@ export function PipingRoutingPage() {
                                     safetyMargin={safetyMargin}
                                     onSafetyMarginChange={setSafetyMargin}
                                     viewMode={equipmentViewMode}
+                                    isLoading={!isInitialized}
                                 />
                             )}
                             {activeTab === 'fluid' && (

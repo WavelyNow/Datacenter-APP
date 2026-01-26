@@ -175,6 +175,22 @@
     @apply bg-input/50 backdrop-blur-sm border border-transparent text-foreground placeholder-muted-foreground rounded-xl px-4 py-2.5 shadow-sm transition-all duration-300;
     @apply focus:bg-input focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none hover:bg-input/80;
   }
+
+  /* Accessibility: Focus-visible for keyboard users */
+  button:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Skip Link (Hidden until focused) */
+  .skip-link {
+    @apply absolute -top-12 left-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold z-[999] transition-transform duration-200;
+  }
+
+  .skip-link:focus {
+    @apply top-4;
+  }
 }
 
 /* Premium Utilities */
@@ -191,13 +207,37 @@
     @apply bg-background/80 backdrop-blur-xl border-r border-border/50 h-screen sticky top-0;
   }
 
+  /* Skeleton Shimmer Animation */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent);
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   /* Premium Text Gradient */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-slate-950 to-indigo-600 dark:from-emerald-100 dark:to-teal-400;
   }
 
   .card-premium {
-    @apply bg-card rounded-2xl border border-border/50 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 hover:border-primary/30 hover:-translate-y-1 relative overflow-hidden;
+    @apply bg-card rounded-2xl border border-border/50 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 hover:border-primary/30 hover:-translate-y-1 relative overflow-hidden active:scale-[0.99] active:shadow-sm;
   }
 
   /* Subtle border highlight for premium cards */
@@ -213,6 +253,46 @@
   /* Clean Text Utilities */
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* =====================
+     PREMIUM TABLES
+     ===================== */
+  .table-container {
+    @apply w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm;
+  }
+
+  .table-premium {
+    @apply w-full caption-bottom text-sm text-left border-collapse;
+  }
+
+  .table-premium thead tr {
+    @apply border-b border-border/50 bg-secondary/30 transition-colors hover:bg-secondary/50;
+  }
+
+  .table-premium th {
+    @apply h-11 px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider align-middle [&:has([role=checkbox])]:pr-0 sticky top-0 bg-background/95 backdrop-blur-sm z-20;
+  }
+
+  .table-premium tbody tr {
+    @apply border-b border-border/30 transition-colors hover:bg-muted/30 data-[state=selected]:bg-muted;
+  }
+
+  .table-premium td {
+    @apply p-4 align-middle [&:has([role=checkbox])]:pr-0 text-foreground/90 font-medium;
+  }
+
+  .table-premium tbody tr:last-child {
+    @apply border-0;
+  }
+
+  /* Grid Table Adaptation */
+  .grid-table-header {
+    @apply sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-colors;
+  }
+
+  .grid-table-row {
+    @apply border-b border-border/30 transition-colors hover:bg-muted/30 data-[selected=true]:bg-muted/50 items-center;
   }
 
   /* =====================
@@ -246,15 +326,15 @@
   }
 
   .btn-secondary {
-    @apply bg-background text-foreground hover:bg-muted border border-border shadow-sm;
+    @apply bg-card border border-border/50 text-foreground hover:bg-secondary/80 hover:border-primary/30 shadow-sm hover:shadow-md transition-all duration-300;
   }
 
   .btn-ghost {
-    @apply hover:bg-muted/60 text-muted-foreground hover:text-foreground;
+    @apply hover:bg-muted/60 text-muted-foreground hover:text-foreground hover:scale-105 active:scale-95 transition-all duration-200;
   }
 
   .btn-icon {
-    @apply h-11 w-11 p-0 rounded-xl flex items-center justify-center;
+    @apply h-10 w-10 p-0 rounded-xl flex items-center justify-center shrink-0;
   }
 
   /* Sizes */

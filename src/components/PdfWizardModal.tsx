@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor, LucideIcon } from 'lucide-react';
+import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor, LucideIcon, FileSpreadsheet } from 'lucide-react';
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
 
+import { generateExcelReport } from '@/lib/excel/generateExcel';
 import { createPortal } from 'react-dom';
 
 interface PdfWizardModalProps {
@@ -35,12 +36,12 @@ interface PdfWizardModalProps {
     };
 }
 
-type Preset = 'basic' | 'standard' | 'full' | 'custom';
+type Preset = 'basic' | 'standard' | 'full' | 'custom' | 'excel';
 
 const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
     basic: {
         name: 'Basic Report',
-        desc: 'Essential volume summary and BoQ.',
+        desc: 'Essential volume summary and BoQ in PDF.',
         icon: Package,
         options: { includeVolume: true, includeBoQ: true, includeSupports: false, includeWeights: false, includePhotos: false, includeEnergy: false }
     },
@@ -55,6 +56,12 @@ const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; op
         desc: 'Complete documentation with weights & photos.',
         icon: Layers,
         options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: true, includePhotos: true, includeEnergy: true }
+    },
+    excel: {
+        name: 'Excel Data Export',
+        desc: 'Raw data tables for external processing.',
+        icon: FileSpreadsheet,
+        options: {}
     },
     custom: {
         name: 'Custom',
@@ -128,7 +135,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
 
     const selectPreset = (preset: Preset) => {
         setSelectedPreset(preset);
-        if (preset !== 'custom') {
+        if (preset !== 'custom' && preset !== 'excel') {
             setOptions(prev => ({ ...prev, ...presets[preset].options }));
         }
     };
@@ -207,6 +214,10 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
     };
 
     const nextStep = () => {
+        if (selectedPreset === 'excel' && currentStep === 1) {
+            setCurrentStep(4); // Jump to download
+            return;
+        }
         if (currentStep < 4) setCurrentStep(currentStep + 1);
     };
 
@@ -361,14 +372,22 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col items-center justify-center h-full">
                         <div className="text-center space-y-2">
                             <h3 className="text-3xl font-bold text-foreground">Ready to Download</h3>
-                            <p className="text-muted-foreground">Your report has been successfully generated.</p>
+                            <p className="text-muted-foreground">
+                                {selectedPreset === 'excel'
+                                    ? 'Your Excel export is ready.'
+                                    : 'Your report has been successfully generated.'}
+                            </p>
                         </div>
 
                         <div className="bg-card p-10 rounded-3xl border border-primary/20 bg-primary/5 text-center max-w-md w-full relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
 
                             <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/40 animate-in zoom-in duration-500">
-                                <FileText className="w-12 h-12 text-primary-foreground" />
+                                {selectedPreset === 'excel' ? (
+                                    <FileSpreadsheet className="w-12 h-12 text-primary-foreground" />
+                                ) : (
+                                    <FileText className="w-12 h-12 text-primary-foreground" />
+                                )}
                             </div>
 
                             <h4 className="text-xl font-bold text-foreground mb-2">
@@ -379,11 +398,11 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             </p>
 
                             <button
-                                onClick={handleDownload}
+                                onClick={selectedPreset === 'excel' ? () => { generateExcelReport(data); onClose(); } : handleDownload}
                                 className="w-full btn btn-primary btn-lg gap-2 text-base shadow-xl shadow-primary/20"
                             >
                                 <Download className="w-5 h-5" />
-                                Download PDF
+                                {selectedPreset === 'excel' ? 'Download Excel' : 'Download PDF'}
                             </button>
                         </div>
                     </div>
