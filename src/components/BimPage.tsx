@@ -307,7 +307,7 @@ export const BimPage = () => {
             {/* Header */}
             <div className="flex justify-between items-start shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h2 data-testid="bim-page-title" className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                         <FileBox className="w-6 h-6 text-primary" />
                         BIM Model Viewer
                     </h2>

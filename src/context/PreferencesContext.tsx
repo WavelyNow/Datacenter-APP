@@ -169,10 +169,21 @@ export const useTranslation = () => {
         const lang = preferences.language;
         const dict = translations[lang];
 
+        // Handle dots (nested keys)
         if (key.includes('.')) {
-            const [section, field] = key.split('.');
-            // @ts-ignore
-            return dict[section]?.[field] || key;
+            const parts = key.split('.');
+            let current: any = dict;
+
+            for (const part of parts) {
+                if (current && typeof current === 'object' && part in current) {
+                    current = current[part];
+                } else {
+                    return key; // Path not found
+                }
+            }
+
+            // Only return if it's a string, otherwise return key to avoid React object errors
+            return typeof current === 'string' ? current : key;
         }
 
         // Fallback to common if no dot
