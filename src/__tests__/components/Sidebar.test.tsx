@@ -21,6 +21,27 @@ jest.mock('@/context/ProjectContext', () => ({
     })
 }));
 
+// Mock PreferencesContext for useTranslation
+const mockTranslations: Record<string, string> = {
+    'sidebar.brand': 'Engineering Suite',
+    'sidebar.pipingRouting': 'Piping & Routing',
+    'sidebar.exportRaport': 'Export Report',
+    'common.help': 'Help',
+};
+
+jest.mock('@/context/PreferencesContext', () => ({
+    useTranslation: () => ({
+        t: (key: string) => mockTranslations[key] || key,
+        language: 'en',
+    }),
+    usePreferences: () => ({
+        preferences: { language: 'en', unitSystem: 'metric' },
+        updatePreference: jest.fn(),
+        resetPreferences: jest.fn(),
+        isOnline: true,
+    }),
+}));
+
 describe('Sidebar Component', () => {
     const defaultProps = {
         onSettingsOpen: jest.fn(),

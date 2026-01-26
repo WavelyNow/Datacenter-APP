@@ -13,14 +13,19 @@ import { calculateSystemResources, SystemResources } from '@/lib/calc/resources'
 import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
 import { SegmentDetailSheet } from './SegmentDetailSheet';
-import { PressureDropChart } from './PressureDropChart';
 import { PumpRecommender } from './PumpRecommender';
 // Duplicate imports removed
 import { ThermalAnalysisSheet } from './ThermalAnalysisSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { NumberInput } from '@/components/ui/ValidatedInput';
+
+const PressureDropChart = dynamic(() => import('./PressureDropChart').then(mod => mod.PressureDropChart), {
+    ssr: false,
+    loading: () => <div className="h-[300px] w-full bg-muted/10 animate-pulse rounded-xl" />
+});
 
 interface PipeManagerProps {
     segments: PipeSegment[];

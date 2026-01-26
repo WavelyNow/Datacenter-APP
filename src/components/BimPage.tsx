@@ -2,10 +2,15 @@
 
 import { supabase } from '@/lib/supabase';
 
+import dynamic from 'next/dynamic';
 import React, { useState, useRef, useMemo } from 'react';
 import { Layers, FileText, AlertTriangle, Upload, FileBox, Loader2, Check } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
-import { IfcViewer } from './bim/IfcViewer'; // Reusing existing viewer
+
+const IfcViewer = dynamic(() => import('./bim/IfcViewer').then(mod => mod.IfcViewer), {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">Loading Viewer...</div>
+});
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';

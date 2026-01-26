@@ -9,6 +9,31 @@ jest.mock('@/context/ProjectContext', () => ({
     useProject: jest.fn(),
 }));
 
+// Mock PreferencesContext for useTranslation
+const mockTranslations: Record<string, string> = {
+    'common.systemActive': 'SYSTEM ACTIVE',
+    'dashboard.activeSegments': 'Active Segments',
+    'dashboard.cloudActive': 'Cloud Active',
+    'dashboard.localOnly': 'Local Only',
+    'dashboard.welcomeSubtitle': 'Real-time overview of your datacenter project metrics.',
+    'header.quickStart': 'Quick Start',
+    'header.scanBim': 'Scan BIM',
+    'header.newProject': 'New Project',
+};
+
+jest.mock('@/context/PreferencesContext', () => ({
+    useTranslation: () => ({
+        t: (key: string) => mockTranslations[key] || key,
+        language: 'en',
+    }),
+    usePreferences: () => ({
+        preferences: { language: 'en', unitSystem: 'metric' },
+        updatePreference: jest.fn(),
+        resetPreferences: jest.fn(),
+        isOnline: true,
+    }),
+}));
+
 // Mock child components that might be complex
 jest.mock('@/components/bim/BimImportModal', () => ({
     BimImportModal: () => <div data-testid="bim-modal" />,
@@ -32,7 +57,11 @@ describe('Dashboard Component', () => {
     it('displays the correct number of active segments', () => {
         const mockValue = {
             ...mockProjectContextValue,
-            segments: [{}, {}, {}], // 3 segments
+            segments: [
+                { id: '1', size: 'DN50', length: 10, material: 'carbon_steel' },
+                { id: '2', size: 'DN50', length: 10, material: 'carbon_steel' },
+                { id: '3', size: 'DN50', length: 10, material: 'carbon_steel' },
+            ], // 3 segments
         };
         (useProject as jest.Mock).mockReturnValue(mockValue);
 

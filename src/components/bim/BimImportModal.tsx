@@ -2,11 +2,15 @@
 'use client';
 
 
-import React, { useState, useRef } from 'react';
-import { X, Upload, Check, AlertTriangle, FileBox, Loader2, ArrowRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import React, { useState, useRef, useMemo } from 'react';
+import { Layers, FileText, AlertTriangle, Upload, FileBox, Loader2, Check, X, ArrowRight } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
-import { IfcViewer } from './IfcViewer';
+const IfcViewer = dynamic(() => import('./IfcViewer').then(mod => mod.IfcViewer), {
+    ssr: false,
+    loading: () => <div className="h-40 flex items-center justify-center text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading Preview...</div>
+});
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment } from '@/lib/types';
 import { BimObject } from '@/lib/bim/types';
