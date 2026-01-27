@@ -1,0 +1,261 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation "Main navigation" [ref=e4]:
+      - button "Collapse sidebar" [expanded] [ref=e5]:
+        - img [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img [ref=e11]
+          - generic [ref=e14]:
+            - heading "Engineering Suite" [level=1] [ref=e15]
+            - paragraph [ref=e16]: System Active
+        - button "20 Data Center Cooling PROJ-2024-001" [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: "20"
+            - generic [ref=e21]:
+              - generic [ref=e22]: Data Center Cooling
+              - generic [ref=e23]: PROJ-2024-001
+          - img [ref=e24]
+        - navigation [ref=e27]:
+          - button "Dashboard" [ref=e29]:
+            - img [ref=e31]
+            - generic [ref=e36]: Dashboard
+          - generic [ref=e37]:
+            - generic [ref=e38]: Engineering
+            - generic [ref=e39]:
+              - button "BIM Gallery" [ref=e40]:
+                - img [ref=e41]
+                - generic [ref=e45]: BIM Gallery
+                - generic [ref=e46]: NEW
+              - button "IFC Mapping" [ref=e47]:
+                - img [ref=e48]
+                - generic [ref=e52]: IFC Mapping
+              - button "Piping & Routing" [ref=e53]:
+                - img [ref=e54]
+                - generic [ref=e58]: Piping & Routing
+              - button "Hydraulics" [ref=e59]:
+                - img [ref=e60]
+                - generic [ref=e62]: Hydraulics
+              - button "Sustainability" [ref=e63]:
+                - img [ref=e64]
+                - generic [ref=e67]: Sustainability
+              - button "Supports" [ref=e68]:
+                - img [ref=e69]
+                - generic [ref=e72]: Supports
+              - button "Load Calc" [ref=e73]:
+                - img [ref=e74]
+                - generic [ref=e78]: Load Calc
+              - button "Cost Estimation" [ref=e79]:
+                - img [ref=e80]
+                - generic [ref=e82]: Cost Estimation
+              - button "Quantities" [ref=e83]:
+                - img [ref=e84]
+                - generic [ref=e87]: Quantities
+              - button "Commissioning" [ref=e88]:
+                - img [ref=e89]
+                - generic [ref=e93]: Commissioning
+          - generic [ref=e94]:
+            - generic [ref=e95]: Resources
+            - button "Tech Library" [ref=e97]:
+              - img [ref=e98]
+              - generic [ref=e100]: Tech Library
+          - generic [ref=e101]:
+            - generic [ref=e102]: Output
+            - generic [ref=e103]:
+              - button "Site Photos" [ref=e104]:
+                - img [ref=e105]
+                - generic [ref=e108]: Site Photos
+              - button "Report Branding" [ref=e109]:
+                - img [ref=e110]
+                - generic [ref=e116]: Report Branding
+              - button "Settings" [ref=e117]:
+                - img [ref=e118]
+                - generic [ref=e121]: Settings
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - button "Export" [ref=e124]:
+            - img [ref=e125]
+            - text: Export
+          - button "Save" [ref=e129]:
+            - img [ref=e130]
+          - generic "Import" [ref=e134] [cursor=pointer]:
+            - img [ref=e135]
+        - generic [ref=e138]:
+          - button "Toggle theme" [ref=e139]:
+            - img [ref=e140]
+          - generic "Connected" [ref=e146]:
+            - generic [ref=e148]: Online
+          - button "Help" [ref=e149]:
+            - img [ref=e150]
+            - text: Help
+        - generic [ref=e153]: Datacenter OS v2026.1
+    - main [ref=e154]:
+      - generic [ref=e156]:
+        - generic:
+          - generic:
+            - generic [ref=e157]: 2024-001
+            - generic [ref=e159]: Dashboard
+          - generic:
+            - textbox "Project Name" [ref=e160]: Data Center Cooling
+            - button "Quick search... ⌘K" [ref=e161]:
+              - img [ref=e162]
+              - generic [ref=e165]: Quick search...
+              - generic [ref=e166]: ⌘K
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - button "Undo (Ctrl+Z)" [disabled] [ref=e169]:
+              - img [ref=e170]
+            - button "Redo (Ctrl+Y)" [disabled] [ref=e174]:
+              - img [ref=e175]
+          - generic [ref=e178]:
+            - button "Equipment" [ref=e179]:
+              - img [ref=e180]
+              - generic [ref=e183]: Equipment
+            - button "Pipes" [ref=e185]:
+              - img [ref=e186]
+              - generic [ref=e188]: Pipes
+            - button "Profiles" [ref=e190]:
+              - img [ref=e191]
+              - generic [ref=e195]: Profiles
+          - generic [ref=e196]:
+            - generic [ref=e197]:
+              - button "Save to Cloud" [ref=e198]:
+                - img [ref=e199]
+                - text: Save to Cloud
+              - button "Cloud Browser" [ref=e203]:
+                - img [ref=e204]
+                - text: Cloud Browser
+            - generic "Save / Import" [ref=e206]:
+              - button [ref=e207]:
+                - img [ref=e208]
+              - img [ref=e214] [cursor=pointer]
+            - button "Export Report" [ref=e217]:
+              - img [ref=e218]
+              - generic [ref=e222]: Export Report
+            - img [ref=e225] [cursor=pointer]
+      - generic [ref=e230]:
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - generic [ref=e234]: System Active
+              - generic [ref=e238]: PLANNING PHASE
+            - heading "Engineering Workspace" [level=1] [ref=e239]
+            - paragraph [ref=e240]: dashboard.welcomeSubtitle
+          - generic [ref=e241]:
+            - button "Quick Start" [ref=e242]:
+              - img [ref=e243]
+              - text: Quick Start
+            - button "Scan BIM" [ref=e246]:
+              - img [ref=e247]
+              - text: Scan BIM
+            - button "New Project" [ref=e252]:
+              - img [ref=e253]
+              - text: New Project
+        - generic [ref=e254]:
+          - generic [ref=e255] [cursor=pointer]:
+            - generic [ref=e256]:
+              - img [ref=e258]
+              - img [ref=e260]
+            - generic [ref=e262]:
+              - generic [ref=e263]: "0"
+              - generic [ref=e264]: dashboard.activeSegments
+          - generic [ref=e265] [cursor=pointer]:
+            - generic [ref=e266]:
+              - img [ref=e268]
+              - img [ref=e270]
+            - generic [ref=e272]:
+              - generic [ref=e273]: "0"
+              - generic [ref=e274]: Active Equipment
+          - generic [ref=e275] [cursor=pointer]:
+            - generic [ref=e277]:
+              - img [ref=e279]
+              - generic [ref=e282]: ESTIMATED
+            - generic [ref=e283]:
+              - generic [ref=e284]: €1,380
+              - generic [ref=e285]: Total Project Cost
+          - generic [ref=e286] [cursor=pointer]:
+            - generic [ref=e287]:
+              - img [ref=e289]
+              - generic [ref=e292]: AI CALC
+            - generic [ref=e293]:
+              - generic [ref=e294]: "1.42"
+              - generic [ref=e295]: dashboard.projPueScore
+        - generic [ref=e296]:
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - heading "dashboard.initializeProject" [level=3] [ref=e299]
+              - generic [ref=e300]:
+                - button "1 dashboard.configureFluids dashboard.configureFluidsDesc" [ref=e301]:
+                  - generic [ref=e302]: "1"
+                  - generic [ref=e303]:
+                    - generic [ref=e304]: dashboard.configureFluids
+                    - generic [ref=e305]: dashboard.configureFluidsDesc
+                  - img [ref=e306]
+                - button "2 dashboard.importArchitecture dashboard.importArchitectureDesc" [ref=e308]:
+                  - generic [ref=e309]: "2"
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: dashboard.importArchitecture
+                    - generic [ref=e312]: dashboard.importArchitectureDesc
+                  - img [ref=e313]
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - img [ref=e318]
+                - generic [ref=e322]:
+                  - paragraph [ref=e323]: dashboard.totalPiping
+                  - paragraph [ref=e324]: 0.0 dashboard.meters
+              - generic [ref=e325]:
+                - img [ref=e327]
+                - generic [ref=e329]:
+                  - paragraph [ref=e330]: dashboard.syncStatus
+                  - paragraph [ref=e331]: dashboard.cloudActive
+            - generic [ref=e332]:
+              - img [ref=e334]
+              - generic [ref=e339]:
+                - img [ref=e341]
+                - heading "dashboard.fluidRequirements" [level=3] [ref=e343]
+              - generic [ref=e344]:
+                - generic [ref=e345]:
+                  - generic [ref=e346]:
+                    - paragraph [ref=e347]: dashboard.baseVolume
+                    - generic [ref=e348]:
+                      - paragraph [ref=e349]: "0"
+                      - generic [ref=e350]: dashboard.liters
+                  - paragraph [ref=e351]: dashboard.pipesEquipment
+                - generic [ref=e352]:
+                  - generic [ref=e353]:
+                    - paragraph [ref=e354]: dashboard.safetyReserve
+                    - generic [ref=e355]:
+                      - paragraph [ref=e356]: "+0"
+                      - generic [ref=e357]: dashboard.liters
+                  - generic [ref=e358]: 5% dashboard.margin
+                - generic [ref=e360]:
+                  - generic [ref=e361]:
+                    - paragraph [ref=e362]: dashboard.totalToBuy
+                    - generic [ref=e363]:
+                      - paragraph [ref=e364]: "0"
+                      - generic [ref=e365]: dashboard.liters
+                  - paragraph [ref=e366]: dashboard.premixed 30% dashboard.glycol
+          - generic [ref=e368]:
+            - heading "dashboard.systemUpdates" [level=3] [ref=e372]
+            - generic [ref=e373]:
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - generic [ref=e376]: dashboard.energyEngine
+                  - generic [ref=e377]: Live
+                - paragraph [ref=e378]: dashboard.energyEngineDesc
+              - generic [ref=e380]:
+                - generic [ref=e381]:
+                  - generic [ref=e382]: dashboard.hydraulicSolver
+                  - generic [ref=e383]: Beta
+                - paragraph [ref=e384]: dashboard.hydraulicSolverDesc
+              - generic [ref=e386]:
+                - paragraph [ref=e387]: dashboard.aiInsight
+                - paragraph [ref=e388]: dashboard.aiInsightText
+  - region "Notifications alt+T"
+  - alert [ref=e389]
+```

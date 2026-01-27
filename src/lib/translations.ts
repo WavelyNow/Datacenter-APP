@@ -1,4 +1,3 @@
-import { Language } from '@/context/PreferencesContext';
 
 export const translations = {
     en: {

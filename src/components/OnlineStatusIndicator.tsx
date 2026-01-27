@@ -5,8 +5,13 @@ import { Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const OnlineStatusIndicator: React.FC = () => {
-    const [isOnline, setIsOnline] = useState(true);
-    const [showBanner, setShowBanner] = useState(false);
+    // Use lazy initial state to avoid setState in useEffect
+    const [isOnline, setIsOnline] = useState(() =>
+        typeof navigator !== 'undefined' ? navigator.onLine : true
+    );
+    const [showBanner, setShowBanner] = useState(() =>
+        typeof navigator !== 'undefined' ? !navigator.onLine : false
+    );
     const [wasOffline, setWasOffline] = useState(false);
 
     useEffect(() => {
@@ -25,12 +30,6 @@ export const OnlineStatusIndicator: React.FC = () => {
             setShowBanner(true);
         };
 
-        // Initial state
-        setIsOnline(navigator.onLine);
-        if (!navigator.onLine) {
-            setShowBanner(true);
-        }
-
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
@@ -48,8 +47,8 @@ export const OnlineStatusIndicator: React.FC = () => {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
                     className={`fixed top-0 left-0 right-0 z-[9999] py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 ${isOnline
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-amber-500 text-white'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-amber-500 text-white'
                         }`}
                 >
                     {isOnline ? (
@@ -79,11 +78,12 @@ export const OnlineStatusIndicator: React.FC = () => {
 
 // Small inline indicator for use in header/sidebar
 export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className = '' }) => {
-    const [isOnline, setIsOnline] = useState(true);
+    // Use lazy initial state to avoid setState in useEffect
+    const [isOnline, setIsOnline] = useState(() =>
+        typeof navigator !== 'undefined' ? navigator.onLine : true
+    );
 
     useEffect(() => {
-        setIsOnline(navigator.onLine);
-
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
 
@@ -103,8 +103,8 @@ export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className 
         >
             <span
                 className={`w-2 h-2 rounded-full ${isOnline
-                        ? 'bg-emerald-500 animate-pulse'
-                        : 'bg-amber-500'
+                    ? 'bg-emerald-500 animate-pulse'
+                    : 'bg-amber-500'
                     }`}
             />
             <span className={isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>

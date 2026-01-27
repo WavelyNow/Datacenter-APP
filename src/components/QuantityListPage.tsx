@@ -6,22 +6,14 @@ import {
     Package,
     Plus,
     Download,
-    Upload,
     ChevronRight,
     ChevronDown,
     Trash2,
     Search,
     Filter,
     Copy,
-    GripVertical,
-    Check,
-    X,
     RefreshCw,
-    FileSpreadsheet,
-    MoreHorizontal,
-    FileUp,
-    MessageSquare,
-    AlertCircle
+    FileUp
 } from 'lucide-react';
 import { MaterialItem, MaterialCategory, MaterialUnit, MaterialStatus } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -258,7 +250,7 @@ const BoQRow = React.memo(({ item, isSelected, onSelect, onUpdate, onDuplicate, 
         </motion.div>
     );
 });
-
+BoQRow.displayName = 'BoQRow';
 // Main Component
 export const QuantityListPage = () => {
     const { boqItems, setBoqItems, segments, equipmentList, isInitialized } = useProject();
@@ -266,6 +258,8 @@ export const QuantityListPage = () => {
     const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'all'>('all');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [expandedCategories, setExpandedCategories] = useState<Set<MaterialCategory>>(new Set(CATEGORIES));
+    // Reserved for future bulk actions feature
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showBulkActions, setShowBulkActions] = useState(false);
 
     // Migrate old items if needed (add missing fields)
@@ -310,7 +304,7 @@ export const QuantityListPage = () => {
     // Helper to format quantity summary
     const formatQuantitySummary = (quantities: Record<MaterialUnit, number>): string => {
         return Object.entries(quantities)
-            .filter(([_, qty]) => qty > 0)
+            .filter(([, qty]) => qty > 0)
             .map(([unit, qty]) => `${qty.toFixed(qty % 1 === 0 ? 0 : 1)} ${unit}`)
             .join(', ') || '-';
     };
@@ -419,7 +413,7 @@ export const QuantityListPage = () => {
         }
     }, [filteredItems, selectedIds.size]);
 
-    const handleSelectItem = useCallback((id: string, shiftKey: boolean) => {
+    const handleSelectItem = useCallback((id: string, _shiftKey: boolean) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
             if (next.has(id)) {
@@ -456,6 +450,7 @@ export const QuantityListPage = () => {
             if (targetItem) {
                 // Ensure category is expanded
                 if (!expandedCategories.has(targetItem.category)) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect -- Expanding category is intentional side effect for highlight feature
                     toggleCategory(targetItem.category);
                 }
 

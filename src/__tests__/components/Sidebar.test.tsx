@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '@/components/Sidebar';
-import { TabId } from '@/lib/types';
 
 // Mock child components
 jest.mock('@/components/ThemeToggle', () => ({

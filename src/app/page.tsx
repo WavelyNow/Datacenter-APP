@@ -48,7 +48,6 @@ import { PipingRoutingPage } from '@/components/PipingRoutingPage';
 import { SupportManager } from '@/components/SupportManager';
 import { BrandingManager } from '@/components/BrandingManager';
 import { EquipmentManager } from '@/components/EquipmentManager';
-import { CommandPalette } from '@/components/CommandPalette';
 import { SettingsPage } from '@/components/SettingsPage';
 import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
 

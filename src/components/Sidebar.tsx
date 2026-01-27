@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
-import { usePreferences, useTranslation } from '@/context/PreferencesContext';
+import { useTranslation } from '@/context/PreferencesContext';
 import { useProject } from '@/context/ProjectContext';
 import { TabId } from '@/lib/types';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -40,8 +40,7 @@ interface MenuItem {
     badge?: string | number;
 }
 
-const NavSection = ({ title, items, activeTab, onTabChange, isCollapsed }: {
-    title?: string;
+const NavSection = ({ items, activeTab, onTabChange, isCollapsed }: {
     items: MenuItem[];
     activeTab: string;
     onTabChange: (id: TabId) => void;

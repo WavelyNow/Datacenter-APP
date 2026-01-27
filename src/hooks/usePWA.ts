@@ -9,16 +9,16 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function usePWA() {
     const [isInstallable, setIsInstallable] = useState(false);
-    const [isInstalled, setIsInstalled] = useState(false);
+    // Use lazy initial state to avoid setState in useEffect
+    const [isInstalled, setIsInstalled] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+    );
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isOnline, setIsOnline] = useState(true);
+    const [isOnline, setIsOnline] = useState(() =>
+        typeof navigator !== 'undefined' ? navigator.onLine : true
+    );
 
     useEffect(() => {
-        // Check if already installed
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            setIsInstalled(true);
-        }
-
         // Listen for install prompt
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
@@ -36,8 +36,6 @@ export function usePWA() {
         // Online/offline status
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
-
-        setIsOnline(navigator.onLine);
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.addEventListener('appinstalled', handleAppInstalled);

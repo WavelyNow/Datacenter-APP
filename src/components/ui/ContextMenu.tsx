@@ -73,7 +73,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                     onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
                     onContextMenu={(e) => e.preventDefault()} // Prevent native menu inside
                 >
-                    {actions.map((action, index) => {
+                    {actions.map((action) => {
                         const Icon = action.icon;
                         const isDanger = action.variant === 'danger';
 

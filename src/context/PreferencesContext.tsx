@@ -49,23 +49,25 @@ const PreferencesContext = createContext<PreferencesContextType | undefined>(und
 const STORAGE_KEY = 'datacenter_user_preferences';
 
 export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
-    const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
-    const [isOnline, setIsOnline] = useState(true);
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    // Load preferences from localStorage on mount
-    useEffect(() => {
+    // Use lazy initial state to load from localStorage synchronously
+    const [preferences, setPreferences] = useState<UserPreferences>(() => {
+        if (typeof window === 'undefined') return defaultPreferences;
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                setPreferences({ ...defaultPreferences, ...parsed });
+                return { ...defaultPreferences, ...parsed };
             }
         } catch (e) {
             console.warn('Failed to load preferences:', e);
         }
-        setIsLoaded(true);
-    }, []);
+        return defaultPreferences;
+    });
+    // Use lazy initial state for online status
+    const [isOnline, setIsOnline] = useState(() =>
+        typeof navigator !== 'undefined' ? navigator.onLine : true
+    );
+    const [isLoaded] = useState(true);
 
     // Save preferences to localStorage when changed
     useEffect(() => {
@@ -78,12 +80,11 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [preferences, isLoaded]);
 
-    // Online/Offline detection
+    // Online/Offline detection - only set up event listeners
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
 
-        setIsOnline(navigator.onLine);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
@@ -172,11 +173,11 @@ export const useTranslation = () => {
         // Handle dots (nested keys)
         if (key.includes('.')) {
             const parts = key.split('.');
-            let current: any = dict;
+            let current: Record<string, unknown> = dict as Record<string, unknown>;
 
             for (const part of parts) {
                 if (current && typeof current === 'object' && part in current) {
-                    current = current[part];
+                    current = current[part] as Record<string, unknown>;
                 } else {
                     return key; // Path not found
                 }
@@ -187,7 +188,7 @@ export const useTranslation = () => {
         }
 
         // Fallback to common if no dot
-        // @ts-ignore
+        // @ts-expect-error - dynamic key access
         return dict.common?.[key] || key;
     }, [preferences.language]);
 

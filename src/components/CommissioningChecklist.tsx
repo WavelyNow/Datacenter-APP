@@ -14,16 +14,12 @@ import {
     ChevronDown,
     ChevronUp,
     Clock,
-    User,
-    Download,
     RefreshCw,
     LucideIcon
 } from 'lucide-react';
 import {
     CHECKLIST_CATEGORIES,
     CHECKLIST_ITEMS,
-    ChecklistItem,
-    ChecklistCategory,
     getItemsByCategory
 } from '@/lib/commissioning/checklistItems';
 

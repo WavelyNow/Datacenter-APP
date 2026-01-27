@@ -4,19 +4,16 @@ import React, { useState, useMemo } from 'react';
 import {
     DollarSign,
     Package,
-    Wrench,
-    Thermometer,
     Hammer,
     Calculator,
     Settings,
     ChevronDown,
     ChevronUp,
     TrendingUp,
-    Box,
-    Zap
+    Box
 } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
-import { calculateCostEstimate, formatCurrency, CostBreakdown, CostEstimatorConfig } from '@/lib/calculations/costEstimate';
+import { calculateCostEstimate, formatCurrency, CostEstimatorConfig } from '@/lib/calculations/costEstimate';
 
 export const CostEstimator: React.FC = () => {
     const { segments, equipmentList } = useProject();

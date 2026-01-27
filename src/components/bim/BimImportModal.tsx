@@ -3,8 +3,8 @@
 
 
 import dynamic from 'next/dynamic';
-import React, { useState, useRef, useMemo } from 'react';
-import { Layers, FileText, AlertTriangle, Upload, FileBox, Loader2, Check, X, ArrowRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { AlertTriangle, Upload, FileBox, Loader2, Check, X, ArrowRight } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
 const IfcViewer = dynamic(() => import('./IfcViewer').then(mod => mod.IfcViewer), {

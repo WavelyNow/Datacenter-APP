@@ -6,7 +6,6 @@ import {
     Settings,
     Globe,
     Ruler,
-    Calendar,
     Bell,
     Monitor,
     RotateCcw,

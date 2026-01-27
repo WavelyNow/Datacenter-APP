@@ -209,7 +209,7 @@ export const BrandingManager: React.FC = () => {
                                     {section.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                                 </button>
                                 <span className={`flex-1 text-xs font-medium ${section.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                    {t(`branding.sectionLabels.${section.id}` as any)}
+                                    {t(`branding.sectionLabels.${section.id}`)}
                                 </span>
                                 {section.enabled && (
                                     <div className="flex items-center gap-0.5 bg-muted/20 rounded p-0.5">

@@ -92,7 +92,7 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
                             unit="kPa"
                         />
                         <Tooltip
-                            content={({ active, payload, label }) => {
+                            content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
                                     const point = payload[0].payload;
                                     return (

@@ -1,0 +1,229 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation "Main navigation" [ref=e4]:
+      - button "Collapse sidebar" [expanded] [ref=e5]:
+        - img [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img [ref=e11]
+          - generic [ref=e14]:
+            - heading "Engineering Suite" [level=1] [ref=e15]
+            - paragraph [ref=e16]: System Active
+        - button "20 Megadatacenter 2026 PROJ-2024-001" [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: "20"
+            - generic [ref=e21]:
+              - generic [ref=e22]: Megadatacenter 2026
+              - generic [ref=e23]: PROJ-2024-001
+          - img [ref=e24]
+        - navigation [ref=e27]:
+          - button "Dashboard" [ref=e29]:
+            - img [ref=e30]
+            - generic [ref=e35]: Dashboard
+          - generic [ref=e36]:
+            - generic [ref=e37]: Engineering
+            - generic [ref=e38]:
+              - button "BIM Gallery" [ref=e39]:
+                - img [ref=e40]
+                - generic [ref=e44]: BIM Gallery
+                - generic [ref=e45]: NEW
+              - button "IFC Mapping" [ref=e46]:
+                - img [ref=e47]
+                - generic [ref=e51]: IFC Mapping
+              - button "Piping & Routing" [ref=e52]:
+                - img [ref=e54]
+                - generic [ref=e58]: Piping & Routing
+              - button "Hydraulics" [ref=e59]:
+                - img [ref=e60]
+                - generic [ref=e62]: Hydraulics
+              - button "Sustainability" [ref=e63]:
+                - img [ref=e64]
+                - generic [ref=e67]: Sustainability
+              - button "Supports" [ref=e68]:
+                - img [ref=e69]
+                - generic [ref=e72]: Supports
+              - button "Load Calc" [ref=e73]:
+                - img [ref=e74]
+                - generic [ref=e78]: Load Calc
+              - button "Cost Estimation" [ref=e79]:
+                - img [ref=e80]
+                - generic [ref=e82]: Cost Estimation
+              - button "Quantities" [ref=e83]:
+                - img [ref=e84]
+                - generic [ref=e87]: Quantities
+              - button "Commissioning" [ref=e88]:
+                - img [ref=e89]
+                - generic [ref=e93]: Commissioning
+          - generic [ref=e94]:
+            - generic [ref=e95]: Resources
+            - button "Tech Library" [ref=e97]:
+              - img [ref=e98]
+              - generic [ref=e100]: Tech Library
+          - generic [ref=e101]:
+            - generic [ref=e102]: Output
+            - generic [ref=e103]:
+              - button "Site Photos" [ref=e104]:
+                - img [ref=e105]
+                - generic [ref=e108]: Site Photos
+              - button "Report Branding" [ref=e109]:
+                - img [ref=e110]
+                - generic [ref=e116]: Report Branding
+              - button "Settings" [ref=e117]:
+                - img [ref=e118]
+                - generic [ref=e121]: Settings
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - button "Export" [ref=e124]:
+            - img [ref=e125]
+            - text: Export
+          - button "Save" [ref=e129]:
+            - img [ref=e130]
+          - generic "Import" [ref=e134] [cursor=pointer]:
+            - img [ref=e135]
+        - generic [ref=e138]:
+          - button "Toggle theme" [ref=e139]:
+            - img [ref=e140]
+          - generic "Connected" [ref=e146]:
+            - generic [ref=e148]: Online
+          - button "Help" [ref=e149]:
+            - img [ref=e150]
+            - text: Help
+        - generic [ref=e153]: Datacenter OS v2026.1
+    - main [ref=e154]:
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - generic [ref=e159]: 2024-001
+            - img [ref=e160]
+            - generic [ref=e162]: Piping & Routing
+          - generic [ref=e163]:
+            - textbox "Project Name" [ref=e164]: Megadatacenter 2026
+            - button "Quick search... ⌘K" [ref=e165]:
+              - img [ref=e166]
+              - generic [ref=e169]: Quick search...
+              - generic [ref=e170]: ⌘K
+        - generic [ref=e171]:
+          - generic [ref=e172]:
+            - button "Undo (Ctrl+Z)" [ref=e173]:
+              - img [ref=e174]
+            - button "Redo (Ctrl+Y)" [disabled] [ref=e178]:
+              - img [ref=e179]
+          - generic [ref=e182]:
+            - button "Equipment" [ref=e183]:
+              - img [ref=e184]
+              - generic [ref=e187]: Equipment
+            - button "Pipes" [ref=e189]:
+              - img [ref=e190]
+              - generic [ref=e192]: Pipes
+            - button "Profiles" [ref=e194]:
+              - img [ref=e195]
+              - generic [ref=e199]: Profiles
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - button "Save to Cloud" [ref=e202]:
+                - img [ref=e203]
+                - text: Save to Cloud
+              - button "Cloud Browser" [ref=e207]:
+                - img [ref=e208]
+                - text: Cloud Browser
+            - generic "Save / Import" [ref=e210]:
+              - button [ref=e211]:
+                - img [ref=e212]
+              - img [ref=e218] [cursor=pointer]
+            - button "Export Report" [ref=e221]:
+              - img [ref=e222]
+              - generic [ref=e226]: Export Report
+            - img [ref=e229] [cursor=pointer]
+      - generic [ref=e236]:
+        - generic [ref=e238]:
+          - generic [ref=e239]:
+            - generic [ref=e240]: Design
+            - img [ref=e241]
+            - generic [ref=e243]: Physic Configuration
+          - generic [ref=e245]:
+            - heading "System Configuration" [level=1] [ref=e246]
+            - paragraph [ref=e247]: Manage hydraulic network topology, equipment inventory, and fluid properties.
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - button "Piping Segments" [ref=e250]:
+                - img [ref=e251]
+                - generic [ref=e256]: Piping Segments
+              - button "Equipment Inventory" [active] [ref=e257]:
+                - img [ref=e259]
+                - generic [ref=e263]: Equipment Inventory
+              - button "Fluid & Environment" [ref=e264]:
+                - img [ref=e265]
+                - generic [ref=e268]: Fluid & Environment
+            - generic [ref=e269]:
+              - button "Volumes & Specs" [ref=e270]:
+                - img [ref=e271]
+              - button "Weights & Loads" [ref=e274]:
+                - img [ref=e275]
+              - button "Photo Gallery" [ref=e278]:
+                - img [ref=e279]
+        - generic [ref=e286]:
+          - generic [ref=e287]:
+            - generic [ref=e288]:
+              - img [ref=e290]
+              - generic [ref=e293]:
+                - heading "Inventory" [level=3] [ref=e294]
+                - paragraph [ref=e295]: Manage equipment list
+            - generic [ref=e296]:
+              - button "Catalog" [ref=e297]:
+                - img [ref=e298]
+                - text: Catalog
+              - button "Add Item" [ref=e300]:
+                - img [ref=e301]
+                - text: Add Item
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - img [ref=e310]
+              - generic [ref=e315]:
+                - heading "No equipment added" [level=3] [ref=e316]
+                - paragraph [ref=e317]: Start by adding items manually or from the catalog.
+                - generic [ref=e318]:
+                  - paragraph [ref=e319]: Inventory Guide
+                  - list [ref=e320]:
+                    - listitem [ref=e321]:
+                      - generic [ref=e322]: "1"
+                      - generic [ref=e323]: Browse global catalog
+                    - listitem [ref=e324]:
+                      - generic [ref=e325]: "2"
+                      - generic [ref=e326]: Add custom equipment
+                    - listitem [ref=e327]:
+                      - generic [ref=e328]: "3"
+                      - generic [ref=e329]: Attach technical sheets
+              - button "Add Item" [ref=e331]:
+                - generic [ref=e332]:
+                  - text: Add Item
+                  - img [ref=e333]
+            - generic [ref=e335]:
+              - generic [ref=e336]:
+                - img [ref=e337]
+                - generic [ref=e339]: Calculated Volume
+              - generic [ref=e340]:
+                - generic [ref=e341]: Total
+                - generic [ref=e342]: 0.00 L
+          - generic [ref=e343]:
+            - generic [ref=e344]:
+              - img [ref=e346]
+              - generic [ref=e349]:
+                - heading "Safety Buffer" [level=4] [ref=e350]
+                - paragraph [ref=e351]: Adds 5% to volume calculations
+            - button "ENABLED" [ref=e352]
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e353]:
+        - img [ref=e355]
+        - generic [ref=e357]:
+          - generic [ref=e358]: Segment de țeavă adăugat
+          - generic [ref=e359]: DN25 - 10m
+  - button "Open Next.js Dev Tools" [ref=e365] [cursor=pointer]:
+    - img [ref=e366]
+  - alert [ref=e369]
+```

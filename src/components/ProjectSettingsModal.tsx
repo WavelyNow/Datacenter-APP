@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Upload, MapPin, User, Hash, Settings, Save } from 'lucide-react';
+import { Upload, MapPin, User, Hash, Save } from 'lucide-react';
 import { ProjectDetails } from '@/lib/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +25,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
     // Client-side check
     const mounted = typeof window !== 'undefined';
 
-    const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<FormData>({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
         resolver: zodResolver(projectSettingsSchema),
         defaultValues: {
             projectName: projectDetails.projectName,

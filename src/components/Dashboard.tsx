@@ -5,7 +5,6 @@ import React from 'react';
 import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
 import { motion } from 'framer-motion';
-import { EmptyState } from '@/components/ui/EmptyState';
 import {
     Activity,
     Zap,
@@ -20,7 +19,7 @@ import {
 } from 'lucide-react';
 import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
-import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
+import { calculateSystemResources } from '@/lib/calc/resources';
 import { calculateCostEstimate } from '@/lib/calculations/costEstimate';
 
 export const Dashboard = () => {

@@ -21,7 +21,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     description,
     action,
     className = '',
-    ...props
+    steps,
+    tipsLabel
 }) => {
     return (
         <div className={`
@@ -62,13 +63,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 </p>
 
                 {/* Optional Steps/Tips */}
-                {(props as any).steps && (
+                {steps && steps.length > 0 && (
                     <div className="mt-8 text-left bg-muted/30 rounded-xl p-5 border border-white/5">
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                            {(props as any).tipsLabel || 'Quick Start Guide'}
+                            {tipsLabel || 'Quick Start Guide'}
                         </p>
                         <ul className="space-y-3">
-                            {((props as any).steps as string[]).map((step, i) => (
+                            {steps.map((step, i) => (
                                 <li key={i} className="flex gap-3 text-sm text-muted-foreground/80 items-start">
                                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold mt-0.5">
                                         {i + 1}

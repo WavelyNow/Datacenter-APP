@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,15 +22,19 @@ export const Modal: React.FC<ModalProps> = ({
     className = '',
     size = 'md'
 }) => {
+    // SSR-safety: track mounted state to ensure portal renders only on client
+     
     const [mounted, setMounted] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
     const previousActiveElement = useRef<HTMLElement | null>(null);
-    const titleId = useRef(`modal-title-${Math.random().toString(36).substring(2, 9)}`);
-    const descId = useRef(`modal-desc-${Math.random().toString(36).substring(2, 9)}`);
+    // Use React's useId for stable unique IDs (avoids hydration mismatch)
+    const uniqueId = useId();
+    const titleId = `modal-title-${uniqueId}`;
+    const descId = `modal-desc-${uniqueId}`;
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR hydration
         setMounted(true);
-        return () => setMounted(false);
     }, []);
 
     // Focus management
@@ -53,24 +57,37 @@ export const Modal: React.FC<ModalProps> = ({
 
     // Handle ESC key
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                onClose();
+            }
         };
-        if (isOpen) window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose]);
+
+    // Lock body scroll
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
 
     // Focus trap
     useEffect(() => {
         if (!isOpen) return;
 
         const handleTab = (e: KeyboardEvent) => {
-            if (e.key !== 'Tab' || !modalRef.current) return;
-
-            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            if (e.key !== 'Tab') return;
+            const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
                 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
             );
-            if (focusable.length === 0) return;
+            if (!focusable || focusable.length === 0) return;
 
             const first = focusable[0];
             const last = focusable[focusable.length - 1];
@@ -83,7 +100,6 @@ export const Modal: React.FC<ModalProps> = ({
                 first.focus();
             }
         };
-
         window.addEventListener('keydown', handleTab);
         return () => window.removeEventListener('keydown', handleTab);
     }, [isOpen]);
@@ -106,8 +122,8 @@ export const Modal: React.FC<ModalProps> = ({
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
                     role="dialog"
                     aria-modal="true"
-                    aria-labelledby={title ? titleId.current : undefined}
-                    aria-describedby={description ? descId.current : undefined}
+                    aria-labelledby={title ? titleId : undefined}
+                    aria-describedby={description ? descId : undefined}
                 >
                     {/* Backdrop */}
                     <motion.div
@@ -132,8 +148,8 @@ export const Modal: React.FC<ModalProps> = ({
                         {(title || description) && (
                             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/20">
                                 <div>
-                                    {title && <h3 id={titleId.current} className="text-lg font-bold text-foreground">{title}</h3>}
-                                    {description && <p id={descId.current} className="text-sm text-muted-foreground">{description}</p>}
+                                    {title && <h3 id={titleId} className="text-lg font-bold text-foreground">{title}</h3>}
+                                    {description && <p id={descId} className="text-sm text-muted-foreground">{description}</p>}
                                 </div>
                                 <button
                                     onClick={onClose}

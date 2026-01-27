@@ -2,7 +2,7 @@
 
 import React, { useRef, useMemo, useState, useCallback } from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EquipmentItem, CatalogEquipment } from '@/lib/types';
@@ -11,7 +11,6 @@ import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { useTranslation } from '@/context/PreferencesContext';
 import { ValidatedInput, NumberInput } from '@/components/ui/ValidatedInput';
 
-import { isValidVolume, isValidWeight } from '@/lib/validation/schemas';
 
 interface EquipmentManagerProps {
     equipmentList: EquipmentItem[];
@@ -36,7 +35,7 @@ const EQUIPMENT_TYPES_RO = [
 interface EquipmentRowProps {
     item: EquipmentItem;
     viewMode: 'volume' | 'weights' | 'photos';
-    onUpdate: (id: string, field: keyof EquipmentItem, value: any) => void;
+    onUpdate: (id: string, field: keyof EquipmentItem, value: EquipmentItem[keyof EquipmentItem]) => void;
     onRemove: (id: string) => void;
     onCopy: (item: EquipmentItem) => void;
     onOpenDetails: (item: EquipmentItem) => void;
@@ -247,6 +246,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
         </div>
     );
 });
+EquipmentRow.displayName = 'EquipmentRow';
 
 export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
     equipmentList,
@@ -299,7 +299,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
         onEquipmentChange([...equipmentList, newItem]);
     };
 
-    const updateItem = useCallback((id: string, field: keyof EquipmentItem, value: any) => {
+    const updateItem = useCallback((id: string, field: keyof EquipmentItem, value: EquipmentItem[keyof EquipmentItem]) => {
         onEquipmentChange(equipmentList.map(item =>
             item.id === id ? { ...item, [field]: value } : item
         ));
