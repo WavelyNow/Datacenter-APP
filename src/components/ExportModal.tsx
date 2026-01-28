@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Check, Printer, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet, Leaf } from 'lucide-react';
+import { FileText, Check, Scale, Anchor, Package, Camera, Eye, Download, FileSpreadsheet, Leaf } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';

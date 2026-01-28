@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, Stage, OrbitControls } from '@react-three/drei';
-import { Cuboid, Loader2 } from 'lucide-react';
+import { Cuboid } from 'lucide-react';
 
 function Model({ url }: { url: string }) {
     const { scene } = useGLTF(url);

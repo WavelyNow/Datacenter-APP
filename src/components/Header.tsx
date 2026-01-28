@@ -1,7 +1,7 @@
 import React from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { useTranslation } from '@/context/PreferencesContext';
-import { Box, Book, Printer, Save, Upload, Layers, Settings, Undo, Redo } from 'lucide-react';
+import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { User, ChevronRight } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';

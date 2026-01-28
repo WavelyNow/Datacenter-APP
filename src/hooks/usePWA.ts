@@ -1,21 +1,61 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// SSR-safe subscription to online status
+function subscribeOnlineStatus(callback: () => void) {
+    window.addEventListener('online', callback);
+    window.addEventListener('offline', callback);
+    return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+    };
+}
+
+function getOnlineSnapshot() {
+    return navigator.onLine;
+}
+
+function getOnlineServerSnapshot() {
+    return true;
+}
+
+// SSR-safe subscription to display mode
+function subscribeDisplayMode(callback: () => void) {
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    mediaQuery.addEventListener('change', callback);
+    return () => mediaQuery.removeEventListener('change', callback);
+}
+
+function getDisplayModeSnapshot() {
+    return window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function getDisplayModeServerSnapshot() {
+    return false;
+}
+
 export function usePWA() {
     const [isInstallable, setIsInstallable] = useState(false);
-    // Use lazy initial state to avoid setState in useEffect
-    const [isInstalled, setIsInstalled] = useState(() =>
-        typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
-    );
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator !== 'undefined' ? navigator.onLine : true
+
+    // Use useSyncExternalStore for SSR-safe online status
+    const isOnline = useSyncExternalStore(
+        subscribeOnlineStatus,
+        getOnlineSnapshot,
+        getOnlineServerSnapshot
+    );
+
+    // Use useSyncExternalStore for SSR-safe display mode detection
+    const isInstalled = useSyncExternalStore(
+        subscribeDisplayMode,
+        getDisplayModeSnapshot,
+        getDisplayModeServerSnapshot
     );
 
     useEffect(() => {
@@ -28,25 +68,16 @@ export function usePWA() {
 
         // Listen for successful installation
         const handleAppInstalled = () => {
-            setIsInstalled(true);
             setIsInstallable(false);
             setDeferredPrompt(null);
         };
 
-        // Online/offline status
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.addEventListener('appinstalled', handleAppInstalled);
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             window.removeEventListener('appinstalled', handleAppInstalled);
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
         };
     }, []);
 
@@ -58,7 +89,6 @@ export function usePWA() {
             const { outcome } = await deferredPrompt.userChoice;
 
             if (outcome === 'accepted') {
-                setIsInstalled(true);
                 setIsInstallable(false);
             }
 

@@ -94,7 +94,7 @@ export const ProfileCatalog: React.FC = () => {
             // Reset
             setFormData({ name: '', description: '', weight: 0, h: 0, w: 0, loadCapacity: 'Medium' });
             setIsCreateMode(false);
-        } catch (_error) {
+        } catch {
             alert('Failed to save profile to global library.');
         } finally {
             setIsSaving(false);
@@ -105,7 +105,7 @@ export const ProfileCatalog: React.FC = () => {
         if (confirm('Delete this custom profile from GLOBAL Cloud Library? This cannot be undone.')) {
             try {
                 await deleteItem(sku); // sku is the UUID for cloud items
-            } catch (_error) {
+            } catch {
                 alert('Failed to delete item.');
             }
         }

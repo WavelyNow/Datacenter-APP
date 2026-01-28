@@ -58,7 +58,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
             // Reset and go back
             setFormData({ category: 'Chiller', model: '', volume: 0, weight: 0, description: '' });
             setView('list');
-        } catch (e) {
+        } catch {
             alert(t('common.error'));
         } finally {
             setIsSaving(false);

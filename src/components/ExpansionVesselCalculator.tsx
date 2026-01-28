@@ -13,9 +13,7 @@ import {
 } from 'lucide-react';
 import {
     calculateExpansionVessel,
-    ExpansionVesselInput,
-    ExpansionVesselResult,
-    getStandardVesselSizes
+    ExpansionVesselInput
 } from '@/lib/calculations/expansionVessel';
 import { useProject } from '@/context/ProjectContext';
 import { calculateTotalVolume } from '@/lib/calculations/hydraulics';

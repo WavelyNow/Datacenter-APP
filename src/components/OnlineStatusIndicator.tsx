@@ -1,75 +1,47 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Wifi, WifiOff } from 'lucide-react';
+import React, { useSyncExternalStore } from 'react';
+import { WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// SSR-safe subscription to online status using useSyncExternalStore
+function subscribeOnlineStatus(callback: () => void) {
+    window.addEventListener('online', callback);
+    window.addEventListener('offline', callback);
+    return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+    };
+}
+
+function getOnlineSnapshot() {
+    return navigator.onLine;
+}
+
+function getServerSnapshot() {
+    return true; // Assume online on server
+}
+
 export const OnlineStatusIndicator: React.FC = () => {
-    // Use lazy initial state to avoid setState in useEffect
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator !== 'undefined' ? navigator.onLine : true
+    // Use useSyncExternalStore for SSR-safe online status
+    const isOnline = useSyncExternalStore(
+        subscribeOnlineStatus,
+        getOnlineSnapshot,
+        getServerSnapshot
     );
-    const [showBanner, setShowBanner] = useState(() =>
-        typeof navigator !== 'undefined' ? !navigator.onLine : false
-    );
-    const [wasOffline, setWasOffline] = useState(false);
 
-    useEffect(() => {
-        const handleOnline = () => {
-            setIsOnline(true);
-            if (wasOffline) {
-                setShowBanner(true);
-                setTimeout(() => setShowBanner(false), 3000);
-            }
-            setWasOffline(false);
-        };
-
-        const handleOffline = () => {
-            setIsOnline(false);
-            setWasOffline(true);
-            setShowBanner(true);
-        };
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, [wasOffline]);
-
+    // Simple: show banner only when offline
     return (
         <AnimatePresence>
-            {showBanner && (
+            {!isOnline && (
                 <motion.div
                     initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
-                    className={`fixed top-0 left-0 right-0 z-[9999] py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 ${isOnline
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-amber-500 text-white'
-                        }`}
+                    className="fixed top-0 left-0 right-0 z-[9999] py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 bg-amber-500 text-white"
                 >
-                    {isOnline ? (
-                        <>
-                            <Wifi className="w-4 h-4" />
-                            Back online! Changes will sync automatically.
-                        </>
-                    ) : (
-                        <>
-                            <WifiOff className="w-4 h-4" />
-                            You&apos;re offline. Changes will be saved locally.
-                        </>
-                    )}
-                    {isOnline && (
-                        <button
-                            onClick={() => setShowBanner(false)}
-                            className="ml-4 text-white/80 hover:text-white"
-                        >
-                            ✕
-                        </button>
-                    )}
+                    <WifiOff className="w-4 h-4" />
+                    You&apos;re offline. Changes will be saved locally.
                 </motion.div>
             )}
         </AnimatePresence>
@@ -78,23 +50,12 @@ export const OnlineStatusIndicator: React.FC = () => {
 
 // Small inline indicator for use in header/sidebar
 export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className = '' }) => {
-    // Use lazy initial state to avoid setState in useEffect
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator !== 'undefined' ? navigator.onLine : true
+    // Use useSyncExternalStore for SSR-safe online status
+    const isOnline = useSyncExternalStore(
+        subscribeOnlineStatus,
+        getOnlineSnapshot,
+        getServerSnapshot
     );
-
-    useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, []);
 
     return (
         <div

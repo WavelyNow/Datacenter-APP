@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Leaf, TrendingDown, Info, TrendingUp } from 'lucide-react';
+import { Leaf, TrendingDown, Info, TrendingUp } from 'lucide-react';
 import { EfficiencyClass } from '@/lib/calculations/energy';
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useSyncExternalStore } from 'react';
 
 // Types
 export type UnitSystem = 'metric' | 'imperial';
@@ -37,6 +37,24 @@ const defaultPreferences: UserPreferences = {
     defaultPipeMaterial: 'carbon_steel',
 };
 
+// SSR-safe subscription to online status using useSyncExternalStore
+function subscribeOnlineStatus(callback: () => void) {
+    window.addEventListener('online', callback);
+    window.addEventListener('offline', callback);
+    return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+    };
+}
+
+function getOnlineSnapshot() {
+    return navigator.onLine;
+}
+
+function getServerSnapshot() {
+    return true; // Assume online on server
+}
+
 interface PreferencesContextType {
     preferences: UserPreferences;
     updatePreference: <K extends keyof UserPreferences>(key: K, value: UserPreferences[K]) => void;
@@ -63,10 +81,14 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         }
         return defaultPreferences;
     });
-    // Use lazy initial state for online status
-    const [isOnline, setIsOnline] = useState(() =>
-        typeof navigator !== 'undefined' ? navigator.onLine : true
+
+    // Use useSyncExternalStore for SSR-safe online status
+    const isOnline = useSyncExternalStore(
+        subscribeOnlineStatus,
+        getOnlineSnapshot,
+        getServerSnapshot
     );
+
     const [isLoaded] = useState(true);
 
     // Save preferences to localStorage when changed
@@ -79,20 +101,6 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
             }
         }
     }, [preferences, isLoaded]);
-
-    // Online/Offline detection - only set up event listeners
-    useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, []);
 
     const updatePreference = useCallback(<K extends keyof UserPreferences>(
         key: K,

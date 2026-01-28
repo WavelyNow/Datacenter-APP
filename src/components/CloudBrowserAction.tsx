@@ -4,10 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { CloudProject } from '@/lib/types';
 import { useProject } from '@/context/ProjectContext';
-import { Cloud, Save, Download, Loader2, Search, Calendar, FolderOpen, AlertTriangle, X } from 'lucide-react';
+import { Cloud, Save, Loader2, Search, Calendar, FolderOpen, AlertTriangle, X } from 'lucide-react';
 
 export const CloudBrowserAction = () => {
-    const { cloudProjectId, saveToCloud, loadFromCloud, projectDetails } = useProject();
+    const { cloudProjectId, saveToCloud, loadFromCloud } = useProject();
     const [isOpen, setIsOpen] = useState(false);
     const [projects, setProjects] = useState<CloudProject[]>([]);
     const [loading, setLoading] = useState(false);

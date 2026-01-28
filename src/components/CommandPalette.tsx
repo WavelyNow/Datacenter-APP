@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
-import { TabId } from '@/lib/types';
 import {
     Search,
     LayoutDashboard,
@@ -19,7 +18,6 @@ import {
     HelpCircle,
     Save,
     FileDown,
-    Plus,
     Leaf,
     Scale,
     Anchor,

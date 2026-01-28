@@ -262,6 +262,17 @@ export const QuantityListPage = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showBulkActions, setShowBulkActions] = useState(false);
 
+    // Helper to migrate old categories (defined before useMemo that uses it)
+    const migrateCategory = useCallback((cat: string): MaterialCategory => {
+        const mapping: Record<string, MaterialCategory> = {
+            'Mechanical': 'Equipment',
+            'Electrical': 'Equipment',
+            'Services': 'Other',
+            'Consumables': 'Other'
+        };
+        return mapping[cat] || (CATEGORIES.includes(cat as MaterialCategory) ? cat as MaterialCategory : 'Other');
+    }, []);
+
     // Migrate old items if needed (add missing fields)
     const materialItems = useMemo((): MaterialItem[] => {
         return boqItems.map((item, index) => ({
@@ -270,18 +281,7 @@ export const QuantityListPage = () => {
             order: (item as MaterialItem).order ?? index,
             category: migrateCategory(item.category as string) as MaterialCategory
         }));
-    }, [boqItems]);
-
-    // Helper to migrate old categories
-    function migrateCategory(cat: string): MaterialCategory {
-        const mapping: Record<string, MaterialCategory> = {
-            'Mechanical': 'Equipment',
-            'Electrical': 'Equipment',
-            'Services': 'Other',
-            'Consumables': 'Other'
-        };
-        return mapping[cat] || (CATEGORIES.includes(cat as MaterialCategory) ? cat as MaterialCategory : 'Other');
-    }
+    }, [boqItems, migrateCategory]);
 
     // Calculate category counts AND quantity totals
     const categoryStats = useMemo(() => {
@@ -413,6 +413,7 @@ export const QuantityListPage = () => {
         }
     }, [filteredItems, selectedIds.size]);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleSelectItem = useCallback((id: string, _shiftKey: boolean) => {
         setSelectedIds(prev => {
             const next = new Set(prev);

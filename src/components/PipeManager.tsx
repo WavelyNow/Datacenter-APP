@@ -2,7 +2,7 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
     Plus, Trash2,
-    Copy, Activity, LayoutList, Workflow, AlertCircle, ShoppingCart,
+    Copy, Activity, LayoutList, Workflow, ShoppingCart,
     Calculator, Flame
 } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -81,7 +81,8 @@ const PipeRow = React.memo(({
     ), [segment.flowRate, id_mm, density]);
 
     const isHighVelocity = hydraulics.velocity > 2.5;
-    const isInvalidLen = !isValidLength(segment.length);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _isInvalidLen = !isValidLength(segment.length);
 
     return (
         <motion.div

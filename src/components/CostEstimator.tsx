@@ -34,6 +34,8 @@ export const CostEstimator: React.FC = () => {
         return calculateCostEstimate(segments, equipmentList, config);
     }, [segments, equipmentList, config]);
 
+    // Reserved for future display feature
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const totalPipeLength = segments.reduce((sum, seg) => sum + seg.length, 0);
 
     return (

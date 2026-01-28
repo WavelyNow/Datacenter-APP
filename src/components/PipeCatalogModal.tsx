@@ -78,7 +78,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
             // Reset
             setFormData({ label: '', category: 'metal', description: '', dimensions: [] });
             setView('list');
-        } catch (e) {
+        } catch {
             alert('Failed to save pipe standard.');
         } finally {
             setIsSaving(false);
