@@ -41,6 +41,10 @@ const CostEstimator = dynamic(() => import('@/components/CostEstimator').then(m 
   loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
 });
 
+const RoomPreparationPage = dynamic(() => import('@/components/room-preparation').then(m => ({ default: m.RoomPreparationPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
+});
+
 // Lighter components - keep static
 import { HelpPage } from '@/components/HelpPage';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
@@ -397,6 +401,11 @@ const DashboardContent = () => {
 
                   {activeTab === 'boq' && (
                     <QuantityListPage />
+                  )}
+
+                  {/* Tab: Room Preparation */}
+                  {activeTab === 'room-prep' && (
+                    <RoomPreparationPage />
                   )}
 
                   {/* Tab: Settings */}

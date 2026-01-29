@@ -24,7 +24,8 @@ import {
     LucideIcon,
     ClipboardList,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Building2
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
@@ -130,6 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const engineeringGroup: MenuItem[] = [
         { id: 'bim_gallery', label: t('sidebar.bimGallery'), icon: Cuboid, badge: 'NEW' },
         { id: 'bim', label: t('sidebar.ifcMapping'), icon: Layers },
+        { id: 'room-prep', label: t('sidebar.roomPrep') !== 'sidebar.roomPrep' ? t('sidebar.roomPrep') : 'Pregătire Cameră', icon: Building2, badge: 'NEW' },
         { id: 'config', label: t('sidebar.pipingRouting'), icon: Package },
         { id: 'hydraulics', label: t('sidebar.hydraulics'), icon: Wrench },
         { id: 'energy', label: t('sidebar.sustainability'), icon: Leaf },
