@@ -27,7 +27,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { containerVariants, itemVariants, hapticHover } from '@/lib/animations';
+import { containerVariants, itemVariants } from '@/lib/animations';
 import {
     searchNormatives,
     getAllSources,
@@ -653,7 +653,7 @@ export const NormativeSearchPage: React.FC = () => {
                         Înapoi la surse
                     </button>
                 )}
-            </div>
+            </motion.div>
 
             {/* Content */}
             <div ref={parentRef} className="flex-1 overflow-y-auto p-6 scroll-smooth">

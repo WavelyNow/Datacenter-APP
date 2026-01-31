@@ -43,3 +43,50 @@ export const ListSkeleton = ({ count = 3 }: { count?: number }) => (
         ))}
     </div>
 );
+
+export const TableSkeleton = ({ rows = 5 }: { rows?: number }) => (
+    <div className="w-full space-y-4">
+        <div className="flex gap-4 pb-4 border-b border-border/50">
+            {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 flex-1" />
+            ))}
+        </div>
+        {Array.from({ length: rows }).map((_, i) => (
+            <div key={i} className="flex gap-4 py-4 border-b border-border/10">
+                {Array.from({ length: 4 }).map((_, j) => (
+                    <Skeleton key={j} className="h-4 flex-1" />
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+export const DocumentSkeleton = () => (
+    <div className="w-full h-full p-8 bg-white space-y-8">
+        <div className="flex justify-between items-start">
+            <Skeleton className="w-32 h-16 rounded-lg bg-muted/20" />
+            <div className="space-y-2 text-right">
+                <Skeleton className="w-48 h-4 ml-auto bg-muted/20" />
+                <Skeleton className="w-32 h-3 ml-auto bg-muted/20" />
+            </div>
+        </div>
+        <div className="space-y-4">
+            <Skeleton className="w-1/3 h-6 bg-muted/20" />
+            <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-3">
+                    <Skeleton className="w-full h-3 bg-muted/20" />
+                    <Skeleton className="w-full h-3 bg-muted/20" />
+                    <Skeleton className="w-4/5 h-3 bg-muted/20" />
+                </div>
+                <div className="space-y-3">
+                    <Skeleton className="w-full h-3 bg-muted/20" />
+                    <Skeleton className="w-full h-3 bg-muted/20" />
+                    <Skeleton className="w-4/5 h-3 bg-muted/20" />
+                </div>
+            </div>
+        </div>
+        <div className="pt-8 border-t border-border/10">
+            <TableSkeleton rows={10} />
+        </div>
+    </div>
+);
