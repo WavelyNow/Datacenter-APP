@@ -1,4 +1,5 @@
 "use client";
+"use no memo";
 
 import React, { useState, useMemo, useCallback } from 'react';
 import {
