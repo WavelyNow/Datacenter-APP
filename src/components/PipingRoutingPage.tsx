@@ -12,8 +12,9 @@ import {
     Database,
     Droplets,
     ChevronRight,
+    Box,
     Weight,
-    ImageIcon
+    Image as ImageIcon
 } from 'lucide-react';
 
 export function PipingRoutingPage() {
@@ -29,17 +30,17 @@ export function PipingRoutingPage() {
     const [activeTab, setActiveTab] = useState<'segments' | 'equipment' | 'fluid'>('segments');
     const [equipmentViewMode, setEquipmentViewMode] = useState<'volume' | 'weights' | 'photos'>('volume');
 
-    const tabs = React.useMemo(() => [
+    const tabs = React.useMemo(() => ([
         { id: 'segments', label: t('pipingRoutingPage.tabs.segments'), icon: LayoutGrid },
         { id: 'equipment', label: t('pipingRoutingPage.tabs.equipment'), icon: Database },
         { id: 'fluid', label: t('pipingRoutingPage.tabs.fluid'), icon: Droplets },
-    ], [t]);
+    ] as const), [t]);
 
-    const equipmentTabs = React.useMemo(() => [
+    const equipmentTabs = React.useMemo(() => ([
         { id: 'volume', label: t('pipingRoutingPage.equipmentTabs.volume'), icon: Box },
         { id: 'weights', label: t('pipingRoutingPage.equipmentTabs.weights'), icon: Weight },
         { id: 'photos', label: t('pipingRoutingPage.equipmentTabs.photos'), icon: ImageIcon },
-    ], [t]);
+    ] as const), [t]);
 
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">

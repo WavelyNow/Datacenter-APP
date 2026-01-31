@@ -1,8 +1,0 @@
-                    </div>
-                </div>
-            </div>
-        </header >
-    );
-};
-
-export const Header = React.memo(HeaderBase);
