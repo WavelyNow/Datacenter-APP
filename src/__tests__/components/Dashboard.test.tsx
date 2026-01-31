@@ -4,9 +4,21 @@ import { Dashboard } from '@/components/Dashboard';
 import { useProject } from '@/context/ProjectContext';
 import { mockProjectContextValue } from '@/__tests__/mocks/mockProjectContext';
 
-// Mock the context
+// Mock the contexts
+const mockUiSetActiveTab = jest.fn();
+
 jest.mock('@/context/ProjectContext', () => ({
     useProject: jest.fn(),
+}));
+jest.mock('@/context/UIContext', () => ({
+    useUI: () => ({
+        activeTab: 'dashboard',
+        setActiveTab: mockUiSetActiveTab,
+        highlightedItemId: null,
+        setHighlightedItemId: jest.fn(),
+        isSidebarCollapsed: false,
+        toggleSidebar: jest.fn(),
+    }),
 }));
 
 // Mock PreferencesContext for useTranslation
@@ -41,6 +53,20 @@ jest.mock('@/components/bim/BimImportModal', () => ({
 jest.mock('@/components/TemplateSelector', () => ({
     TemplateSelector: () => <div data-testid="template-modal" />,
 }));
+jest.mock('framer-motion', () => ({
+    motion: {
+        div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+        h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
+        p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+        button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+        span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    },
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
+jest.mock('@/components/ui/Tooltip', () => ({
+    Tooltip: ({ children, content }: any) => <div data-testid="tooltip" title={typeof content === 'string' ? content : 'tooltip'}>{children}</div>,
+}));
 
 describe('Dashboard Component', () => {
     beforeEach(() => {
@@ -74,7 +100,7 @@ describe('Dashboard Component', () => {
         render(<Dashboard />);
         const newProjectButton = screen.getByText(/Proiect Nou/i);
         fireEvent.click(newProjectButton);
-        expect(mockProjectContextValue.setActiveTab).toHaveBeenCalledWith('config');
+        expect(mockUiSetActiveTab).toHaveBeenCalledWith('config');
     });
 
     it('opens TemplateSelector when "Quick Start" is clicked', () => {

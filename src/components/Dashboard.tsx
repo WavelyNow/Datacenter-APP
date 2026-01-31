@@ -2,18 +2,19 @@
 
 import React from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useUI } from '@/context/UIContext';
 import { motion } from 'framer-motion';
 import {
+    Sparkles,
+    FileBox,
+    Plus,
     Activity,
+    ArrowRight,
     Zap,
     TrendingUp,
     Leaf,
-    Plus,
-    FileBox,
-    Sparkles,
     Package,
-    Cloud,
-    ArrowRight
+    Cloud
 } from 'lucide-react';
 import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
@@ -26,11 +27,12 @@ const DashboardBase = () => {
         projectDetails,
         segments,
         equipmentList,
-        setActiveTab,
         glycolPercentage,
         safetyMargin,
         safetyMarginPercentage
     } = useProject();
+
+    const { setActiveTab } = useUI();
 
     const [isBimOpen, setIsBimOpen] = React.useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);

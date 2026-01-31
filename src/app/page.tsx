@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ProjectProvider, useProject } from '@/context/ProjectContext';
+import { UIProvider, useUI } from '@/context/UIContext';
+import { BimProvider } from '@/context/BimContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
@@ -97,7 +99,10 @@ import {
 const DashboardContent = () => {
   const {
     activeTab,
-    setActiveTab,
+    setActiveTab
+  } = useUI();
+
+  const {
     segments,
     setSegments,
     equipmentList,
@@ -473,7 +478,11 @@ const DashboardContent = () => {
 export default function Home() {
   return (
     <ProjectProvider>
-      <DashboardContent />
+      <UIProvider>
+        <BimProvider>
+          <DashboardContent />
+        </BimProvider>
+      </UIProvider>
     </ProjectProvider>
   );
 }

@@ -20,14 +20,18 @@ import { BimObject, GroupedBimObject } from '@/lib/bim/types';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
+import { useBim } from '@/context/BimContext';
+
 export const BimPage = () => {
     const {
-        addSegments, setEquipmentList, ifcModelUrl, setIfcModelUrl, saveToCloud,
-        // Global BIM State
+        addSegments, setEquipmentList, ifcModelUrl, setIfcModelUrl, saveToCloud
+    } = useProject();
+    
+    const {
         foundPipes, setFoundPipes,
         bimStatus: status, setBimStatus: setStatus,
         setParsingProgress
-    } = useProject();
+    } = useBim();
 
     const [selectedObject, setSelectedObject] = useState<BimObject | null>(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);

@@ -20,6 +20,17 @@ jest.mock('@/context/ProjectContext', () => ({
     })
 }));
 
+jest.mock('@/context/UIContext', () => ({
+    useUI: () => ({
+        activeTab: 'dashboard',
+        setActiveTab: mockSetActiveTab, // Reusing the spy
+        highlightedItemId: null,
+        setHighlightedItemId: jest.fn(),
+        isSidebarCollapsed: false,
+        toggleSidebar: jest.fn(),
+    }),
+}));
+
 // Mock PreferencesContext for useTranslation
 const mockTranslations: Record<string, string> = {
     'sidebar.brand': 'Engineering Suite',

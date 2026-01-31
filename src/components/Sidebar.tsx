@@ -32,6 +32,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
 import { useTranslation } from '@/context/PreferencesContext';
 import { useProject } from '@/context/ProjectContext';
+import { useUI } from '@/context/UIContext';
 import { TabId } from '@/lib/types';
 import { Tooltip } from '@/components/ui/Tooltip';
 
@@ -39,68 +40,67 @@ interface MenuItem {
     id: TabId;
     label: string;
     icon: LucideIcon;
-    badge?: string | number;
+    badge?: string;
 }
 
-const NavSection = ({ items, activeTab, onTabChange, isCollapsed }: {
+interface NavSectionProps {
     items: MenuItem[];
-    activeTab: string;
+    activeTab: TabId;
     onTabChange: (id: TabId) => void;
     isCollapsed: boolean;
-}) => (
-    <div className={`space-y-1 ${isCollapsed ? 'px-0' : 'px-0'}`}>
-        {items.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+}
 
-            const content = (
-                <button
-                    key={item.id}
-                    onClick={() => onTabChange(item.id)}
-                    aria-current={isActive ? 'page' : undefined}
-                    aria-label={item.label}
-                    className={`flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
-                        ${isCollapsed ? 'justify-center mx-0 w-full px-0' : 'w-full px-4 mx-0'}
-                        ${isActive
-                            ? 'text-primary-foreground font-semibold shadow-lg shadow-primary/10'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                        }`}
-                >
-                    {isActive && (
-                        <div className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 opacity-100 z-0" />
-                    )}
+const NavSection: React.FC<NavSectionProps> = ({ items, activeTab, onTabChange, isCollapsed }) => {
+    return (
+        <div className="space-y-1">
+            {items.map((item) => {
+                const isActive = activeTab === item.id;
+                const Icon = item.icon;
 
-                    <Icon className={`w-[18px] h-[18px] z-10 transition-colors shrink-0 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'}`} />
-
-                    {!isCollapsed && (
-                        <span className="z-10 tracking-wide relative truncate">
-                            {item.label}
-                        </span>
-                    )}
-
-                    {!isCollapsed && item.badge !== undefined && (item.badge !== 0) && (
-                        <span className={`z-10 ml-auto px-1.5 py-0.5 rounded text-[9px] font-bold border ${isActive
-                            ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/20'
-                            : 'bg-primary/10 text-primary border-primary/20'
-                            }`}>
-                            {item.badge}
-                        </span>
-                    )}
-                </button>
-            );
-
-            if (isCollapsed) {
                 return (
-                    <Tooltip key={item.id} content={item.label} side="right" className="w-full">
-                        {content}
-                    </Tooltip>
-                );
-            }
+                    <button
+                        key={item.id}
+                        onClick={() => onTabChange(item.id)}
+                        className={`
+                            w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 group relative
+                            ${isActive
+                                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            }
+                            ${isCollapsed ? 'justify-center' : ''}
+                        `}
+                        title={isCollapsed ? item.label : undefined}
+                    >
+                        <div className={`relative flex items-center justify-center transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                            <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
+                            {item.badge && isCollapsed && (
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-background" />
+                            )}
+                        </div>
 
-            return content;
-        })}
-    </div>
-);
+                        {!isCollapsed && (
+                            <>
+                                <span className={`text-xs font-medium truncate ${isActive ? 'font-bold' : ''}`}>
+                                    {item.label}
+                                </span>
+                                {item.badge && (
+                                    <span className="ml-auto text-[9px] font-bold bg-blue-500 text-white px-1.5 py-0.5 rounded-md shadow-sm">
+                                        {item.badge}
+                                    </span>
+                                )}
+                            </>
+                        )}
+
+                        {/* Active Indicator (Left Border) */}
+                        {isActive && !isCollapsed && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-primary-foreground/20 rounded-r-full" />
+                        )}
+                    </button>
+                );
+            })}
+        </div>
+    );
+};
 
 interface SidebarProps {
     onSettingsOpen: () => void;
@@ -116,9 +116,8 @@ const SidebarBase: React.FC<SidebarProps> = ({
     onLoad
 }) => {
     const { t } = useTranslation();
+    const { activeTab, setActiveTab: onTabChange } = useUI();
     const {
-        activeTab,
-        setActiveTab: onTabChange,
         projectDetails
     } = useProject();
 

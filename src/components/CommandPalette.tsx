@@ -2,30 +2,32 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useUI } from '@/context/UIContext';
+import { TabId } from '@/lib/types';
 import { useTranslation } from '@/context/PreferencesContext';
 import {
-    Search,
     LayoutDashboard,
+    Cuboid,
+    Layers,
     Package,
     Wrench,
+    Leaf,
+    Anchor,
+    Scale,
     Calculator,
     ClipboardList,
     ClipboardCheck,
     Book,
     Camera,
     Palette,
-    Settings,
     HelpCircle,
     Save,
     FileDown,
-    Leaf,
-    Scale,
-    Anchor,
-    Cuboid,
-    Layers,
-    Command,
+    Settings,
     ArrowRight,
-    X
+    X,
+    Command,
+    Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -50,7 +52,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     onExport,
     onSettings
 }) => {
-    const { setActiveTab, segments, equipmentList, setHighlightedItemId } = useProject();
+    const { segments, equipmentList } = useProject();
+    const { setActiveTab, setHighlightedItemId } = useUI();
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -61,21 +64,21 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     // Define static commands
     const staticCommands: CommandItem[] = useMemo(() => [
         // Navigation
-        { id: 'nav-dashboard', title: t('commandPalette.cmds.dashboard.title'), subtitle: t('commandPalette.cmds.dashboard.subtitle'), icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard'), keywords: ['home', 'start'], category: 'navigation' },
-        { id: 'nav-bim-gallery', title: t('commandPalette.cmds.bimGallery.title'), subtitle: t('commandPalette.cmds.bimGallery.subtitle'), icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery'), keywords: ['3d', 'models'], category: 'navigation' },
-        { id: 'nav-bim', title: t('commandPalette.cmds.ifcMapping.title'), subtitle: t('commandPalette.cmds.ifcMapping.subtitle'), icon: <Layers className="w-4 h-4" />, action: () => setActiveTab('bim'), keywords: ['ifc', 'import'], category: 'navigation' },
-        { id: 'nav-config', title: t('commandPalette.cmds.pipingRouting.title'), subtitle: t('commandPalette.cmds.pipingRouting.subtitle'), icon: <Package className="w-4 h-4" />, action: () => setActiveTab('config'), keywords: ['pipes', 'routing', 'segments'], category: 'navigation' },
-        { id: 'nav-hydraulics', title: t('commandPalette.cmds.hydraulics.title'), subtitle: t('commandPalette.cmds.hydraulics.subtitle'), icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('hydraulics'), keywords: ['flow', 'pressure'], category: 'navigation' },
-        { id: 'nav-energy', title: t('commandPalette.cmds.sustainability.title'), subtitle: t('commandPalette.cmds.sustainability.subtitle'), icon: <Leaf className="w-4 h-4" />, action: () => setActiveTab('energy'), keywords: ['pue', 'green'], category: 'navigation' },
-        { id: 'nav-supports', title: t('commandPalette.cmds.supports.title'), subtitle: t('commandPalette.cmds.supports.subtitle'), icon: <Anchor className="w-4 h-4" />, action: () => setActiveTab('supports'), keywords: ['hangers', 'brackets'], category: 'navigation' },
-        { id: 'nav-weights', title: t('commandPalette.cmds.loadCalc.title'), subtitle: t('commandPalette.cmds.loadCalc.subtitle'), icon: <Scale className="w-4 h-4" />, action: () => setActiveTab('weights'), keywords: ['mass', 'load'], category: 'navigation' },
-        { id: 'nav-costs', title: t('commandPalette.cmds.costEstimation.title'), subtitle: t('commandPalette.cmds.costEstimation.subtitle'), icon: <Calculator className="w-4 h-4" />, action: () => setActiveTab('costs'), keywords: ['budget', 'price'], category: 'navigation' },
-        { id: 'nav-quantities', title: t('commandPalette.cmds.materialQuantities.title'), subtitle: t('commandPalette.cmds.materialQuantities.subtitle'), icon: <ClipboardList className="w-4 h-4" />, action: () => setActiveTab('boq'), keywords: ['boq', 'materials', 'list'], category: 'navigation' },
-        { id: 'nav-checklist', title: t('commandPalette.cmds.commissioning.title'), subtitle: t('commandPalette.cmds.commissioning.subtitle'), icon: <ClipboardCheck className="w-4 h-4" />, action: () => setActiveTab('checklist'), keywords: ['test', 'verify'], category: 'navigation' },
-        { id: 'nav-catalogs', title: t('commandPalette.cmds.techLibrary.title'), subtitle: t('commandPalette.cmds.techLibrary.subtitle'), icon: <Book className="w-4 h-4" />, action: () => setActiveTab('catalogs'), keywords: ['library', 'database'], category: 'navigation' },
-        { id: 'nav-photos', title: t('commandPalette.cmds.sitePhotos.title'), subtitle: t('commandPalette.cmds.sitePhotos.subtitle'), icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos'), keywords: ['images', 'pictures'], category: 'navigation' },
-        { id: 'nav-branding', title: t('commandPalette.cmds.reportBranding.title'), subtitle: t('commandPalette.cmds.reportBranding.subtitle'), icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding'), keywords: ['logo', 'style'], category: 'navigation' },
-        { id: 'nav-help', title: t('commandPalette.cmds.helpCenter.title'), subtitle: t('commandPalette.cmds.helpCenter.subtitle'), icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help'), keywords: ['docs', 'support'], category: 'navigation' },
+        { id: 'nav-dashboard', title: t('commandPalette.cmds.dashboard.title'), subtitle: t('commandPalette.cmds.dashboard.subtitle'), icon: <LayoutDashboard className="w-4 h-4" />, action: () => setActiveTab('dashboard' as TabId), keywords: ['home', 'start'], category: 'navigation' },
+        { id: 'nav-bim-gallery', title: t('commandPalette.cmds.bimGallery.title'), subtitle: t('commandPalette.cmds.bimGallery.subtitle'), icon: <Cuboid className="w-4 h-4" />, action: () => setActiveTab('bim_gallery' as TabId), keywords: ['3d', 'models'], category: 'navigation' },
+        { id: 'nav-bim', title: t('commandPalette.cmds.ifcMapping.title'), subtitle: t('commandPalette.cmds.ifcMapping.subtitle'), icon: <Layers className="w-4 h-4" />, action: () => setActiveTab('bim' as TabId), keywords: ['ifc', 'import'], category: 'navigation' },
+        { id: 'nav-config', title: t('commandPalette.cmds.pipingRouting.title'), subtitle: t('commandPalette.cmds.pipingRouting.subtitle'), icon: <Package className="w-4 h-4" />, action: () => setActiveTab('config' as TabId), keywords: ['pipes', 'routing', 'segments'], category: 'navigation' },
+        { id: 'nav-hydraulics', title: t('commandPalette.cmds.hydraulics.title'), subtitle: t('commandPalette.cmds.hydraulics.subtitle'), icon: <Wrench className="w-4 h-4" />, action: () => setActiveTab('hydraulics' as TabId), keywords: ['flow', 'pressure'], category: 'navigation' },
+        { id: 'nav-energy', title: t('commandPalette.cmds.sustainability.title'), subtitle: t('commandPalette.cmds.sustainability.subtitle'), icon: <Leaf className="w-4 h-4" />, action: () => setActiveTab('energy' as TabId), keywords: ['pue', 'green'], category: 'navigation' },
+        { id: 'nav-supports', title: t('commandPalette.cmds.supports.title'), subtitle: t('commandPalette.cmds.supports.subtitle'), icon: <Anchor className="w-4 h-4" />, action: () => setActiveTab('supports' as TabId), keywords: ['hangers', 'brackets'], category: 'navigation' },
+        { id: 'nav-weights', title: t('commandPalette.cmds.loadCalc.title'), subtitle: t('commandPalette.cmds.loadCalc.subtitle'), icon: <Scale className="w-4 h-4" />, action: () => setActiveTab('weights' as TabId), keywords: ['mass', 'load'], category: 'navigation' },
+        { id: 'nav-costs', title: t('commandPalette.cmds.costEstimation.title'), subtitle: t('commandPalette.cmds.costEstimation.subtitle'), icon: <Calculator className="w-4 h-4" />, action: () => setActiveTab('costs' as TabId), keywords: ['budget', 'price'], category: 'navigation' },
+        { id: 'nav-quantities', title: t('commandPalette.cmds.materialQuantities.title'), subtitle: t('commandPalette.cmds.materialQuantities.subtitle'), icon: <ClipboardList className="w-4 h-4" />, action: () => setActiveTab('boq' as TabId), keywords: ['boq', 'materials', 'list'], category: 'navigation' },
+        { id: 'nav-checklist', title: t('commandPalette.cmds.commissioning.title'), subtitle: t('commandPalette.cmds.commissioning.subtitle'), icon: <ClipboardCheck className="w-4 h-4" />, action: () => setActiveTab('checklist' as TabId), keywords: ['test', 'verify'], category: 'navigation' },
+        { id: 'nav-catalogs', title: t('commandPalette.cmds.techLibrary.title'), subtitle: t('commandPalette.cmds.techLibrary.subtitle'), icon: <Book className="w-4 h-4" />, action: () => setActiveTab('catalogs' as TabId), keywords: ['library', 'database'], category: 'navigation' },
+        { id: 'nav-photos', title: t('commandPalette.cmds.sitePhotos.title'), subtitle: t('commandPalette.cmds.sitePhotos.subtitle'), icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos' as TabId), keywords: ['images', 'pictures'], category: 'navigation' },
+        { id: 'nav-branding', title: t('commandPalette.cmds.reportBranding.title'), subtitle: t('commandPalette.cmds.reportBranding.subtitle'), icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding' as TabId), keywords: ['logo', 'style'], category: 'navigation' },
+        { id: 'nav-help', title: t('commandPalette.cmds.helpCenter.title'), subtitle: t('commandPalette.cmds.helpCenter.subtitle'), icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help' as TabId), keywords: ['docs', 'support'], category: 'navigation' },
 
         // Actions
         { id: 'action-save', title: t('commandPalette.cmds.saveProject.title'), subtitle: t('commandPalette.cmds.saveProject.subtitle'), icon: <Save className="w-4 h-4" />, action: () => onSave?.(), keywords: ['export', 'backup'], category: 'action' },
@@ -117,7 +120,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     icon: <Cuboid className="w-4 h-4 hover:text-primary" />,
                     category: 'navigation', // Treat as nav to item
                     action: () => {
-                        setActiveTab('boq');
+                        setActiveTab('boq' as TabId);
                         setHighlightedItemId(eq.id); // Context highlight
                     }
                 });
@@ -139,7 +142,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     icon: <Package className="w-4 h-4 hover:text-primary" />,
                     category: 'navigation',
                     action: () => {
-                        setActiveTab('boq');
+                        setActiveTab('boq' as TabId);
                         setHighlightedItemId(seg.id);
                     }
                 });

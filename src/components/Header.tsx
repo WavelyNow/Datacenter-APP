@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo, User, ChevronRight, Settings, LogOut, UserCircle } from 'lucide-react';
-import { useProject } from '@/context/ProjectContext';
+import { useUI } from '@/context/UIContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
 import { Tooltip } from './ui/Tooltip';
@@ -38,7 +38,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
     canUndo,
     canRedo
 }) => {
-    const { activeTab, setActiveTab } = useProject();
+    const { activeTab, setActiveTab } = useUI();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
 

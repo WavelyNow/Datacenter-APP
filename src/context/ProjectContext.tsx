@@ -1,8 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem, TabId } from '@/lib/types';
-import { BimObject } from '@/lib/bim/types';
+import React, { createContext, useContext, useEffect, ReactNode, useCallback } from 'react';
+import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem } from '@/lib/types';
 import { useHistory } from '@/hooks/useHistory';
 
 interface ProjectState {
@@ -23,8 +22,6 @@ interface ProjectState {
     setSafetyMargin: (enabled: boolean) => void;
     safetyMarginPercentage: number;
     setSafetyMarginPercentage: (pct: number) => void;
-    activeTab: TabId;
-    setActiveTab: (tab: TabId) => void;
     supportConfig: SupportConfig;
     setSupportConfig: (config: Partial<SupportConfig>) => void;
     branding: BrandingConfig;
@@ -39,21 +36,9 @@ interface ProjectState {
     saveToCloud: () => Promise<string | void>;
     loadFromCloud: (id: string) => Promise<void>;
 
-    // BIM Global State
-    foundPipes: BimObject[];
-    setFoundPipes: React.Dispatch<React.SetStateAction<BimObject[]>>;
-    bimStatus: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error';
-    setBimStatus: (status: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error') => void;
-    parsingProgress: number;
-    setParsingProgress: (progress: number) => void;
-
     // BoQ State
     boqItems: BoQItem[];
     setBoqItems: (items: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) => void;
-
-    // Search & Highlight
-    highlightedItemId: string | null;
-    setHighlightedItemId: (id: string | null) => void;
 }
 
 
@@ -64,9 +49,6 @@ const loadFromStorage = (): Partial<ProjectState> => {
     try {
         const saved = localStorage.getItem('hydraulic_calc_project_v2');
         if (!saved) return {};
-        // Strip cloudProjectId from local storage to avoid confusion if reloaded?
-        // Actually, if we re-open the browser, we might want to remember we were working on a cloud project.
-        // Let's store cloudProjectId in local storage too if we want continuity.
         return JSON.parse(saved);
     } catch (e) {
         console.error('Failed to load project:', e);
@@ -118,25 +100,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         boqItems: [] as BoQItem[]
     }), []);
 
-    // We need to manage cloudProjectId outside of history? Or inside?
-    // Ideally inside if undo/redo should track "which project I am working on"? No, linking to cloud is meta-data.
-    // Let's keep it in history so if I load a new project, I can undo to previous project state.
-    // Actually, loading a new project is a "hard reset" usually.
-
-    // For now, let's put cloudProjectId in the history state to keep it simple with existing adapter pattern.
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
 
-    // UI States (Not in History)
-    const [activeTab, setActiveTab] = useState<TabId>('dashboard');
-    const [isInitialized, setIsInitialized] = useState(false);
-
-    // BIM Global State (Background Processing)
-    const [foundPipes, setFoundPipes] = useState<BimObject[]>([]);
-    const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
-    const [parsingProgress, setParsingProgress] = useState(0);
-
-    // Global UI State (Search/Highlight)
-    const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+    // Initialization check
+    const [isInitialized, setIsInitialized] = React.useState(false);
 
     // Load saved data using useHistory reset
     useEffect(() => {
@@ -151,8 +118,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             setIsInitialized(true);
         }, 0);
     }, [defaultState, reset]);
-
-    // persistence logic same as before... (lines 104-141) nothing changes there except cloudProjectId is also saved locally.
 
     // Cloud Methods
     const saveToCloud = useCallback(async () => {
@@ -285,7 +250,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         glycolPercentage: state.glycolPercentage, setGlycolPercentage,
         safetyMargin: state.safetyMargin, setSafetyMargin,
         safetyMarginPercentage: state.safetyMarginPercentage, setSafetyMarginPercentage,
-        activeTab, setActiveTab,
         supportConfig: state.supportConfig, setSupportConfig,
         branding: state.branding, setBranding,
         isInitialized,
@@ -297,23 +261,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         saveToCloud,
         loadFromCloud,
 
-        // BIM Exports
-        foundPipes, setFoundPipes,
-        bimStatus, setBimStatus,
-        parsingProgress, setParsingProgress,
-
         // BoQ
         boqItems: state.boqItems, setBoqItems,
-
-        // Search
-        highlightedItemId, setHighlightedItemId
     }), [
         state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
-        activeTab, setActiveTab, setSupportConfig, setBranding, isInitialized,
+        setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, saveToCloud, loadFromCloud,
-        foundPipes, setFoundPipes, bimStatus, setBimStatus, parsingProgress,
-        setParsingProgress, setBoqItems, highlightedItemId, setHighlightedItemId
+        setBoqItems
     ]);
 
     return (
@@ -330,3 +285,4 @@ export const useProject = () => {
     }
     return context;
 };
+

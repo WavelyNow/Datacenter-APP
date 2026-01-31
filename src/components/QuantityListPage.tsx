@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useProject } from '@/context/ProjectContext';
+import { useUI } from '@/context/UIContext';
 import {
     Package,
     Plus,
@@ -426,6 +427,8 @@ export const QuantityListPage = () => {
         });
     }, []);
 
+
+
     // Toggle category (moved before highlight effect)
     const toggleCategory = useCallback((cat: MaterialCategory) => {
         setExpandedCategories(prev => {
@@ -440,7 +443,7 @@ export const QuantityListPage = () => {
     }, []);
 
     // Handle Global Highlight (from Search)
-    const { highlightedItemId, setHighlightedItemId } = useProject();
+    const { highlightedItemId, setHighlightedItemId } = useUI();
     useEffect(() => {
         if (highlightedItemId && materialItems.length > 0) {
             // Find matching item (check sourceId for auto-generated items)
