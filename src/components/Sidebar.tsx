@@ -25,7 +25,8 @@ import {
     ClipboardList,
     ChevronLeft,
     ChevronRight,
-    Building2
+    Building2,
+    FileText
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
@@ -144,6 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     const databaseGroup: MenuItem[] = [
         { id: 'catalogs', label: t('sidebar.techLibrary'), icon: Book },
+        { id: 'normative', label: t('sidebar.normativeSearch') !== 'sidebar.normativeSearch' ? t('sidebar.normativeSearch') : 'Normative', icon: FileText, badge: 'NEW' },
     ];
 
     const reportsGroup: MenuItem[] = [

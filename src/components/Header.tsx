@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { useTranslation } from '@/context/PreferencesContext';
-import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo } from 'lucide-react';
+import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo, User, ChevronRight, Settings, LogOut, UserCircle } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
-import { User, ChevronRight } from 'lucide-react';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
+import { Tooltip } from './ui/Tooltip';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
@@ -40,7 +40,20 @@ export const Header: React.FC<HeaderProps> = ({
     canRedo
 }) => {
     const { t } = useTranslation();
-    const { activeTab } = useProject();
+    const { activeTab, setActiveTab } = useProject();
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const userMenuRef = useRef<HTMLDivElement>(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setIsUserMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const updateDetail = (field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
@@ -58,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onLoadProject(projectData);
             } catch (error) {
                 console.error('Failed to parse project file:', error);
-                alert(t('common.error'));
+                alert('A apărut o eroare la încărcarea fișierului.');
             }
         };
         reader.readAsText(file);
@@ -67,22 +80,22 @@ export const Header: React.FC<HeaderProps> = ({
     // Helper to get readable name for active tab
     const getTabName = (tab: string) => {
         const keys: Record<string, string> = {
-            'dashboard': t('sidebar.dashboard'),
-            'bim_gallery': t('sidebar.bimGallery'),
-            'bim': t('sidebar.ifcMapping'),
-            'config': t('sidebar.pipingRouting'),
-            'hydraulics': t('sidebar.hydraulics'),
-            'energy': t('sidebar.sustainability'),
-            'supports': t('sidebar.supports'),
-            'weights': t('sidebar.loadCalc'),
-            'costs': t('sidebar.costEstimator'),
-            'boq': t('sidebar.quantities'),
-            'checklist': t('sidebar.commissioning'),
-            'catalogs': t('sidebar.techLibrary'),
-            'photos': t('sidebar.sitePhotos'),
-            'branding': t('sidebar.reportBranding'),
-            'settings': t('common.settings'),
-            'help': t('common.help')
+            'dashboard': 'Tablou Bord',
+            'bim_gallery': 'Galerie BIM',
+            'bim': 'Mapare BIM',
+            'config': 'Tubulatură & Rutare',
+            'hydraulics': 'Hidraulică',
+            'energy': 'Sustenabilitate',
+            'supports': 'Suporți',
+            'weights': 'Calcul Greutăți',
+            'costs': 'Estimator Costuri',
+            'boq': 'Cantități (BoQ)',
+            'checklist': 'Commissioning',
+            'catalogs': 'Librărie Tehnică',
+            'photos': 'Fotografii Șantier',
+            'branding': 'Personalizare Raport',
+            'settings': 'Setări',
+            'help': 'Ajutor'
         };
         return keys[tab] || tab;
     };
@@ -107,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
                             value={projectDetails.projectName}
                             onChange={(e) => updateDetail('projectName', e.target.value)}
                             className="bg-transparent border-none p-0 text-lg font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-1 -ml-1 transition-all w-full max-w-[300px] truncate"
-                            placeholder={t('header.projectNamePlaceholder')}
+                            placeholder="Nume Proiect..."
                         />
                         <CommandPalette
                             onSave={onSaveProject}
@@ -126,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={onUndo}
                             disabled={!canUndo}
                             className="p-1.5 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title={`${t('common.undo')} (Ctrl+Z)`}
+                            title="Anulare (Ctrl+Z)"
                         >
                             <Undo className="w-4 h-4" />
                         </button>
@@ -135,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
                             onClick={onRedo}
                             disabled={!canRedo}
                             className="p-1.5 rounded-lg hover:bg-background text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                            title={`${t('common.redo')} (Ctrl+Y)`}
+                            title="Refacere (Ctrl+Y)"
                         >
                             <Redo className="w-4 h-4" />
                         </button>
@@ -143,39 +156,42 @@ export const Header: React.FC<HeaderProps> = ({
 
                     {/* Quick Catalogs */}
                     <div className="hidden xl:flex items-center gap-1 md:gap-2 bg-secondary/40 p-1.5 rounded-xl border border-border/40">
-                        <button
-                            onClick={onOpenEquipmentCatalog}
-                            className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            title="Equipment Database"
-                        >
-                            <Box className="w-4 h-4" />
-                            <span className="hidden xl:inline">{t('header.equipment')}</span>
-                        </button>
+                        <Tooltip content="Catalog Echipamente" side="bottom">
+                            <button
+                                onClick={onOpenEquipmentCatalog}
+                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
+                            >
+                                <Box className="w-4 h-4" />
+                                <span className="hidden xl:inline">Echipamente</span>
+                            </button>
+                        </Tooltip>
                         <div className="w-px h-4 bg-border/40" />
-                        <button
-                            onClick={onOpenPipeCatalog}
-                            className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            title="Pipe Catalog"
-                        >
-                            <Book className="w-4 h-4" />
-                            <span className="hidden xl:inline">{t('header.pipes')}</span>
-                        </button>
+                        <Tooltip content="Catalog Țevi" side="bottom">
+                            <button
+                                onClick={onOpenPipeCatalog}
+                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
+                            >
+                                <Book className="w-4 h-4" />
+                                <span className="hidden xl:inline">Țevi</span>
+                            </button>
+                        </Tooltip>
                         <div className="w-px h-4 bg-border/40" />
-                        <button
-                            onClick={onOpenProfileCatalog}
-                            className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            title="Profile Catalog"
-                        >
-                            <Layers className="w-4 h-4" />
-                            <span className="hidden xl:inline">{t('header.profiles')}</span>
-                        </button>
+                        <Tooltip content="Catalog Profile" side="bottom">
+                            <button
+                                onClick={onOpenProfileCatalog}
+                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
+                            >
+                                <Layers className="w-4 h-4" />
+                                <span className="hidden xl:inline">Profile</span>
+                            </button>
+                        </Tooltip>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
                         <CloudBrowserAction />
 
-                        <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title={`${t('common.save')} / ${t('common.import')}`}>
+                        <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title="Salvare / Import">
                             <button
                                 onClick={onSaveProject}
                                 className="btn btn-ghost btn-icon h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -194,14 +210,88 @@ export const Header: React.FC<HeaderProps> = ({
                             className="btn btn-primary h-10 w-10 md:w-auto md:px-5 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-1 md:ml-3 flex items-center justify-center"
                         >
                             <Printer className="w-4 h-4" />
-                            <span className="hidden md:inline">{t('sidebar.exportRaport')}</span>
+                            <span className="hidden md:inline">Export Raport</span>
                         </button>
 
-                        {/* User Avatar Placeholder */}
-                        <div className="h-10 w-10 ml-2 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md">
-                            <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                                <User className="w-5 h-5 text-primary" />
-                            </div>
+                        {/* User Profile Dropdown */}
+                        <div className="relative" ref={userMenuRef}>
+                            <button
+                                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                className="h-10 w-10 ml-2 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+                                aria-label="Meniu Utilizator"
+                                aria-expanded={isUserMenuOpen}
+                                aria-haspopup="true"
+                            >
+                                <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
+                                    <User className="w-5 h-5 text-primary" />
+                                </div>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isUserMenuOpen && (
+                                <div className="absolute right-0 mt-2 w-56 origin-top-right bg-card border border-border rounded-xl shadow-2xl shadow-black/20 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {/* User Info Header */}
+                                    <div className="px-4 py-3 bg-muted/30 border-b border-border/50">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px]">
+                                                <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-primary" />
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-foreground truncate">
+                                                    {projectDetails.designer || 'Utilizator'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground truncate">
+                                                    {projectDetails.projectNumber || 'Fără proiect'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Menu Items */}
+                                    <div className="py-1">
+                                        <button
+                                            onClick={() => {
+                                                setIsUserMenuOpen(false);
+                                                setActiveTab('settings');
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
+                                        >
+                                            <UserCircle className="w-4 h-4 text-muted-foreground" />
+                                            <span>Profil</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsUserMenuOpen(false);
+                                                onOpenSettings();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
+                                        >
+                                            <Settings className="w-4 h-4 text-muted-foreground" />
+                                            <span>Setări</span>
+                                        </button>
+
+                                        <div className="my-1 mx-3 border-t border-border/50" />
+
+                                        <button
+                                            onClick={() => {
+                                                setIsUserMenuOpen(false);
+                                                // For now, just show an alert - can be replaced with actual logout logic
+                                                if (window.confirm('Sigur doriți să vă deconectați?')) {
+                                                    // Reset to dashboard or trigger actual logout
+                                                    setActiveTab('dashboard');
+                                                }
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span>Deconectare</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -45,6 +45,10 @@ const RoomPreparationPage = dynamic(() => import('@/components/room-preparation'
   loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
 });
 
+const NormativeSearchPage = dynamic(() => import('@/components/NormativeSearchPage').then(m => ({ default: m.NormativeSearchPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
+});
+
 // Lighter components - keep static
 import { HelpPage } from '@/components/HelpPage';
 import { CommissioningChecklist } from '@/components/CommissioningChecklist';
@@ -406,6 +410,11 @@ const DashboardContent = () => {
                   {/* Tab: Room Preparation */}
                   {activeTab === 'room-prep' && (
                     <RoomPreparationPage />
+                  )}
+
+                  {/* Tab: Normative Search */}
+                  {activeTab === 'normative' && (
+                    <NormativeSearchPage />
                   )}
 
                   {/* Tab: Settings */}

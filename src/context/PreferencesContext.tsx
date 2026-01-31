@@ -176,28 +176,45 @@ export const useTranslation = () => {
 
     const t = useCallback((key: string): string => {
         const lang = preferences.language;
-        const dict = translations[lang];
 
-        // Handle dots (nested keys)
-        if (key.includes('.')) {
-            const parts = key.split('.');
-            let current: Record<string, unknown> = dict as Record<string, unknown>;
+        // Helper to traverse object path
+        const resolve = (obj: any, path: string) => {
+            if (!obj) return undefined;
+            if (!path.includes('.')) return obj[path];
 
+            const parts = path.split('.');
+            let current = obj;
             for (const part of parts) {
                 if (current && typeof current === 'object' && part in current) {
-                    current = current[part] as Record<string, unknown>;
+                    current = current[part];
                 } else {
-                    return key; // Path not found
+                    return undefined;
                 }
             }
+            return typeof current === 'string' ? current : undefined;
+        };
 
-            // Only return if it's a string, otherwise return key to avoid React object errors
-            return typeof current === 'string' ? current : key;
+        // 1. Try selected language
+        let result = resolve(translations[lang], key);
+
+        // 2. Fallback: Try root level (fixes structural issues where keys leaked to root)
+        if (!result) {
+            // @ts-expect-error - accessing root for fallback
+            result = resolve(translations, key);
         }
 
-        // Fallback to common if no dot
-        // @ts-expect-error - dynamic key access
-        return dict.common?.[key] || key;
+        // 3. Last resort: Try 'ro' explicitly if not already checked
+        if (!result && lang !== 'ro') {
+            result = resolve(translations['ro'], key);
+        }
+
+        // 4. Ultimate fallback: Check common keys at root if common.x
+        if (!result && key.startsWith('common.')) {
+            // @ts-expect-error - accessing root common
+            result = resolve(translations['common'], key.replace('common.', ''));
+        }
+
+        return result || key;
     }, [preferences.language]);
 
     return { t, language: preferences.language };
