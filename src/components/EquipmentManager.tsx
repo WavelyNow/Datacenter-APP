@@ -4,12 +4,14 @@ import React, { useRef, useMemo, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { ShieldCheck, Plus, Trash2, Upload, GripVertical, Image as ImageIcon, Box, BookOpen, Info, Copy, FileText, Download, ExternalLink } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { useTranslation } from '@/context/PreferencesContext';
 import { ValidatedInput, NumberInput } from '@/components/ui/ValidatedInput';
+import { motion } from 'framer-motion';
+import { itemVariants } from '@/lib/animations';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 
 
 interface EquipmentManagerProps {
@@ -78,7 +80,12 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
     };
 
     return (
-        <div className={`group relative bg-muted/10 border border-border rounded-lg p-4 transition-all hover:border-primary/30 hover:shadow-sm ${viewMode !== 'photos' ? 'grid grid-cols-1 md:grid-cols-12 gap-4 items-end' : 'flex flex-col'}`}>
+        <motion.div 
+            variants={itemVariants}
+            whileHover="hover"
+            whileTap="tap"
+            className={`group relative bg-card/40 backdrop-blur-md border border-border rounded-xl p-4 transition-all hover:border-primary/40 hover:shadow-lg ${viewMode !== 'photos' ? 'grid grid-cols-1 md:grid-cols-12 gap-4 items-end' : 'flex flex-col'}`}
+        >
 
             {/* Number Indicator */}
             {viewMode !== 'photos' && (
@@ -243,7 +250,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
                     )}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 });
 EquipmentRow.displayName = 'EquipmentRow';
@@ -356,7 +363,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
             {/* List Content */}
             <div className="p-4">
                 {isLoading ? (
-                    <CardSkeleton count={6} />
+                    <ListSkeleton count={4} />
                 ) : equipmentList.length === 0 ? (
                     <EmptyState
                         icon={Box}

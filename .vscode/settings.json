@@ -33,7 +33,8 @@
     "Răsfoiește", "după", "cuvinte", "cheie", "temperatură", "incendiu", "Filtre", "Șterge", "filtrele",
     "Surse", "Categorii", "căutarea", "Introdu", "folosește", "modul", "vedea", "toate", "normativele",
     "distanță", "Niciun", "rezultat", "găsit", "Încearcă", "alți", "termeni", "rezultate", "altele", "Lungime",
-    "Totala", "marja", "Alege"
+    "Totala", "marja", "Alege", "rlig", "calt", "Csvg", "Crect", "tabindex", "rgba", "CRAH", "Răcire", "Rezervor",
+    "Schimbător", "Căldură", "Grup", "Pompare", "Unitate", "internă", "overscan"
   ],
   "files.associations": {
     "*.css": "tailwindcss"

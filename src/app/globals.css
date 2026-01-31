@@ -66,7 +66,6 @@
   }
 
   @keyframes float {
-
     0%,
     100% {
       transform: translateY(0px);
@@ -162,7 +161,10 @@
 
   body {
     @apply bg-background text-foreground transition-colors duration-500 ease-in-out;
-    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1;
     /* Subtle noise texture for depth */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
     background-attachment: fixed;
@@ -185,7 +187,7 @@
 
   /* Skip Link (Hidden until focused) */
   .skip-link {
-    @apply absolute -top-12 left-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold z-[999] transition-transform duration-200;
+    @apply absolute -top-12 left-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold z-999 transition-transform duration-200;
   }
 
   .skip-link:focus {
@@ -196,15 +198,20 @@
 /* Premium Utilities */
 @layer utilities {
   .glass-panel {
-    @apply bg-card/60 backdrop-blur-2xl border border-white/5 dark:border-white/5 shadow-2xl;
+    @apply bg-card/40 backdrop-blur-2xl border border-white/10 dark:border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)];
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
   }
 
   .glass-panel-heavy {
-    @apply bg-card/90 backdrop-blur-3xl border border-white/10 shadow-2xl;
+    @apply bg-card/80 backdrop-blur-2xl border border-white/20 shadow-[0_8px_48px_0_rgba(0,0,0,0.3)];
   }
 
   .sidebar-panel {
-    @apply bg-background/80 backdrop-blur-xl border-r border-border/50 h-screen sticky top-0;
+    @apply bg-background/60 backdrop-blur-2xl border-r border-border/50 h-screen sticky top-0;
   }
 
   /* Skeleton Shimmer Animation */
@@ -218,10 +225,12 @@
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg,
-        transparent,
-        rgba(255, 255, 255, 0.08),
-        transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
     animation: shimmer 1.5s infinite;
   }
 
@@ -237,17 +246,30 @@
   }
 
   .card-premium {
-    @apply bg-card rounded-2xl border border-border/50 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/20 hover:border-primary/30 hover:-translate-y-1 relative overflow-hidden active:scale-[0.99] active:shadow-sm;
+    @apply bg-card/50 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/40 hover:-translate-y-1.5 relative overflow-hidden active:scale-[0.98] active:shadow-inner;
   }
 
   /* Subtle border highlight for premium cards */
   .card-premium::before {
     content: "";
-    @apply absolute inset-0 border border-white/20 rounded-2xl pointer-events-none;
+    @apply absolute inset-0 border border-white/10 rounded-2xl pointer-events-none;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 100%
+    );
+  }
+
+  .bg-mesh {
+    @apply fixed inset-0 -z-50 overflow-hidden pointer-events-none bg-background;
+  }
+
+  .mesh-blob {
+    @apply absolute rounded-full blur-[120px] mix-blend-soft-light opacity-50 animate-mesh;
   }
 
   .spacing-page {
-    @apply max-w-[1800px] mx-auto px-6 py-8 xl:px-10 xl:py-10;
+    @apply max-w-[1900px] mx-auto px-6 py-8 xl:px-12 xl:py-12;
   }
 
   /* Clean Text Utilities */

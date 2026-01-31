@@ -4,8 +4,12 @@ import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
 import { CatalogEquipment } from '@/lib/types';
 import { Search, X, Box, Plus, FileText, Trash2, Save, Cloud, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useLibrary } from '@/hooks/useLibrary';
 import { useTranslation } from '@/context/PreferencesContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { itemVariants } from '@/lib/animations';
 
 interface EquipmentCatalogModalProps {
     isOpen: boolean;
@@ -24,6 +28,9 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
 
     // Hook for Cloud Library
     const { items: cloudItems, loading: cloudLoading, addItem, deleteItem } = useLibrary<CatalogEquipment>('equipment');
+
+    // Virtualization refs
+    const parentRef = useRef<HTMLDivElement>(null);
 
     // Form State
     const [formData, setFormData] = useState<Partial<CatalogEquipment>>({
@@ -91,13 +98,10 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         }
     };
 
-    if (!isOpen || !mounted) return null;
-
     // Merge Catalogs: Hardcoded + Cloud
-    // Cloud items have structure { id, type, name, data, ... }. We map checks to CatalogEquipment.
     const mappedCloudItems: CatalogEquipment[] = cloudItems.map(i => ({
         ...i.data,
-        id: i.id, // Use DB UUID
+        id: i.id,
         manufacturer: i.data.manufacturer || 'Custom (Cloud)'
     }));
 
@@ -111,11 +115,33 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
         return matchesSearch && matchesCategory;
     });
 
-    return createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+    const rowVirtualizer = useVirtualizer({
+        count: filteredItems.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 160,
+        overscan: 5,
+    });
 
-            <div className="relative w-full max-w-4xl max-h-[90vh] bg-card rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+    if (!isOpen || !mounted) return null;
+
+    return createPortal(
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+                        onClick={onClose} 
+                    />
+
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="relative w-full max-w-4xl max-h-[90vh] bg-card/90 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden"
+                    >
 
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-border bg-card flex items-center justify-between shrink-0">
@@ -171,7 +197,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                         </div>
 
                         {/* List */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-muted/10">
+                        <div ref={parentRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-muted/10">
                             {cloudLoading ? (
                                 <div className="flex justify-center py-10">
                                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -182,54 +208,69 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                     <p className="text-muted-foreground text-sm">{t('catalog.noItems')}</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {filteredItems.map(item => {
-                                        // Identify cloud items by checking ID in cloud map or simple UUID check (if standard are string ids)
-                                        // Standard catalog IDs are string "1", "2"... or similar. Cloud are UUIDs.
-                                        // A safer way is checking if it's NOT in local standard catalog by ID.
+                                <div 
+                                    className="relative w-full"
+                                    style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+                                >
+                                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                                        const item = filteredItems[virtualRow.index];
                                         const isCloud = mappedCloudItems.some(c => c.id === item.id);
 
                                         return (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => { onSelect(item); onClose(); }}
-                                                className="text-left group bg-card p-4 rounded-xl border border-border hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all flex flex-col gap-3 relative overflow-hidden"
+                                            <div
+                                                key={virtualRow.key}
+                                                data-index={virtualRow.index}
+                                                ref={rowVirtualizer.measureElement}
+                                                className="absolute top-0 left-0 w-full"
+                                                style={{
+                                                    transform: `translateY(${virtualRow.start}px)`,
+                                                }}
                                             >
-                                                {isCloud && (
-                                                    <div className="absolute top-2 right-2 flex gap-1 z-10">
-                                                        <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
-                                                            <Cloud className="w-3 h-3" /> {t('catalog.cloudLabel')}
-                                                        </span>
-                                                        <div
-                                                            onClick={(e) => handleDeleteCustom(item.id, e)}
-                                                            className="h-5 w-5 bg-destructive/10 text-destructive flex items-center justify-center rounded hover:bg-destructive hover:text-white transition-colors"
-                                                        >
-                                                            <Trash2 className="w-3 h-3" />
+                                                <div className="pb-3 px-1">
+                                                    <motion.button
+                                                        variants={itemVariants}
+                                                        whileHover="hover"
+                                                        whileTap="tap"
+                                                        onClick={() => { onSelect(item); onClose(); }}
+                                                        className="w-full text-left group bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/50 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all flex flex-col gap-3 relative overflow-hidden"
+                                                    >
+                                                        {isCloud && (
+                                                            <div className="absolute top-2 right-2 flex gap-1 z-10">
+                                                                <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
+                                                                    <Cloud className="w-3 h-3" /> {t('catalog.cloudLabel')}
+                                                                </span>
+                                                                <div
+                                                                    onClick={(e) => handleDeleteCustom(item.id, e)}
+                                                                    className="h-5 w-5 bg-destructive/10 text-destructive flex items-center justify-center rounded hover:bg-destructive hover:text-white transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div>
+                                                            <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider border border-border px-1.5 py-0.5 rounded mb-2 inline-block">{item.category}</span>
+                                                            <h3 className="text-foreground text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-2">
+                                                                {item.model}
+                                                                {item.technicalSheet && <FileText className="w-3 h-3 text-indigo-500" />}
+                                                            </h3>
                                                         </div>
-                                                    </div>
-                                                )}
 
-                                                <div>
-                                                    <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider border border-border px-1.5 py-0.5 rounded mb-2 inline-block">{item.category}</span>
-                                                    <h3 className="text-foreground text-sm font-bold group-hover:text-primary transition-colors flex items-center gap-2">
-                                                        {item.model}
-                                                        {item.technicalSheet && <FileText className="w-3 h-3 text-indigo-500" />}
-                                                    </h3>
+                                                        <div className="flex gap-4 text-xs">
+                                                            <div className="bg-secondary/50 px-2 py-1 rounded">
+                                                                <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Vol:</span>
+                                                                <span className="font-mono font-bold">{item.volume} L</span>
+                                                            </div>
+                                                            <div className="bg-secondary/50 px-2 py-1 rounded">
+                                                                <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Weight:</span>
+                                                                <span className="font-mono font-bold">{item.weight} kg</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <p className="text-[11px] text-muted-foreground line-clamp-2">{item.description}</p>
+                                                    </motion.button>
                                                 </div>
-
-                                                <div className="flex gap-4 text-xs">
-                                                    <div className="bg-secondary/50 px-2 py-1 rounded">
-                                                        <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Vol:</span>
-                                                        <span className="font-mono font-bold">{item.volume} L</span>
-                                                    </div>
-                                                    <div className="bg-secondary/50 px-2 py-1 rounded">
-                                                        <span className="text-muted-foreground text-[10px] uppercase font-bold mr-1">Weight:</span>
-                                                        <span className="font-mono font-bold">{item.weight} kg</span>
-                                                    </div>
-                                                </div>
-
-                                                <p className="text-[11px] text-muted-foreground line-clamp-2">{item.description}</p>
-                                            </button>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -313,8 +354,10 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                         </div>
                     </div>
                 )}
-            </div>
-        </div>,
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>,
         document.body
     );
 };

@@ -8,6 +8,7 @@ import { PreferencesProvider } from "@/context/PreferencesContext";
 import { OnlineStatusIndicator } from "@/components/OnlineStatusIndicator";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { Toaster } from "sonner";
+import { DynamicBackground } from "@/components/ui/DynamicBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,7 @@ export default function RootLayout({
           <PreferencesProvider>
             <ErrorBoundary>
               <HelpProvider>
+                <DynamicBackground />
                 <OnlineStatusIndicator />
                 <InstallPrompt />
                 {children}

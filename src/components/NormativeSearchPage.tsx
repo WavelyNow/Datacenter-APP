@@ -27,6 +27,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { containerVariants, itemVariants, hapticHover } from '@/lib/animations';
 import {
     searchNormatives,
     getAllSources,
@@ -39,7 +40,8 @@ import {
     NormativeEntry,
     normativeRegistry
 } from '@/lib/normativeRegistry';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 // Iconițe pentru categorii
 const categoryIcons: Record<NormativeCategory, LucideIcon> = {
@@ -313,11 +315,12 @@ const NormativeCard: React.FC<NormativeCardProps> = ({ result, isExpanded, onTog
 
     return (
         <motion.div
+            variants={itemVariants}
+            whileHover="hover"
+            whileTap="tap"
             layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-card/40 backdrop-blur-md border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
         >
             {/* Header */}
             <button
@@ -415,20 +418,40 @@ export const NormativeSearchPage: React.FC = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [readingEntry, setReadingEntry] = useState<NormativeEntry | null>(null);
     const [browseSource, setBrowseSource] = useState<NormativeSource | null>(null);
+    const [debouncedQuery, setDebouncedQuery] = useState('');
+
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedQuery(query);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [query]);
+
+    // Parent ref for virtualization
+    const parentRef = useRef<HTMLDivElement>(null);
 
     const allSources = useMemo(() => getAllSources(), []);
     const allCategories = useMemo(() => getAllCategories(), []);
 
-    // Search results
+    // Search results using debounced query
     const results = useMemo(() => {
-        if (!query.trim() && selectedSources.length === 0 && selectedCategories.length === 0) {
+        if (!debouncedQuery.trim() && selectedSources.length === 0 && selectedCategories.length === 0) {
             return [];
         }
-        return searchNormatives(query, {
+        return searchNormatives(debouncedQuery, {
             sources: selectedSources.length > 0 ? selectedSources : undefined,
             categories: selectedCategories.length > 0 ? selectedCategories : undefined
         });
-    }, [query, selectedSources, selectedCategories]);
+    }, [debouncedQuery, selectedSources, selectedCategories]);
+
+    // Virtualization for results
+    const rowVirtualizer = useVirtualizer({
+        count: results.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 140, // Estimated height of NormativeCard
+        overscan: 5,
+    });
 
     // Browse: normatives grouped by source
     const normativesBySource = useMemo(() => {
@@ -476,9 +499,17 @@ export const NormativeSearchPage: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col h-full bg-transparent"
+        >
             {/* Header */}
-            <div className="shrink-0 p-6 border-b border-border bg-card/50 backdrop-blur-sm">
+            <motion.div 
+                variants={itemVariants}
+                className="shrink-0 p-6 border-b border-border bg-card/40 backdrop-blur-md"
+            >
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-lg">
@@ -625,11 +656,11 @@ export const NormativeSearchPage: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div ref={parentRef} className="flex-1 overflow-y-auto p-6 scroll-smooth">
                 {/* SEARCH MODE */}
                 {viewMode === 'search' && (
                     <>
-                        {query.trim() === '' && activeFiltersCount === 0 ? (
+                        {debouncedQuery.trim() === '' && activeFiltersCount === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-center">
                                 <div className="p-4 bg-secondary/30 rounded-full mb-4">
                                     <Search className="w-10 h-10 text-muted-foreground" />
@@ -661,19 +692,36 @@ export const NormativeSearchPage: React.FC = () => {
                                 </p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div 
+                                className="relative w-full"
+                                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+                            >
                                 <div className="text-sm text-muted-foreground mb-4">
                                     {results.length} {results.length === 1 ? 'rezultat' : 'rezultate'}
                                 </div>
-                                {results.map(result => (
-                                    <NormativeCard
-                                        key={result.entry.id}
-                                        result={result}
-                                        isExpanded={expandedId === result.entry.id}
-                                        onToggle={() => setExpandedId(expandedId === result.entry.id ? null : result.entry.id)}
-                                        onOpenFull={() => openReading(result.entry)}
-                                    />
-                                ))}
+                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                                    const result = results[virtualRow.index];
+                                    return (
+                                        <div
+                                            key={virtualRow.key}
+                                            data-index={virtualRow.index}
+                                            ref={rowVirtualizer.measureElement}
+                                            className="absolute top-0 left-0 w-full"
+                                            style={{
+                                                transform: `translateY(${virtualRow.start}px)`,
+                                            }}
+                                        >
+                                            <div className="pb-3">
+                                                <NormativeCard
+                                                    result={result}
+                                                    isExpanded={expandedId === result.entry.id}
+                                                    onToggle={() => setExpandedId(expandedId === result.entry.id ? null : result.entry.id)}
+                                                    onOpenFull={() => openReading(result.entry)}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </>
@@ -734,7 +782,7 @@ export const NormativeSearchPage: React.FC = () => {
                     </>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };
 
