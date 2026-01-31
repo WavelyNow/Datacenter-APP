@@ -120,7 +120,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
                                     <div className="flex gap-4">
                                         {/* Icon */}
                                         <div className={`
-                                            w-14 h-14 rounded-xl bg-gradient-to-br ${getCategoryColor(template.category)} 
+                                            w-14 h-14 rounded-xl bg-linear-to-br ${getCategoryColor(template.category)} 
                                             flex items-center justify-center shrink-0 shadow-lg
                                         `}>
                                             <Icon className="w-7 h-7 text-white" />

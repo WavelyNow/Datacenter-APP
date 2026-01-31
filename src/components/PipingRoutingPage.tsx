@@ -12,10 +12,8 @@ import {
     Database,
     Droplets,
     ChevronRight,
-    Box,
     Weight,
-    Image as ImageIcon,
-    LucideIcon
+    ImageIcon
 } from 'lucide-react';
 
 export function PipingRoutingPage() {
@@ -31,22 +29,22 @@ export function PipingRoutingPage() {
     const [activeTab, setActiveTab] = useState<'segments' | 'equipment' | 'fluid'>('segments');
     const [equipmentViewMode, setEquipmentViewMode] = useState<'volume' | 'weights' | 'photos'>('volume');
 
-    const tabs: { id: typeof activeTab; label: string; icon: LucideIcon }[] = [
+    const tabs = React.useMemo(() => [
         { id: 'segments', label: t('pipingRoutingPage.tabs.segments'), icon: LayoutGrid },
         { id: 'equipment', label: t('pipingRoutingPage.tabs.equipment'), icon: Database },
         { id: 'fluid', label: t('pipingRoutingPage.tabs.fluid'), icon: Droplets },
-    ];
+    ], [t]);
 
-    const equipmentTabs: { id: typeof equipmentViewMode; label: string; icon: LucideIcon }[] = [
+    const equipmentTabs = React.useMemo(() => [
         { id: 'volume', label: t('pipingRoutingPage.equipmentTabs.volume'), icon: Box },
         { id: 'weights', label: t('pipingRoutingPage.equipmentTabs.weights'), icon: Weight },
         { id: 'photos', label: t('pipingRoutingPage.equipmentTabs.photos'), icon: ImageIcon },
-    ];
+    ], [t]);
 
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="flex-shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
+            <div className="shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
                 <div className="flex flex-col gap-6">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
@@ -119,7 +117,7 @@ export function PipingRoutingPage() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto min-h-0 bg-gradient-to-b from-background to-muted/20">
+            <div className="flex-1 overflow-y-auto min-h-0 bg-linear-to-b from-background to-muted/20">
                 <div className="max-w-[1600px] mx-auto p-8">
                     <AnimatePresence mode="wait">
                         <motion.div

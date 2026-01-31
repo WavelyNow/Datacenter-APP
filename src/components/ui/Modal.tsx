@@ -119,7 +119,7 @@ export const Modal: React.FC<ModalProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby={title ? titleId : undefined}

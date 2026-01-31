@@ -54,7 +54,7 @@ export function RoomPrepWizard() {
                 {/* Header */}
                 <div className="border-b border-border/50 p-6">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                             <Building className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -143,7 +143,7 @@ export function RoomPrepWizard() {
                                                     </div>
                                                     <div className="w-20 h-1.5 rounded-full bg-muted overflow-hidden">
                                                         <div
-                                                            className="h-full bg-gradient-to-r from-primary to-emerald-500 transition-all"
+                                                            className="h-full bg-linear-to-r from-primary to-emerald-500 transition-all"
                                                             style={{ width: `${room.completionPercentage}%` }}
                                                         />
                                                     </div>
@@ -271,7 +271,7 @@ export function RoomPrepWizard() {
                         </div>
                         <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                             <motion.div
-                                className="h-full bg-gradient-to-r from-primary to-emerald-500"
+                                className="h-full bg-linear-to-r from-primary to-emerald-500"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${currentRoom.completionPercentage}%` }}
                                 transition={{ duration: 0.5 }}
@@ -285,7 +285,7 @@ export function RoomPrepWizard() {
                     {/* Phase header */}
                     <div className="p-6 border-b border-border/50">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-xl bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center">
                                 <PhaseIcon className="w-7 h-7 text-primary" />
                             </div>
                             <div>

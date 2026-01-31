@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { useTranslation } from '@/context/PreferencesContext';
 import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo, User, ChevronRight, Settings, LogOut, UserCircle } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
@@ -24,7 +23,7 @@ interface HeaderProps {
     canRedo: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+const HeaderBase: React.FC<HeaderProps> = ({
     projectDetails,
     onProjectDetailsChange,
     onLoadProject,
@@ -39,7 +38,6 @@ export const Header: React.FC<HeaderProps> = ({
     canUndo,
     canRedo
 }) => {
-    const { t } = useTranslation();
     const { activeTab, setActiveTab } = useProject();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
@@ -55,11 +53,11 @@ export const Header: React.FC<HeaderProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const updateDetail = (field: keyof ProjectDetails, value: string) => {
+    const updateDetail = React.useCallback((field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
-    };
+    }, [onProjectDetailsChange, projectDetails]);
 
-    const handleLoadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLoadProject = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -75,10 +73,10 @@ export const Header: React.FC<HeaderProps> = ({
             }
         };
         reader.readAsText(file);
-    };
+    }, [onLoadProject]);
 
     // Helper to get readable name for active tab
-    const getTabName = (tab: string) => {
+    const getTabName = React.useCallback((tab: string) => {
         const keys: Record<string, string> = {
             'dashboard': 'Tablou Bord',
             'bim_gallery': 'Galerie BIM',
@@ -98,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
             'help': 'Ajutor'
         };
         return keys[tab] || tab;
-    };
+    }, []);
 
     return (
         <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300" >
@@ -217,7 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="relative" ref={userMenuRef}>
                             <button
                                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                className="h-10 w-10 ml-2 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+                                className="h-10 w-10 ml-2 rounded-full bg-linear-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
                                 aria-label="Meniu Utilizator"
                                 aria-expanded={isUserMenuOpen}
                                 aria-haspopup="true"
@@ -233,7 +231,7 @@ export const Header: React.FC<HeaderProps> = ({
                                     {/* User Info Header */}
                                     <div className="px-4 py-3 bg-muted/30 border-b border-border/50">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-primary/50 p-[2px]">
+                                            <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-primary/50 p-[2px]">
                                                 <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
                                                     <User className="w-5 h-5 text-primary" />
                                                 </div>
@@ -299,3 +297,5 @@ export const Header: React.FC<HeaderProps> = ({
         </header >
     );
 };
+
+export const Header = React.memo(HeaderBase);

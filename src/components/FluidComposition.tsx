@@ -92,7 +92,7 @@ export const FluidComposition: React.FC = () => {
                                 }
                             }}
                             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border ${fluidType === option.value
-                                ? `bg-gradient-to-r ${option.color} text-white border-transparent shadow-md`
+                                ? `bg-linear-to-r ${option.color} text-white border-transparent shadow-md`
                                 : 'bg-muted/30 text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground'
                                 }`}
                         >
@@ -108,12 +108,12 @@ export const FluidComposition: React.FC = () => {
             {/* Main Control Section */}
             <div className="p-8 relative">
                 {/* Background Decor */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${getFluidColor()} opacity-[0.03] pointer-events-none`}></div>
+                <div className={`absolute inset-0 bg-linear-to-br ${getFluidColor()} opacity-[0.03] pointer-events-none`}></div>
 
                 <div className="flex flex-col gap-8">
                     {/* Large Percentage Display */}
                     <div className="flex items-center justify-center relative py-4">
-                        <div className={`text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br drop-shadow-sm tracking-tighter ${fluidType === 'water'
+                        <div className={`text-7xl font-black text-transparent bg-clip-text bg-linear-to-br drop-shadow-sm tracking-tighter ${fluidType === 'water'
                             ? 'from-muted-foreground to-muted-foreground/50'
                             : 'from-foreground to-muted-foreground'
                             }`}>
@@ -132,11 +132,11 @@ export const FluidComposition: React.FC = () => {
                         <div className="relative w-full h-full rounded-xl overflow-hidden">
                             {/* Filled Part */}
                             <div
-                                className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r ${getFluidColor()} transition-all duration-300 ease-out shadow-[0_0_20px_rgba(37,99,235,0.3)]`}
+                                className={`absolute left-0 top-0 bottom-0 bg-linear-to-r ${getFluidColor()} transition-all duration-300 ease-out shadow-[0_0_20px_rgba(37,99,235,0.3)]`}
                                 style={{ width: `${glycolPercentage}%` }}
                             >
                                 {/* Fluid Texture/Shine */}
-                                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:10px_10px]"></div>
+                                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-size-[10px_10px]"></div>
                             </div>
 
                             {/* Unfilled Part (Water) */}

@@ -89,18 +89,14 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         getServerSnapshot
     );
 
-    const [isLoaded] = useState(true);
-
     // Save preferences to localStorage when changed
     useEffect(() => {
-        if (isLoaded) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-            } catch (e) {
-                console.warn('Failed to save preferences:', e);
-            }
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+        } catch (e) {
+            console.warn('Failed to save preferences:', e);
         }
-    }, [preferences, isLoaded]);
+    }, [preferences]);
 
     const updatePreference = useCallback(<K extends keyof UserPreferences>(
         key: K,
@@ -114,8 +110,15 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(STORAGE_KEY);
     }, []);
 
+    const value = React.useMemo(() => ({
+        preferences,
+        updatePreference,
+        resetPreferences,
+        isOnline
+    }), [preferences, updatePreference, resetPreferences, isOnline]);
+
     return (
-        <PreferencesContext.Provider value={{ preferences, updatePreference, resetPreferences, isOnline }}>
+        <PreferencesContext.Provider value={value}>
             {children}
         </PreferencesContext.Provider>
     );
@@ -140,7 +143,7 @@ export const useUnitConversion = () => {
     const { preferences } = usePreferences();
     const isMetric = preferences.unitSystem === 'metric';
 
-    return {
+    return React.useMemo(() => ({
         // Length
         toDisplayLength: (meters: number) => isMetric ? meters : meters * 3.28084,
         fromDisplayLength: (value: number) => isMetric ? value : value / 3.28084,
@@ -165,7 +168,7 @@ export const useUnitConversion = () => {
         toDisplayPressure: (bar: number) => isMetric ? bar : bar * 14.5038,
         fromDisplayPressure: (value: number) => isMetric ? value : value / 14.5038,
         pressureUnit: isMetric ? 'bar' : 'psi',
-    };
+    }), [isMetric]);
 };
 
 // Import translations
@@ -178,15 +181,18 @@ export const useTranslation = () => {
         const lang = preferences.language;
 
         // Helper to traverse object path
-        const resolve = (obj: any, path: string) => {
+        const resolve = (obj: Record<string, unknown> | undefined, path: string): string | undefined => {
             if (!obj) return undefined;
-            if (!path.includes('.')) return obj[path];
+            if (!path.includes('.')) {
+                const val = obj[path];
+                return typeof val === 'string' ? val : undefined;
+            }
 
             const parts = path.split('.');
-            let current = obj;
+            let current: unknown = obj;
             for (const part of parts) {
-                if (current && typeof current === 'object' && part in current) {
-                    current = current[part];
+                if (current && typeof current === 'object' && part in (current as Record<string, unknown>)) {
+                    current = (current as Record<string, unknown>)[part];
                 } else {
                     return undefined;
                 }
@@ -195,23 +201,22 @@ export const useTranslation = () => {
         };
 
         // 1. Try selected language
-        let result = resolve(translations[lang], key);
+        let result = resolve(translations[lang as keyof typeof translations] as Record<string, unknown> | undefined, key);
 
         // 2. Fallback: Try root level (fixes structural issues where keys leaked to root)
         if (!result) {
-            // @ts-expect-error - accessing root for fallback
-            result = resolve(translations, key);
+            result = resolve(translations as unknown as Record<string, unknown>, key);
         }
 
         // 3. Last resort: Try 'ro' explicitly if not already checked
         if (!result && lang !== 'ro') {
-            result = resolve(translations['ro'], key);
+            result = resolve(translations['ro' as keyof typeof translations] as Record<string, unknown> | undefined, key);
         }
 
         // 4. Ultimate fallback: Check common keys at root if common.x
         if (!result && key.startsWith('common.')) {
-            // @ts-expect-error - accessing root common
-            result = resolve(translations['common'], key.replace('common.', ''));
+            const commonObj = (translations as unknown as Record<string, unknown>)['common'];
+            result = resolve(commonObj as Record<string, unknown> | undefined, key.replace('common.', ''));
         }
 
         return result || key;

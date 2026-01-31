@@ -21,7 +21,7 @@ export default function Equipment3DViewer({ modelUrl, className }: Equipment3DVi
     if (!modelUrl) return null;
 
     return (
-        <div className={`relative w-full h-[300px] md:h-[400px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl overflow-hidden border border-white/10 shadow-2xl ${className}`}>
+        <div className={`relative w-full h-[300px] md:h-[400px] bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl overflow-hidden border border-white/10 shadow-2xl ${className}`}>
             <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full text-xs font-medium text-white/90 border border-white/10">
                 <Cuboid className="w-4 h-4 text-blue-400" />
                 <span>Interactive BIM View</span>

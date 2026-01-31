@@ -233,7 +233,7 @@
 
   /* Premium Text Gradient */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-slate-950 to-indigo-600 dark:from-emerald-100 dark:to-teal-400;
+    @apply bg-clip-text text-transparent bg-linear-to-r from-slate-950 to-indigo-600 dark:from-emerald-100 dark:to-teal-400;
   }
 
   .card-premium {

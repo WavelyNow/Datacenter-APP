@@ -38,7 +38,7 @@ export const OnlineStatusIndicator: React.FC = () => {
                     initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
-                    className="fixed top-0 left-0 right-0 z-[9999] py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 bg-amber-500 text-white"
+                    className="fixed top-0 left-0 right-0 z-9999 py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 bg-amber-500 text-white"
                 >
                     <WifiOff className="w-4 h-4" />
                     You&apos;re offline. Changes will be saved locally.

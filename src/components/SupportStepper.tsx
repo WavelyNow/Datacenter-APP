@@ -51,7 +51,7 @@ export const SupportStepper: React.FC<SupportStepperProps> = ({ currentStep, onS
                                         {isCompleted ? <Check className="w-6 h-6" /> : <Icon className={`w-6 h-6 ${isActive ? 'animate-pulse' : ''}`} />}
 
                                         {/* Activity glow for active step */}
-                                        {isActive && <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent animate-shimmer" />}
+                                        {isActive && <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/10 to-transparent animate-shimmer" />}
                                     </div>
 
                                     {/* Text Content */}

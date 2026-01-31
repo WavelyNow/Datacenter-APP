@@ -134,7 +134,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
             </div>
             {showError && (
                 <p className="text-[10px] font-medium text-destructive mt-1.5 ml-1 animate-in fade-in slide-in-from-top-1 flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-destructive flex-shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-destructive shrink-0" />
                     {errorMsg}
                 </p>
             )}

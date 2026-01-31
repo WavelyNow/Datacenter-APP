@@ -66,7 +66,6 @@ const loadFromStorage = (): Partial<ProjectState> => {
         if (!saved) return {};
         // Strip cloudProjectId from local storage to avoid confusion if reloaded?
         // Actually, if we re-open the browser, we might want to remember we were working on a cloud project.
-        // But for now, let's treat local storage as "Draft" and cloud as "Published".
         // Let's store cloudProjectId in local storage too if we want continuity.
         return JSON.parse(saved);
     } catch (e) {
@@ -156,7 +155,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // persistence logic same as before... (lines 104-141) nothing changes there except cloudProjectId is also saved locally.
 
     // Cloud Methods
-    const saveToCloud = async () => {
+    const saveToCloud = useCallback(async () => {
         if (!state.cloudProjectId) {
             // Insert
             const payload: ProjectLoadData = {
@@ -212,9 +211,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             if (error) throw error;
             return state.cloudProjectId;
         }
-    };
+    }, [state.cloudProjectId, state.projectDetails, state.segments, state.equipmentList, state.fluidType, state.glycolPercentage, state.safetyMargin, state.ifcModelUrl, set]);
 
-    const loadFromCloud = async (id: string) => {
+    const loadFromCloud = useCallback(async (id: string) => {
         const { data, error } = await supabase
             .from('projects')
             .select('*')
@@ -236,7 +235,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             };
             reset(newState);
         }
-    };
+    }, [defaultState, reset]);
 
     // Setters Adapters
     const setProjectDetails = useCallback((val: ProjectDetails | ((prev: ProjectDetails) => ProjectDetails)) =>
@@ -274,7 +273,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
         set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
 
-    const value = {
+    const addSegments = useCallback((newSegments: PipeSegment[]) =>
+        set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })), [set]);
+
+    const value = React.useMemo(() => ({
         projectDetails: state.projectDetails, setProjectDetails,
         segments: state.segments, setSegments,
         equipmentList: state.equipmentList, setEquipmentList,
@@ -289,7 +291,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         isInitialized,
         undo, redo, canUndo, canRedo,
         // Actions
-        addSegments: (newSegments: PipeSegment[]) => set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })),
+        addSegments,
         // Cloud
         cloudProjectId: state.cloudProjectId,
         saveToCloud,
@@ -305,7 +307,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
         // Search
         highlightedItemId, setHighlightedItemId
-    };
+    }), [
+        state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
+        setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
+        activeTab, setActiveTab, setSupportConfig, setBranding, isInitialized,
+        undo, redo, canUndo, canRedo, addSegments, saveToCloud, loadFromCloud,
+        foundPipes, setFoundPipes, bimStatus, setBimStatus, parsingProgress,
+        setParsingProgress, setBoqItems, highlightedItemId, setHighlightedItemId
+    ]);
 
     return (
         <ProjectContext.Provider value={value}>

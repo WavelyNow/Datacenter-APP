@@ -172,7 +172,7 @@ export const CommissioningChecklist: React.FC = () => {
             </div>
 
             {/* Progress Overview */}
-            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-2xl p-6">
+            <div className="bg-linear-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <div className="text-sm font-medium text-muted-foreground">Overall Progress</div>
@@ -186,7 +186,7 @@ export const CommissioningChecklist: React.FC = () => {
 
                 <div className="w-full h-3 bg-muted/30 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-gradient-to-r from-primary to-primary/50 rounded-full transition-all duration-500"
+                        className="h-full bg-linear-to-r from-primary to-primary/50 rounded-full transition-all duration-500"
                         style={{ width: `${progress.percentage}%` }}
                     />
                 </div>
@@ -235,7 +235,7 @@ export const CommissioningChecklist: React.FC = () => {
                             {/* Category Header */}
                             <button
                                 onClick={() => toggleCategory(category.id)}
-                                className={`w-full p-5 flex items-center justify-between hover:bg-muted/20 transition-colors bg-gradient-to-r ${getCategoryColor(category.color)}`}
+                                className={`w-full p-5 flex items-center justify-between hover:bg-muted/20 transition-colors bg-linear-to-r ${getCategoryColor(category.color)}`}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isComplete ? 'bg-emerald-500' : 'bg-background border border-border'

@@ -16,7 +16,7 @@ export const ProfileCatalogModal = ({ isOpen, onClose }: ProfileCatalogModalProp
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-500" onClick={onClose} />
 
             <div className="relative w-full max-w-7xl h-[90vh] animate-in zoom-in-95 duration-300 flex flex-col">

@@ -1,3 +1,45 @@
 {
-    "css.lint.unknownAtRules": "ignore"
+  "cSpell.language": "en,ro",
+  "cSpell.words": [
+    "Librăria", "tehnică", "centralizată", "pentru", "echipamente", "țevi", "Teavă", "Izolație", "Metalice", "Atasat",
+    "Vertiv", "Grundfos", "Fisa", "Tehnica", "Disponibila", "datasheet", "doesn", "supabase", "Supabase", "apărut",
+    "eroare", "încărcarea", "fișierului", "Tablou", "Bord", "Galerie", "Mapare", "Tubulatură", "Rutare", "Hidraulică",
+    "Sustanabilitate", "Suporți", "Calcul", "Greutăți", "Costuri", "Cantități", "Librărie", "Tehnică", "Fotografii", "Șantier",
+    "Personalizare", "Raport", "Setări", "Ajutor", "Nume", "Proiect", "Anulare", "Refacere", "Salvare", "Meniu",
+    "Utilizator", "Fără", "Profil", "Sigur", "doriți", "deconectați", "Deconectare", "Armaflex", "Magnus", "numer",
+    "Tempearture", "coeff", "presiune", "Viteză", "prin", "robinet", "Robinet", "supradimensionat", "Considerați", "dimensiune",
+    "mică", "rezervă", "limită", "Autoritate", "scăzută", "poate", "instabil", "necesar", "depășește", "valvele", "robineți",
+    "paraleli", "optimă", "bună", "fontkit", "selectat", "nicio", "secțiune", "raportul", "tehnic", "Identitate", "Vizuală",
+    "Personalizați", "aspectul", "rapoartelor", "drei", "metalness", "Revit", "Archi", "Tekla", "generare", "Popescu",
+    "București", "beforeinstallprompt", "appinstalled", "WEBIFC", "isolatable", "IFCPUMP", "IFCVALVE", "IFCFLOWCONTROLLER",
+    "IFCFLOWMOVINGDEVICE", "IFCFLOWTERMINAL", "IFCUNITARYEQUIPMENT", "IFCFLOWSEGMENT", "IFCFLOWFITTING", "reduc",
+    "winkel", "cablu", "Psets", "IFCRELASSIGNSTOGROUP", "IFCRELCONNECTSELEMENTS", "IFCRELDEFINESBYPROPERTIES", "pset",
+    "Nennlänge", "cupru", "Ptotal", "Debitul", "trebuie", "Căderea", "Megadatacenter", "Preferințe", "adaugă",
+    "Dimensionare", "Calculul", "necesarului", "materiale", "prinderi", "Gestionare", "Introduceți", "greutatea",
+    "proprie", "echipamentelor", "Documentație", "Încărcați", "fotografii", "Sustenabilitate", "galerie", "tubulatură",
+    "Configurare", "Sistem", "Activ", "Segmente", "Doar", "Prezentare", "generală", "timp", "metricilor", "proiectului",
+    "Scanează", "Țeavă", "Pompe", "Redundante", "Variator", "Frecvență", "Debitmetru", "Supapă", "Siguranță",
+    "Expansiune", "Filtru", "Golire", "Manometru", "Putere", "Greutate", "Volum", "Recomandare", "Glicol",
+    "Concentrație", "Opțiuni", "Echipament", "Sketchfab", "Notițe", "Observații", "detalii", "suplimentare",
+    "Salvează", "Închide", "Etilen", "Propilen", "Pură", "Procent", "Această", "marjă", "aplicată", "peste",
+    "volumul", "recomandă", "între", "acoperi", "pierderile", "neprevăzute", "FAZA", "PLANIFICARE", "șabloane",
+    "configurate", "începe", "Importă", "modele", "Începe", "adăugând", "ESTIMAT", "Scor", "Inițializare",
+    "Configurează", "Fluide", "Setează", "proprietățile", "fluidului", "Arhitectură", "Încarcă", "Sincronizare",
+    "Cerințe", "Bază", "litri", "Marjă", "Dezactivat", "Cumpărat", "Premixat", "Actualizări", "Analiza",
+    "energetică", "activă", "Hidraulic", "Calcule", "Sistemul", "funcționează", "parametri", "normali",
+    "Normatives", "Iconițe", "categorii", "hvac", "Culori", "surse", "ASHRAE", "Înapoi", "listă", "Copiat",
+    "Copiază", "referința", "oficial", "Conținut", "Complet", "Articole", "Detaliate", "Cuvinte", "Cheie",
+    "Citește", "normativul", "complet", "normatives", "Caută", "răsfoiește", "reglementări", "Căutare",
+    "Răsfoiește", "după", "cuvinte", "cheie", "temperatură", "incendiu", "Filtre", "Șterge", "filtrele",
+    "Surse", "Categorii", "căutarea", "Introdu", "folosește", "modul", "vedea", "toate", "normativele",
+    "distanță", "Niciun", "rezultat", "găsit", "Încearcă", "alți", "termeni", "rezultate", "altele", "Lungime",
+    "Totala", "marja", "Alege"
+  ],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.emmetCompletions": true
 }

@@ -100,7 +100,7 @@ export const CloudBrowserAction = () => {
 
             {/* Modal */}
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-100 flex items-start justify-center pt-20 bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-border relative">
                         {/* Header */}
                         <div className="p-4 border-b border-border flex justify-between items-center sticky top-0 bg-background rounded-t-xl z-10">
@@ -155,7 +155,7 @@ export const CloudBrowserAction = () => {
                                     {filteredProjects.map((project) => (
                                         <div key={project.id} className="group flex flex-col gap-3 p-5 rounded-xl border border-secondary bg-secondary/10 hover:bg-secondary/20 hover:border-primary/30 transition-all relative">
                                             <div className="flex justify-between items-start gap-4">
-                                                <div className="font-bold text-lg text-zinc-100 break-words leading-tight" title={project.name}>
+                                                <div className="font-bold text-lg text-zinc-100 wrap-break-word leading-tight" title={project.name}>
                                                     {(project.name && project.name.trim().length > 0) ? project.name : 'Untitled Project'}
                                                 </div>
                                                 {project.id === cloudProjectId && (

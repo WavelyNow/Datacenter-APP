@@ -95,7 +95,7 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                 transition={{ type: "spring", stiffness: 200, damping: 25 }}
                 className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-border shadow-2xl z-50 overflow-hidden flex flex-col"
             >
-                <div className="p-5 border-b border-border bg-gradient-to-r from-primary/10 to-transparent">
+                <div className="p-5 border-b border-border bg-linear-to-r from-primary/10 to-transparent">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2 text-primary mb-1">
                             <Flame className="w-5 h-5" />
@@ -190,7 +190,7 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                                         {calculations.surfaceTemp.toFixed(1)}°C
                                     </div>
                                 </div>
-                                <div className="col-span-2 bg-gradient-to-r from-primary/10 to-transparent p-3 rounded border border-primary/20">
+                                <div className="col-span-2 bg-linear-to-r from-primary/10 to-transparent p-3 rounded border border-primary/20">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-xs text-primary font-bold uppercase tracking-wider">Energy Loss</span>
                                         <Flame className="w-3 h-3 text-primary/70" />

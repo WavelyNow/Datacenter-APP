@@ -49,15 +49,43 @@ const NormativeSearchPage = dynamic(() => import('@/components/NormativeSearchPa
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
 });
 
-// Lighter components - keep static
-import { HelpPage } from '@/components/HelpPage';
-import { CommissioningChecklist } from '@/components/CommissioningChecklist';
-import { PipingRoutingPage } from '@/components/PipingRoutingPage';
-import { SupportManager } from '@/components/SupportManager';
-import { BrandingManager } from '@/components/BrandingManager';
-import { EquipmentManager } from '@/components/EquipmentManager';
-import { SettingsPage } from '@/components/SettingsPage';
-import { KeyboardShortcutsModal } from '@/components/KeyboardShortcutsModal';
+// Add dynamic imports for previously static components
+const HelpPage = dynamic(() => import('@/components/HelpPage').then(m => ({ default: m.HelpPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
+});
+
+const CommissioningChecklist = dynamic(() => import('@/components/CommissioningChecklist').then(m => ({ default: m.CommissioningChecklist })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
+});
+
+const PipingRoutingPage = dynamic(() => import('@/components/PipingRoutingPage').then(m => ({ default: m.PipingRoutingPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
+});
+
+const SupportManager = dynamic(() => import('@/components/SupportManager').then(m => ({ default: m.SupportManager })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
+});
+
+const BrandingManager = dynamic(() => import('@/components/BrandingManager').then(m => ({ default: m.BrandingManager })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
+});
+
+const EquipmentManager = dynamic(() => import('@/components/EquipmentManager').then(m => ({ default: m.EquipmentManager })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>
+});
+
+const SettingsPage = dynamic(() => import('@/components/SettingsPage').then(m => ({ default: m.SettingsPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
+});
+
+const KeyboardShortcutsModal = dynamic(() => import('@/components/KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })), {
+  ssr: false
+});
+
+// Memoize stable layout components
+const MemoizedSidebar = React.memo(Sidebar);
+const MemoizedHeader = React.memo(Header);
+const MemoizedDashboard = React.memo(Dashboard);
 
 import { ProjectLoadData } from '@/lib/types';
 
@@ -196,6 +224,22 @@ const DashboardContent = () => {
   };
 
 
+  // Wrap setters in useCallback for stable props
+  const handleLoadProject = React.useCallback((data: ProjectLoadData) => {
+    if (data.segments) setSegments(data.segments);
+    if (data.equipmentList) setEquipmentList(data.equipmentList);
+    if (data.projectDetails) setProjectDetails(data.projectDetails);
+    if (data.fluidType) setFluidType(data.fluidType);
+    if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
+    if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
+  }, [setSegments, setEquipmentList, setProjectDetails, setFluidType, setGlycolPercentage, setSafetyMargin]);
+
+  const toggleCatalog = React.useCallback(() => setIsCatalogOpen(prev => !prev), []);
+  const toggleProfileCatalog = React.useCallback(() => setIsProfileCatalogOpen(prev => !prev), []);
+  const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
+  const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
+  const toggleShortcuts = React.useCallback(() => setIsShortcutsOpen(prev => !prev), []);
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -215,18 +259,18 @@ const DashboardContent = () => {
       </a>
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
-      <PipeCatalogModal isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} />
-      <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={() => setIsProfileCatalogOpen(false)} />
-      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={toggleShortcuts} />
+      <PipeCatalogModal isOpen={isCatalogOpen} onClose={toggleCatalog} />
+      <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={toggleProfileCatalog} />
       <ProjectSettingsModal
         isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={toggleSettings}
         projectDetails={projectDetails}
         onProjectDetailsChange={setProjectDetails}
       />
       <PdfWizardModal
         isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
+        onClose={toggleExport}
         data={{
           projectDetails,
           segments: segments || [],
@@ -242,9 +286,9 @@ const DashboardContent = () => {
 
 
       {/* 2. Sidebar Navigation */}
-      <Sidebar
-        onSettingsOpen={() => setIsSettingsOpen(true)}
-        onExportOpen={() => setIsExportOpen(true)}
+      <MemoizedSidebar
+        onSettingsOpen={toggleSettings}
+        onExportOpen={toggleExport}
         onSave={saveProject}
         onLoad={loadProject}
       />
@@ -253,22 +297,15 @@ const DashboardContent = () => {
       <main id="main-content" className="flex-1 flex flex-col h-screen overflow-hidden relative">
 
         {/* Header (Top Bar) */}
-        <Header
+        <MemoizedHeader
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
-          onLoadProject={(data: ProjectLoadData) => {
-            if (data.segments) setSegments(data.segments);
-            if (data.equipmentList) setEquipmentList(data.equipmentList);
-            if (data.projectDetails) setProjectDetails(data.projectDetails);
-            if (data.fluidType) setFluidType(data.fluidType);
-            if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-            if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
-          }}
-          onOpenPipeCatalog={() => setIsCatalogOpen(true)}
-          onOpenProfileCatalog={() => setIsProfileCatalogOpen(true)}
+          onLoadProject={handleLoadProject}
+          onOpenPipeCatalog={toggleCatalog}
+          onOpenProfileCatalog={toggleProfileCatalog}
           onOpenEquipmentCatalog={() => setActiveTab('catalogs')}
-          onOpenExport={() => setIsExportOpen(true)}
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenExport={toggleExport}
+          onOpenSettings={toggleSettings}
           onSaveProject={saveProject}
           onUndo={undo}
           onRedo={redo}
@@ -279,7 +316,7 @@ const DashboardContent = () => {
         <div className="flex-1 overflow-y-auto scroll-smooth pb-32">
           <PageTransition pageKey={activeTab}>
             {activeTab === 'dashboard' ? (
-              <Dashboard />
+              <MemoizedDashboard />
             ) : (
               <div className="spacing-page py-8">
                 <div className="animate-in fade-in duration-300">

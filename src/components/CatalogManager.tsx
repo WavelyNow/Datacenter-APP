@@ -257,7 +257,7 @@ export const CatalogManager: React.FC = () => {
                                         onClick={() => setSelectedItem(item)}
                                         className="relative group bg-card border border-border/60 hover:border-primary/50 text-foreground rounded-2xl p-7 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden"
                                     >
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-bl-3xl -mr-8 -mt-8 pointer-events-none transition-opacity group-hover:opacity-100" />
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-primary/5 to-transparent rounded-bl-3xl -mr-8 -mt-8 pointer-events-none transition-opacity group-hover:opacity-100" />
 
                                         {/* Status Tag for Custom */}
                                         {item.id.startsWith('custom-') && (
@@ -327,7 +327,7 @@ export const CatalogManager: React.FC = () => {
 
             {/* Equipment Detail Modal */}
             {selectedItem && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedItem(null)} />
                     <div className="relative bg-card w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden border border-border flex flex-col">
                         {/* Header */}

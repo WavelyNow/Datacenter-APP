@@ -30,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             flex flex-col items-center justify-center 
             p-8 md:p-16 text-center 
             rounded-3xl border border-border/40 
-            bg-gradient-to-b from-card/80 to-muted/20 backdrop-blur-sm
+            bg-linear-to-b from-card/80 to-muted/20 backdrop-blur-sm
             shadow-xl shadow-black/5
             group
             ${className}
@@ -43,19 +43,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             {/* Icon / Illustration */}
             <div className="relative mb-8 transform group-hover:scale-105 transition-transform duration-500 ease-out">
                 <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-background to-muted border border-white/10 shadow-lg flex items-center justify-center relative z-10 ring-1 ring-white/20">
+                <div className="w-24 h-24 rounded-3xl bg-linear-to-br from-background to-muted border border-white/10 shadow-lg flex items-center justify-center relative z-10 ring-1 ring-white/20">
                     <Icon className="w-10 h-10 text-primary" />
                 </div>
 
                 {/* Floating Elements */}
-                <div className="absolute -right-4 -top-4 p-3 rounded-2xl bg-card/80 backdrop-blur-md border border-white/10 shadow-lg animate-bounce duration-[3000ms]">
+                <div className="absolute -right-4 -top-4 p-3 rounded-2xl bg-card/80 backdrop-blur-md border border-white/10 shadow-lg animate-bounce duration-3000">
                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
                 </div>
             </div>
 
             {/* Content */}
             <div className="relative z-10 max-w-md mx-auto space-y-4">
-                <h3 className="text-2xl font-black tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-br from-foreground to-muted-foreground/70">
+                <h3 className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-br from-foreground to-muted-foreground/70">
                     {title}
                 </h3>
                 <p className="text-muted-foreground text-base leading-relaxed">
@@ -71,7 +71,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                         <ul className="space-y-3">
                             {steps.map((step, i) => (
                                 <li key={i} className="flex gap-3 text-sm text-muted-foreground/80 items-start">
-                                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold mt-0.5">
+                                    <span className="shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold mt-0.5">
                                         {i + 1}
                                     </span>
                                     <span>{step}</span>

@@ -30,9 +30,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timer = setTimeout(() => setMounted(true), 0);
         // Cleanup timeout on unmount
         return () => {
+            clearTimeout(timer);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
     }, []);
@@ -74,7 +75,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const showTooltip = () => {
         // console.log('Tooltip trigger:', { disabled, content, side });
         if (disabled || !content) return;
-        updatePosition();
         timeoutRef.current = setTimeout(() => {
             updatePosition(); // Recalculate just before showing
             // console.log('Tooltip showing:', coords);
@@ -139,7 +139,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const tooltipClasses = `
         relative bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 
         text-xs px-3 py-2 rounded-lg shadow-xl shadow-black/10 border border-white/10 
-        font-medium leading-relaxed z-[99999]
+        font-medium leading-relaxed z-99999
         animate-in fade-in ${getAnimationClass()} duration-200
     `;
 
@@ -166,7 +166,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
             {mounted && isVisible && createPortal(
                 <div
-                    className="fixed pointer-events-none z-[99999]"
+                    className="fixed pointer-events-none z-99999"
                     style={{
                         top: coords.top,
                         left: coords.left,

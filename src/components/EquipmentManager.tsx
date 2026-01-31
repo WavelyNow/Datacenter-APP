@@ -210,7 +210,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
 
             {/* Photos Mode Inputs */}
             {viewMode === 'photos' && (
-                <div className="mt-2 flex-grow flex flex-col">
+                <div className="mt-2 grow flex flex-col">
                     <input
                         type="file"
                         className="hidden"
@@ -235,7 +235,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
                     ) : (
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="flex-grow flex flex-col items-center justify-center gap-2 w-full h-40 border border-dashed border-border hover:border-muted-foreground rounded-lg bg-muted/20 hover:bg-muted/40 transition-all group/btn"
+                            className="grow flex flex-col items-center justify-center gap-2 w-full h-40 border border-dashed border-border hover:border-muted-foreground rounded-lg bg-muted/20 hover:bg-muted/40 transition-all group/btn"
                         >
                             <ImageIcon className="w-5 h-5 text-muted-foreground group-hover/btn:text-foreground" />
                             <span className="text-[10px] font-bold text-muted-foreground group-hover/btn:text-foreground uppercase tracking-wider">{t('equipmentManager.uploadImage')}</span>
@@ -378,7 +378,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                 ) : null}
 
                 {!isLoading && equipmentList.length > 0 && (
-                    <div className={`space-y-3 ${viewMode === 'photos' ? '!space-y-0 !grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : ''}`}>
+                    <div className={`space-y-3 ${viewMode === 'photos' ? 'space-y-0! grid! grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : ''}`}>
                         {equipmentList.map((item) => (
                             <EquipmentRow
                                 key={item.id}

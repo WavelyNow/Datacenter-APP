@@ -47,7 +47,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-background/80 backdrop-blur-xl"
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 md:p-8 bg-background/80 backdrop-blur-xl"
             onClick={onClose}
         >
             <motion.div
@@ -67,7 +67,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
 
                 {/* Left: 3D Viewer Section */}
                 <div className="flex-[1.5] bg-black/40 relative group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
 
                     {item.model3d && (
                         isEmbed ? (

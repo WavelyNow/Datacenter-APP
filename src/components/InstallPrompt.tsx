@@ -54,7 +54,7 @@ export function InstallPrompt() {
                     <div className="bg-white dark:bg-stone-800 rounded-xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden">
                         <div className="p-4">
                             <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                                <div className="shrink-0 w-12 h-12 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
                                     <Download className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -67,7 +67,7 @@ export function InstallPrompt() {
                                 </div>
                                 <button
                                     onClick={handleDismiss}
-                                    className="flex-shrink-0 p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+                                    className="shrink-0 p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
                                 >
                                     <X className="w-5 h-5 text-stone-400" />
                                 </button>
@@ -81,7 +81,7 @@ export function InstallPrompt() {
                                 </button>
                                 <button
                                     onClick={handleInstall}
-                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all shadow-lg shadow-emerald-500/25"
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all shadow-lg shadow-emerald-500/25"
                                 >
                                     {t('pwa.install')}
                                 </button>

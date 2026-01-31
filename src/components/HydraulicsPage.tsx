@@ -62,7 +62,7 @@ export function HydraulicsPage() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-primary/70">
+                <div className="p-3 rounded-xl bg-linear-to-br from-primary to-primary/70">
                     <Wrench className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div>

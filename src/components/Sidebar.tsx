@@ -67,7 +67,7 @@ const NavSection = ({ items, activeTab, onTabChange, isCollapsed }: {
                         }`}
                 >
                     {isActive && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-100 z-0" />
+                        <div className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 opacity-100 z-0" />
                     )}
 
                     <Icon className={`w-[18px] h-[18px] z-10 transition-colors shrink-0 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-primary'}`} />
@@ -109,7 +109,7 @@ interface SidebarProps {
     onLoad: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({
+const SidebarBase: React.FC<SidebarProps> = ({
     onSettingsOpen,
     onExportOpen,
     onSave,
@@ -125,11 +125,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // Collapsed state
     const [isCollapsed, setIsCollapsed] = React.useState(false);
 
-    const mainGroup: MenuItem[] = [
+    const mainGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
-    ];
+    ], [t]);
 
-    const engineeringGroup: MenuItem[] = [
+    const engineeringGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'bim_gallery', label: t('sidebar.bimGallery'), icon: Cuboid, badge: 'NEW' },
         { id: 'bim', label: t('sidebar.ifcMapping'), icon: Layers },
         { id: 'room-prep', label: t('sidebar.roomPrep') !== 'sidebar.roomPrep' ? t('sidebar.roomPrep') : 'Pregătire Cameră', icon: Building2, badge: 'NEW' },
@@ -141,18 +141,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'costs', label: t('sidebar.costEstimator'), icon: Calculator },
         { id: 'boq', label: t('sidebar.quantities'), icon: ClipboardList },
         { id: 'checklist', label: t('sidebar.commissioning'), icon: ClipboardCheck },
-    ];
+    ], [t]);
 
-    const databaseGroup: MenuItem[] = [
+    const databaseGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'catalogs', label: t('sidebar.techLibrary'), icon: Book },
         { id: 'normative', label: t('sidebar.normativeSearch') !== 'sidebar.normativeSearch' ? t('sidebar.normativeSearch') : 'Normative', icon: FileText, badge: 'NEW' },
-    ];
+    ], [t]);
 
-    const reportsGroup: MenuItem[] = [
+    const reportsGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'photos', label: t('sidebar.sitePhotos'), icon: Camera },
         { id: 'branding', label: t('sidebar.reportBranding'), icon: Palette },
         { id: 'settings', label: t('common.settings'), icon: Settings },
-    ];
+    ], [t]);
 
     return (
         <aside
@@ -197,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     `}
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-gray-300 font-bold text-xs shrink-0 border border-white/5 shadow-inner">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-gray-800 to-black flex items-center justify-center text-gray-300 font-bold text-xs shrink-0 border border-white/5 shadow-inner">
                             {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
                         </div>
                         {!isCollapsed && (
@@ -306,3 +306,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </aside >
     );
 };
+
+export const Sidebar = React.memo(SidebarBase);

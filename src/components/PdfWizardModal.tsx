@@ -267,7 +267,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                             </div>
                                         )}
                                         {isSelected && (
-                                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+                                            <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
                                         )}
                                     </button>
                                 );
@@ -379,8 +379,8 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             </p>
                         </div>
 
-                        <div className="bg-card p-10 rounded-3xl border border-primary/20 bg-primary/5 text-center max-w-md w-full relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+                        <div className="bg-primary/5 p-10 rounded-3xl border border-primary/20 text-center max-w-md w-full relative overflow-hidden">
+                            <div className="absolute inset-0 bg-linear-to-b from-primary/10 to-transparent pointer-events-none" />
 
                             <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/40 animate-in zoom-in duration-500">
                                 {selectedPreset === 'excel' ? (
@@ -413,7 +413,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-500" onClick={onClose} />
 
             <div className="relative bg-card w-full max-w-5xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border animate-in zoom-in-95 duration-300">

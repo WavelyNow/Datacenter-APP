@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             // Premium Error UI
             return (
-                <div className="relative overflow-hidden flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-3xl border border-destructive/20 bg-gradient-to-b from-destructive/5 to-background backdrop-blur-sm shadow-xl shadow-destructive/5 h-full min-h-[300px] group animate-in fade-in zoom-in-95 duration-500">
+                <div className="relative overflow-hidden flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-3xl border border-destructive/20 bg-linear-to-b from-destructive/5 to-background backdrop-blur-sm shadow-xl shadow-destructive/5 h-full min-h-[300px] group animate-in fade-in zoom-in-95 duration-500">
 
                     {/* Background Decor */}
                     <div className="absolute inset-0 bg-grid-red-500/5 mask-image-linear-gradient-to-b" />
@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     {/* Icon */}
                     <div className="relative mb-6 transform group-hover:scale-105 transition-transform duration-500">
                         <div className="absolute inset-0 bg-destructive/20 blur-xl rounded-full opacity-50" />
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-background to-destructive/10 border border-destructive/20 shadow-lg flex items-center justify-center relative z-10 ring-1 ring-destructive/20">
+                        <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-background to-destructive/10 border border-destructive/20 shadow-lg flex items-center justify-center relative z-10 ring-1 ring-destructive/20">
                             <AlertTriangle className="w-10 h-10 text-destructive" />
                         </div>
                     </div>

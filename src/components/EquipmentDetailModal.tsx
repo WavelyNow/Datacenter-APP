@@ -98,7 +98,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
             <div className="relative bg-card w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-border">
@@ -246,7 +246,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                 <label className="text-xs text-muted-foreground">Paste Local Path (.glb) OR Sketchfab Embed Code</label>
                                 <textarea
                                     placeholder='Paste <iframe...> code from Sketchfab OR /models/file.glb'
-                                    className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-1 focus:ring-primary h-20 resize-none font-mono text-xs"
+                                    className="w-full bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:ring-1 focus:ring-primary h-20 resize-none font-mono text-xs"
                                     onBlur={(e) => {
                                         let val = e.target.value.trim();
                                         if (val.includes('<iframe')) {

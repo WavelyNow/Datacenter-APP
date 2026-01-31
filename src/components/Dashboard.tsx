@@ -1,9 +1,7 @@
-
 "use client";
 
 import React from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { useTranslation } from '@/context/PreferencesContext';
 import { motion } from 'framer-motion';
 import {
     Activity,
@@ -23,7 +21,7 @@ import { calculateSystemResources } from '@/lib/calc/resources';
 import { calculateCostEstimate } from '@/lib/calculations/costEstimate';
 import { Tooltip } from './ui/Tooltip';
 
-export const Dashboard = () => {
+const DashboardBase = () => {
     const {
         projectDetails,
         segments,
@@ -33,17 +31,17 @@ export const Dashboard = () => {
         safetyMargin,
         safetyMarginPercentage
     } = useProject();
-    const { t } = useTranslation();
 
     const [isBimOpen, setIsBimOpen] = React.useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
-    const resources = calculateSystemResources(
+    const resources = React.useMemo(() => calculateSystemResources(
         segments,
         equipmentList,
         glycolPercentage,
         { enabled: safetyMargin, percentage: safetyMarginPercentage }
-    );
+    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
+
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -61,6 +59,8 @@ export const Dashboard = () => {
             opacity: 1
         }
     };
+
+    const costEstimateValue = React.useMemo(() => calculateCostEstimate(segments, equipmentList).grandTotal, [segments, equipmentList]);
 
     return (
         <motion.div
@@ -133,7 +133,7 @@ export const Dashboard = () => {
                 </div>
 
                 {/* Background Decoration */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary/5 blur-[100px] rounded-full pointer-events-none -z-0" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary/5 blur-[100px] rounded-full pointer-events-none z-0" />
             </motion.div>
 
             {/* Quick Stats Grid */}
@@ -174,7 +174,7 @@ export const Dashboard = () => {
                     </div>
                     <div className="relative z-10">
                         <div className="text-2xl font-black text-foreground tracking-tight">
-                            €{(calculateCostEstimate(segments, equipmentList).grandTotal).toLocaleString('en-US')}
+                            €{costEstimateValue.toLocaleString('en-US')}
                         </div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Cost Total Proiect</div>
                     </div>
@@ -313,7 +313,7 @@ export const Dashboard = () => {
                 {/* Right Panel: AI & Updates */}
                 <motion.div variants={itemVariants} className="lg:col-span-1">
                     <div className="h-full glass-panel-heavy rounded-3xl p-6 relative overflow-hidden flex flex-col">
-                        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
 
                         <div className="flex items-center gap-2 mb-6 relative z-10">
                             <Sparkles className="w-4 h-4 text-primary" />
@@ -356,3 +356,6 @@ export const Dashboard = () => {
         </motion.div>
     );
 };
+
+export const Dashboard = React.memo(DashboardBase);
+Dashboard.displayName = 'Dashboard';

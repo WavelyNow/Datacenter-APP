@@ -604,7 +604,7 @@ export const QuantityListPage = () => {
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="flex-shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
+            <div className="shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
                 <div className="flex flex-col gap-4">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">

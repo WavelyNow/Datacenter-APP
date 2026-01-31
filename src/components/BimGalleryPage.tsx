@@ -106,7 +106,7 @@ export const BimGalleryPage = () => {
                 {/* Header */}
                 <div className="p-4 border-b border-border bg-card/50 backdrop-blur-sm flex justify-between items-center sticky top-0 z-20">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-primary/10 border-primary/20' : 'bg-secondary/50'}`}>
+                        <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border border-border ${isCatalog ? 'bg-primary/10 border-primary/20' : 'bg-secondary/50'}`}>
                             {isCatalog ? <Import className="w-4 h-4 text-primary" /> : <Cuboid className="w-4 h-4 text-primary/70" />}
                         </div>
                         <div className="min-w-0">
@@ -122,7 +122,7 @@ export const BimGalleryPage = () => {
                     {isCatalog ? (
                         <button
                             onClick={() => addToProject(item as CatalogEquipment)}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md flex-shrink-0 flex items-center gap-1.5 transition-colors shadow-sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md shrink-0 flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-3.5 h-3.5" /> Adaugă
                         </button>
@@ -136,7 +136,7 @@ export const BimGalleryPage = () => {
                                         setEquipmentList((prev: EquipmentItem[]) => prev.filter(i => i.id !== item.id));
                                     }
                                 }}
-                                className="p-2 rounded-lg hover:bg-red-500/10 text-destructive transition-colors flex-shrink-0"
+                                className="p-2 rounded-lg hover:bg-red-500/10 text-destructive transition-colors shrink-0"
                                 title="Remove Model"
                             >
                                 <Trash2 className="w-4 h-4" />
@@ -146,7 +146,7 @@ export const BimGalleryPage = () => {
                                     e.stopPropagation();
                                     setSelectedDetail({ item, isCatalog });
                                 }}
-                                className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors flex-shrink-0"
+                                className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors shrink-0"
                                 title="Inspect Model"
                             >
                                 <Maximize2 className="w-4 h-4" />

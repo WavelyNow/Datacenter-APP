@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion, useTransform, useMotionValue, animate } from 'framer-motion';
 
 // --- Animated Number Component ---
-function AnimatedNumber({ value, unit, className }: { value: number, unit?: string, className?: string }) {
+const AnimatedNumber = React.memo(({ value, unit, className }: { value: number, unit?: string, className?: string }) => {
     const count = useMotionValue(0);
     const rounded = useTransform(count, (latest) => Math.round(latest * 10) / 10);
 
@@ -21,7 +21,9 @@ function AnimatedNumber({ value, unit, className }: { value: number, unit?: stri
             {unit && <span className="opacity-70 ml-1">{unit}</span>}
         </span>
     );
-}
+});
+
+AnimatedNumber.displayName = 'AnimatedNumber';
 
 // --- Donut Chart Stats ---
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted-foreground))', 'hsl(var(--muted))'];

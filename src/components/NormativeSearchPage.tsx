@@ -24,7 +24,6 @@ import {
     Tag,
     LucideIcon,
     Library,
-    List,
     ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,6 +39,7 @@ import {
     NormativeEntry,
     normativeRegistry
 } from '@/lib/normativeRegistry';
+import { useEffect } from 'react';
 
 // Iconițe pentru categorii
 const categoryIcons: Record<NormativeCategory, LucideIcon> = {
@@ -97,6 +97,10 @@ interface FullReadingViewProps {
 const FullReadingView: React.FC<FullReadingViewProps> = ({ entry, onBack }) => {
     const CategoryIcon = categoryIcons[entry.category];
     const [copied, setCopied] = useState(false);
+    useEffect(() => {
+        // Scroll to top when opening a normative
+        window.scrollTo(0, 0);
+    }, []);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(`${entry.code}: ${entry.title}`);
@@ -290,7 +294,7 @@ interface NormativeCardProps {
 }
 
 const NormativeCard: React.FC<NormativeCardProps> = ({ result, isExpanded, onToggle, onOpenFull }) => {
-    const { entry, matchedKeywords, matchedArticles } = result;
+    const { entry, matchedKeywords } = result;
     const CategoryIcon = categoryIcons[entry.category];
 
     // Highlight keywords în text
@@ -380,7 +384,7 @@ const NormativeCard: React.FC<NormativeCardProps> = ({ result, isExpanded, onTog
                                 <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed">
                                     {highlightText(entry.content.slice(0, 400) + '...', matchedKeywords)}
                                 </pre>
-                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-secondary/80 to-transparent" />
+                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-secondary/80 to-transparent" />
                             </div>
 
                             {/* Open full button */}
