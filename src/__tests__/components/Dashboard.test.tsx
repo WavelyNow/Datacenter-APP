@@ -55,17 +55,17 @@ jest.mock('@/components/TemplateSelector', () => ({
 }));
 jest.mock('framer-motion', () => ({
     motion: {
-        div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-        h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
-        p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
-        button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
-        span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+        div: ({ children, ...props }: React.ComponentProps<'div'>) => <div {...props}>{children}</div>,
+        h1: ({ children, ...props }: React.ComponentProps<'h1'>) => <h1 {...props}>{children}</h1>,
+        p: ({ children, ...props }: React.ComponentProps<'p'>) => <p {...props}>{children}</p>,
+        button: ({ children, ...props }: React.ComponentProps<'button'>) => <button {...props}>{children}</button>,
+        span: ({ children, ...props }: React.ComponentProps<'span'>) => <span {...props}>{children}</span>,
     },
-    AnimatePresence: ({ children }: any) => <>{children}</>,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('@/components/ui/Tooltip', () => ({
-    Tooltip: ({ children, content }: any) => <div data-testid="tooltip" title={typeof content === 'string' ? content : 'tooltip'}>{children}</div>,
+    Tooltip: ({ children, content }: { children: React.ReactNode; content: React.ReactNode }) => <div data-testid="tooltip" title={typeof content === 'string' ? content : 'tooltip'}>{children}</div>,
 }));
 
 describe('Dashboard Component', () => {

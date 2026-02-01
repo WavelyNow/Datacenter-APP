@@ -37,39 +37,13 @@ import {
     sourceTranslations,
     NormativeSource,
     NormativeCategory,
-    SearchResult,
     NormativeEntry,
     normativeRegistry
 } from '@/lib/normativeRegistry';
-import { useEffect, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { SearchResultsList } from './NormativeSearchResults';
+import { categoryIcons, sourceColors } from '@/lib/normativeConstants';
 
-// Iconițe pentru categorii
-const categoryIcons: Record<NormativeCategory, LucideIcon> = {
-    thermal: Zap,
-    electrical: Plug,
-    fire: Flame,
-    infrastructure: Building2,
-    cabling: Network,
-    redundancy: RefreshCw,
-    hvac: Wind,
-    security: Lock,
-    power: Plug,
-    cooling: Snowflake
-};
-
-// Culori pentru surse
-const sourceColors: Record<NormativeSource, string> = {
-    'ASHRAE': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    'TIA-942': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    'EN-50600': 'bg-green-500/20 text-green-400 border-green-500/30',
-    'Uptime': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    'Romanian': 'bg-red-500/20 text-red-400 border-red-500/30',
-    'IEEE': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
-};
-
-type ViewMode = 'search' | 'browse' | 'reading';
-
+// Filter Chip Component
 interface FilterChipProps {
     label: string;
     active: boolean;
@@ -446,14 +420,6 @@ export const NormativeSearchPage: React.FC = () => {
         });
     }, [debouncedQuery, selectedSources, selectedCategories]);
 
-    // Virtualization for results
-    const rowVirtualizer = useVirtualizer({
-        count: results.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 140, // Estimated height of NormativeCard
-        overscan: 5,
-    });
-
     // Browse: normatives grouped by source
     const normativesBySource = useMemo(() => {
         const grouped: Record<NormativeSource, NormativeEntry[]> = {} as Record<NormativeSource, NormativeEntry[]>;
@@ -656,133 +622,99 @@ export const NormativeSearchPage: React.FC = () => {
                 )}
             </motion.div>
 
-            {/* Content */}
-            <div ref={parentRef} className="flex-1 overflow-y-auto p-6 scroll-smooth">
-                {/* SEARCH MODE */}
-                {viewMode === 'search' && (
-                    <>
-                        {debouncedQuery.trim() === '' && activeFiltersCount === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center">
-                                <div className="p-4 bg-secondary/30 rounded-full mb-4">
-                                    <Search className="w-10 h-10 text-muted-foreground" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-foreground mb-2">Începe căutarea</h3>
-                                <p className="text-sm text-muted-foreground max-w-md mb-6">
-                                    Introdu cuvinte cheie sau folosește modul &quot;Răsfoiește&quot; pentru a vedea toate normativele.
-                                </p>
-                                <div className="flex flex-wrap gap-2 justify-center">
-                                    {['temperatură server', 'distanță rack', 'tier 3', 'incendiu', 'UPS'].map(suggestion => (
-                                        <button
-                                            key={suggestion}
-                                            onClick={() => setQuery(suggestion)}
-                                            className="px-3 py-1.5 bg-secondary/50 text-muted-foreground text-sm rounded-full hover:bg-secondary hover:text-foreground transition-colors"
-                                        >
-                                            {suggestion}
-                                        </button>
-                                    ))}
-                                </div>
+            {/* Content Area - Split based on ViewMode to allow separate scrolling contexts */}
+            
+            {/* SEARCH VIEW */}
+            {viewMode === 'search' && (
+                debouncedQuery.trim() === '' && activeFiltersCount === 0 ? (
+                    <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            <div className="p-4 bg-secondary/30 rounded-full mb-4">
+                                <Search className="w-10 h-10 text-muted-foreground" />
                             </div>
-                        ) : results.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center">
-                                <div className="p-4 bg-secondary/30 rounded-full mb-4">
-                                    <FileText className="w-10 h-10 text-muted-foreground" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-foreground mb-2">Niciun rezultat</h3>
-                                <p className="text-sm text-muted-foreground max-w-md">
-                                    Nu am găsit normative pentru &quot;{query}&quot;. Încearcă alți termeni.
-                                </p>
-                            </div>
-                        ) : (
-                            <div 
-                                className="relative w-full"
-                                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-                            >
-                                <div className="text-sm text-muted-foreground mb-4">
-                                    {results.length} {results.length === 1 ? 'rezultat' : 'rezultate'}
-                                </div>
-                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                                    const result = results[virtualRow.index];
-                                    return (
-                                        <div
-                                            key={virtualRow.key}
-                                            data-index={virtualRow.index}
-                                            ref={rowVirtualizer.measureElement}
-                                            className="absolute top-0 left-0 w-full"
-                                            style={{
-                                                transform: `translateY(${virtualRow.start}px)`,
-                                            }}
-                                        >
-                                            <div className="pb-3">
-                                                <NormativeCard
-                                                    result={result}
-                                                    isExpanded={expandedId === result.entry.id}
-                                                    onToggle={() => setExpandedId(expandedId === result.entry.id ? null : result.entry.id)}
-                                                    onOpenFull={() => openReading(result.entry)}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </>
-                )}
-
-                {/* BROWSE MODE */}
-                {viewMode === 'browse' && (
-                    <>
-                        {!browseSource ? (
-                            // Source Selection
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {allSources.map(source => {
-                                    const entries = normativesBySource[source] || [];
-                                    const SourceIcon = entries[0] ? categoryIcons[entries[0].category] : FileText;
-                                    return (
-                                        <button
-                                            key={source}
-                                            onClick={() => setBrowseSource(source)}
-                                            className={`p-6 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-lg ${sourceColors[source]}`}
-                                        >
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <SourceIcon className="w-8 h-8" />
-                                                <div>
-                                                    <h3 className="font-bold text-lg">{sourceTranslations[source]}</h3>
-                                                    <p className="text-xs opacity-70">{entries.length} normative</p>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                {entries.slice(0, 3).map(e => (
-                                                    <p key={e.id} className="text-xs opacity-60 truncate">• {e.code}</p>
-                                                ))}
-                                                {entries.length > 3 && (
-                                                    <p className="text-xs opacity-40">+ {entries.length - 3} altele...</p>
-                                                )}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            // Normatives List for selected source
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                                        <span className={`px-3 py-1 rounded-full text-sm ${sourceColors[browseSource]}`}>
-                                            {sourceTranslations[browseSource]}
-                                        </span>
-                                        <span className="text-muted-foreground font-normal text-sm">
-                                            {normativesBySource[browseSource]?.length || 0} normative
-                                        </span>
-                                    </h2>
-                                </div>
-                                {(normativesBySource[browseSource] || []).map(entry => (
-                                    <BrowseCard key={entry.id} entry={entry} onOpen={() => openReading(entry)} />
+                            <h3 className="text-lg font-semibold text-foreground mb-2">Începe căutarea</h3>
+                            <p className="text-sm text-muted-foreground max-w-md mb-6">
+                                Introdu cuvinte cheie sau folosește modul &quot;Răsfoiește&quot; pentru a vedea toate normativele.
+                            </p>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {['temperatură server', 'distanță rack', 'tier 3', 'incendiu', 'UPS'].map(suggestion => (
+                                    <button
+                                        key={suggestion}
+                                        onClick={() => setQuery(suggestion)}
+                                        className="px-3 py-1.5 bg-secondary/50 text-muted-foreground text-sm rounded-full hover:bg-secondary hover:text-foreground transition-colors"
+                                    >
+                                        {suggestion}
+                                    </button>
                                 ))}
                             </div>
-                        )}
-                    </>
-                )}
-            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <SearchResultsList
+                        results={results}
+                        query={query}
+                        expandedId={expandedId}
+                        onToggle={(id) => setExpandedId(expandedId === id ? null : id)}
+                        onOpenFull={openReading}
+                        setQuery={setQuery}
+                    />
+                )
+            )}
+
+            {/* BROWSE VIEW */}
+            {viewMode === 'browse' && (
+                 <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                    {!browseSource ? (
+                        // Source Selection
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {allSources.map(source => {
+                                const entries = normativesBySource[source] || [];
+                                const SourceIcon = entries[0] ? categoryIcons[entries[0].category] : FileText;
+                                return (
+                                    <button
+                                        key={source}
+                                        onClick={() => setBrowseSource(source)}
+                                        className={`p-6 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-lg ${sourceColors[source]}`}
+                                    >
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <SourceIcon className="w-8 h-8" />
+                                            <div>
+                                                <h3 className="font-bold text-lg">{sourceTranslations[source]}</h3>
+                                                <p className="text-xs opacity-70">{entries.length} normative</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {entries.slice(0, 3).map(e => (
+                                                <p key={e.id} className="text-xs opacity-60 truncate">• {e.code}</p>
+                                            ))}
+                                            {entries.length > 3 && (
+                                                <p className="text-xs opacity-40">+ {entries.length - 3} altele...</p>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        // Normatives List for selected source
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold flex items-center gap-2">
+                                    <span className={`px-3 py-1 rounded-full text-sm ${sourceColors[browseSource]}`}>
+                                        {sourceTranslations[browseSource]}
+                                    </span>
+                                    <span className="text-muted-foreground font-normal text-sm">
+                                        {normativesBySource[browseSource]?.length || 0} normative
+                                    </span>
+                                </h2>
+                            </div>
+                            {(normativesBySource[browseSource] || []).map(entry => (
+                                <BrowseCard key={entry.id} entry={entry} onOpen={() => openReading(entry)} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </motion.div>
     );
 };
