@@ -1,29 +1,18 @@
 "use client";
 "use no memo";
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Search,
     FileText,
     Filter,
     X,
-    ChevronDown,
     ChevronRight,
     ExternalLink,
     Copy,
     Check,
     BookOpen,
-    Zap,
-    Flame,
-    Building2,
-    Network,
-    RefreshCw,
-    Wind,
-    Lock,
-    Plug,
-    Snowflake,
     Tag,
-    LucideIcon,
     Library,
     ArrowLeft
 } from 'lucide-react';
@@ -72,7 +61,7 @@ interface FullReadingViewProps {
 }
 
 const FullReadingView: React.FC<FullReadingViewProps> = ({ entry, onBack }) => {
-    const CategoryIcon = categoryIcons[entry.category];
+    const CategoryIcon = categoryIcons[entry.category as NormativeCategory];
     const [copied, setCopied] = useState(false);
     useEffect(() => {
         // Scroll to top when opening a normative
@@ -98,13 +87,13 @@ const FullReadingView: React.FC<FullReadingViewProps> = ({ entry, onBack }) => {
                 </button>
 
                 <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl ${sourceColors[entry.source]} shrink-0`}>
+                    <div className={`p-3 rounded-xl ${sourceColors[entry.source as NormativeSource]} shrink-0`}>
                         <CategoryIcon className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${sourceColors[entry.source]}`}>
-                                {sourceTranslations[entry.source]}
+                                {sourceTranslations[entry.source as NormativeSource]}
                             </span>
                             <span className="text-sm text-muted-foreground font-mono">
                                 {entry.code}
@@ -180,7 +169,7 @@ const FullReadingView: React.FC<FullReadingViewProps> = ({ entry, onBack }) => {
                                     {article.content}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 mt-3">
-                                    {article.keywords.map(kw => (
+                                    {article.keywords.map((kw: string) => (
                                         <span
                                             key={kw}
                                             className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full"
@@ -225,7 +214,7 @@ interface BrowseCardProps {
 }
 
 const BrowseCard: React.FC<BrowseCardProps> = ({ entry, onOpen }) => {
-    const CategoryIcon = categoryIcons[entry.category];
+    const CategoryIcon = categoryIcons[entry.category as NormativeCategory];
 
     return (
         <button
@@ -233,7 +222,7 @@ const BrowseCard: React.FC<BrowseCardProps> = ({ entry, onOpen }) => {
             className="w-full text-left bg-card border border-border rounded-xl p-4 hover:bg-secondary/30 hover:border-primary/30 transition-all group"
         >
             <div className="flex items-start gap-3">
-                <div className={`p-2 rounded-lg ${sourceColors[entry.source]} shrink-0 group-hover:scale-110 transition-transform`}>
+                <div className={`p-2 rounded-lg ${sourceColors[entry.source as NormativeSource]} shrink-0 group-hover:scale-110 transition-transform`}>
                     <CategoryIcon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -261,129 +250,13 @@ const BrowseCard: React.FC<BrowseCardProps> = ({ entry, onOpen }) => {
 };
 
 // ============================================================================
-// Search Card Component (existing, simplified)
-// ============================================================================
-interface NormativeCardProps {
-    result: SearchResult;
-    isExpanded: boolean;
-    onToggle: () => void;
-    onOpenFull: () => void;
-}
-
-const NormativeCard: React.FC<NormativeCardProps> = ({ result, isExpanded, onToggle, onOpenFull }) => {
-    const { entry, matchedKeywords } = result;
-    const CategoryIcon = categoryIcons[entry.category];
-
-    // Highlight keywords în text
-    const highlightText = useCallback((text: string, keywords: string[]) => {
-        if (keywords.length === 0) return text;
-        const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-        const regex = new RegExp(`(${pattern})`, 'gi');
-        const parts = text.split(regex);
-        return parts.map((part, i) => {
-            if (keywords.some(k => k.toLowerCase() === part.toLowerCase())) {
-                return <mark key={i} className="bg-primary/30 text-primary-foreground px-0.5 rounded">{part}</mark>;
-            }
-            return part;
-        });
-    }, []);
-
-    return (
-        <motion.div
-            variants={itemVariants}
-            whileHover="hover"
-            whileTap="tap"
-            layout
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-card/40 backdrop-blur-md border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
-        >
-            {/* Header */}
-            <button
-                onClick={onToggle}
-                className="w-full p-4 flex items-start gap-4 text-left hover:bg-secondary/30 transition-colors"
-            >
-                <div className={`p-2.5 rounded-lg ${sourceColors[entry.source]} shrink-0`}>
-                    <CategoryIcon className="w-5 h-5" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sourceColors[entry.source]}`}>
-                            {entry.source}
-                        </span>
-                        <span className="text-xs text-muted-foreground font-mono">
-                            {entry.code}
-                        </span>
-                    </div>
-
-                    <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
-                        {entry.title}
-                    </h3>
-
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                        {entry.summary}
-                    </p>
-
-                    {matchedKeywords.length > 0 && (
-                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            <Tag className="w-3 h-3 text-muted-foreground" />
-                            {matchedKeywords.slice(0, 4).map(kw => (
-                                <span key={kw} className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded">
-                                    {kw}
-                                </span>
-                            ))}
-                            {matchedKeywords.length > 4 && (
-                                <span className="text-[10px] text-muted-foreground">
-                                    +{matchedKeywords.length - 4}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <div className="shrink-0 text-muted-foreground">
-                    {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                </div>
-            </button>
-
-            {/* Preview Content */}
-            <AnimatePresence>
-                {isExpanded && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="border-t border-border overflow-hidden"
-                    >
-                        <div className="p-4 space-y-3">
-                            {/* Preview snippet */}
-                            <div className="bg-secondary/30 rounded-lg p-3 max-h-32 overflow-hidden relative">
-                                <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed">
-                                    {highlightText(entry.content.slice(0, 400) + '...', matchedKeywords)}
-                                </pre>
-                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-secondary/80 to-transparent" />
-                            </div>
-
-                            {/* Open full button */}
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onOpenFull(); }}
-                                className="w-full py-2.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <BookOpen className="w-4 h-4" />
-                                Citește normativul complet
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
-    );
-};
+// NormativeCard is now in NormativeSearchResults.tsx
 
 // ============================================================================
 // Main Page Component
 // ============================================================================
+type ViewMode = 'search' | 'browse' | 'reading';
+
 export const NormativeSearchPage: React.FC = () => {
     const [viewMode, setViewMode] = useState<ViewMode>('search');
     const [query, setQuery] = useState('');
@@ -403,8 +276,7 @@ export const NormativeSearchPage: React.FC = () => {
         return () => clearTimeout(timer);
     }, [query]);
 
-    // Parent ref for virtualization
-    const parentRef = useRef<HTMLDivElement>(null);
+
 
     const allSources = useMemo(() => getAllSources(), []);
     const allCategories = useMemo(() => getAllCategories(), []);
@@ -585,7 +457,7 @@ export const NormativeSearchPage: React.FC = () => {
                                                         label={sourceTranslations[source]}
                                                         active={selectedSources.includes(source)}
                                                         onClick={() => toggleSource(source)}
-                                                        className={selectedSources.includes(source) ? '' : sourceColors[source]}
+                                                        className={selectedSources.includes(source) ? '' : sourceColors[source as NormativeSource]}
                                                     />
                                                 ))}
                                             </div>
@@ -668,18 +540,18 @@ export const NormativeSearchPage: React.FC = () => {
                         // Source Selection
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {allSources.map(source => {
-                                const entries = normativesBySource[source] || [];
-                                const SourceIcon = entries[0] ? categoryIcons[entries[0].category] : FileText;
+                                const entries = normativesBySource[source as NormativeSource] || [];
+                                const SourceIcon = entries[0] ? categoryIcons[entries[0].category as NormativeCategory] : FileText;
                                 return (
                                     <button
                                         key={source}
                                         onClick={() => setBrowseSource(source)}
-                                        className={`p-6 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-lg ${sourceColors[source]}`}
+                                        className={`p-6 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-lg ${sourceColors[source as NormativeSource]}`}
                                     >
                                         <div className="flex items-center gap-3 mb-3">
                                             <SourceIcon className="w-8 h-8" />
                                             <div>
-                                                <h3 className="font-bold text-lg">{sourceTranslations[source]}</h3>
+                                                <h3 className="font-bold text-lg">{sourceTranslations[source as NormativeSource]}</h3>
                                                 <p className="text-xs opacity-70">{entries.length} normative</p>
                                             </div>
                                         </div>
@@ -700,15 +572,15 @@ export const NormativeSearchPage: React.FC = () => {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                                    <span className={`px-3 py-1 rounded-full text-sm ${sourceColors[browseSource]}`}>
-                                        {sourceTranslations[browseSource]}
+                                    <span className={`px-3 py-1 rounded-full text-sm ${sourceColors[browseSource as NormativeSource]}`}>
+                                        {sourceTranslations[browseSource as NormativeSource]}
                                     </span>
                                     <span className="text-muted-foreground font-normal text-sm">
                                         {normativesBySource[browseSource]?.length || 0} normative
                                     </span>
                                 </h2>
                             </div>
-                            {(normativesBySource[browseSource] || []).map(entry => (
+                            {(normativesBySource[browseSource as NormativeSource] || []).map(entry => (
                                 <BrowseCard key={entry.id} entry={entry} onOpen={() => openReading(entry)} />
                             ))}
                         </div>

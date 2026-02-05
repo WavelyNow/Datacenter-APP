@@ -13,11 +13,16 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children, pageKe
         <AnimatePresence mode="wait">
             <motion.div
                 key={pageKey}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="w-full h-full"
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ 
+                    type: 'spring' as const,
+                    stiffness: 260,
+                    damping: 26,
+                    mass: 0.8
+                }}
+                className="w-full h-full will-change-transform"
             >
                 {children}
             </motion.div>

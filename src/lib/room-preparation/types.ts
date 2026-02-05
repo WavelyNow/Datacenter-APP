@@ -19,6 +19,13 @@ export interface ChecklistItem {
     selectedOption?: string;
     value?: string | number;
     required: boolean;
+    // Window specific
+    height?: number;
+    width?: number;
+    insulationRequired?: boolean;
+    structureRequired?: boolean;
+    insulationType?: 'thermal-film' | 'double-glazing' | 'triple-glazing' | 'opaque-cover';
+    structureType?: 'steel-frame' | 'aluminum-profile' | 'reinforced-mesh';
 }
 
 // Phase 1: Structure
@@ -89,6 +96,14 @@ export interface WallsPhase {
         modularPanels: ChecklistItem & {
             type?: 'sandwich-panel' | 'metal-panel' | 'glass-partition';
             coreType?: 'mineral-wool' | 'pir' | 'honeycomb';
+        };
+        windowDetail: ChecklistItem & {
+            height?: number; // mm
+            width?: number; // mm
+            insulationRequired?: boolean;
+            structureRequired?: boolean;
+            insulationType?: 'thermal-film' | 'double-glazing' | 'triple-glazing' | 'opaque-cover';
+            structureType?: 'steel-frame' | 'aluminum-profile' | 'reinforced-mesh';
         };
         sealingPenetrations: ChecklistItem;
     };
@@ -399,6 +414,13 @@ export const createDefaultRoomPreparation = (roomName: string = 'New Room'): Roo
             thermalInsulation: { ...createDefaultChecklistItem('insulation', 'Izolație termică', 'Thermal insulation'), type: 'mineral-wool', thickness: 100 },
             fireRetardantPaint: { ...createDefaultChecklistItem('fire-paint', 'Vopsea ignifugă', 'Fire retardant paint'), fireClass: 'A2' },
             modularPanels: { ...createDefaultChecklistItem('panels', 'Panouri modulare', 'Modular wall panels'), type: 'sandwich-panel', coreType: 'mineral-wool' },
+            windowDetail: { 
+                ...createDefaultChecklistItem('window-detail', 'Detalii Geamuri & Izolație', 'Specificații pentru geamuri, izolație termică și structură'),
+                height: 0,
+                width: 0,
+                insulationRequired: false,
+                structureRequired: false
+            },
             sealingPenetrations: createDefaultChecklistItem('sealing', 'Etanșare goluri', 'Seal all penetrations')
         },
         notes: ''

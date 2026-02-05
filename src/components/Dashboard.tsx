@@ -12,17 +12,18 @@ import {
     ArrowRight,
     Zap,
     TrendingUp,
-    Leaf,
+    Scale,
     Package,
     Cloud
 } from 'lucide-react';
 import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources } from '@/lib/calc/resources';
-import { calculateCostEstimate } from '@/lib/calculations/costEstimate';
+import { useTranslation } from '@/context/PreferencesContext';
 import { Tooltip } from './ui/Tooltip';
 
 const DashboardBase = () => {
+    const { t } = useTranslation();
     const {
         projectDetails,
         segments,
@@ -49,20 +50,26 @@ const DashboardBase = () => {
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.05,
+                delayChildren: 0.1
             }
         }
     };
 
     const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
+        hidden: { y: 15, opacity: 0 },
         visible: {
             y: 0,
-            opacity: 1
+            opacity: 1,
+            transition: {
+                type: 'spring' as const,
+                stiffness: 100,
+                damping: 15,
+                mass: 0.5
+            }
         }
     };
 
-    const costEstimateValue = React.useMemo(() => calculateCostEstimate(segments, equipmentList).grandTotal, [segments, equipmentList]);
 
     return (
         <motion.div
@@ -143,55 +150,59 @@ const DashboardBase = () => {
                 <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                            <Activity className="w-5 h-5" />
+                            <Package className="w-5 h-5" />
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                     </div>
                     <div>
-                        <div className="text-3xl font-bold font-mono tracking-tight">{segments.length}</div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Segmente Țeavă</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">{equipmentList.length}</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Unități / Echipamente</div>
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-secondary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('weights')}>
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-secondary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="flex justify-between items-start">
-                        <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-muted-foreground group-hover:scale-110 transition-transform">
-                            <Zap className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                            <Activity className="w-5 h-5" />
                         </div>
                         <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-secondary transition-colors" />
                     </div>
                     <div>
-                        <div className="text-3xl font-bold font-mono tracking-tight">{equipmentList.length}</div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Echipamente Active</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">
+                            {segments.reduce((acc, seg) => acc + (seg.length || 0), 0).toFixed(1)} <span className="text-lg font-normal">m</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Lungime Totală Țeavă</div>
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
-                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-emerald-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
                         <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">ESTIMAT</div>
+                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">REAL-TIME</div>
                     </div>
                     <div className="relative z-10">
-                        <div className="text-2xl font-black text-foreground tracking-tight">
-                            €{costEstimateValue.toLocaleString('en-US')}
+                        <div className="text-3xl font-bold font-mono tracking-tight">
+                            {resources?.totalSystemVolume?.toFixed(0) || '0'} <span className="text-lg font-normal">L</span>
                         </div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Cost Total Proiect</div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Volum Total Sistem</div>
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('energy')}>
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-blue-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('weights')}>
                     <div className="flex justify-between items-start">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                            <Leaf className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                            <Scale className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold border border-primary/20">AI CALC</div>
+                        <div className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 text-[10px] font-bold border border-blue-500/20">SARCINĂ</div>
                     </div>
                     <div>
-                        <div className="text-3xl font-bold font-mono tracking-tight">1.42</div>
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Scor PUE Proiect</div>
+                        <div className="text-3xl font-bold font-mono tracking-tight">
+                            {(resources?.totalOperationalWeight || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })} <span className="text-lg font-normal">kg</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Sarcina Totală la Sol</div>
                     </div>
                 </motion.div>
             </motion.div>
@@ -237,6 +248,18 @@ const DashboardBase = () => {
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Total Tubulatură</p>
                                 <p className="text-2xl font-bold">{segments.reduce((acc, seg) => acc + (seg.length || 0), 0).toFixed(1)} <span className="text-sm font-normal text-muted-foreground">m</span></p>
+                            </div>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} className="glass-panel p-6 rounded-3xl flex items-center gap-6">
+                            <div className="p-3 bg-primary/10 rounded-2xl">
+                                <Zap className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">{t('dashboard.stats.installedPower')}</p>
+                                <p className="text-2xl font-bold">
+                                    {equipmentList.reduce((acc, eq) => acc + (eq.power || 0), 0).toFixed(0)} <span className="text-sm font-normal text-muted-foreground">kW</span>
+                                </p>
                             </div>
                         </motion.div>
 

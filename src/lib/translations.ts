@@ -40,6 +40,7 @@ export const translations = {
             normativeSearch: 'Normative Search',
             sitePhotos: 'Site Photos',
             reportBranding: 'Report Branding',
+            architectureSpec: 'AI Spec Assistant',
             engineering: 'Engineering',
             resources: 'Resources',
             output: 'Output',
@@ -89,6 +90,7 @@ export const translations = {
                 saveProject: { title: 'Save Project', subtitle: 'Save to JSON file' },
                 exportPdf: { title: 'Export PDF', subtitle: 'Generate PDF report' },
                 projectSettings: { title: 'Settings', subtitle: 'Open project settings' },
+                architectureSpec: { title: 'AI Spec Assistant', subtitle: 'Analyze project requirements' },
                 // Keywords can remain untranslated or translated depending on needs
             }
         },
@@ -99,6 +101,7 @@ export const translations = {
                 totalPipes: 'Total Pipe Segments',
                 totalLength: 'Total Length',
                 systemVol: 'System Volume',
+                installedPower: 'Installed Power',
                 estWeight: 'Est. Weight',
                 active: 'Active',
                 segments: 'segments',
@@ -373,6 +376,7 @@ export const translations = {
             normativeSearch: 'Căutare Normative',
             sitePhotos: 'Poze Șantier',
             reportBranding: 'Branding Raport',
+            architectureSpec: 'Asistent Specificații',
             engineering: 'Inginerie',
             resources: 'Resurse',
             output: 'Rezultate',
@@ -385,6 +389,7 @@ export const translations = {
                 totalPipes: 'Total Segmente Țeavă',
                 totalLength: 'Lungime Totală',
                 systemVol: 'Volum Sistem',
+                installedPower: 'Putere Instalată',
                 estWeight: 'Greutate Est.',
                 active: 'Activ',
                 segments: 'segmente',
@@ -491,6 +496,7 @@ export const translations = {
                 saveProject: { title: 'Salvează Proiect', subtitle: 'Salvează fișier JSON' },
                 exportPdf: { title: 'Export PDF', subtitle: 'Generează raport PDF' },
                 projectSettings: { title: 'Setări', subtitle: 'Deschide setări proiect' },
+                architectureSpec: { title: 'Asistent Specificații', subtitle: 'Analizează caietul de sarcini' },
             },
         },
         bim: {

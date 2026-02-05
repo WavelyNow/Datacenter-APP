@@ -30,7 +30,8 @@ export function RoomPrepWizard() {
         setCurrentPhaseIndex,
         nextPhase,
         prevPhase,
-        getPhaseProgress
+        getPhaseProgress,
+        updateChecklistItem
     } = useRoomPrep();
 
     const [showRoomList, setShowRoomList] = useState(!currentRoom);
@@ -337,7 +338,7 @@ export function RoomPrepWizard() {
 
 // Phase Content Component
 function PhaseContent({ phaseKey }: { phaseKey: string }) {
-    const { currentRoom, toggleItemStatus, updatePhaseNotes } = useRoomPrep();
+    const { currentRoom, toggleItemStatus, updatePhaseNotes, updateChecklistItem } = useRoomPrep();
 
     if (!currentRoom) return null;
 
@@ -374,35 +375,103 @@ function PhaseContent({ phaseKey }: { phaseKey: string }) {
                             key={key}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`group p-4 rounded-xl border transition-all cursor-pointer ${isCompleted
+                            className={`group p-4 rounded-xl border transition-all ${isCompleted
                                 ? 'border-emerald-500/50 bg-emerald-500/5'
                                 : 'border-border hover:border-primary/50 bg-card'
                                 }`}
-                            onClick={() => toggleItemStatus(phaseKey, key)}
                         >
                             <div className="flex items-start gap-4">
                                 {/* Checkbox */}
-                                <div className={`mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${isCompleted
-                                    ? 'border-emerald-500 bg-emerald-500'
-                                    : 'border-muted-foreground/30 group-hover:border-primary'
-                                    }`}>
+                                <div 
+                                    className={`mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer ${isCompleted
+                                        ? 'border-emerald-500 bg-emerald-500'
+                                        : 'border-muted-foreground/30 group-hover:border-primary'
+                                    }`}
+                                    onClick={() => toggleItemStatus(phaseKey, key)}
+                                >
                                     {isCompleted && <Check className="w-4 h-4 text-white" />}
                                 </div>
-
+    
                                 {/* Content */}
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`font-medium ${isCompleted ? 'text-emerald-700 dark:text-emerald-400' : 'text-foreground'}`}>
-                                            {checkItem.label}
-                                        </span>
-                                        {checkItem.required && (
-                                            <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                                Obligatoriu
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleItemStatus(phaseKey, key)}>
+                                            <span className={`font-medium ${isCompleted ? 'text-emerald-700 dark:text-emerald-400' : 'text-foreground'}`}>
+                                                {checkItem.label}
                                             </span>
-                                        )}
+                                            {checkItem.required && (
+                                                <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                                    Obligatoriu
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     {checkItem.description && (
                                         <p className="text-sm text-muted-foreground mt-1">{checkItem.description}</p>
+                                    )}
+
+                                    {/* Custom Renderer for Window Details */}
+                                    {key === 'windowDetail' && (
+                                        <div className="mt-4 p-4 rounded-lg bg-muted/30 border border-border/50 space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Înălțime Geam (mm)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={(checkItem as any).height || ''} 
+                                                        onChange={(e) => updateChecklistItem(phaseKey, key, { height: parseInt(e.target.value) || 0 })}
+                                                        className="w-full mt-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm"
+                                                        placeholder="ex: 1500"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Lățime Geam (mm)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        value={(checkItem as any).width || ''} 
+                                                        onChange={(e) => updateChecklistItem(phaseKey, key, { width: parseInt(e.target.value) || 0 })}
+                                                        className="w-full mt-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm"
+                                                        placeholder="ex: 2000"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-3 pt-2">
+                                                <div className="flex items-center justify-between p-2 rounded-md hover:bg-background/50 transition-colors">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as any).insulationRequired ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                                                        <span className="text-xs font-medium">Izolație Termică Necesară</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => updateChecklistItem(phaseKey, key, { insulationRequired: !(checkItem as any).insulationRequired })}
+                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as any).insulationRequired ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-muted text-muted-foreground border border-border'}`}
+                                                    >
+                                                        {(checkItem as any).insulationRequired ? 'DA' : 'NU'}
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex items-center justify-between p-2 rounded-md hover:bg-background/50 transition-colors">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'bg-amber-500' : 'bg-muted-foreground/30'}`} />
+                                                        <span className="text-xs font-medium">Structură Suport Necesară</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => updateChecklistItem(phaseKey, key, { structureRequired: !(checkItem as any).structureRequired })}
+                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'bg-amber-500/20 text-amber-600 border border-amber-500/30' : 'bg-muted text-muted-foreground border border-border'}`}
+                                                    >
+                                                        {(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'DA' : 'NU'}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {((checkItem as any).height > 1200 || (checkItem as any).structureRequired) && (
+                                                <div className="mt-2 p-3 bg-amber-500/5 border border-amber-500/10 rounded-md">
+                                                    <p className="text-[10px] text-amber-600 leading-relaxed font-medium">
+                                                        <span className="font-bold">NOTĂ TEHNICĂ:</span> Din cauza înălțimii mari, este obligatorie montarea unei structuri metalice de rigidizare conform P118. Sugerăm profile L 50x50x5 sau cadre de oțel rectangulare.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>

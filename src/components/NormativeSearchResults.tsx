@@ -2,9 +2,9 @@
 import React, { useRef, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, ChevronDown, ChevronRight, Tag, BookOpen } from 'lucide-react';
+import { FileText, ChevronDown, ChevronRight, Tag, BookOpen } from 'lucide-react';
 import { categoryIcons, sourceColors } from '@/lib/normativeConstants';
-import { SearchResult } from '@/lib/normativeRegistry';
+import { SearchResult, NormativeEntry } from '@/lib/normativeRegistry';
 import { itemVariants } from '@/lib/animations';
 
 interface SearchResultsListProps {
@@ -12,7 +12,7 @@ interface SearchResultsListProps {
     query: string;
     expandedId: string | null;
     onToggle: (id: string) => void;
-    onOpenFull: (entry: any) => void;
+    onOpenFull: (entry: NormativeEntry) => void;
     setQuery: (query: string) => void;
 }
 
@@ -113,7 +113,7 @@ const NormativeCard = ({ result, isExpanded, onToggle, onOpenFull }: { result: S
 
                             {/* Open full button */}
                             <button
-                                onClick={(e) => { e.stopPropagation(); onOpenFull(entry); }}
+                                onClick={(e) => { e.stopPropagation(); onOpenFull(); }}
                                 className="w-full py-2.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
                             >
                                 <BookOpen className="w-4 h-4" />

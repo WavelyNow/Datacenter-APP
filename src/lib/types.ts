@@ -1,6 +1,6 @@
 import { PIPE_STANDARDS } from './pipeStandards';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings' | 'room-prep' | 'normative';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings' | 'room-prep' | 'normative' | 'architecture_spec';
 
 export type PipeMaterial = keyof typeof PIPE_STANDARDS;
 
@@ -58,6 +58,7 @@ export interface ProjectDetails {
     beneficiary: string;
     revision: string;
     companyLogo?: string; // Base64 string for the report header
+    specifications?: string; // Project requirements from "Caiet de sarcini"
 }
 
 export type MountingType = 'concrete' | 'suspended';

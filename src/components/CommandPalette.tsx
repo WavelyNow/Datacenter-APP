@@ -24,6 +24,7 @@ import {
     Save,
     FileDown,
     Settings,
+    Sparkles,
     ArrowRight,
     X,
     Command,
@@ -79,6 +80,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         { id: 'nav-photos', title: t('commandPalette.cmds.sitePhotos.title'), subtitle: t('commandPalette.cmds.sitePhotos.subtitle'), icon: <Camera className="w-4 h-4" />, action: () => setActiveTab('photos' as TabId), keywords: ['images', 'pictures'], category: 'navigation' },
         { id: 'nav-branding', title: t('commandPalette.cmds.reportBranding.title'), subtitle: t('commandPalette.cmds.reportBranding.subtitle'), icon: <Palette className="w-4 h-4" />, action: () => setActiveTab('branding' as TabId), keywords: ['logo', 'style'], category: 'navigation' },
         { id: 'nav-help', title: t('commandPalette.cmds.helpCenter.title'), subtitle: t('commandPalette.cmds.helpCenter.subtitle'), icon: <HelpCircle className="w-4 h-4" />, action: () => setActiveTab('help' as TabId), keywords: ['docs', 'support'], category: 'navigation' },
+        { id: 'nav-architecture-spec', title: t('commandPalette.cmds.architectureSpec.title'), subtitle: t('commandPalette.cmds.architectureSpec.subtitle'), icon: <Sparkles className="w-4 h-4" />, action: () => setActiveTab('architecture_spec' as TabId), keywords: ['ai', 'specs', 'caiet'], category: 'navigation' },
 
         // Actions
         { id: 'action-save', title: t('commandPalette.cmds.saveProject.title'), subtitle: t('commandPalette.cmds.saveProject.subtitle'), icon: <Save className="w-4 h-4" />, action: () => onSave?.(), keywords: ['export', 'backup'], category: 'action' },

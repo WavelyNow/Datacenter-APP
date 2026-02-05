@@ -26,7 +26,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Building2,
-    FileText
+    FileText,
+    Sparkles
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
@@ -145,6 +146,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
     const databaseGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'catalogs', label: t('sidebar.techLibrary'), icon: Book },
         { id: 'normative', label: t('sidebar.normativeSearch') !== 'sidebar.normativeSearch' ? t('sidebar.normativeSearch') : 'Normative', icon: FileText, badge: 'NEW' },
+        { id: 'architecture_spec', label: t('sidebar.architectureSpec') !== 'sidebar.architectureSpec' ? t('sidebar.architectureSpec') : 'Asistent Proiectare AI', icon: Sparkles, badge: 'AI' },
     ], [t]);
 
     const reportsGroup = React.useMemo<MenuItem[]>(() => [

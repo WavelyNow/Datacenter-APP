@@ -51,6 +51,10 @@ const NormativeSearchPage = dynamic(() => import('@/components/NormativeSearchPa
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
 });
 
+const SpecAssistantPage = dynamic(() => import('@/components/SpecAssistantPage').then(m => ({ default: m.SpecAssistantPage })), {
+  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
+});
+
 // Add dynamic imports for previously static components
 const HelpPage = dynamic(() => import('@/components/HelpPage').then(m => ({ default: m.HelpPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
@@ -457,6 +461,11 @@ const DashboardContent = () => {
                   {/* Tab: Normative Search */}
                   {activeTab === 'normative' && (
                     <NormativeSearchPage />
+                  )}
+
+                  {/* Tab: AI Spec Assistant */}
+                  {activeTab === 'architecture_spec' && (
+                    <SpecAssistantPage />
                   )}
 
                   {/* Tab: Settings */}

@@ -80,20 +80,30 @@ describe('Dashboard Component', () => {
         expect(screen.getByText(/Sistem Activ/i)).toBeInTheDocument();
     });
 
-    it('displays the correct number of active segments', () => {
+    it('displays the correct number of equipment units and total pipe length', () => {
         const mockValue = {
             ...mockProjectContextValue,
+            equipmentList: [
+                { id: 'e1', name: 'Chiller 1', type: 'Chiller', volume: 100, weight: 500 },
+                { id: 'e2', name: 'Pump 1', type: 'Pump', volume: 10, weight: 100 },
+            ], // 2 units
             segments: [
-                { id: '1', size: 'DN50', length: 10, material: 'carbon_steel' },
-                { id: '2', size: 'DN50', length: 10, material: 'carbon_steel' },
-                { id: '3', size: 'DN50', length: 10, material: 'carbon_steel' },
-            ], // 3 segments
+                { id: 's1', size: 'DN50', length: 15.5, material: 'carbon_steel' },
+                { id: 's2', size: 'DN80', length: 10, material: 'carbon_steel' },
+            ], // Total length: 25.5m
         };
         (useProject as jest.Mock).mockReturnValue(mockValue);
 
         render(<Dashboard />);
-        expect(screen.getByText('3')).toBeInTheDocument();
-        expect(screen.getByText(/Segmente Țeavă/i)).toBeInTheDocument();
+        
+        // Check for Equipment Units
+        expect(screen.getByText('2')).toBeInTheDocument();
+        expect(screen.getByText(/Unități \/ Echipamente/i)).toBeInTheDocument();
+
+        // Check for Total Pipe Length (might appear multiple times)
+        const lengthElements = screen.getAllByText(/25.5/i);
+        expect(lengthElements.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText(/Lungime Totală Țeavă/i)).toBeInTheDocument();
     });
 
     it('calls setActiveTab when "New Project" is clicked', () => {
