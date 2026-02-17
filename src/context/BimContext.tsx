@@ -24,6 +24,7 @@ const BimContext = createContext<BimContextState | undefined>(undefined);
 export const BimProvider = ({ children }: { children: ReactNode }) => {
     const [foundPipes, setFoundPipes] = useState<BimObject[]>([]);
     const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
+    const [parsingProgress, setParsingProgress] = useState<number>(0);
     const [revitElements, setRevitElements] = useState<RevitElement[]>([]);
     const [isSyncingRevit, setIsSyncingRevit] = useState(false);
 

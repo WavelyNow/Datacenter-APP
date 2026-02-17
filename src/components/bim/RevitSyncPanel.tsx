@@ -8,17 +8,13 @@ import {
     CheckCircle2, 
     AlertCircle, 
     Link, 
-    Database,
-    ArrowRight
+    Database
 } from 'lucide-react';
 import { useBim } from '@/context/BimContext';
 import { useProject } from '@/context/ProjectContext';
-import { useTranslation } from '@/context/PreferencesContext';
-import { RevitElement, mapRevitToAppElement } from '@/lib/bim/revit';
-import { motion, AnimatePresence } from 'framer-motion';
+import { mapRevitToAppElement } from '@/lib/bim/revit';
 
 export const RevitSyncPanel = () => {
-    const { t } = useTranslation();
     const { revitElements, setRevitElements, isSyncingRevit, setIsSyncingRevit } = useBim();
     const { addSegments, addEquipment, segments, equipmentList } = useProject();
     const [file, setFile] = useState<File | null>(null);
@@ -56,9 +52,9 @@ export const RevitSyncPanel = () => {
             .map(el => mapRevitToAppElement(el))
             .filter(e => !equipmentList.some(eq => eq.revitId === e.revitId));
 
-        // @ts-ignore - Partial mapping for prototype
+        // @ts-expect-error - Partial mapping for prototype
         if (newSegments.length > 0) addSegments(newSegments);
-        // @ts-ignore - Partial mapping for prototype
+        // @ts-expect-error - Partial mapping for prototype
         if (newEquipment.length > 0) addEquipment(newEquipment);
 
         setTimeout(() => setIsSyncingRevit(false), 800);
@@ -183,16 +179,16 @@ export const RevitSyncPanel = () => {
                         <h4 className="font-bold mb-4">Instrucțiuni</h4>
                         <ul className="text-xs space-y-3 text-muted-foreground">
                             <li className="flex gap-2">
-                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-[10px] text-foreground">1</div>
+                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center shrink-0 text-[10px] text-foreground">1</div>
                                 Exportă lista de elemente din Revit folosind plugin-ul nostru (format JSON).
                             </li>
                             <li className="flex gap-2">
-                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-[10px] text-foreground">2</div>
+                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center shrink-0 text-[10px] text-foreground">2</div>
                                 Încarcă fișierul aici pentru a vedea diferențele de cantități.
                             </li>
                             <li className="flex gap-2">
-                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-[10px] text-foreground">3</div>
-                                Rezolvă conflictele și apasă "Sincronizează" pentru a actualiza modelul tehnic.
+                                <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center shrink-0 text-[10px] text-foreground">3</div>
+                                Rezolvă conflictele și apasă &quot;Sincronizează&quot; pentru a actualiza modelul tehnic.
                             </li>
                         </ul>
                     </div>

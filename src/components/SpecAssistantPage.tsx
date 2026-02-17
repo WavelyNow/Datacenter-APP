@@ -33,13 +33,13 @@ export const SpecAssistantPage = () => {
 
     const handleAddEquipment = (item: Partial<EquipmentItem>) => {
         if (!item.id) return;
-        setEquipmentList(prev => [...prev, { ...item, id: `ai-${Date.now()}` } as EquipmentItem]);
+        setEquipmentList(prev => [...prev, { ...item, id: `ai-${crypto.randomUUID()}` } as EquipmentItem]);
         setAddedIds(prev => new Set(prev).add(item.id!));
     };
 
     const handleAddSegment = (seg: Partial<PipeSegment>) => {
         if (!seg.id) return;
-        addSegments([{ ...seg, id: `ai-seg-${Date.now()}` } as PipeSegment]);
+        addSegments([{ ...seg, id: `ai-seg-${crypto.randomUUID()}` } as PipeSegment]);
         setAddedIds(prev => new Set(prev).add(seg.id!));
     };
 

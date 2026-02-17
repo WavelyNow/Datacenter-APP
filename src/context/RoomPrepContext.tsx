@@ -29,7 +29,7 @@ interface RoomPrepContextType {
     prevPhase: () => void;
 
     // Item updates
-    updateChecklistItem: (phaseKey: string, itemKey: string, updates: Partial<ChecklistItem>) => void;
+    updateChecklistItem: (phaseKey: string, itemKey: string, updates: Partial<ChecklistItem> & Record<string, any>) => void;
     toggleItemStatus: (phaseKey: string, itemKey: string) => void;
     setItemValue: (phaseKey: string, itemKey: string, value: string | number) => void;
 
@@ -133,7 +133,7 @@ export function RoomPrepProvider({ children }: { children: ReactNode }) {
     }, [currentPhaseIndex]);
 
     // Update checklist item
-    const updateChecklistItem = useCallback((phaseKey: string, itemKey: string, updates: Partial<ChecklistItem>) => {
+    const updateChecklistItem = useCallback((phaseKey: string, itemKey: string, updates: Partial<ChecklistItem> & Record<string, any>) => {
         if (!currentRoom) return;
 
         setCurrentRoom(prev => {

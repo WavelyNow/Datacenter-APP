@@ -12,6 +12,7 @@ interface ProjectState {
     addSegments: (segments: PipeSegment[]) => void;
     equipmentList: EquipmentItem[];
     setEquipmentList: (list: EquipmentItem[] | ((prev: EquipmentItem[]) => EquipmentItem[])) => void;
+    addEquipment: (equipment: EquipmentItem[]) => void;
     fluidType: FluidType;
     setFluidType: (type: FluidType) => void;
     ifcModelUrl: string | null;
@@ -241,6 +242,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const addSegments = useCallback((newSegments: PipeSegment[]) =>
         set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })), [set]);
 
+    const addEquipment = useCallback((newEquipment: EquipmentItem[]) =>
+        set(prev => ({ ...prev, equipmentList: [...prev.equipmentList, ...newEquipment] })), [set]);
+
     const value = React.useMemo(() => ({
         projectDetails: state.projectDetails, setProjectDetails,
         segments: state.segments, setSegments,
@@ -256,6 +260,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         undo, redo, canUndo, canRedo,
         // Actions
         addSegments,
+        addEquipment,
         // Cloud
         cloudProjectId: state.cloudProjectId,
         saveToCloud,
@@ -267,7 +272,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
-        undo, redo, canUndo, canRedo, addSegments, saveToCloud, loadFromCloud,
+        undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
         setBoqItems
     ]);
 

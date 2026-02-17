@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 import dynamic from 'next/dynamic';
 import React, { useState, useRef, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Layers, FileText, AlertTriangle, Upload, FileBox, Loader2, Check } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 
@@ -15,6 +16,7 @@ import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';
 import { RevitSyncPanel } from './bim/RevitSyncPanel';
+import { BimObjectEditor } from './bim/BimObjectEditor';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { BimObject, GroupedBimObject } from '@/lib/bim/types';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -687,7 +689,7 @@ export const BimPage = () => {
                 isOpen={isEditorOpen}
                 onClose={() => setIsEditorOpen(false)}
                 bimObject={selectedObject}
-                onSave={(updates) => {
+                onSave={(updates: { name: string, material?: string, applyToAll: boolean }) => {
                     if (!selectedObject) return;
                     if (updates.applyToAll) {
                         // Batch Update

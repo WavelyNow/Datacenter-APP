@@ -30,6 +30,7 @@ export function RoomPrepWizard() {
         setCurrentPhaseIndex,
         nextPhase,
         prevPhase,
+        updateChecklistItem,
         getPhaseProgress
     } = useRoomPrep();
 
@@ -337,7 +338,7 @@ export function RoomPrepWizard() {
 
 // Phase Content Component
 function PhaseContent({ phaseKey }: { phaseKey: string }) {
-    const { currentRoom, toggleItemStatus, updatePhaseNotes } = useRoomPrep();
+    const { currentRoom, toggleItemStatus, updateChecklistItem, updatePhaseNotes } = useRoomPrep();
 
     if (!currentRoom) return null;
 
