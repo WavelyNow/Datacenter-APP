@@ -206,7 +206,14 @@ export const translations = {
             noModel: 'Load a model to see 3D Preview',
             cancel: 'Cancel',
             importBtn: 'Import {count} Segments',
-            remove: 'Remove'
+            remove: 'Remove',
+            revitSync: 'Revit Sync',
+            syncBtn: 'Sync {count} Elements',
+            revitId: 'Revit ID',
+            status: 'Sync Status',
+            synced: 'Synced',
+            modified: 'Modified',
+            pending: 'Pending',
         },
         templates: {
             title: 'Quick Start Templates',
@@ -515,7 +522,14 @@ export const translations = {
             noModel: 'Încarcă un model pentru Previzualizare 3D',
             cancel: 'Anulează',
             importBtn: 'Importă {count} Segmente',
-            remove: 'Elimină'
+            remove: 'Elimină',
+            revitSync: 'Sincronizare Revit',
+            syncBtn: 'Sincronizează {count} Elemente',
+            revitId: 'ID Revit',
+            status: 'Status Sincronizare',
+            synced: 'Sincronizat',
+            modified: 'Modificat',
+            pending: 'În așteptare',
         },
         templates: {
             title: 'Șabloane Start Rapid',

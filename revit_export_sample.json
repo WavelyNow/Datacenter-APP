@@ -1,0 +1,62 @@
+{
+    "version": "1.0.0",
+    "timestamp": "2026-02-05T20:30:00Z",
+    "sourceModel": "Project_A_HVAC.rvt",
+    "elements": [
+        {
+            "revitId": "RVT-PIPE-001",
+            "category": "Pipe",
+            "name": "Chilled Water Supply Main",
+            "parameters": {
+                "Size": "DN100",
+                "Material": "Steel - Carbon",
+                "System": "CHW-S"
+            },
+            "geometry": {
+                "length": 45.5,
+                "diameter": 114.3
+            }
+        },
+        {
+            "revitId": "RVT-PIPE-002",
+            "category": "Pipe",
+            "name": "Chilled Water Return Main",
+            "parameters": {
+                "Size": "DN100",
+                "Material": "Steel - Carbon",
+                "System": "CHW-R"
+            },
+            "geometry": {
+                "length": 45.5,
+                "diameter": 114.3
+            }
+        },
+        {
+            "revitId": "RVT-CHILLER-01",
+            "category": "Equipment",
+            "name": "Air Cooled Chiller 250kW",
+            "parameters": {
+                "Model": "Carrier 30XA",
+                "Weight": 2450,
+                "Power": 85.5
+            },
+            "geometry": {
+                "weight": 2450,
+                "volume": 450
+            }
+        },
+        {
+            "revitId": "RVT-PUMP-01",
+            "category": "Equipment",
+            "name": "Secondary Pump A",
+            "parameters": {
+                "Flow": 24,
+                "Head": 18
+            },
+            "geometry": {
+                "weight": 145,
+                "volume": 12
+            }
+        }
+    ]
+}

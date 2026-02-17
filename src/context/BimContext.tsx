@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { BimObject } from '@/lib/bim/types';
+import { RevitElement } from '@/lib/bim/revit';
 
 interface BimContextState {
     // BIM Global State
@@ -11,6 +12,11 @@ interface BimContextState {
     setBimStatus: (status: 'idle' | 'uploading' | 'parsing' | 'extracted' | 'error') => void;
     parsingProgress: number;
     setParsingProgress: (progress: number) => void;
+    // Revit Sync
+    revitElements: RevitElement[];
+    setRevitElements: (elements: RevitElement[]) => void;
+    isSyncingRevit: boolean;
+    setIsSyncingRevit: (state: boolean) => void;
 }
 
 const BimContext = createContext<BimContextState | undefined>(undefined);
@@ -18,7 +24,8 @@ const BimContext = createContext<BimContextState | undefined>(undefined);
 export const BimProvider = ({ children }: { children: ReactNode }) => {
     const [foundPipes, setFoundPipes] = useState<BimObject[]>([]);
     const [bimStatus, setBimStatus] = useState<'idle' | 'uploading' | 'parsing' | 'extracted' | 'error'>('idle');
-    const [parsingProgress, setParsingProgress] = useState(0);
+    const [revitElements, setRevitElements] = useState<RevitElement[]>([]);
+    const [isSyncingRevit, setIsSyncingRevit] = useState(false);
 
     const value: BimContextState = {
         foundPipes,
@@ -26,7 +33,11 @@ export const BimProvider = ({ children }: { children: ReactNode }) => {
         bimStatus,
         setBimStatus,
         parsingProgress,
-        setParsingProgress
+        setParsingProgress,
+        revitElements,
+        setRevitElements,
+        isSyncingRevit,
+        setIsSyncingRevit
     };
 
     return (

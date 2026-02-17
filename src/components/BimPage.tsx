@@ -14,7 +14,7 @@ const IfcViewer = dynamic(() => import('./bim/IfcViewer').then(mod => mod.IfcVie
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment, EquipmentItem } from '@/lib/types';
 import { BimMappingWizard } from './bim/BimMappingWizard';
-import { BimObjectEditor } from './bim/BimObjectEditor';
+import { RevitSyncPanel } from './bim/RevitSyncPanel';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { BimObject, GroupedBimObject } from '@/lib/bim/types';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -39,6 +39,7 @@ export const BimPage = () => {
     const [showInstructions, setShowInstructions] = useState(true);
     const [file, setFile] = useState<File | null>(null);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [bimMode, setBimMode] = useState<'ifc' | 'revit'>('ifc');
 
     // Local Error State
     const [activeTab, setActiveTab] = useState<'All' | 'Pipe' | 'Fitting' | 'Equipment'>('All');
@@ -321,6 +322,21 @@ export const BimPage = () => {
                 </div>
 
                 <div className="flex gap-2">
+                    <div className="bg-muted p-1 rounded-lg flex gap-1 mr-4">
+                        <button 
+                            onClick={() => setBimMode('ifc')}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${bimMode === 'ifc' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            IFC Viewer
+                        </button>
+                        <button 
+                            onClick={() => setBimMode('revit')}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${bimMode === 'revit' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            Revit Link
+                        </button>
+                    </div>
+
                     <button
                         onClick={() => setShowInstructions(!showInstructions)}
                         className="btn btn-ghost border border-border gap-2"
@@ -354,7 +370,17 @@ export const BimPage = () => {
             </div>
 
             {/* Main Layout */}
-            <div className="flex-1 flex gap-6 min-h-0">
+            {bimMode === 'revit' ? (
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex-1 overflow-y-auto"
+                >
+                    <RevitSyncPanel />
+                </motion.div>
+            ) : (
+                <div className="flex-1 flex gap-6 min-h-0">
+                    {/* ... existing IFC layout ... */}
 
                 {/* LEFT: Viewer & Data */}
                 <div className="flex-1 flex flex-col gap-4 min-w-0">
@@ -621,7 +647,8 @@ export const BimPage = () => {
                     </div>
                 )}
 
-            </div>
+                </div>
+            )}
 
             <BimMappingWizard
                 isOpen={isWizardOpen}

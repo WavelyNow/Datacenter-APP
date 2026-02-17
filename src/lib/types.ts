@@ -19,6 +19,8 @@ export interface PipeSegment {
     roughness?: number;
     diameter?: number; // Added to support BIM extraction (numeric DN or inner diameter)
     fittings?: unknown[]; // Placeholder for future fitting logic
+    revitId?: string; // ID from the Revit model
+    syncStatus?: 'synced' | 'modified' | 'pending';
 }
 
 export interface EquipmentItem {
@@ -45,6 +47,8 @@ export interface EquipmentItem {
     technicalSheet?: string; // Base64 string (PDF) or URL
     model3d?: string; // URL to .glb/.gltf (BIM Model)
     specifications?: Record<string, string | number>;
+    revitId?: string; // ID from the Revit model
+    syncStatus?: 'synced' | 'modified' | 'pending';
 }
 
 export type FluidType = 'ethylene' | 'propylene' | 'water';

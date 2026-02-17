@@ -19,13 +19,6 @@ export interface ChecklistItem {
     selectedOption?: string;
     value?: string | number;
     required: boolean;
-    // Window specific
-    height?: number;
-    width?: number;
-    insulationRequired?: boolean;
-    structureRequired?: boolean;
-    insulationType?: 'thermal-film' | 'double-glazing' | 'triple-glazing' | 'opaque-cover';
-    structureType?: 'steel-frame' | 'aluminum-profile' | 'reinforced-mesh';
 }
 
 // Phase 1: Structure
