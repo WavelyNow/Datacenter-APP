@@ -6,12 +6,17 @@ export interface PipeDimension {
     thickness: number; // Wall Thickness (mm)
     id: number;      // Internal Diameter (mm)
     weight: number;  // Weight (kg/m) empty
+    insulatedOd?: number; // Outer Diameter with Insulation (mm)
 }
 
 export interface PipeStandard {
     label: string;
     description: string;
     category: 'metal' | 'plastic' | 'special'; // Added for grouping
+    material?: string;
+    maxPressure?: number; // bar
+    tempRange?: { min: number; max: number }; // Celsius
+    insulationType?: string;
     dimensions: PipeDimension[];
 }
 
@@ -21,6 +26,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "Oțel - Ușoară (Light II)",
         description: "EN 10255 - Seria Ușoară",
         category: 'metal',
+        material: "Carbon Steel",
+        maxPressure: 16,
+        tempRange: { min: -20, max: 300 },
         dimensions: [
             { dn: "DN10", inch: "3/8\"", od: 17.2, thickness: 1.8, id: 13.6, weight: 0.67 },
             { dn: "DN15", inch: "1/2\"", od: 21.3, thickness: 2.0, id: 17.3, weight: 0.95 },
@@ -38,6 +46,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "Oțel - Medie (+Brezner)",
         description: "EN 10255 Medie / EN 10216 (DN125+)",
         category: 'metal',
+        material: "Carbon Steel",
+        maxPressure: 25,
+        tempRange: { min: -20, max: 300 },
         dimensions: [
             { dn: "DN15", inch: "1/2\"", od: 21.3, thickness: 2.6, id: 16.1, weight: 1.22 },
             { dn: "DN20", inch: "3/4\"", od: 26.9, thickness: 2.6, id: 21.7, weight: 1.58 },
@@ -61,6 +72,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "Oțel - Grea (Heavy)",
         description: "EN 10255 Grea / SCH40/80",
         category: 'metal',
+        material: "Carbon Steel / Seamless",
+        maxPressure: 40,
+        tempRange: { min: -20, max: 400 },
         dimensions: [
             { dn: "DN15", inch: "1/2\"", od: 21.3, thickness: 3.2, id: 14.9, weight: 1.44 },
             { dn: "DN20", inch: "3/4\"", od: 26.9, thickness: 3.2, id: 20.5, weight: 1.87 },
@@ -78,12 +92,19 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
             { dn: "DN300", inch: "12\"", od: 323.9, thickness: 10.3, id: 303.3, weight: 79.7 },
             { dn: "DN350", inch: "14\"", od: 355.6, thickness: 11.1, id: 333.4, weight: 94.3 },
             { dn: "DN400", inch: "16\"", od: 406.4, thickness: 12.7, id: 381.0, weight: 123.0 },
+            // Extensie către DN600
+            { dn: "DN450", inch: "18\"", od: 457.2, thickness: 14.3, id: 428.6, weight: 156.0 },
+            { dn: "DN500", inch: "20\"", od: 508.0, thickness: 15.1, id: 477.8, weight: 184.0 },
+            { dn: "DN600", inch: "24\"", od: 609.6, thickness: 17.5, id: 574.6, weight: 257.0 },
         ]
     },
     inox_press: {
         label: "Inox Press / Mapress (EN 10312)",
         description: "Oțel Inoxidabil (AISI 316/304) Subțire",
         category: 'metal',
+        material: "Stainless Steel 316L",
+        maxPressure: 16,
+        tempRange: { min: -20, max: 120 },
         dimensions: [
             { dn: "15mm", inch: "1/2\"", od: 15, thickness: 1.0, id: 13.0, weight: 0.35 },
             { dn: "18mm", inch: "5/8\"", od: 18, thickness: 1.0, id: 16.0, weight: 0.43 },
@@ -101,6 +122,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "Cupru (EN 1057)",
         description: "Țeavă Cupru Semidur/Dur",
         category: 'metal',
+        material: "Copper EN 1057",
+        maxPressure: 25,
+        tempRange: { min: -40, max: 150 },
         dimensions: [
             { dn: "15mm", inch: "1/2\"", od: 15, thickness: 0.7, id: 13.6, weight: 0.28 },
             { dn: "18mm", inch: "5/8\"", od: 18, thickness: 0.7, id: 16.6, weight: 0.34 },
@@ -117,6 +141,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "PPR - PN20 (SDR 6)",
         description: "Polipropilenă pentru Apă Caldă/Încălzire",
         category: 'plastic',
+        material: "Polypropylene Random Copolymer",
+        maxPressure: 20,
+        tempRange: { min: 0, max: 80 },
         dimensions: [
             { dn: "20mm", inch: "1/2\"", od: 20, thickness: 3.4, id: 13.2, weight: 0.17 },
             { dn: "25mm", inch: "3/4\"", od: 25, thickness: 4.2, id: 16.6, weight: 0.27 },
@@ -133,6 +160,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "PEHD - PE100 SDR 17",
         description: "Polietilenă Apă Rece / Infrastructură",
         category: 'plastic',
+        material: "PE100 High Density",
+        maxPressure: 10,
+        tempRange: { min: -40, max: 40 },
         dimensions: [
             { dn: "32mm", inch: "1\"", od: 32, thickness: 2.0, id: 28.0, weight: 0.20 },
             { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 2.4, id: 35.2, weight: 0.30 },
@@ -147,6 +177,9 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "PVC-U (GF/Georg Fischer) PN16",
         description: "Industrial PVC Metric, PN16",
         category: 'plastic',
+        material: "PVC-U Rigid",
+        maxPressure: 16,
+        tempRange: { min: 0, max: 60 },
         dimensions: [
             { dn: "d16", inch: "-", od: 16, thickness: 1.5, id: 13.0, weight: 0.11 },
             { dn: "d20", inch: "-", od: 20, thickness: 1.5, id: 17.0, weight: 0.14 },
@@ -167,31 +200,39 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "GF COOL-FIT 2.0 (PE100 SDR11)",
         description: "Pre-izolat pentru Apă Gheață/Glicol",
         category: 'special',
+        material: "PE100 SDR11",
+        maxPressure: 16, // bar
+        tempRange: { min: -10, max: 40 },
+        insulationType: "GF HE Foam (0.022 W/mK)",
         dimensions: [
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50 },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.90 },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.50 },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.40 },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 4.50 },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 5.80 },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 8.50 },
-            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 12.50 },
+            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50, insulatedOd: 75 },
+            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.90, insulatedOd: 90 },
+            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.50, insulatedOd: 90 },
+            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.40, insulatedOd: 110 },
+            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 4.50, insulatedOd: 110 },
+            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 5.80, insulatedOd: 140 },
+            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 8.50, insulatedOd: 160 },
+            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 12.50, insulatedOd: 200 },
         ]
     },
     gf_coolfit_4_0: {
         label: "GF COOL-FIT 4.0 (PE100 SDR11)",
         description: "Industrial Cooling, Pre-izolat, SDR11",
         category: 'special',
+        material: "PE100 SDR11",
+        maxPressure: 16, // bar
+        tempRange: { min: -25, max: 45 },
+        insulationType: "GF HE Foam (0.022 W/mK)",
         dimensions: [
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.60 },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.10 },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.80 },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.80 },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 5.10 },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 6.50 },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 9.20 },
-            { dn: "d160", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 14.5 },
-            { dn: "d225", inch: "8\"", od: 225, thickness: 20.5, id: 184.0, weight: 22.5 },
+            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.60, insulatedOd: 90 },
+            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.10, insulatedOd: 110 },
+            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.80, insulatedOd: 110 },
+            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.80, insulatedOd: 125 },
+            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 5.10, insulatedOd: 140 },
+            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 6.50, insulatedOd: 160 },
+            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 9.20, insulatedOd: 180 },
+            { dn: "d160", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 14.5, insulatedOd: 250 },
+            { dn: "d225", inch: "8\"", od: 225, thickness: 20.5, id: 184.0, weight: 22.5, insulatedOd: 315 },
         ]
     },
 };

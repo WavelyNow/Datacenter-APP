@@ -67,6 +67,52 @@ export const VICTAULIC_EQUIPMENT: CatalogEquipment[] = [
         weight: 52.0,
         description: 'Butterfly Valve, 12" (323.9mm), 300 psi, EPDM.'
     },
+    // AGS Series W761 (14"-24")
+    {
+        id: 'vic-w761-dn350',
+        category: 'Vane & Robineți',
+        manufacturer: 'Victaulic',
+        model: 'Series W761 AGS Butterfly Valve DN350',
+        volume: 25.0,
+        weight: 95.0,
+        description: 'AGS Butterfly Valve, 14" (355.6mm), 300 psi.'
+    },
+    {
+        id: 'vic-w761-dn400',
+        category: 'Vane & Robineți',
+        manufacturer: 'Victaulic',
+        model: 'Series W761 AGS Butterfly Valve DN400',
+        volume: 35.0,
+        weight: 125.0,
+        description: 'AGS Butterfly Valve, 16" (406.4mm), 300 psi.'
+    },
+    {
+        id: 'vic-w761-dn450',
+        category: 'Vane & Robineți',
+        manufacturer: 'Victaulic',
+        model: 'Series W761 AGS Butterfly Valve DN450',
+        volume: 50.0,
+        weight: 160.0,
+        description: 'AGS Butterfly Valve, 18" (457.2mm), 300 psi.'
+    },
+    {
+        id: 'vic-w761-dn500',
+        category: 'Vane & Robineți',
+        manufacturer: 'Victaulic',
+        model: 'Series W761 AGS Butterfly Valve DN500',
+        volume: 70.0,
+        weight: 210.0,
+        description: 'AGS Butterfly Valve, 20" (508.0mm), 300 psi.'
+    },
+    {
+        id: 'vic-w761-dn600',
+        category: 'Vane & Robineți',
+        manufacturer: 'Victaulic',
+        model: 'Series W761 AGS Butterfly Valve DN600',
+        volume: 100.0,
+        weight: 320.0,
+        description: 'AGS Butterfly Valve, 24" (609.6mm), 300 psi.'
+    },
 
     // ==========================================================================
     // CHECK VALVES - Series 716 / 716H
@@ -250,6 +296,52 @@ export const VICTAULIC_EQUIPMENT: CatalogEquipment[] = [
         weight: 11.5,
         description: 'Rigid Coupling, 12", Painted.'
     },
+    // AGS Style W07 Rigid Couplings (14"-24")
+    {
+        id: 'vic-w07-dn350',
+        category: 'Cuplaje',
+        manufacturer: 'Victaulic',
+        model: 'Style W07 AGS Rigid Coupling DN350',
+        volume: 0,
+        weight: 21.0,
+        description: 'AGS Rigid Coupling, 14", Painted.'
+    },
+    {
+        id: 'vic-w07-dn400',
+        category: 'Cuplaje',
+        manufacturer: 'Victaulic',
+        model: 'Style W07 AGS Rigid Coupling DN400',
+        volume: 0,
+        weight: 25.0,
+        description: 'AGS Rigid Coupling, 16", Painted.'
+    },
+    {
+        id: 'vic-w07-dn450',
+        category: 'Cuplaje',
+        manufacturer: 'Victaulic',
+        model: 'Style W07 AGS Rigid Coupling DN450',
+        volume: 0,
+        weight: 32.0,
+        description: 'AGS Rigid Coupling, 18", Painted.'
+    },
+    {
+        id: 'vic-w07-dn500',
+        category: 'Cuplaje',
+        manufacturer: 'Victaulic',
+        model: 'Style W07 AGS Rigid Coupling DN500',
+        volume: 0,
+        weight: 38.0,
+        description: 'AGS Rigid Coupling, 20", Painted.'
+    },
+    {
+        id: 'vic-w07-dn600',
+        category: 'Cuplaje',
+        manufacturer: 'Victaulic',
+        model: 'Style W07 AGS Rigid Coupling DN600',
+        volume: 0,
+        weight: 48.0,
+        description: 'AGS Rigid Coupling, 24", Painted.'
+    },
 
     // ==========================================================================
     // FITTINGS - No. 10 (90° Elbows)
@@ -317,6 +409,52 @@ export const VICTAULIC_EQUIPMENT: CatalogEquipment[] = [
         volume: 12.0,
         weight: 45.0,
         description: 'Elbow 90°, 12", Ductile Iron.'
+    },
+    // AGS No. W10 90° Elbows (14"-24")
+    {
+        id: 'vic-w10-dn350',
+        category: 'Fitinguri',
+        manufacturer: 'Victaulic',
+        model: 'No. W10 AGS 90° Elbow DN350',
+        volume: 20.0,
+        weight: 65.0,
+        description: 'AGS Elbow 90°, 14", Ductile Iron.'
+    },
+    {
+        id: 'vic-w10-dn400',
+        category: 'Fitinguri',
+        manufacturer: 'Victaulic',
+        model: 'No. W10 AGS 90° Elbow DN400',
+        volume: 30.0,
+        weight: 85.0,
+        description: 'AGS Elbow 90°, 16", Ductile Iron.'
+    },
+    {
+        id: 'vic-w10-dn450',
+        category: 'Fitinguri',
+        manufacturer: 'Victaulic',
+        model: 'No. W10 AGS 90° Elbow DN450',
+        volume: 45.0,
+        weight: 110.0,
+        description: 'AGS Elbow 90°, 18", Ductile Iron.'
+    },
+    {
+        id: 'vic-w10-dn500',
+        category: 'Fitinguri',
+        manufacturer: 'Victaulic',
+        model: 'No. W10 AGS 90° Elbow DN500',
+        volume: 60.0,
+        weight: 140.0,
+        description: 'AGS Elbow 90°, 20", Ductile Iron.'
+    },
+    {
+        id: 'vic-w10-dn600',
+        category: 'Fitinguri',
+        manufacturer: 'Victaulic',
+        model: 'No. W10 AGS 90° Elbow DN600',
+        volume: 90.0,
+        weight: 215.0,
+        description: 'AGS Elbow 90°, 24", Ductile Iron.'
     },
 
     // ==========================================================================
