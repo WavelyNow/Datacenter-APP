@@ -11,6 +11,15 @@ import { useRoomPrep } from '@/context/RoomPrepContext';
 import { PHASE_CONFIG } from '@/lib/room-preparation/types';
 import { useTranslation } from '@/context/PreferencesContext';
 
+// Type helper pentru window detail cu proprietăți extinse
+interface WindowDetailItem {
+    height?: number;
+    width?: number;
+    insulationRequired?: boolean;
+    structureRequired?: boolean;
+    [key: string]: unknown; // Permite alte proprietăți ChecklistItem
+}
+
 // Phase icons mapping
 const PHASE_ICONS: Record<string, LucideIcon> = {
     Ruler, Layers, LayoutGrid, Flame, Zap, Wind, Shield, ClipboardCheck
@@ -30,7 +39,7 @@ export function RoomPrepWizard() {
         setCurrentPhaseIndex,
         nextPhase,
         prevPhase,
-        updateChecklistItem,
+        updateChecklistItem: _updateChecklistItem, // Folosit în PhaseContent
         getPhaseProgress
     } = useRoomPrep();
 
@@ -418,7 +427,7 @@ function PhaseContent({ phaseKey }: { phaseKey: string }) {
                                                     <label className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Înălțime Geam (mm)</label>
                                                     <input 
                                                         type="number" 
-                                                        value={(checkItem as any).height || ''} 
+                                                        value={(checkItem as WindowDetailItem).height || ''} 
                                                         onChange={(e) => updateChecklistItem(phaseKey, key, { height: parseInt(e.target.value) || 0 })}
                                                         className="w-full mt-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm"
                                                         placeholder="ex: 1500"
@@ -428,7 +437,7 @@ function PhaseContent({ phaseKey }: { phaseKey: string }) {
                                                     <label className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Lățime Geam (mm)</label>
                                                     <input 
                                                         type="number" 
-                                                        value={(checkItem as any).width || ''} 
+                                                        value={(checkItem as WindowDetailItem).width || ''} 
                                                         onChange={(e) => updateChecklistItem(phaseKey, key, { width: parseInt(e.target.value) || 0 })}
                                                         className="w-full mt-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm"
                                                         placeholder="ex: 2000"
@@ -439,32 +448,32 @@ function PhaseContent({ phaseKey }: { phaseKey: string }) {
                                             <div className="flex flex-col gap-3 pt-2">
                                                 <div className="flex items-center justify-between p-2 rounded-md hover:bg-background/50 transition-colors">
                                                     <div className="flex items-center gap-2">
-                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as any).insulationRequired ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as WindowDetailItem).insulationRequired ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
                                                         <span className="text-xs font-medium">Izolație Termică Necesară</span>
                                                     </div>
                                                     <button 
-                                                        onClick={() => updateChecklistItem(phaseKey, key, { insulationRequired: !(checkItem as any).insulationRequired })}
-                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as any).insulationRequired ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-muted text-muted-foreground border border-border'}`}
+                                                        onClick={() => updateChecklistItem(phaseKey, key, { insulationRequired: !(checkItem as WindowDetailItem).insulationRequired })}
+                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as WindowDetailItem).insulationRequired ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-muted text-muted-foreground border border-border'}`}
                                                     >
-                                                        {(checkItem as any).insulationRequired ? 'DA' : 'NU'}
+                                                        {(checkItem as WindowDetailItem).insulationRequired ? 'DA' : 'NU'}
                                                     </button>
                                                 </div>
 
                                                 <div className="flex items-center justify-between p-2 rounded-md hover:bg-background/50 transition-colors">
                                                     <div className="flex items-center gap-2">
-                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'bg-amber-500' : 'bg-muted-foreground/30'}`} />
+                                                        <div className={`w-2 h-2 rounded-full ${(checkItem as WindowDetailItem).structureRequired || (checkItem as WindowDetailItem).height! > 1200 ? 'bg-amber-500' : 'bg-muted-foreground/30'}`} />
                                                         <span className="text-xs font-medium">Structură Suport Necesară</span>
                                                     </div>
                                                     <button 
-                                                        onClick={() => updateChecklistItem(phaseKey, key, { structureRequired: !(checkItem as any).structureRequired })}
-                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'bg-amber-500/20 text-amber-600 border border-amber-500/30' : 'bg-muted text-muted-foreground border border-border'}`}
+                                                        onClick={() => updateChecklistItem(phaseKey, key, { structureRequired: !(checkItem as WindowDetailItem).structureRequired })}
+                                                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${(checkItem as WindowDetailItem).structureRequired || (checkItem as WindowDetailItem).height! > 1200 ? 'bg-amber-500/20 text-amber-600 border border-amber-500/30' : 'bg-muted text-muted-foreground border border-border'}`}
                                                     >
-                                                        {(checkItem as any).structureRequired || (checkItem as any).height > 1200 ? 'DA' : 'NU'}
+                                                        {(checkItem as WindowDetailItem).structureRequired || (checkItem as WindowDetailItem).height! > 1200 ? 'DA' : 'NU'}
                                                     </button>
                                                 </div>
                                             </div>
 
-                                            {((checkItem as any).height > 1200 || (checkItem as any).structureRequired) && (
+                                            {((checkItem as WindowDetailItem).height! > 1200 || (checkItem as WindowDetailItem).structureRequired) && (
                                                 <div className="mt-2 p-3 bg-amber-500/5 border border-amber-500/10 rounded-md">
                                                     <p className="text-[10px] text-amber-600 leading-relaxed font-medium">
                                                         <span className="font-bold">NOTĂ TEHNICĂ:</span> Din cauza înălțimii mari, este obligatorie montarea unei structuri metalice de rigidizare conform P118. Sugerăm profile L 50x50x5 sau cadre de oțel rectangulare.

@@ -29,6 +29,7 @@ interface RoomPrepContextType {
     prevPhase: () => void;
 
     // Item updates
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateChecklistItem: (phaseKey: string, itemKey: string, updates: Partial<ChecklistItem> & Record<string, any>) => void;
     toggleItemStatus: (phaseKey: string, itemKey: string) => void;
     setItemValue: (phaseKey: string, itemKey: string, value: string | number) => void;
@@ -133,6 +134,7 @@ export function RoomPrepProvider({ children }: { children: ReactNode }) {
     }, [currentPhaseIndex]);
 
     // Update checklist item
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateChecklistItem = useCallback((phaseKey: string, itemKey: string, updates: Partial<ChecklistItem> & Record<string, any>) => {
         if (!currentRoom) return;
 
