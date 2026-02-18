@@ -258,6 +258,8 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                                     {standard.material && <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground border border-border">{standard.material}</span>}
                                                     {standard.maxPressure && <span className="text-[10px] bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded border border-blue-500/20">PN{standard.maxPressure}</span>}
                                                     {standard.tempRange && <span className="text-[10px] bg-orange-500/10 text-orange-600 px-1.5 py-0.5 rounded border border-orange-500/20">{standard.tempRange.min}°C ... {standard.tempRange.max}°C</span>}
+                                                    {standard.thermalExpansion && <span className="text-[10px] bg-purple-500/10 text-purple-600 px-1.5 py-0.5 rounded border border-purple-500/20" title="Coeficient Dilatare Termică">α = {standard.thermalExpansion}</span>}
+                                                    {standard.roughness && <span className="text-[10px] bg-slate-500/10 text-slate-600 px-1.5 py-0.5 rounded border border-slate-500/20" title="Rugozitate Absolută">k = {standard.roughness}mm</span>}
                                                 </div>
                                             </div>
                                         </div>
@@ -278,6 +280,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                                     <th className="px-4 py-3 font-bold">Inch</th>
                                                     <th className="px-4 py-3 font-bold">Ø Ext (mm)</th>
                                                     <th className="px-4 py-3 font-bold text-orange-600/80">Ø Izolat (mm)</th>
+                                                    <th className="px-4 py-3 font-bold text-blue-600/80" title="Distanța maximă între suporturi (Apă)">Suport (m)</th>
                                                     <th className="px-4 py-3 font-bold">Grosime (mm)</th>
                                                     <th className="px-4 py-3 font-bold text-primary bg-primary/5">Ø Int (mm)</th>
                                                     <th className="px-4 py-3 font-bold">
@@ -303,6 +306,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                                             <td className="px-4 py-2.5 text-muted-foreground">{pipe.inch || '-'}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.od}</td>
                                                             <td className="px-4 py-2.5 font-mono text-orange-600/90 font-medium">{pipe.insulatedOd || '-'}</td>
+                                                            <td className="px-4 py-2.5 font-mono text-blue-600/90 font-medium">{pipe.supportSpacing?.water ? pipe.supportSpacing.water + 'm' : '-'}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.thickness}</td>
                                                             <td className="px-4 py-2.5 font-bold text-indigo-600 dark:text-emerald-400 bg-indigo-500/5 font-mono group-hover:bg-indigo-500/10 transition-colors">{pipe.id}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.weight.toFixed(2)}</td>

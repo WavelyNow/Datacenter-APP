@@ -17,10 +17,12 @@ import { mapRevitToAppElement } from '@/lib/bim/revit';
 export const RevitSyncPanel = () => {
     const { revitElements, setRevitElements, isSyncingRevit, setIsSyncingRevit } = useBim();
     const { addSegments, addEquipment, segments, equipmentList } = useProject();
+    const [file, setFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
             // Simulated parsing
             const reader = new FileReader();
             reader.onload = (event) => {

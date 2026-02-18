@@ -14,7 +14,7 @@ export const SpecAssistantPage = () => {
     const [results, setResults] = useState<{
         equipment: Partial<EquipmentItem>[];
         segments: Partial<PipeSegment>[];
-        materials: string[];
+        materials: any[];
     } | null>(null);
     const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 

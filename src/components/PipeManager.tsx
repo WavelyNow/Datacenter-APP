@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
     Plus, Trash2,
     Copy, Activity, LayoutList, Workflow, ShoppingCart,
-    Calculator, Flame
+    Calculator, Flame, ArrowLeftRight
 } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
@@ -22,6 +22,7 @@ import { ThermalAnalysisSheet } from './ThermalAnalysisSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { NumberInput } from '@/components/ui/ValidatedInput';
+import { ManifoldBuilder } from './tools/ManifoldBuilder';
 
 const PressureDropChart = dynamic(() => import('./PressureDropChart').then(mod => mod.PressureDropChart), {
     ssr: false,
@@ -267,7 +268,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     className,
     isLoading = false
 }) => {
-    const [viewMode, setViewMode] = useState<'config' | 'hydraulics'>('config');
+    const [viewMode, setViewMode] = useState<'config' | 'hydraulics' | 'simulator'>('config');
     const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
     const [thermalAnalysisId, setThermalAnalysisId] = useState<string | null>(null);
     const parentRef = useRef<HTMLDivElement>(null);
@@ -444,11 +445,27 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                             <Activity className="w-4 h-4" />
                             Hydraulics
                         </button>
+                        <button
+                            onClick={() => setViewMode('simulator')}
+                            className={`
+                            px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2.5
+                            ${viewMode === 'simulator'
+                                    ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
+                        `}
+                        >
+                            <ArrowLeftRight className="w-4 h-4" />
+                            Simulator
+                        </button>
                     </div>
                 </div>
 
-                {/* Main Content Card */}
-                <div className={`card-premium overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
+                {viewMode === 'simulator' ? (
+                    <ManifoldBuilder />
+                ) : (
+                    <>
+                        {/* Main Content Card */}
+                        <div className={`card-premium overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
                     {isLoading ? (
                         <div className="p-8">
                             <TableSkeleton rows={8} />
@@ -641,6 +658,8 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                     segment={segments.find(s => s.id === thermalAnalysisId) || null}
                     onClose={() => setThermalAnalysisId(null)}
                 />
+            </>
+        )}
             </div>
         </>
     );

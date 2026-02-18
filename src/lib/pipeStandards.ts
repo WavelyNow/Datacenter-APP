@@ -7,6 +7,10 @@ export interface PipeDimension {
     id: number;      // Internal Diameter (mm)
     weight: number;  // Weight (kg/m) empty
     insulatedOd?: number; // Outer Diameter with Insulation (mm)
+    supportSpacing?: {
+        water: number; // max span in meters (fluid filled)
+        gas?: number;  // max span in meters (gas/air)
+    };
 }
 
 export interface PipeStandard {
@@ -17,6 +21,8 @@ export interface PipeStandard {
     maxPressure?: number; // bar
     tempRange?: { min: number; max: number }; // Celsius
     insulationType?: string;
+    thermalExpansion?: number; // mm / (m * K)
+    roughness?: number; // mm (absolute roughness)
     dimensions: PipeDimension[];
 }
 
@@ -75,47 +81,51 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         material: "Carbon Steel / Seamless",
         maxPressure: 40,
         tempRange: { min: -20, max: 400 },
+        thermalExpansion: 0.012, // mm/mK
+        roughness: 0.045, // mm
         dimensions: [
-            { dn: "DN15", inch: "1/2\"", od: 21.3, thickness: 3.2, id: 14.9, weight: 1.44 },
-            { dn: "DN20", inch: "3/4\"", od: 26.9, thickness: 3.2, id: 20.5, weight: 1.87 },
-            { dn: "DN25", inch: "1\"", od: 33.7, thickness: 4.0, id: 25.7, weight: 2.93 },
-            { dn: "DN32", inch: "1 1/4\"", od: 42.4, thickness: 4.0, id: 34.4, weight: 3.79 },
-            { dn: "DN40", inch: "1 1/2\"", od: 48.3, thickness: 4.0, id: 40.3, weight: 4.37 },
-            { dn: "DN50", inch: "2\"", od: 60.3, thickness: 4.5, id: 51.3, weight: 6.19 },
-            { dn: "DN65", inch: "2 1/2\"", od: 76.1, thickness: 4.5, id: 67.1, weight: 7.93 },
-            { dn: "DN80", inch: "3\"", od: 88.9, thickness: 5.0, id: 78.9, weight: 10.3 },
-            { dn: "DN100", inch: "4\"", od: 114.3, thickness: 5.4, id: 103.5, weight: 14.5 },
-            { dn: "DN125", inch: "5\"", od: 139.7, thickness: 5.4, id: 128.9, weight: 17.9 },
-            { dn: "DN150", inch: "6\"", od: 168.3, thickness: 5.4, id: 157.5, weight: 21.7 },
-            { dn: "DN200", inch: "8\"", od: 219.1, thickness: 8.18, id: 202.7, weight: 42.5 },
-            { dn: "DN250", inch: "10\"", od: 273.0, thickness: 9.27, id: 254.5, weight: 60.3 },
-            { dn: "DN300", inch: "12\"", od: 323.9, thickness: 10.3, id: 303.3, weight: 79.7 },
-            { dn: "DN350", inch: "14\"", od: 355.6, thickness: 11.1, id: 333.4, weight: 94.3 },
-            { dn: "DN400", inch: "16\"", od: 406.4, thickness: 12.7, id: 381.0, weight: 123.0 },
-            // Extensie către DN600
-            { dn: "DN450", inch: "18\"", od: 457.2, thickness: 14.3, id: 428.6, weight: 156.0 },
-            { dn: "DN500", inch: "20\"", od: 508.0, thickness: 15.1, id: 477.8, weight: 184.0 },
-            { dn: "DN600", inch: "24\"", od: 609.6, thickness: 17.5, id: 574.6, weight: 257.0 },
+            { dn: "DN15", inch: "1/2\"", od: 21.3, thickness: 2.77, id: 15.8, weight: 1.27, supportSpacing: { water: 1.5 } },
+            { dn: "DN20", inch: "3/4\"", od: 26.7, thickness: 2.87, id: 21.0, weight: 1.69, supportSpacing: { water: 2.0 } },
+            { dn: "DN25", inch: "1\"", od: 33.4, thickness: 3.38, id: 26.6, weight: 2.50, supportSpacing: { water: 2.5 } },
+            { dn: "DN32", inch: "1-1/4\"", od: 42.2, thickness: 3.56, id: 35.1, weight: 3.39, supportSpacing: { water: 2.5 } },
+            { dn: "DN40", inch: "1-1/2\"", od: 48.3, thickness: 3.68, id: 40.9, weight: 4.05, supportSpacing: { water: 3.0 } },
+            { dn: "DN50", inch: "2\"", od: 60.3, thickness: 3.91, id: 52.5, weight: 5.44, supportSpacing: { water: 3.0 } },
+            { dn: "DN65", inch: "2-1/2\"", od: 73.0, thickness: 5.16, id: 62.7, weight: 8.63, supportSpacing: { water: 4.0 } },
+            { dn: "DN80", inch: "3\"", od: 88.9, thickness: 5.49, id: 77.9, weight: 11.29, supportSpacing: { water: 4.0 } },
+            { dn: "DN100", inch: "4\"", od: 114.3, thickness: 6.02, id: 102.3, weight: 16.07, supportSpacing: { water: 4.5 } },
+            { dn: "DN125", inch: "5\"", od: 141.3, thickness: 6.55, id: 128.2, weight: 21.77, supportSpacing: { water: 5.0 } },
+            { dn: "DN150", inch: "6\"", od: 168.3, thickness: 7.11, id: 154.1, weight: 28.26, supportSpacing: { water: 6.0 } },
+            { dn: "DN200", inch: "8\"", od: 219.1, thickness: 8.18, id: 202.7, weight: 42.55, supportSpacing: { water: 7.0 } },
+            { dn: "DN250", inch: "10\"", od: 273.0, thickness: 9.27, id: 254.5, weight: 60.31, supportSpacing: { water: 8.0 } },
+            { dn: "DN300", inch: "12\"", od: 323.9, thickness: 10.31, id: 303.2, weight: 79.73, supportSpacing: { water: 9.0 } },
+            // Extended dimensions up to DN600
+            { dn: "DN350", inch: "14\"", od: 355.6, thickness: 11.1, id: 333.4, weight: 94.5, supportSpacing: { water: 9.0 } },
+            { dn: "DN400", inch: "16\"", od: 406.4, thickness: 12.7, id: 381.0, weight: 123.0, supportSpacing: { water: 10.0 } },
+            { dn: "DN450", inch: "18\"", od: 457.2, thickness: 14.3, id: 428.6, weight: 156.0, supportSpacing: { water: 10.0 } },
+            { dn: "DN500", inch: "20\"", od: 508.0, thickness: 15.1, id: 477.8, weight: 184.0, supportSpacing: { water: 10.0 } },
+            { dn: "DN600", inch: "24\"", od: 609.6, thickness: 17.5, id: 574.6, weight: 257.0, supportSpacing: { water: 12.0 } },
         ]
     },
     inox_press: {
         label: "Inox Press / Mapress (EN 10312)",
         description: "Oțel Inoxidabil (AISI 316/304) Subțire",
         category: 'metal',
-        material: "Stainless Steel 316L",
+        material: "Stainless Steel 304/316",
         maxPressure: 16,
         tempRange: { min: -20, max: 120 },
+        thermalExpansion: 0.016, // mm/mK
+        roughness: 0.015,
         dimensions: [
-            { dn: "15mm", inch: "1/2\"", od: 15, thickness: 1.0, id: 13.0, weight: 0.35 },
-            { dn: "18mm", inch: "5/8\"", od: 18, thickness: 1.0, id: 16.0, weight: 0.43 },
-            { dn: "22mm", inch: "3/4\"", od: 22, thickness: 1.2, id: 19.6, weight: 0.62 },
-            { dn: "28mm", inch: "1\"", od: 28, thickness: 1.2, id: 25.6, weight: 0.80 },
-            { dn: "35mm", inch: "1 1/4\"", od: 35, thickness: 1.5, id: 32.0, weight: 1.25 },
-            { dn: "42mm", inch: "1 1/2\"", od: 42, thickness: 1.5, id: 39.0, weight: 1.51 },
-            { dn: "54mm", inch: "2\"", od: 54, thickness: 1.5, id: 51.0, weight: 1.96 },
-            { dn: "76.1mm", inch: "2 1/2\"", od: 76.1, thickness: 2.0, id: 72.1, weight: 3.70 },
-            { dn: "88.9mm", inch: "3\"", od: 88.9, thickness: 2.0, id: 84.9, weight: 4.33 },
-            { dn: "108mm", inch: "4\"", od: 108, thickness: 2.0, id: 104.0, weight: 5.28 },
+            { dn: "DN15", inch: "1/2\"", od: 15, thickness: 1.0, id: 13.0, weight: 0.35, supportSpacing: { water: 1.5 } },
+            { dn: "DN18", inch: "3/4\"", od: 18, thickness: 1.0, id: 16.0, weight: 0.45, supportSpacing: { water: 1.5 } },
+            { dn: "DN22", inch: "7/8\"", od: 22, thickness: 1.2, id: 19.6, weight: 0.65, supportSpacing: { water: 2.0 } },
+            { dn: "DN28", inch: "1\"", od: 28, thickness: 1.2, id: 25.6, weight: 0.85, supportSpacing: { water: 2.0 } },
+            { dn: "DN35", inch: "1-1/4\"", od: 35, thickness: 1.5, id: 32.0, weight: 1.30, supportSpacing: { water: 2.5 } },
+            { dn: "DN42", inch: "1-1/2\"", od: 42, thickness: 1.5, id: 39.0, weight: 1.60, supportSpacing: { water: 2.5 } },
+            { dn: "DN54", inch: "2\"", od: 54, thickness: 1.5, id: 51.0, weight: 2.10, supportSpacing: { water: 3.0 } },
+            { dn: "DN76.1", inch: "2-1/2\"", od: 76.1, thickness: 2.0, id: 72.1, weight: 3.80, supportSpacing: { water: 3.5 } },
+            { dn: "DN88.9", inch: "3\"", od: 88.9, thickness: 2.0, id: 84.9, weight: 4.50, supportSpacing: { water: 4.0 } },
+            { dn: "DN108", inch: "4\"", od: 108.0, thickness: 2.0, id: 104.0, weight: 5.50, supportSpacing: { water: 4.5 } },
         ]
     },
     copper: {
@@ -200,9 +210,11 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         label: "GF COOL-FIT 2.0 (PE100 SDR11)",
         description: "Pre-izolat pentru Apă Gheață/Glicol",
         category: 'special',
-        material: "PE100 SDR11",
-        maxPressure: 16, // bar
+        material: "PE100 SDR17",
+        maxPressure: 10, // bar
         tempRange: { min: -10, max: 40 },
+        thermalExpansion: 0.18, // PE
+        roughness: 0.007,
         insulationType: "GF HE Foam (0.022 W/mK)",
         dimensions: [
             { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50, insulatedOd: 75 },
@@ -213,6 +225,11 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
             { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 5.80, insulatedOd: 140 },
             { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 8.50, insulatedOd: 160 },
             { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 12.50, insulatedOd: 200 },
+            { dn: "d160", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 8.20, insulatedOd: 250, supportSpacing: { water: 2.3 } },
+            { dn: "d225", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 12.50, insulatedOd: 315, supportSpacing: { water: 2.6 } },
+            { dn: "d250", inch: "9\"", od: 250, thickness: 14.8, id: 220.4, weight: 14.80, insulatedOd: 355, supportSpacing: { water: 2.7 } },
+            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 20.50, insulatedOd: 450, supportSpacing: { water: 2.9 } },
+            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 35.00, insulatedOd: 560, supportSpacing: { water: 3.2 } },
         ]
     },
     gf_coolfit_4_0: {
@@ -221,18 +238,20 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
         category: 'special',
         material: "PE100 SDR11",
         maxPressure: 16, // bar
-        tempRange: { min: -25, max: 45 },
+        tempRange: { min: -10, max: 40 },
+        thermalExpansion: 0.18, // PE has high expansion
+        roughness: 0.007, // Very smooth
         insulationType: "GF HE Foam (0.022 W/mK)",
         dimensions: [
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.60, insulatedOd: 90 },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.10, insulatedOd: 110 },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.80, insulatedOd: 110 },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.80, insulatedOd: 125 },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 5.10, insulatedOd: 140 },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 6.50, insulatedOd: 160 },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 9.20, insulatedOd: 180 },
-            { dn: "d160", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 14.5, insulatedOd: 250 },
-            { dn: "d225", inch: "8\"", od: 225, thickness: 20.5, id: 184.0, weight: 22.5, insulatedOd: 315 },
+            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50, insulatedOd: 75, supportSpacing: { water: 1.2 } },
+            { dn: "d40", inch: "1-1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.80, insulatedOd: 90, supportSpacing: { water: 1.3 } },
+            { dn: "d50", inch: "1-1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.20, insulatedOd: 110, supportSpacing: { water: 1.5 } },
+            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.80, insulatedOd: 125, supportSpacing: { water: 1.6 } },
+            { dn: "d75", inch: "2-1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.50, insulatedOd: 140, supportSpacing: { water: 1.75 } },
+            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.50, insulatedOd: 160, supportSpacing: { water: 1.85 } },
+            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 6.20, insulatedOd: 180, supportSpacing: { water: 2.0 } },
+            { dn: "d160", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 9.50, insulatedOd: 250, supportSpacing: { water: 2.3 } },
+            { dn: "d225", inch: "8\"", od: 225, thickness: 20.5, id: 184.0, weight: 15.00, insulatedOd: 315, supportSpacing: { water: 2.6 } },
         ]
     },
 };
