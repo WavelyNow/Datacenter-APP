@@ -73,8 +73,8 @@ describe('Sidebar Component', () => {
 
     it('calls onTabChange when a navigation item is clicked', () => {
         render(<Sidebar {...defaultProps} />);
-        const bimButton = screen.getByText('Piping & Routing'); // Match actual label
-        fireEvent.click(bimButton);
+        const configButton = screen.getByText('Dimensionare Conducte'); // New label (nav simplified)
+        fireEvent.click(configButton);
         expect(mockSetActiveTab).toHaveBeenCalledWith('config');
     });
 

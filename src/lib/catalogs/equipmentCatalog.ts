@@ -6,6 +6,7 @@ import { BELIMO_VALVES } from './manufacturers/belimo';
 import { VERTIV_CATALOG } from './manufacturers/vertiv';
 import { SCHNEIDER_CATALOG } from './manufacturers/schneider';
 import { GENERAL_CATALOG } from './manufacturers/general';
+import { MODEL3D_CATALOG } from './model3dCatalog';
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
@@ -237,5 +238,10 @@ export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
     // GENERAL INFRASTRUCTURE - Generators, Fire, Power
     // ==========================================================================
-    ...GENERAL_CATALOG
+    ...GENERAL_CATALOG,
+
+    // ==========================================================================
+    // MODELE 3D VERIFICATE (Sketchfab) — produse noi 2024–2026
+    // ==========================================================================
+    ...MODEL3D_CATALOG,
 ];

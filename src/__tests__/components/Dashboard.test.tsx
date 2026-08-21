@@ -47,9 +47,6 @@ jest.mock('@/context/PreferencesContext', () => ({
 }));
 
 // Mock child components that might be complex
-jest.mock('@/components/bim/BimImportModal', () => ({
-    BimImportModal: () => <div data-testid="bim-modal" />,
-}));
 jest.mock('@/components/TemplateSelector', () => ({
     TemplateSelector: () => <div data-testid="template-modal" />,
 }));

@@ -4,47 +4,23 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ProjectProvider, useProject } from '@/context/ProjectContext';
 import { UIProvider, useUI } from '@/context/UIContext';
-import { BimProvider } from '@/context/BimContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
-import { CatalogManager } from '@/components/CatalogManager';
 import { PdfWizardModal } from '@/components/PdfWizardModal';
 import { Dashboard } from '@/components/Dashboard';
 import { PipeStandardsPage } from '@/components/PipeStandardsPage';
-import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
 // Dynamic imports for heavy components (code splitting)
-const BimPage = dynamic(() => import('@/components/BimPage').then(m => ({ default: m.BimPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>,
-  ssr: false
-});
-
 const BimGalleryPage = dynamic(() => import('@/components/BimGalleryPage').then(m => ({ default: m.BimGalleryPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>,
   ssr: false
 });
 
-const EnergyPage = dynamic(() => import('@/components/EnergyPage').then(m => ({ default: m.EnergyPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
-});
-
 const HydraulicsPage = dynamic(() => import('@/components/HydraulicsPage').then(m => ({ default: m.HydraulicsPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
-});
-
-const QuantityListPage = dynamic(() => import('@/components/QuantityListPage').then(m => ({ default: m.QuantityListPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>
-});
-
-const CostEstimator = dynamic(() => import('@/components/CostEstimator').then(m => ({ default: m.CostEstimator })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
-});
-
-const RoomPreparationPage = dynamic(() => import('@/components/room-preparation').then(m => ({ default: m.RoomPreparationPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
 });
 
 const NormativeSearchPage = dynamic(() => import('@/components/NormativeSearchPage').then(m => ({ default: m.NormativeSearchPage })), {
@@ -58,10 +34,6 @@ const SpecAssistantPage = dynamic(() => import('@/components/SpecAssistantPage')
 // Add dynamic imports for previously static components
 const HelpPage = dynamic(() => import('@/components/HelpPage').then(m => ({ default: m.HelpPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
-});
-
-const CommissioningChecklist = dynamic(() => import('@/components/CommissioningChecklist').then(m => ({ default: m.CommissioningChecklist })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
 });
 
 const PipingRoutingPage = dynamic(() => import('@/components/PipingRoutingPage').then(m => ({ default: m.PipingRoutingPage })), {
@@ -132,7 +104,6 @@ const DashboardContent = () => {
   } = useProject();
 
   // Modal States
-  const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -203,7 +174,6 @@ const DashboardContent = () => {
     importProjectData(data);
   }, [importProjectData]);
 
-  const toggleProfileCatalog = React.useCallback(() => setIsProfileCatalogOpen(prev => !prev), []);
   const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
   const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
   const toggleShortcuts = React.useCallback(() => setIsShortcutsOpen(prev => !prev), []);
@@ -228,7 +198,6 @@ const DashboardContent = () => {
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={toggleShortcuts} />
-      <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={toggleProfileCatalog} />
       <ProjectSettingsModal
         isOpen={isSettingsOpen}
         onClose={toggleSettings}
@@ -268,9 +237,6 @@ const DashboardContent = () => {
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
           onLoadProject={handleLoadProject}
-          onOpenPipeCatalog={() => setActiveTab('pipe-standards')}
-          onOpenProfileCatalog={toggleProfileCatalog}
-          onOpenEquipmentCatalog={() => setActiveTab('catalogs')}
           onOpenExport={toggleExport}
           onOpenSettings={toggleSettings}
           onSaveProject={saveProject}
@@ -363,20 +329,9 @@ const DashboardContent = () => {
                     </div>
                   )}
 
-                  {/* Tab 6: Catalogs (New) */}
-                  {activeTab === 'catalogs' && (
-                    <CatalogManager />
-                  )}
+                  {/* Tab: Standarde Țevi (pagina dedicată) */}
                   {activeTab === 'pipe-standards' && (
                     <PipeStandardsPage />
-                  )}
-
-                  {/* Tab 7: BIM (New) */}
-                  {/* Tab 7: BIM (New) */}
-                  {activeTab === 'bim' && (
-                    <div className="h-full px-6 py-6">
-                      <BimPage />
-                    </div>
                   )}
 
                   {/* Tab: BIM Gallery (Interactive) */}
@@ -386,37 +341,13 @@ const DashboardContent = () => {
                     </div>
                   )}
 
-                  {/* Tab 8: Energy (New) */}
-                  {activeTab === 'energy' && (
-                    <EnergyPage />
-                  )}
-
-                  {/* Tab 9: Cost Estimator */}
-                  {activeTab === 'costs' && (
-                    <CostEstimator />
-                  )}
-
-                  {/* Tab 10: Commissioning Checklist */}
-                  {activeTab === 'checklist' && (
-                    <CommissioningChecklist />
-                  )}
-
-                  {/* Tab 11: Hydraulic Tools (Unified) */}
+                  {/* Tab: Hydraulic Tools (Unified) */}
                   {activeTab === 'hydraulics' && (
                     <HydraulicsPage />
                   )}
 
                   {activeTab === 'help' && (
                     <HelpPage />
-                  )}
-
-                  {activeTab === 'boq' && (
-                    <QuantityListPage />
-                  )}
-
-                  {/* Tab: Room Preparation */}
-                  {activeTab === 'room-prep' && (
-                    <RoomPreparationPage />
                   )}
 
                   {/* Tab: Normative Search */}
@@ -449,9 +380,7 @@ export default function Home() {
   return (
     <ProjectProvider>
       <UIProvider>
-        <BimProvider>
-          <DashboardContent />
-        </BimProvider>
+        <DashboardContent />
       </UIProvider>
     </ProjectProvider>
   );

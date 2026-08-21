@@ -16,7 +16,6 @@ import {
     Package,
     Cloud
 } from 'lucide-react';
-import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources } from '@/lib/calc/resources';
 import { useTranslation } from '@/context/PreferencesContext';
@@ -36,7 +35,6 @@ const DashboardBase = () => {
 
     const { setActiveTab } = useUI();
 
-    const [isBimOpen, setIsBimOpen] = React.useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
     const resources = React.useMemo(() => calculateSystemResources(
@@ -119,14 +117,14 @@ const DashboardBase = () => {
                         </button>
                     </Tooltip>
 
-                    <Tooltip content="Importă segmente și echipamente direct din modele Revit/IFC 3D" side="bottom">
+                    <Tooltip content="Deschide galeria 3D cu produsele producătorilor (modele Sketchfab)" side="bottom">
                         <button
-                            onClick={() => setIsBimOpen(true)}
-                            title="Importă segmente și echipamente direct din modele Revit/IFC 3D"
+                            onClick={() => setActiveTab('bim_gallery')}
+                            title="Deschide galeria 3D cu produsele producătorilor (modele Sketchfab)"
                             className="btn btn-secondary h-12 px-6 gap-2"
                         >
                             <FileBox className="w-4 h-4 text-primary" />
-                            Scanează BIM
+                            Galerie 3D
                         </button>
                     </Tooltip>
 
@@ -228,11 +226,11 @@ const DashboardBase = () => {
                                     <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
 
-                                <button onClick={() => setActiveTab('bim')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
                                     <div className="w-10 h-10 rounded-full bg-secondary/10 text-muted-foreground flex items-center justify-center font-bold border border-secondary/20 group-hover:scale-110 transition-transform">2</div>
                                     <div>
-                                        <div className="font-bold text-sm">Importă Arhitectură</div>
-                                        <div className="text-xs text-muted-foreground">Încarcă model IFC</div>
+                                        <div className="font-bold text-sm">Alege Diametre & Lungimi</div>
+                                        <div className="text-xs text-muted-foreground">Adaugă segmente de țeavă din standarde verificat</div>
                                     </div>
                                     <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
@@ -377,7 +375,6 @@ const DashboardBase = () => {
             </motion.div>
 
             {/* Modals */}
-            <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
             <TemplateSelector isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
         </motion.div>
     );

@@ -131,24 +131,17 @@ const SidebarBase: React.FC<SidebarProps> = ({
     ], [t]);
 
     const engineeringGroup = React.useMemo<MenuItem[]>(() => [
-        { id: 'bim_gallery', label: t('sidebar.bimGallery'), icon: Cuboid, badge: 'NEW' },
-        { id: 'bim', label: t('sidebar.ifcMapping'), icon: Layers },
-        { id: 'room-prep', label: t('sidebar.roomPrep') !== 'sidebar.roomPrep' ? t('sidebar.roomPrep') : 'Pregătire Cameră', icon: Building2, badge: 'NEW' },
-        { id: 'config', label: t('sidebar.pipingRouting'), icon: Package },
+        { id: 'config', label: 'Dimensionare Conducte', icon: Package },
         { id: 'hydraulics', label: t('sidebar.hydraulics'), icon: Wrench },
-        { id: 'energy', label: t('sidebar.sustainability'), icon: Leaf },
         { id: 'supports', label: t('sidebar.supports'), icon: Anchor },
         { id: 'weights', label: t('sidebar.loadCalc'), icon: Scale },
-        { id: 'costs', label: t('sidebar.costEstimator'), icon: Calculator },
-        { id: 'boq', label: t('sidebar.quantities'), icon: ClipboardList },
-        { id: 'checklist', label: t('sidebar.commissioning'), icon: ClipboardCheck },
     ], [t]);
 
     const databaseGroup = React.useMemo<MenuItem[]>(() => [
-        { id: 'catalogs', label: t('sidebar.techLibrary'), icon: Book },
         { id: 'pipe-standards', label: 'Standarde Țevi', icon: Ruler },
-        { id: 'normative', label: t('sidebar.normativeSearch') !== 'sidebar.normativeSearch' ? t('sidebar.normativeSearch') : 'Normative', icon: FileText, badge: 'NEW' },
-        { id: 'architecture_spec', label: t('sidebar.architectureSpec') !== 'sidebar.architectureSpec' ? t('sidebar.architectureSpec') : 'Asistent Proiectare AI', icon: Sparkles, badge: 'AI' },
+        { id: 'bim_gallery', label: t('sidebar.bimGallery'), icon: Cuboid },
+        { id: 'architecture_spec', label: t('sidebar.architectureSpec') !== 'sidebar.architectureSpec' ? t('sidebar.architectureSpec') : 'Asistent Specificații', icon: Sparkles },
+        { id: 'normative', label: t('sidebar.normativeSearch') !== 'sidebar.normativeSearch' ? t('sidebar.normativeSearch') : 'Normative', icon: FileText },
     ], [t]);
 
     const reportsGroup = React.useMemo<MenuItem[]>(() => [
