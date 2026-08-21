@@ -36,7 +36,6 @@
     "three": "^0.182.0",
     "web-ifc": "^0.0.74",
     "web-ifc-three": "^0.0.126",
-    "xlsx": "^0.18.5",
     "zod": "^4.3.5"
   },
   "devDependencies": {
