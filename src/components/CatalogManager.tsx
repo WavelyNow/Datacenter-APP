@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
 import { CatalogEquipment } from '@/lib/types';
 import { Search, Plus, Trash2, FileText, Download, Box, Book, Layers, Edit2, Check, X, Weight } from 'lucide-react';
-import { PipeCatalogModal } from './PipeCatalogModal';
+import { useUI } from '@/context/UIContext';
 import { ProfileCatalogModal } from './ProfileCatalogModal';
 
 export const CatalogManager: React.FC = () => {
+    const { setActiveTab } = useUI();
     // Equipment Database State
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -27,7 +28,6 @@ export const CatalogManager: React.FC = () => {
     const [isCreateMode, setIsCreateMode] = useState(false);
 
     // Other Modals State
-    const [isPipeModalOpen, setIsPipeModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<CatalogEquipment | null>(null);
 
@@ -115,7 +115,7 @@ export const CatalogManager: React.FC = () => {
                 {/* Secondary Actions */}
                 <div className="flex gap-3">
                     <button
-                        onClick={() => setIsPipeModalOpen(true)}
+                        onClick={() => setActiveTab('pipe-standards')}
                         className="btn btn-secondary gap-2"
                     >
                         <Box className="w-4 h-4" />
@@ -322,7 +322,6 @@ export const CatalogManager: React.FC = () => {
             </div>
 
             {/* Hidden Modals (Triggered by Header Buttons) */}
-            <PipeCatalogModal isOpen={isPipeModalOpen} onClose={() => setIsPipeModalOpen(false)} />
             <ProfileCatalogModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
 
             {/* Equipment Detail Modal */}

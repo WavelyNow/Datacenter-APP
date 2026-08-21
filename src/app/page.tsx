@@ -11,7 +11,7 @@ import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
 import { CatalogManager } from '@/components/CatalogManager';
 import { PdfWizardModal } from '@/components/PdfWizardModal';
 import { Dashboard } from '@/components/Dashboard';
-import { PipeCatalogModal } from '@/components/PipeCatalogModal';
+import { PipeStandardsPage } from '@/components/PipeStandardsPage';
 import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TableSkeleton } from '@/components/ui/Skeleton';
@@ -132,7 +132,6 @@ const DashboardContent = () => {
   } = useProject();
 
   // Modal States
-  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -204,7 +203,6 @@ const DashboardContent = () => {
     importProjectData(data);
   }, [importProjectData]);
 
-  const toggleCatalog = React.useCallback(() => setIsCatalogOpen(prev => !prev), []);
   const toggleProfileCatalog = React.useCallback(() => setIsProfileCatalogOpen(prev => !prev), []);
   const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
   const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
@@ -230,7 +228,6 @@ const DashboardContent = () => {
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={toggleShortcuts} />
-      <PipeCatalogModal isOpen={isCatalogOpen} onClose={toggleCatalog} />
       <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={toggleProfileCatalog} />
       <ProjectSettingsModal
         isOpen={isSettingsOpen}
@@ -271,7 +268,7 @@ const DashboardContent = () => {
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
           onLoadProject={handleLoadProject}
-          onOpenPipeCatalog={toggleCatalog}
+          onOpenPipeCatalog={() => setActiveTab('pipe-standards')}
           onOpenProfileCatalog={toggleProfileCatalog}
           onOpenEquipmentCatalog={() => setActiveTab('catalogs')}
           onOpenExport={toggleExport}
@@ -369,6 +366,9 @@ const DashboardContent = () => {
                   {/* Tab 6: Catalogs (New) */}
                   {activeTab === 'catalogs' && (
                     <CatalogManager />
+                  )}
+                  {activeTab === 'pipe-standards' && (
+                    <PipeStandardsPage />
                   )}
 
                   {/* Tab 7: BIM (New) */}
