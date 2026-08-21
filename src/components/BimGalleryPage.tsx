@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { Box, Maximize2, Cuboid, Plus, Import, Filter, Search, Trash2, CheckCircle, X } from 'lucide-react';
+import { Box, Maximize2, Cuboid, Plus, Import, Filter, Search, Trash2, CheckCircle, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import Equipment3DViewer from './Equipment3DViewer';
 import { EQUIPMENT_CATALOG } from '@/lib/catalogs/equipmentCatalog';
@@ -12,6 +12,7 @@ import { AnimatePresence } from 'framer-motion';
 
 export const BimGalleryPage = () => {
     const { equipmentList, setEquipmentList } = useProject();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Project Items
     const bimItems = equipmentList.filter(item => item.model3d && item.model3d.length > 0);
@@ -24,6 +25,39 @@ export const BimGalleryPage = () => {
     const [filterManufacturer, setFilterManufacturer] = useState('All');
     const [filterCategory, setFilterCategory] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+
+    /**
+     * Import GLB/GLTF LOCAL (propriile fișiere descărcate, ex. de pe
+     * cad.georgfischer.com / TraceParts / BIMobject). Fișierul e încărcat
+     * ca blob URL și intrat direct în galeria proiectului.
+     */
+    const handleImportLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const isGlb = file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf');
+        if (!isGlb) {
+            toast.error('Doar fișiere .glb sau .gltf');
+            return;
+        }
+        const url = URL.createObjectURL(file);
+        const name = file.name.replace(/\.(glb|gltf)$/i, '');
+        const newItem: EquipmentItem = {
+            id: `eq-glb-${crypto.randomUUID()}`,
+            type: 'Altele',
+            name,
+            volume: 0,
+            weight: 0,
+            model3d: url,
+            notes: `Import local GLB: ${file.name} — verificați dimensiunile/datele înainte de folosire`,
+        };
+        setEquipmentList((prev: EquipmentItem[]) => [...prev, newItem]);
+        setActiveView('project');
+        toast.success(`Model importat: ${name}`, {
+            description: 'Disponibil în Galeria Mea. Modelele GF COOL-FIT se descarcă de pe cad.georgfischer.com.',
+        });
+        // reset input so same file can be re-imported
+        e.target.value = '';
+    };
 
     // Catalog Data Processing
     // Extract unique manufacturers and categories from Catalog items that have 3D models
@@ -197,19 +231,35 @@ export const BimGalleryPage = () => {
                         </p>
                     </div>
                     {/* View Switcher */}
-                    <div className="flex bg-secondary/50 p-1 rounded-lg border border-border">
+                    <div className="flex items-center gap-2">
                         <button
-                            onClick={() => setActiveView('project')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'project' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={() => fileInputRef.current?.click()}
+                            className="btn btn-secondary btn-sm gap-2"
+                            title="Importă fișiere .glb/.gltf descărcate de la producători (ex. cad.georgfischer.com, TraceParts, BIMobject)"
                         >
-                            My Gallery ({bimItems.length})
+                            <Upload className="w-4 h-4" /> Import GLB
                         </button>
-                        <button
-                            onClick={() => setActiveView('catalog')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'catalog' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                            Explore Library
-                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".glb,.gltf"
+                            onChange={handleImportLocal}
+                            className="hidden"
+                        />
+                        <div className="flex bg-secondary/50 p-1 rounded-lg border border-border">
+                            <button
+                                onClick={() => setActiveView('project')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'project' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                                My Gallery ({bimItems.length})
+                            </button>
+                            <button
+                                onClick={() => setActiveView('catalog')}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'catalog' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                                Explore Library
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

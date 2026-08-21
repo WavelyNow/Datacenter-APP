@@ -61,12 +61,12 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                     />
 
                     {segmentPositions.map(({ segment, startX, endX, width, index }) => {
-                        // Color selection based on material
-                        let color = "#94a3b8"; // slate-400
-                        if (segment.material.includes('steel')) color = "#6366f1"; // indigo-500
-                        if (segment.material.includes('co')) color = "#64748b"; // slate-500 (copper - more professional)
-                        if (segment.material.includes('pvc') || segment.material.includes('pp')) color = "#475569"; // slate-600
-                        if (segment.material === 'custom') color = "#4f46e5"; // indigo-600
+                        // Color selection based on material (aligned with legend below)
+                        let color = "#94a3b8"; // slate-400 (standard/other)
+                        if (segment.material.includes('steel') || segment.material.includes('inox')) color = "#6366f1"; // indigo-500
+                        else if (segment.material.includes('copper')) color = "#64748b"; // slate-500 (copper)
+                        else if (segment.material.includes('pvc') || segment.material.includes('pp') || segment.material.includes('pe')) color = "#475569"; // slate-600 (plastic)
+                        else if (segment.material === 'custom') color = "#4f46e5"; // indigo-600
 
                         return (
                             <g key={segment.id} className="group/seg cursor-help transition-all duration-300">
@@ -88,12 +88,12 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                                     cy="60"
                                     r="4"
                                     fill={index === 0 ? "#fff" : color}
-                                    stroke="#0f172a"
-                                    strokeWidth="2"
+                                    stroke="rgba(128,128,128,0.7)"
+                                    strokeWidth="1.5"
                                 />
 
                                 {index === segmentPositions.length - 1 && (
-                                    <circle cx={endX} cy="60" r="4" fill="#fff" stroke="#0f172a" strokeWidth="2" />
+                                    <circle cx={endX} cy="60" r="4" fill="#fff" stroke="rgba(128,128,128,0.7)" strokeWidth="1.5" />
                                 )}
 
                                 {/* Label (Size) */}
@@ -127,10 +127,10 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
             {/* Legend */}
             <div className="mt-4 flex flex-wrap gap-4 pt-4 border-t border-border">
                 {[
-                    { label: 'Steel', color: 'bg-indigo-500' },
-                    { label: 'Copper', color: 'bg-orange-400' },
-                    { label: 'Plastic', color: 'bg-primary' },
-                    { label: 'Custom', color: 'bg-amber-500' },
+                    { label: 'Oțel', color: 'bg-[#6366f1]' },
+                    { label: 'Cupru', color: 'bg-[#64748b]' },
+                    { label: 'Plastic', color: 'bg-[#475569]' },
+                    { label: 'Custom', color: 'bg-[#4f46e5]' },
                 ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className={`w-2 h-2 rounded-full ${l.color}`} />

@@ -1,10 +1,11 @@
 {
-    "name": "Engineering Suite",
+    "name": "Datacenter Engineering Suite",
     "short_name": "EngSuite",
+    "description": "Dimensionare conducte, glicol și echipamente pentru datacenter",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#fafaf9",
-    "theme_color": "#44403c",
+    "background_color": "#f5f5f7",
+    "theme_color": "#0071e3",
     "icons": [
         {
             "src": "/icon-192.png",

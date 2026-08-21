@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { CloudProject } from '@/lib/types';
 import { useProject } from '@/context/ProjectContext';
 import { Cloud, Save, Loader2, Search, Calendar, FolderOpen, AlertTriangle, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const CloudBrowserAction = () => {
     const { cloudProjectId, saveToCloud, loadFromCloud } = useProject();
@@ -49,25 +50,26 @@ export const CloudBrowserAction = () => {
         setSaving(true);
         try {
             await saveToCloud();
-            alert('Project saved to Cloud successfully!');
+            toast.success('Proiect salvat în cloud');
             // If browser is open, refresh
             if (isOpen) fetchProjects();
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            alert('Error saving: ' + msg);
+            const msg = err instanceof Error ? err.message : 'Eroare necunoscută';
+            toast.error('Salvare eșuată: ' + msg);
         } finally {
             setSaving(false);
         }
     };
 
     const handleLoad = async (id: string) => {
-        if (confirm('Loading a project will replace your current work. Continue?')) {
+        if (confirm('Încărcarea unui proiect va înlocui munca curentă. Continuați?')) {
             try {
                 await loadFromCloud(id);
                 setIsOpen(false);
+                toast.success('Proiect încărcat din cloud');
             } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : 'Unknown error';
-                alert('Error loading: ' + msg);
+                const msg = err instanceof Error ? err.message : 'Eroare necunoscută';
+                toast.error('Încărcare eșuată: ' + msg);
             }
         }
     };
