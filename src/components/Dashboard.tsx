@@ -84,20 +84,19 @@ const DashboardBase = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex items-center gap-3 mb-4"
+                        className="flex items-center gap-2.5 mb-5"
                     >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-bold">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                            <span className="relative flex h-1.5 w-1.5">
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                             </span>
                             Sistem Activ
                         </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-bold">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
                             FAZA PLANIFICARE
                         </div>
                     </motion.div>
-                    <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2">
+                    <h1 className="text-5xl font-semibold tracking-tight text-foreground mb-3">
                         Engineering <span className="text-primary">Workspace</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">

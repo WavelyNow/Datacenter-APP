@@ -3,55 +3,52 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+/**
+ * Apple-style background: extremely subtle, calm ambient light.
+ * No heavy meshes, no noise — just a faint gradient wash.
+ */
 export const DynamicBackground = () => {
     return (
-        <div className="bg-mesh">
-            {/* Primary Blobs */}
+        <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none bg-background" aria-hidden="true">
+            {/* Faint ambient blobs (very low opacity) */}
             <motion.div
                 animate={{
-                    x: [0, 50, 0],
-                    y: [0, 30, 0],
-                    rotate: [0, 45, 0],
+                    x: [0, 40, 0],
+                    y: [0, 24, 0],
                 }}
                 transition={{
-                    duration: 20,
+                    duration: 30,
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-                className="mesh-blob w-[600px] h-[600px] -top-[10%] -left-[10%] bg-primary/20"
-            />
-            
-            <motion.div
-                animate={{
-                    x: [0, -40, 0],
-                    y: [0, 60, 0],
-                    rotate: [0, -30, 0],
-                }}
-                transition={{
-                    duration: 25,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                className="mesh-blob w-[500px] h-[500px] top-[20%] -right-[5%] bg-indigo-500/10 dark:bg-emerald-500/10"
+                className="absolute rounded-full blur-[140px] opacity-[0.06] w-[600px] h-[600px] -top-[10%] -left-[10%] bg-primary"
             />
 
             <motion.div
                 animate={{
-                    x: [0, 30, 0],
-                    y: [0, -50, 0],
+                    x: [0, -30, 0],
+                    y: [0, 48, 0],
                 }}
                 transition={{
-                    duration: 18,
+                    duration: 35,
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-                className="mesh-blob w-[700px] h-[700px] -bottom-[10%] left-[20%] bg-blue-500/10 dark:bg-teal-500/10"
+                className="absolute rounded-full blur-[140px] opacity-[0.05] w-[700px] h-[700px] -bottom-[10%] left-[25%] bg-primary"
             />
 
-            {/* Accent Pulses */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-full h-full max-w-4xl bg-primary/5 blur-[150px] animate-pulse-soft" />
-            </div>
+            <motion.div
+                animate={{
+                    x: [0, 24, 0],
+                    y: [0, -40, 0],
+                }}
+                transition={{
+                    duration: 28,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                }}
+                className="absolute rounded-full blur-[120px] opacity-[0.04] w-[500px] h-[500px] top-[15%] -right-[5%] bg-primary"
+            />
         </div>
     );
 };

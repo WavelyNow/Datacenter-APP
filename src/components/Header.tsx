@@ -91,8 +91,8 @@ const HeaderBase: React.FC<HeaderProps> = ({
     }, []);
 
     return (
-        <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300" >
-            <div className="px-6 h-18 py-3 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-40 w-full mb-0 bg-background/70 backdrop-blur-xl border-b border-border/50 screen-only transition-all duration-200" >
+            <div className="px-5 h-16 flex items-center justify-between gap-4">
 
                 {/* Left: Breadcrumbs & Project Title */}
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
