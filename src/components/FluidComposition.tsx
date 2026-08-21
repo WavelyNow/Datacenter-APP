@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Snowflake, Droplets, ThermometerSnowflake, Info, Beaker } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { FluidType } from '@/lib/types';
@@ -45,7 +45,24 @@ export const FluidComposition: React.FC = () => {
         return data[data.length - 1][1];
     };
 
-    const freezingPoint = getFreezingPoint(glycolPercentage, fluidType);
+    // Pastreaza ultima concentratie non-water la schimbarea tipului (apa -> glicol)
+    const [lastGlycolPct, setLastGlycolPct] = useState(30);
+
+    const handleFluidTypeChange = (newType: FluidType) => {
+        setFluidType(newType);
+        if (newType === 'water') {
+            setGlycolPercentage(0);
+        } else if (glycolPercentage === 0) {
+            setGlycolPercentage(lastGlycolPct);
+        }
+    };
+    const handleGlycolChange = (pct: number) => {
+        const clamped = Math.max(0, Math.min(100, pct));
+        if (clamped > 0) setLastGlycolPct(clamped);
+        setGlycolPercentage(clamped);
+    };
+
+    const freezingPoint = getFreezingPoint(glycolPercentage === 0 && fluidType !== 'water' ? lastGlycolPct : glycolPercentage, fluidType);
 
     // Dynamic color based on fluid type
     const getFluidColor = () => {
@@ -85,12 +102,7 @@ export const FluidComposition: React.FC = () => {
                     {FLUID_OPTIONS.map(option => (
                         <button
                             key={option.value}
-                            onClick={() => {
-                                setFluidType(option.value);
-                                if (option.value === 'water') {
-                                    setGlycolPercentage(0);
-                                }
-                            }}
+                            onClick={() => handleFluidTypeChange(option.value)}
                             className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all border ${fluidType === option.value
                                 ? `bg-linear-to-r ${option.color} text-white border-transparent shadow-md`
                                 : 'bg-muted/30 text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground'
@@ -152,7 +164,7 @@ export const FluidComposition: React.FC = () => {
                                 max="100"
                                 step="1"
                                 value={glycolPercentage}
-                                onChange={(e) => setGlycolPercentage(parseInt(e.target.value))}
+                                onChange={(e) => handleGlycolChange(parseInt(e.target.value) || 0)}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
                             />
                         </div>

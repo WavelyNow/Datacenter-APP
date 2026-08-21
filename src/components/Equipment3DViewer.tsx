@@ -3,7 +3,17 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, Stage, OrbitControls } from '@react-three/drei';
-import { Cuboid } from 'lucide-react';
+import { Cuboid, AlertTriangle } from 'lucide-react';
+import { ErrorBoundary } from './ui/ErrorBoundary';
+
+/** Boundary local: un model 3D defect nu poate dobori intreaga aplicatie. */
+function ModelBoundary({ children }: { children: React.ReactNode }) {
+    return (
+        <ErrorBoundary>
+            {children}
+        </ErrorBoundary>
+    );
+}
 
 function Model({ url }: { url: string }) {
     const { scene } = useGLTF(url);
@@ -27,14 +37,16 @@ export default function Equipment3DViewer({ modelUrl, className }: Equipment3DVi
                 <span>Interactive BIM View</span>
             </div>
 
-            <Canvas dpr={[1, 2]} shadows camera={{ fov: 50, position: [0, 0, 5] }} className="touch-none cursor-move">
-                <Suspense fallback={null}>
-                    <Stage environment="city" intensity={0.6} shadows>
-                        <Model url={modelUrl} />
-                    </Stage>
-                </Suspense>
-                <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={0} maxPolarAngle={Math.PI / 1.75} />
-            </Canvas>
+            <ErrorBoundary fallback={<div className="w-full h-full flex items-center justify-center text-white/70 text-xs gap-2"><AlertTriangle className="w-4 h-4" /> Model indisponibil</div>}>
+                <Canvas dpr={[1, 2]} shadows camera={{ fov: 50, position: [0, 0, 5] }} className="touch-none cursor-move">
+                    <Suspense fallback={null}>
+                        <Stage environment="city" intensity={0.6} shadows>
+                            <Model url={modelUrl} />
+                        </Stage>
+                    </Suspense>
+                    <OrbitControls makeDefault autoRotate autoRotateSpeed={0.5} minPolarAngle={0} maxPolarAngle={Math.PI / 1.75} />
+                </Canvas>
+            </ErrorBoundary>
 
             <div className="absolute bottom-2 left-0 w-full text-center pointer-events-none">
                 <p className="text-[10px] text-white/20 mb-2">Drag to rotate • Scroll to zoom</p>

@@ -93,3 +93,17 @@ export function InstallPrompt() {
         </AnimatePresence>
     );
 }
+
+// Elimina service worker-urile vechi/stale (next-pwa eliminat — nu mai avem SW)
+export const ServiceWorkerCleanup: React.FC = () => {
+    useEffect(() => {
+        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+        navigator.serviceWorker?.getRegistrations?.().then(regs => {
+            regs.forEach(r => r.unregister().catch(() => undefined));
+        }).catch(() => undefined);
+        if (window.caches) {
+            caches.keys().then(keys => keys.forEach(k => caches.delete(k))).catch(() => undefined);
+        }
+    }, []);
+    return null;
+};

@@ -156,7 +156,7 @@ export const calculateSupportReport = (
                 innerDiameterMm = pipeData.id;
                 outerDiameterMm = pipeData.od || (pipeData.id + 4);
                 description = `${standard.label} - ${seg.size}`;
-                dn = Number(pipeData.dn);
+                dn = parseInt(String(pipeData.dn).replace(/\D+/g, ''), 10) || 0; // DN50/d32/25mm -> numeric
             } else {
                 description = `Unknown ${seg.material}`;
                 return null;

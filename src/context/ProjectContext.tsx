@@ -91,10 +91,14 @@ const loadFromStorage = (): Partial<ProjectDataState> => {
     }
 };
 
-const serializeProjectState = (s: ProjectDataState): string => JSON.stringify({
+const serializeProjectState = (s: ProjectDataState): string => {
+    // URL-urile blob: (modele GLB incarcate local) NU supravietuiesc refresh-ului
+    // — le excludem din persistare (fara obiecte moarte in storage).
+    const equipmentList = s.equipmentList.map(eq => (eq.model3d && eq.model3d.startsWith('blob:')) ? { ...eq, model3d: undefined } : eq);
+    return JSON.stringify({
     projectDetails: s.projectDetails,
     segments: s.segments,
-    equipmentList: s.equipmentList,
+    equipmentList,
     ifcModelUrl: s.ifcModelUrl,
     fluidType: s.fluidType,
     glycolPercentage: s.glycolPercentage,
@@ -105,7 +109,7 @@ const serializeProjectState = (s: ProjectDataState): string => JSON.stringify({
     cloudProjectId: s.cloudProjectId,
     boqItems: s.boqItems,
     fittingItems: s.fittingItems,
-});
+});};
 
 const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
     projectDetails: s.projectDetails,
@@ -376,7 +380,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         set(prev => ({ ...prev, safetyMargin: typeof val === 'function' ? val(prev.safetyMargin) : val })), [set]);
 
     const setSafetyMarginPercentage = useCallback((val: number | ((prev: number) => number)) =>
-        set(prev => ({ ...prev, safetyMarginPercentage: typeof val === 'function' ? val(prev.safetyMarginPercentage) : val })), [set]);
+        set(prev => {
+            const next = typeof val === 'function' ? val(prev.safetyMarginPercentage) : val;
+            return { ...prev, safetyMarginPercentage: Math.max(0, Math.min(20, next)) };
+        }), [set]);
 
     const setSupportConfig = useCallback((config: Partial<SupportConfig>) => {
         set(prev => ({ ...prev, supportConfig: { ...prev.supportConfig, ...config } }));

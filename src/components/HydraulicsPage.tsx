@@ -438,7 +438,14 @@ function FittingsTool() {
     const result = calculateFittingsPressureLoss(fittings as Fitting[], flowRate, innerDiameter, density);
 
     const addFitting = () => {
-        setFittings(prev => [...prev, createFitting('elbow_90_std', 'DN50', 1) as FittingItem]);
+        setFittings(prev => {
+            const existing = prev.find(f => f.type === 'elbow_90_std' && f.size === 'DN50');
+            if (existing) {
+                // dedup: incrementam cantitatea in loc de rand duplicat
+                return prev.map(f => f === existing ? { ...f, quantity: (f.quantity || 0) + 1 } : f);
+            }
+            return [...prev, createFitting('elbow_90_std', 'DN50', 1) as FittingItem];
+        });
     };
 
     const updateFitting = <K extends keyof Fitting>(index: number, field: K, value: Fitting[K]) => {

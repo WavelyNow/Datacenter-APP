@@ -47,8 +47,9 @@ const DashboardBase = () => {
         segments,
         equipmentList,
         glycolPercentage,
-        { enabled: safetyMargin, percentage: safetyMarginPercentage }
-    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
+        { enabled: safetyMargin, percentage: safetyMarginPercentage },
+        fluidType
+    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage, fluidType]);
 
     // Sumarul de comandă (aceleași cifre ca PDF/Excel): glicol cu pierderi fittinguri
     const purchase = React.useMemo(() => calculatePurchaseSummary(

@@ -66,8 +66,15 @@ export const analyzeSpecifications = (text: string): SuggestionResult => {
 
         // Resolve a real diameter: detected DN, else plausible default DN50
         const dnDetected = sizeMatch ? `DN${sizeMatch[1]}` : null;
-        const steelStandard = PIPE_STANDARDS['steel_light'];
-        const steel = steelStandard?.dimensions.find(d => d.dn === dnDetected) ?? null;
+        // Cautam in toate seriile de otel (light -> medium -> heavy) — DN150+ nu e in light
+        const steelSeries = ['steel_light', 'steel_medium', 'steel_heavy'];
+        let steel: { dn: string; id: number; od: number; thickness: number; weight: number } | null = null;
+        let steelLabel = '';
+        for (const key of steelSeries) {
+            const std = PIPE_STANDARDS[key];
+            const dim = std?.dimensions.find(d => d.dn === dnDetected) ?? null;
+            if (dim) { steel = dim; steelLabel = std.label; break; }
+        }
 
         result.segments.push({
             id: `suggested-seg-${Date.now()}`,
@@ -77,9 +84,9 @@ export const analyzeSpecifications = (text: string): SuggestionResult => {
             material: steel ? 'steel_light' : 'custom',
             size: dnDetected ?? 'DN50',
             length: pipeLength > 0 ? pipeLength : 10,
-            customInnerDiameter: steel ? undefined : 54.5, // DN50 steel ID (60.3×2.9) — fallback, confirm with user
+            customInnerDiameter: steel ? undefined : undefined,
             fluid: 'Apă Glicolată',
-            standard: steel ? (steelStandard?.description ?? 'ISO 4200') : 'ISO 4200',
+            standard: steel ? (steelLabel || 'EN 10255') : 'ISO 4200',
             flowRate: undefined
         });
     }

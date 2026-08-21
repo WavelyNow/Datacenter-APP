@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelpProvider } from "@/components/help/HelpContext";
 import { PreferencesProvider } from "@/context/PreferencesContext";
 import { OnlineStatusIndicator } from "@/components/OnlineStatusIndicator";
-import { InstallPrompt } from "@/components/InstallPrompt";
+import { InstallPrompt, ServiceWorkerCleanup } from "@/components/InstallPrompt";
 import { Toaster } from "sonner";
 import { DynamicBackground } from "@/components/ui/DynamicBackground";
 
@@ -49,6 +49,7 @@ export default function RootLayout({
                 <DynamicBackground />
                 <OnlineStatusIndicator />
                 <InstallPrompt />
+                <ServiceWorkerCleanup />
                 {children}
               </HelpProvider>
             </ErrorBoundary>

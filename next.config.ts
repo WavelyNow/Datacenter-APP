@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import withPWA from 'next-pwa';
 
 const securityHeaders = [
   {
@@ -42,15 +41,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withPWAConfig = withPWA({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  scope: '/',
-  sw: 'sw.js',
-});
-
-// Correctly apply PWA wrapper
-export default withPWAConfig(nextConfig);
+// NOTA: next-pwa a fost eliminat — plugin-ul e webpack iar build-ul foloseste
+// Turbopack (nu mai genera SW-ul; fisierul committed devenea stale si putea
+// bloca actualizarile). Manifest-ul static ramane pentru instalare PWA.
+export default nextConfig;
 

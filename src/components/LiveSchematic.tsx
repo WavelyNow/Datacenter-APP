@@ -47,7 +47,7 @@ export const LiveSchematic: React.FC<{
 
         const spans = withDims.map(w => {
             const width = Math.min(14, Math.max(3, (w.id / maxId) * 12 + 3));
-            const span = Math.max(80, (w.seg.length / Math.max(totalLength, 1)) * (W - PAD_X * 2));
+            const span = Math.max(80, ((w.seg.length || 0) / Math.max(totalLength, 1)) * (W - PAD_X * 2));
             return { width, span };
         });
         // Poziții X = sumă prefix (fără variabile mutabile)
@@ -112,7 +112,7 @@ export const LiveSchematic: React.FC<{
                     placed.map((p, i) => {
                         const cx = p.x + p.w / 2;
                         return (
-                            <g key={p.seg.id}>
+                            <g key={p.seg.id || `seg-${i}`}>
                                 {/* Conductă */}
                                 <line
                                     x1={p.x} y1={yBase} x2={p.x + p.w} y2={yBase}

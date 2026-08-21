@@ -143,6 +143,7 @@ export function PipingRoutingPage() {
                                     fluidType={fluidType}
                                     glycolPercentage={glycolPercentage}
                                     safetyMarginPercentage={safetyMarginPercentage}
+                                    safetyMargin={safetyMargin}
                                     fittingItems={fittingItems}
                                     onFittingItemsChange={setFittingItems}
                                     isLoading={!isInitialized}
