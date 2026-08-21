@@ -8,6 +8,8 @@ import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 import { EquipmentCatalogModal } from './EquipmentCatalogModal';
 import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { useTranslation } from '@/context/PreferencesContext';
+import { useProject } from '@/context/ProjectContext';
+import { getFluidDensity } from '@/lib/calculations/common';
 import { ValidatedInput, NumberInput } from '@/components/ui/ValidatedInput';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/animations';
@@ -42,9 +44,32 @@ interface EquipmentRowProps {
     onCopy: (item: EquipmentItem) => void;
     onOpenDetails: (item: EquipmentItem) => void;
     t: (key: string) => string;
+    fluidDensityKgL?: number; // actual fluid density for weight display (kg/L)
 }
 
-const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, onOpenDetails, t }: EquipmentRowProps) => {
+// Catalog categories → canonical EQUIPMENT_TYPES_RO values.
+// Keeps the type dropdown working and PUE/energy classification correct.
+const CATEGORY_TO_TYPE: Record<string, string> = {
+    'Cooling': 'Chiller',
+    'Racks': 'Altele', // racks hold no liquid
+    'Power': 'Altele',
+    'Power Distribution': 'Altele',
+    'Integrated Solutions': 'Altele',
+    'Cooling Accessories': 'Grup Pompare',
+    'Safety': 'Altele',
+    'Security': 'Altele',
+    'Infrastructure': 'Altele',
+    'IT Systems': 'Altele',
+    'Vane & Robineți': 'Altele',
+    'Fitinguri': 'Altele',
+    'Filtre & Separatoare': 'Altele',
+    'Cuplaje': 'Altele',
+    'Vane de Reglaj': 'Altele',
+    'Clapete Sens': 'Altele',
+    'Vane Echilibrare': 'Altele',
+};
+
+const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, onOpenDetails, t, fluidDensityKgL = 1.05 }: EquipmentRowProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
 
@@ -209,7 +234,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
                     </div>
                     <div className="md:col-span-2 text-right pb-2 flex flex-col justify-end h-full">
                         <div className="text-[10px] text-muted-foreground font-mono">
-                            +{(item.volume * 1.05).toFixed(1)}kg {t('equipmentManager.fluid')}
+                            +{(item.volume * fluidDensityKgL).toFixed(1)}kg {t('equipmentManager.fluid')}
                         </div>
                     </div>
                 </>
@@ -267,6 +292,13 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
     const [isCatalogOpen, setIsCatalogOpen] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentItem | null>(null);
 
+    // Real fluid density for the "fluid weight" readouts (was hardcoded 1.05 kg/L)
+    const { glycolPercentage: projectGlycol, fluidType: projectFluidType } = useProject();
+    const fluidDensityKgL = useMemo(
+        () => getFluidDensity(projectGlycol ?? 0, projectFluidType ?? 'ethylene'),
+        [projectGlycol, projectFluidType]
+    );
+
     const totalVolume = useMemo(() => {
         return equipmentList.reduce((acc, item) => acc + (item.volume || 0), 0);
     }, [equipmentList]);
@@ -295,13 +327,28 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
     };
 
     const addFromCatalog = (catalogItem: CatalogEquipment) => {
+        // Normalize into a canonical EQUIPMENT_TYPES_RO value.
+        // Catalog categories like 'Cooling'/'Power'/'Racks' are NOT valid type
+        // values — they made the dropdown render blank and skewed PUE
+        // classification in energy.ts. Prefer the item's own type when valid.
+        const validTypes = [
+            'Chiller', 'CRAH / CCU', 'Dry Cooler / Turn Răcire', 'Puffer / Rezervor Tampon',
+            'Schimbător Căldură (Plaques)', 'Grup Pompare', 'Unitate internă (CDU)', 'Altele'
+        ];
+        const normalizedType = catalogItem.type && validTypes.includes(catalogItem.type)
+            ? catalogItem.type
+            : (CATEGORY_TO_TYPE[catalogItem.category] ?? 'Altele');
         const newItem: EquipmentItem = {
             id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            type: catalogItem.category,
+            type: normalizedType,
             name: catalogItem.model,
             volume: catalogItem.volume,
             weight: catalogItem.weight,
-            technicalSheet: catalogItem.technicalSheet
+            technicalSheet: catalogItem.technicalSheet,
+            manufacturer: catalogItem.manufacturer,
+            model: catalogItem.model,
+            power: catalogItem.power,
+            flowRate: catalogItem.flowRate,
         };
         onEquipmentChange([...equipmentList, newItem]);
     };
@@ -323,36 +370,35 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
 
     return (
         <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-            {/* Header / Actions */}
-            {viewMode === 'volume' && (
-                <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border">
-                            <Box className="w-4 h-4 text-foreground" />
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-foreground">{t('equipmentManager.inventory')}</h3>
-                            <p className="text-[10px] text-muted-foreground">{t('equipmentManager.manageList')}</p>
-                        </div>
+            {/* Header / Actions — actions available on ALL view modes (volume/weights/photos),
+                otherwise there is no way to add equipment from Weights/Photos tabs */}
+            <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center border border-border">
+                        <Box className="w-4 h-4 text-foreground" />
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setIsCatalogOpen(true)}
-                            className="btn btn-secondary btn-sm gap-2 text-xs"
-                        >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            {t('equipmentManager.catalog')}
-                        </button>
-                        <button
-                            onClick={addEquipment}
-                            className="btn btn-primary btn-sm gap-2 text-xs"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                            {t('equipmentManager.addItem')}
-                        </button>
+                    <div>
+                        <h3 className="text-sm font-semibold text-foreground">{t('equipmentManager.inventory')}</h3>
+                        <p className="text-[10px] text-muted-foreground">{t('equipmentManager.manageList')}</p>
                     </div>
                 </div>
-            )}
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsCatalogOpen(true)}
+                        className="btn btn-secondary btn-sm gap-2 text-xs"
+                    >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        {t('equipmentManager.catalog')}
+                    </button>
+                    <button
+                        onClick={addEquipment}
+                        className="btn btn-primary btn-sm gap-2 text-xs"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        {t('equipmentManager.addItem')}
+                    </button>
+                </div>
+            </div>
 
             <EquipmentCatalogModal
                 isOpen={isCatalogOpen}
@@ -369,11 +415,11 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                         icon={Box}
                         title={t('equipmentManager.noEquipment')}
                         description={t('equipmentManager.startAdding')}
-                        action={viewMode === 'volume' ? {
+                        action={{
                             label: t('equipmentManager.addItem'),
                             onClick: addEquipment,
                             variant: 'primary'
-                        } : undefined}
+                        }}
                         steps={[
                             t('equipmentManager.steps.1') || "Browse global catalog",
                             t('equipmentManager.steps.2') || "Add custom equipment",
@@ -396,6 +442,7 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                                 onCopy={copyItem}
                                 onOpenDetails={openDetailModal}
                                 t={t}
+                                fluidDensityKgL={fluidDensityKgL}
                             />
                         ))}
                     </div>
@@ -443,13 +490,8 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                 )
             }
 
-            {/* Modals */}
-            <EquipmentCatalogModal
-                isOpen={isCatalogOpen}
-                onClose={() => setIsCatalogOpen(false)}
-                onSelect={addFromCatalog}
-            />
-
+            {/* Modals — EquipmentCatalogModal rendered ONCE (was duplicated twice,
+                causing stacked portals, double ESC handlers, broken body scroll) */}
             {
                 selectedEquipment && (
                     <EquipmentDetailModal

@@ -6,7 +6,7 @@ import { FluidType } from '@/lib/types';
 // Fluid type labels and colors
 const FLUID_OPTIONS: { value: FluidType; label: string; color: string }[] = [
     { value: 'ethylene', label: 'Etilen Glicol', color: 'from-indigo-500 to-indigo-700' },
-    { value: 'propylene', label: 'Propilen Glicol', color: 'from-emerald-500 to-emerald-700' },
+    { value: 'propylene', label: 'Propilen Glicol', color: 'from-primary/60 to-primary' },
     { value: 'water', label: 'Apă Pură', color: 'from-slate-400 to-slate-600' },
 ];
 

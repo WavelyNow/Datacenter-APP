@@ -1,8 +1,30 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, ReactNode, useCallback } from 'react';
-import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem } from '@/lib/types';
+import React, { createContext, useContext, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem, ProjectLoadData } from '@/lib/types';
 import { useHistory } from '@/hooks/useHistory';
+import { supabase } from '@/lib/supabase';
+
+const CLOUD_DISABLED_MESSAGE = 'Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars';
+
+// Single shared storage key: ProjectContext owns local persistence of the project.
+export const PROJECT_STORAGE_KEY = 'hydraulic_calc_project_v2';
+
+/** Persistable / loadable core project state (no callbacks). */
+export interface ProjectDataState {
+    projectDetails: ProjectDetails;
+    segments: PipeSegment[];
+    equipmentList: EquipmentItem[];
+    ifcModelUrl: string | null;
+    fluidType: FluidType;
+    glycolPercentage: number;
+    safetyMargin: boolean;
+    safetyMarginPercentage: number;
+    supportConfig: SupportConfig;
+    branding: BrandingConfig;
+    cloudProjectId: string | null;
+    boqItems: BoQItem[];
+}
 
 interface ProjectState {
     projectDetails: ProjectDetails;
@@ -40,31 +62,104 @@ interface ProjectState {
     // BoQ State
     boqItems: BoQItem[];
     setBoqItems: (items: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) => void;
+
+    // Local file import (full document replace, defaults for missing fields)
+    importProjectData: (data: ProjectLoadData) => void;
+
+    // Full local reset (clears everything incl. cloud link)
+    resetProject: () => void;
 }
 
 
 const ProjectContext = createContext<ProjectState | undefined>(undefined);
 
 // Helper function to load state from localStorage (client-side only)
-const loadFromStorage = (): Partial<ProjectState> => {
+const loadFromStorage = (): Partial<ProjectDataState> => {
     try {
-        const saved = localStorage.getItem('hydraulic_calc_project_v2');
+        const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
         if (!saved) return {};
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return parsed && typeof parsed === 'object' ? parsed : {};
     } catch (e) {
         console.error('Failed to load project:', e);
         return {};
     }
 };
 
-// Lazy import or check context within provider?
-// We import supabase client at top level if environment allows.
-import { supabase } from '@/lib/supabase';
-import { ProjectLoadData } from '@/lib/types';
+const serializeProjectState = (s: ProjectDataState): string => JSON.stringify({
+    projectDetails: s.projectDetails,
+    segments: s.segments,
+    equipmentList: s.equipmentList,
+    ifcModelUrl: s.ifcModelUrl,
+    fluidType: s.fluidType,
+    glycolPercentage: s.glycolPercentage,
+    safetyMargin: s.safetyMargin,
+    safetyMarginPercentage: s.safetyMarginPercentage,
+    supportConfig: s.supportConfig,
+    branding: s.branding,
+    cloudProjectId: s.cloudProjectId,
+    boqItems: s.boqItems,
+});
+
+const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
+    projectDetails: s.projectDetails,
+    segments: s.segments,
+    equipmentList: s.equipmentList,
+    fluidType: s.fluidType,
+    glycolPercentage: s.glycolPercentage,
+    safetyMargin: s.safetyMargin,
+    safetyMarginPercentage: s.safetyMarginPercentage,
+    supportConfig: s.supportConfig,
+    branding: s.branding,
+    boqItems: s.boqItems,
+    ifcModelUrl: s.ifcModelUrl,
+});
+
+/**
+ * Merge a ProjectLoadData document over a base state.
+ * Rules:
+ *  - Present & valid field (not null / not undefined) => full replace (or spread-merge for config objects)
+ *  - Missing field (absent key OR JSON null) => keep the base value, so local data is never destroyed.
+ */
+const applyProjectData = (base: ProjectDataState, data: ProjectLoadData): ProjectDataState => {
+    const out: ProjectDataState = { ...base };
+
+    if (Array.isArray(data.segments)) out.segments = data.segments;
+    if (Array.isArray(data.equipmentList)) out.equipmentList = data.equipmentList;
+    if (data.projectDetails && typeof data.projectDetails === 'object') {
+        out.projectDetails = {
+            ...data.projectDetails,
+            // Older files may omit the date — fall back to "today"
+            date: typeof data.projectDetails.date === 'string' ? data.projectDetails.date : new Date().toISOString().split('T')[0],
+        };
+    }
+    if (data.fluidType === 'ethylene' || data.fluidType === 'propylene' || data.fluidType === 'water') {
+        out.fluidType = data.fluidType;
+    }
+    if (typeof data.glycolPercentage === 'number' && Number.isFinite(data.glycolPercentage)) {
+        out.glycolPercentage = data.glycolPercentage;
+    }
+    if (typeof data.safetyMargin === 'boolean') out.safetyMargin = data.safetyMargin;
+    if (typeof data.safetyMarginPercentage === 'number' && Number.isFinite(data.safetyMarginPercentage)) {
+        out.safetyMarginPercentage = data.safetyMarginPercentage;
+    }
+    if (data.supportConfig && typeof data.supportConfig === 'object') {
+        out.supportConfig = { ...out.supportConfig, ...data.supportConfig };
+    }
+    if (data.branding && typeof data.branding === 'object') {
+        out.branding = { ...out.branding, ...data.branding };
+    }
+    if (Array.isArray(data.boqItems)) out.boqItems = data.boqItems;
+    if (Object.prototype.hasOwnProperty.call(data, 'ifcModelUrl')) {
+        out.ifcModelUrl = data.ifcModelUrl === null || data.ifcModelUrl === undefined ? null : data.ifcModelUrl;
+    }
+
+    return out;
+};
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // Initial State Definition
-    const defaultState = React.useMemo(() => ({
+    const defaultState = React.useMemo<ProjectDataState>(() => ({
         projectDetails: {
             projectName: 'Data Center Cooling',
             projectNumber: '2024-001',
@@ -94,14 +189,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         } as SupportConfig,
         branding: {
             primaryColor: '#3b82f6',
-            accentColor: '#10b981',
+            accentColor: '#0071e3',
             pdfTheme: 'modern' as const
         } as BrandingConfig,
         cloudProjectId: null as string | null,
         boqItems: [] as BoQItem[]
     }), []);
 
-    const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory(defaultState);
+    const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory<ProjectDataState>(defaultState);
 
     // Initialization check
     const [isInitialized, setIsInitialized] = React.useState(false);
@@ -111,7 +206,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const saved = loadFromStorage();
         if (Object.keys(saved).length > 0) {
             // Merge saved with default to populate any missing fields
-            reset({ ...defaultState, ...saved });
+            reset(applyProjectData(defaultState, saved));
         }
 
         // Push to next tick to avoid cascading render warning in React
@@ -120,66 +215,99 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         }, 0);
     }, [defaultState, reset]);
 
-    // Cloud Methods
-    const saveToCloud = useCallback(async () => {
-        if (!state.cloudProjectId) {
-            // Insert
-            const payload: ProjectLoadData = {
-                projectDetails: state.projectDetails,
-                segments: state.segments,
-                equipmentList: state.equipmentList,
-                fluidType: state.fluidType,
-                glycolPercentage: state.glycolPercentage,
-                safetyMargin: state.safetyMargin,
-                ifcModelUrl: state.ifcModelUrl
-            };
+    // Debounced local persistence — ProjectContext is the single owner of PROJECT_STORAGE_KEY.
+    const latestStateRef = useRef<ProjectDataState>(state);
+    useEffect(() => {
+        latestStateRef.current = state;
+    }, [state]);
 
-            const { data, error } = await supabase
-                .from('projects')
-                .insert([
-                    {
+    useEffect(() => {
+        // Skip writing until the initial localStorage load has been applied
+        if (!isInitialized) return;
+        const timer = setTimeout(() => {
+            try {
+                localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(state));
+            } catch (e) {
+                console.error('Failed to persist project:', e);
+            }
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [isInitialized, state]);
+
+    // Flush pending changes on unload so the last debounce window is never lost
+    useEffect(() => {
+        const flush = () => {
+            try {
+                localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(latestStateRef.current));
+            } catch (e) {
+                console.error('Failed to persist project:', e);
+            }
+        };
+        window.addEventListener('beforeunload', flush);
+        return () => window.removeEventListener('beforeunload', flush);
+    }, []);
+
+    // Cloud Methods
+    const cloudSaveInFlightRef = useRef(false);
+
+    const saveToCloud = useCallback(async () => {
+        if (!supabase) {
+            throw new Error(CLOUD_DISABLED_MESSAGE);
+        }
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            throw new Error('Offline — connect to the internet before saving to the cloud.');
+        }
+        if (cloudSaveInFlightRef.current) {
+            throw new Error('A cloud save is already in progress.');
+        }
+        cloudSaveInFlightRef.current = true;
+        try {
+            const payload = buildProjectLoadData(state);
+            if (!state.cloudProjectId) {
+                // Insert
+                const { data, error } = await supabase
+                    .from('projects')
+                    .insert([
+                        {
+                            name: state.projectDetails.projectName,
+                            description: state.projectDetails.projectNumber,
+                            data: payload
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                if (data) {
+                    // Update local state with new ID
+                    set(prev => ({ ...prev, cloudProjectId: data.id }));
+                    return data.id as string;
+                }
+            } else {
+                // Update
+                const { error } = await supabase
+                    .from('projects')
+                    .update({
                         name: state.projectDetails.projectName,
                         description: state.projectDetails.projectNumber,
-                        data: payload
-                    }
-                ])
-                .select()
-                .single();
+                        data: payload,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', state.cloudProjectId);
 
-            if (error) throw error;
-            if (data) {
-                // Update local state with new ID
-                set(prev => ({ ...prev, cloudProjectId: data.id }));
-                return data.id as string;
+                if (error) throw error;
+                return state.cloudProjectId;
             }
-        } else {
-            // Update
-            const payload: ProjectLoadData = {
-                projectDetails: state.projectDetails,
-                segments: state.segments,
-                equipmentList: state.equipmentList,
-                fluidType: state.fluidType,
-                glycolPercentage: state.glycolPercentage,
-                safetyMargin: state.safetyMargin,
-                ifcModelUrl: state.ifcModelUrl
-            };
-
-            const { error } = await supabase
-                .from('projects')
-                .update({
-                    name: state.projectDetails.projectName,
-                    description: state.projectDetails.projectNumber,
-                    data: payload,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', state.cloudProjectId);
-
-            if (error) throw error;
-            return state.cloudProjectId;
+        } finally {
+            cloudSaveInFlightRef.current = false;
         }
-    }, [state.cloudProjectId, state.projectDetails, state.segments, state.equipmentList, state.fluidType, state.glycolPercentage, state.safetyMargin, state.ifcModelUrl, set]);
+    }, [state, set]);
 
     const loadFromCloud = useCallback(async (id: string) => {
+        if (!supabase) {
+            throw new Error(CLOUD_DISABLED_MESSAGE);
+        }
+
         const { data, error } = await supabase
             .from('projects')
             .select('*')
@@ -189,18 +317,29 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         if (error) throw error;
         if (data && data.data) {
             const projectData = data.data as ProjectLoadData;
-            // Full state reset
-            const newState = {
-                ...defaultState,
-                ...projectData,
-                cloudProjectId: data.id,
-                // Ensure specific fields are correctly typed/initialized from loaded data
-                glycolPercentage: typeof projectData.glycolPercentage === 'number' ? projectData.glycolPercentage : defaultState.glycolPercentage,
-                safetyMargin: projectData.safetyMargin ?? defaultState.safetyMargin,
-                ifcModelUrl: projectData.ifcModelUrl || null
+            // MERGE saved fields over the current local state (full replace for core
+            // segments/equipment/projectDetails/fluid fields; missing fields keep local values).
+            const newState: ProjectDataState = {
+                ...applyProjectData(state, projectData),
+                cloudProjectId: data.id
             };
             reset(newState);
         }
+    }, [state, reset]);
+
+    // Local file import: full document replace with defaults for fields absent from older files.
+    const importProjectData = useCallback((data: ProjectLoadData) => {
+        // Minimal validation: reject obviously malformed documents.
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid project file: expected a JSON object.');
+        }
+        if (data.segments !== undefined && !Array.isArray(data.segments)) {
+            throw new Error('Invalid project file: "segments" must be an array.');
+        }
+        if (data.equipmentList !== undefined && !Array.isArray(data.equipmentList)) {
+            throw new Error('Invalid project file: "equipmentList" must be an array.');
+        }
+        reset(applyProjectData(defaultState, data));
     }, [defaultState, reset]);
 
     // Setters Adapters
@@ -268,12 +407,15 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
         // BoQ
         boqItems: state.boqItems, setBoqItems,
+        importProjectData,
+        // Full local reset (clears everything, incl. cloud link)
+        resetProject: () => reset(defaultState),
     }), [
         state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
-        setBoqItems
+        setBoqItems, importProjectData, reset
     ]);
 
     return (
@@ -290,4 +432,3 @@ export const useProject = () => {
     }
     return context;
 };
-

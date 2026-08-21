@@ -142,7 +142,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
                                 <Plus className="w-5 h-5" /> Import to Project
                             </button>
                         ) : (
-                            <div className="flex items-center gap-3 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider">
+                            <div className="flex items-center gap-3 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-600 dark:text-primary text-sm font-bold uppercase tracking-wider">
                                 <CheckCircle className="w-5 h-5 text-indigo-500" />
                                 Model is part of active project
                             </div>

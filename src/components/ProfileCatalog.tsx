@@ -115,7 +115,7 @@ export const ProfileCatalog: React.FC = () => {
     const getLoadColor = (load: LoadCapacity) => {
         switch (load) {
             case 'Light': return 'bg-slate-300 dark:bg-slate-600';
-            case 'Medium': return 'bg-indigo-400 dark:bg-emerald-500';
+            case 'Medium': return 'bg-indigo-400 dark:bg-primary';
             case 'Heavy': return 'bg-indigo-600 dark:bg-emerald-700';
         }
     };
@@ -153,7 +153,7 @@ export const ProfileCatalog: React.FC = () => {
                 /* CREATE FORM */
                 <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
                     <div className="max-w-xl mx-auto bg-card border border-border rounded-xl p-8 shadow-sm">
-                        <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-emerald-400 mb-6 flex items-center gap-2">
+                        <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-primary mb-6 flex items-center gap-2">
                             <Cloud className="w-4 h-4" />
                             This profile will be saved to the Global Library and visible to all users.
                         </div>
@@ -283,7 +283,7 @@ export const ProfileCatalog: React.FC = () => {
                                             {/* Custom Badge & Delete */}
                                             {isCustom && (
                                                 <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
-                                                    <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 border border-indigo-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <span className="bg-indigo-500/10 text-indigo-600 dark:text-primary border border-indigo-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                                         <Cloud className="w-3 h-3" /> CLOUD
                                                     </span>
                                                     <button onClick={() => handleDelete(item.sku)} className="text-muted-foreground hover:text-destructive transition-colors">

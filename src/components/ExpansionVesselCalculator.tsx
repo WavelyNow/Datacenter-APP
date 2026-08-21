@@ -23,13 +23,14 @@ interface ExpansionVesselCalculatorProps {
 }
 
 export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVesselCalculatorProps) {
-    const { segments, equipmentList, glycolPercentage, fluidType } = useProject();
+    const { segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage } = useProject();
 
     // Calculate system volume from project data or use external prop
+    // IMPORTANT: pass the user's ACTUAL safety margin (was hardcoded +5% before).
     const systemVolume = useMemo(() => {
         if (externalSystemVolume !== undefined) return externalSystemVolume;
-        return calculateTotalVolume(segments, equipmentList, true);
-    }, [segments, equipmentList, externalSystemVolume]);
+        return calculateTotalVolume(segments, equipmentList, safetyMargin, safetyMarginPercentage);
+    }, [segments, equipmentList, externalSystemVolume, safetyMargin, safetyMarginPercentage]);
 
     // Input state
     const [input, setInput] = useState<ExpansionVesselInput>({
@@ -41,12 +42,15 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
         staticHeight: 5,
         safetyValvePressure: 6,
     });
+    // Track manual overrides so auto-fill never clobbers the user's values
+    const volumeTouched = React.useRef(false);
 
     // Update input when project data changes
     React.useEffect(() => {
         setInput(prev => ({
             ...prev,
-            systemVolume: systemVolume,
+            // Only auto-fill systemVolume if the user hasn't manually overridden it
+            systemVolume: volumeTouched.current ? prev.systemVolume : systemVolume,
             glycolPercentage: glycolPercentage,
             fluidType: fluidType,
         }));
@@ -58,6 +62,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
     }, [input]);
 
     const handleInputChange = (field: keyof ExpansionVesselInput, value: number) => {
+        if (field === 'systemVolume') volumeTouched.current = true;
         setInput(prev => ({ ...prev, [field]: value }));
     };
 
@@ -215,13 +220,13 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                 <div className="space-y-4">
                     {/* Main Result */}
                     <div className={`rounded-xl p-6 border ${result.isValid
-                        ? 'bg-linear-to-br from-emerald-500/10 to-cyan-500/10 border-emerald-500/30'
+                        ? 'bg-muted border-border'
                         : 'bg-linear-to-br from-red-500/10 to-orange-500/10 border-red-500/30'
                         }`}>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm text-zinc-400">Vas Recomandat</span>
                             {result.isValid ? (
-                                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                                <CheckCircle className="w-5 h-5 text-primary" />
                             ) : (
                                 <AlertTriangle className="w-5 h-5 text-red-400" />
                             )}

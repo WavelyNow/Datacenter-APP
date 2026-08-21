@@ -1,4 +1,5 @@
 import { PIPE_STANDARDS } from '../pipeStandards';
+import { FluidType } from '../types';
 
 // Accessory Weights (Estimated Average)
 export const ACCESSORY_WEIGHTS = {
@@ -26,34 +27,55 @@ export const getPipeData = (material: string, size: string) => {
     return standard.dimensions.find(d => d.dn === size);
 };
 
-// Precise density interpolation for Ethylene Glycol at 20°C
-export const getFluidDensity = (percentage: number): number => {
-    // Data points: [Percentage, Density kg/L]
-    const points = [
-        [0, 1.000],
+// Precise density interpolation for glycol-water mixtures at 20°C (VOLUME %)
+// Water: 0.998 kg/L @20°C. Ethylene Glycol (EG) & Propylene Glycol (PG) per
+// ASHRAE Handbook—Fundamentals Ch.31 / Dow tables (%vol, 20°C).
+const DENSITY_POINTS: Record<FluidType, [number, number][]> = {
+    water: [[0, 0.998]],
+    ethylene: [
+        [0, 0.998],
         [10, 1.011],
         [20, 1.024],
         [30, 1.038],
         [40, 1.051],
         [50, 1.065],
         [60, 1.077],
-        [100, 1.115]
-    ];
+        [80, 1.098],
+        [100, 1.113]
+    ],
+    propylene: [
+        [0, 0.998],
+        [10, 1.008],
+        [20, 1.016],
+        [30, 1.024],
+        [40, 1.032],
+        [50, 1.041],
+        [60, 1.050],
+        [80, 1.063],
+        [100, 1.036] // neat PG 1.036 at 20°C (non-monotonic at high %, keep table)
+    ]
+};
 
-    // Clamp percentage
+/**
+ * Density of a glycol-water mixture at 20°C in kg/L.
+ * @param percentage volume % of glycol (0–100)
+ * @param fluidType 'water' | 'ethylene' | 'propylene' (default 'ethylene' — backward compatible)
+ */
+export const getFluidDensity = (percentage: number, fluidType: FluidType = 'ethylene'): number => {
+    if (fluidType === 'water') return 0.998;
+    const points = DENSITY_POINTS[fluidType] ?? DENSITY_POINTS['ethylene'];
+
     const p = Math.max(0, Math.min(100, percentage));
 
-    // Find the two points surrounding P
     for (let i = 0; i < points.length - 1; i++) {
         const [p1, d1] = points[i];
         const [p2, d2] = points[i + 1];
 
         if (p >= p1 && p <= p2) {
-            // Linear interpolation
-            const ratio = (p - p1) / (p2 - p1);
+            const ratio = (p1 === p2) ? 0 : (p - p1) / (p2 - p1);
             return d1 + (d2 - d1) * ratio;
         }
     }
 
-    return 1.000; // Fallback
+    return 0.998; // Fallback
 };

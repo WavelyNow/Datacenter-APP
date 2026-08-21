@@ -64,7 +64,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     className="absolute -right-4 -top-4 p-3 rounded-2xl bg-card/80 backdrop-blur-md border border-white/20 shadow-xl"
                 >
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 </motion.div>
             </motion.div>
 

@@ -1,4 +1,4 @@
-import { PipeSegment, EquipmentItem } from '../types';
+import { PipeSegment, EquipmentItem, FluidType } from '../types';
 import { PIPE_STANDARDS } from '../pipeStandards';
 import { getPipeData, getFluidDensity } from './common';
 
@@ -71,10 +71,11 @@ export interface DetailedWeightItem {
 export const getDetailedWeightReport = (
     segments: PipeSegment[],
     equipmentList: EquipmentItem[],
-    glycolPercentage: number
+    glycolPercentage: number,
+    fluidType: FluidType = 'ethylene'
 ): DetailedWeightItem[] => {
     const report: DetailedWeightItem[] = [];
-    const fluidDensity = getFluidDensity(glycolPercentage);
+    const fluidDensity = getFluidDensity(glycolPercentage, fluidType);
 
     // 1. Process Pipe Segments
     segments.forEach(seg => {

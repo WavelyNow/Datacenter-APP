@@ -308,7 +308,7 @@ export const PipeCatalogModal = ({ isOpen, onClose }: PipeCatalogModalProps) => 
                                                             <td className="px-4 py-2.5 font-mono text-orange-600/90 font-medium">{pipe.insulatedOd || '-'}</td>
                                                             <td className="px-4 py-2.5 font-mono text-blue-600/90 font-medium">{pipe.supportSpacing?.water ? pipe.supportSpacing.water + 'm' : '-'}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.thickness}</td>
-                                                            <td className="px-4 py-2.5 font-bold text-indigo-600 dark:text-emerald-400 bg-indigo-500/5 font-mono group-hover:bg-indigo-500/10 transition-colors">{pipe.id}</td>
+                                                            <td className="px-4 py-2.5 font-bold text-indigo-600 dark:text-primary bg-indigo-500/5 font-mono group-hover:bg-indigo-500/10 transition-colors">{pipe.id}</td>
                                                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{pipe.weight.toFixed(2)}</td>
                                                             <td className="px-4 py-2.5 font-mono text-indigo-500/80">{vol.toFixed(3)}</td>
                                                         </tr>

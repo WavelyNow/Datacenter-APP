@@ -139,7 +139,7 @@ export const ManifoldBuilder: React.FC = () => {
 
                                     {/* Icon / Type */}
                                     <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center shrink-0">
-                                        {node.type === 'inlet' && <ArrowRight className="w-5 h-5 text-emerald-500" />}
+                                        {node.type === 'inlet' && <ArrowRight className="w-5 h-5 text-primary" />}
                                         {node.fittingType === 'elbow_90' && <div className="text-lg">⤵️</div>}
                                         {node.fittingType === 'tee_branch' && <div className="text-lg">┣</div>}
                                         {node.fittingType === 'tee_flow' && <div className="text-lg">═</div>}

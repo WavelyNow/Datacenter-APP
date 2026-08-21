@@ -47,9 +47,6 @@ jest.mock('@/context/PreferencesContext', () => ({
 }));
 
 // Mock child components that might be complex
-jest.mock('@/components/bim/BimImportModal', () => ({
-    BimImportModal: () => <div data-testid="bim-modal" />,
-}));
 jest.mock('@/components/TemplateSelector', () => ({
     TemplateSelector: () => <div data-testid="template-modal" />,
 }));
@@ -125,33 +122,33 @@ describe('Dashboard Component', () => {
         // However, with our simple mock, we might need a better mock to verify props.
     });
 
-    it('displays "Cloud Active" when projectNumber is present', () => {
+    it('displays "Cloud Activ" ONLY when a cloudProjectId is connected (not by projectNumber)', () => {
         const mockValue = {
             ...mockProjectContextValue,
             projectDetails: {
                 ...mockProjectContextValue.projectDetails,
                 projectNumber: '2026-CLOUD',
             },
+            cloudProjectId: 'real-cloud-id-123',
         };
         (useProject as jest.Mock).mockReturnValue(mockValue);
 
         render(<Dashboard />);
-        // Matching loose because it might be "Cloud Activ" or "Cloud Active" depending on hardcoding
-        expect(screen.getByText(/Cloud/i)).toBeInTheDocument();
+        expect(screen.getByText(/Cloud Activ/i)).toBeInTheDocument();
     });
 
-    it('displays "Local Only" when projectNumber is empty', () => {
+    it('displays "Doar Local" even when projectNumber is set but no cloud project is connected', () => {
         const mockValue = {
             ...mockProjectContextValue,
             projectDetails: {
                 ...mockProjectContextValue.projectDetails,
-                projectNumber: '',
+                projectNumber: '2026-CLOUD',
             },
+            cloudProjectId: null, // ← the real source of truth
         };
         (useProject as jest.Mock).mockReturnValue(mockValue);
 
         render(<Dashboard />);
-        // Checking for Local Only or Doar Local
-        expect(screen.getByText(/Local/i)).toBeInTheDocument();
+        expect(screen.getByText(/Doar Local/i)).toBeInTheDocument();
     });
 });

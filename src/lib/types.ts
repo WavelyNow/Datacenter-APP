@@ -1,6 +1,6 @@
 import { PIPE_STANDARDS } from './pipeStandards';
 
-export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'catalogs' | 'bim' | 'bim_gallery' | 'energy' | 'costs' | 'checklist' | 'hydraulics' | 'help' | 'boq' | 'settings' | 'room-prep' | 'normative' | 'architecture_spec';
+export type TabId = 'dashboard' | 'config' | 'supports' | 'weights' | 'photos' | 'branding' | 'pipe-standards' | 'bim_gallery' | 'hydraulics' | 'help' | 'settings' | 'normative' | 'architecture_spec';
 
 export type PipeMaterial = keyof typeof PIPE_STANDARDS;
 
@@ -139,6 +139,10 @@ export interface ProjectLoadData {
     fluidType?: FluidType;
     glycolPercentage?: number;
     safetyMargin?: boolean;
+    safetyMarginPercentage?: number;
+    supportConfig?: SupportConfig;
+    branding?: BrandingConfig;
+    boqItems?: BoQItem[];
     ifcModelUrl?: string | null;
 }
 

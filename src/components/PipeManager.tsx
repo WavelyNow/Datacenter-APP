@@ -10,6 +10,7 @@ import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment, FluidType, EquipmentItem } from '@/lib/types';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -231,7 +232,7 @@ const PipeRow = React.memo(({
                             <div className="flex-1 space-y-2">
                                 <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-300 ${isHighVelocity ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                        className={`h-full rounded-full transition-all duration-300 ${isHighVelocity ? 'bg-red-500' : 'bg-primary'}`}
                                         style={{ width: `${Math.min((hydraulics.velocity / 3) * 100, 100)}%` }}
                                     />
                                 </div>
@@ -262,6 +263,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     segments,
     equipmentList = [],
     onSegmentsChange,
+    fluidType = 'ethylene',
     glycolPercentage = 0,
     safetyMargin = false,
     safetyMarginPercentage = 5,
@@ -336,23 +338,24 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         }));
     }, [segments, onSegmentsChange]);
 
-    // Calculate totals
+    // Calculate totals — with REAL fluid properties (glycol-aware), not water-hardcoded
     const totalPressureDrop = useMemo(() => {
+        const props = getFluidProperties(fluidType, glycolPercentage);
         return segments.reduce((sum, s) => {
             const id_mm = s.material === 'custom' ? (s.customInnerDiameter || 0) : (PIPE_STANDARDS[s.material]?.dimensions.find(d => d.dn === s.size)?.id || 0);
-            const density = 1000 + (glycolPercentage * 5);
-            const res = calculateHydraulics(s.flowRate || 0, id_mm, 0.045, density, 0.000001);
+            const res = calculateHydraulics(s.flowRate || 0, id_mm, 0.045, props.densityKgM3, props.kinematicViscosityM2S);
             return sum + (res.pressureDropKpa * s.length);
         }, 0);
-    }, [segments, glycolPercentage]);
+    }, [segments, glycolPercentage, fluidType]);
 
     // Use centralized resource calculation
     const resources: SystemResources = useMemo(() => calculateSystemResources(
         segments,
         equipmentList,
         glycolPercentage,
-        { enabled: safetyMargin, percentage: safetyMarginPercentage }
-    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
+        { enabled: safetyMargin, percentage: safetyMarginPercentage },
+        fluidType
+    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage, fluidType]);
 
     // Derived system sizing for pumps
     const maxFlowRate = useMemo(() => {
@@ -652,6 +655,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                     segment={segments.find(s => s.id === selectedSegmentId) || null}
                     onClose={() => setSelectedSegmentId(null)}
                     glycolPercentage={glycolPercentage}
+                    fluidType={fluidType}
                 />
 
                 <ThermalAnalysisSheet

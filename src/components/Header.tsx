@@ -1,19 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo, User, ChevronRight, Settings, LogOut, UserCircle } from 'lucide-react';
+import { Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import { useProject } from '@/context/ProjectContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
-import { Tooltip } from './ui/Tooltip';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
     onProjectDetailsChange: (details: ProjectDetails) => void;
     onLoadProject: (data: ProjectLoadData) => void;
     // Actions
-    onOpenPipeCatalog: () => void;
-    onOpenProfileCatalog: () => void;
-    onOpenEquipmentCatalog: () => void;
     onOpenExport: () => void;
     onOpenSettings: () => void;
     onSaveProject: () => void;
@@ -27,9 +24,6 @@ const HeaderBase: React.FC<HeaderProps> = ({
     projectDetails,
     onProjectDetailsChange,
     onLoadProject,
-    onOpenPipeCatalog,
-    onOpenProfileCatalog,
-    onOpenEquipmentCatalog,
     onOpenExport,
     onOpenSettings,
     onSaveProject,
@@ -39,6 +33,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
     canRedo
 }) => {
     const { activeTab, setActiveTab } = useUI();
+    const { resetProject } = useProject();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -79,19 +74,16 @@ const HeaderBase: React.FC<HeaderProps> = ({
     const getTabName = React.useCallback((tab: string) => {
         const keys: Record<string, string> = {
             'dashboard': 'Tablou Bord',
-            'bim_gallery': 'Galerie BIM',
-            'bim': 'Mapare BIM',
-            'config': 'Tubulatură & Rutare',
+            'bim_gallery': 'Galerie BIM 3D',
+            'config': 'Dimensionare Conducte',
             'hydraulics': 'Hidraulică',
-            'energy': 'Sustenabilitate',
             'supports': 'Suporți',
             'weights': 'Calcul Greutăți',
-            'costs': 'Estimator Costuri',
-            'boq': 'Cantități (BoQ)',
-            'checklist': 'Commissioning',
-            'catalogs': 'Librărie Tehnică',
+            'pipe-standards': 'Standarde Țevi',
             'photos': 'Fotografii Șantier',
             'branding': 'Personalizare Raport',
+            'normative': 'Normative',
+            'architecture_spec': 'Asistent Specificații',
             'settings': 'Setări',
             'help': 'Ajutor'
         };
@@ -99,8 +91,8 @@ const HeaderBase: React.FC<HeaderProps> = ({
     }, []);
 
     return (
-        <header className="sticky top-0 z-40 w-full mb-0 bg-background/80 backdrop-blur-xl border-b border-border/60 screen-only transition-all duration-300" >
-            <div className="px-6 h-18 py-3 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-40 w-full mb-0 bg-background/70 backdrop-blur-xl border-b border-border/50 screen-only transition-all duration-200" >
+            <div className="px-5 h-16 flex items-center justify-between gap-4">
 
                 {/* Left: Breadcrumbs & Project Title */}
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
@@ -152,38 +144,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
                         </button>
                     </div>
 
-                    {/* Quick Catalogs */}
-                    <div className="hidden xl:flex items-center gap-1 md:gap-2 bg-secondary/40 p-1.5 rounded-xl border border-border/40">
-                        <Tooltip content="Catalog Echipamente" side="bottom">
-                            <button
-                                onClick={onOpenEquipmentCatalog}
-                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            >
-                                <Box className="w-4 h-4" />
-                                <span className="hidden xl:inline">Echipamente</span>
-                            </button>
-                        </Tooltip>
-                        <div className="w-px h-4 bg-border/40" />
-                        <Tooltip content="Catalog Țevi" side="bottom">
-                            <button
-                                onClick={onOpenPipeCatalog}
-                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            >
-                                <Book className="w-4 h-4" />
-                                <span className="hidden xl:inline">Țevi</span>
-                            </button>
-                        </Tooltip>
-                        <div className="w-px h-4 bg-border/40" />
-                        <Tooltip content="Catalog Profile" side="bottom">
-                            <button
-                                onClick={onOpenProfileCatalog}
-                                className="btn btn-ghost btn-sm h-8 text-[11px] font-semibold text-muted-foreground hover:text-foreground hover:bg-background gap-2 px-2.5"
-                            >
-                                <Layers className="w-4 h-4" />
-                                <span className="hidden xl:inline">Profile</span>
-                            </button>
-                        </Tooltip>
-                    </div>
+                    {/* Quick Catalogs — REMOVED (încărcau header-ul; catalogul e acum în sidebar: „Standarde Țevi" + galeria 3D) */}
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
@@ -276,16 +237,18 @@ const HeaderBase: React.FC<HeaderProps> = ({
                                         <button
                                             onClick={() => {
                                                 setIsUserMenuOpen(false);
-                                                // For now, just show an alert - can be replaced with actual logout logic
-                                                if (window.confirm('Sigur doriți să vă deconectați?')) {
-                                                    // Reset to dashboard or trigger actual logout
+                                                // There is NO auth/session in the app — a fake "logout"
+                                                // would lie to the user. This resets the local project
+                                                // (a REAL operation): clears data + cloud link.
+                                                if (window.confirm('Resetare proiect: se șterge TOT conținutul proiectului local (inclusiv link-ul cloud). Continuați?')) {
+                                                    resetProject();
                                                     setActiveTab('dashboard');
                                                 }
                                             }}
                                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                                         >
-                                            <LogOut className="w-4 h-4" />
-                                            <span>Deconectare</span>
+                                            <Trash2 className="w-4 h-4" />
+                                            <span>Reset Proiect (Șterge tot)</span>
                                         </button>
                                     </div>
                                 </div>

@@ -1,6 +1,7 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { calculateTotalVolume } from '../../calculations';
+import { calculateEnergyMetrics } from '../../calculations/energy';
 
 export async function generateEnergyPage(
     ctx: PDFContext,
@@ -30,8 +31,7 @@ export async function generateEnergyPage(
     ctx.currentY -= 40;
 
     // --- 1. PUE GAUGE SECTION ---
-    // Since we can't draw complex SVG gauges easily in pdf-lib without paths, 
-    // we will create a "Scorecard" visual.
+    // Compute PUE from ACTUAL project equipment. Never print a hardcoded number.
 
     const boxHeight = 100;
     const boxY = ctx.currentY - boxHeight;
@@ -47,12 +47,20 @@ export async function generateEnergyPage(
         borderWidth: 1,
     });
 
-    // PUE Value
-    const pueValue = 1.42; // Hardcoded or calculated estimate
-    const pueColor = theme.accent; // Greenish
+    // Real calculation — no hardcoded values
+    const metrics = calculateEnergyMetrics(data.equipmentList, data.projectDetails?.location ?? 'București');
+    const hasMetrics = metrics.totalFacilityPower > 0;
+    const pueValue = hasMetrics ? metrics.pue : null;
+    const pueLabel = hasMetrics
+        ? (metrics.pueIsEstimate ? 'PUE ESTIMAT' : 'PUE CALCULAT')
+        : 'PUE — N/A';
+
+    const pueColor = pueValue === null
+        ? theme.textLight
+        : pueValue < 1.4 ? theme.accent : theme.text;
 
     // Center the PUE value since we removed the badge
-    ctx.currentPage.drawText('PUE ESTIMAT', {
+    ctx.currentPage.drawText(pueLabel, {
         x: (width - 100) / 2 + 50 - 40, // Centered roughly
         y: boxY + 65,
         size: 10,
@@ -60,8 +68,9 @@ export async function generateEnergyPage(
         color: theme.textLight,
     });
 
-    const pueWidth = ctx.fontBold.widthOfTextAtSize(pueValue.toString(), 36);
-    ctx.currentPage.drawText(pueValue.toString(), {
+    const pueString = pueValue === null ? '—' : pueValue.toFixed(2);
+    const pueWidth = ctx.fontBold.widthOfTextAtSize(pueString, 36);
+    ctx.currentPage.drawText(pueString, {
         x: (width - 100) / 2 + 50 - (pueWidth / 2),
         y: boxY + 25,
         size: 36,
@@ -69,11 +78,24 @@ export async function generateEnergyPage(
         color: pueColor,
     });
 
+    if (pueValue === null) {
+        const naNote = 'Nu există echipamente introduse — PUE nu poate fi calculat.';
+        const naWidth = ctx.fontRegular.widthOfTextAtSize(naNote, 8);
+        ctx.currentPage.drawText(naNote, {
+            x: (width - 100) / 2 + 50 - (naWidth / 2),
+            y: boxY + 10,
+            size: 8,
+            font: ctx.fontRegular,
+            color: theme.textLight,
+        });
+    }
+
     ctx.currentY -= (boxHeight + 40);
 
     // --- 2. RECOMMENDATIONS ---
     const totalVolume = calculateTotalVolume(data.segments, data.equipmentList, false);
-    const co2Savings = Math.round(totalVolume * 0.12); // Mock calc: 0.12kg CO2 saved per liter of optimized fluid
+    // CO₂ from REAL annual energy (load factor 80%, EU grid factor) — not a mock.
+    const co2Tons = metrics.totalFacilityPower > 0 ? metrics.annualCO2Tons : null;
 
     await ctx.checkSpace(150);
 
@@ -87,10 +109,12 @@ export async function generateEnergyPage(
     ctx.currentY -= 20;
 
     const recommendations = [
-        `• Optimizare Tehnologică: Volumul sistemului (${totalVolume.toFixed(0)} L) este optimizat pentru transfer termic eficient.`,
-        `• Reducere CO2: Se estimează o reducere de ${co2Savings} kg/an emisii CO2 față de sistemele standard.`,
-        '• Free Cooling: Recomandăm activarea modului Free Cooling la temperaturi sub 10°C.',
-        '• Mentenanță: Verificați concentrația de glicol anual pentru a menține eficiența transferului termic.'
+        `• Volumul sistemului: ${totalVolume.toFixed(0)} L (bază, fără marjă).`,
+        co2Tons !== null
+            ? `• Amprentă CO₂ estimată: ~${(co2Tons * 1000).toFixed(0)} kg/an (la factor de încărcare 80%).`
+            : '• Amprentă CO₂: nu se poate calcula — introduceți echipamente cu putere nominală.',
+        '• Free Cooling: recomandăm activarea modului Free Cooling la temperaturi sub 10°C.',
+        '• Mentenanță: verificați concentrația de glicol anual pentru a menține eficiența transferului termic.'
     ];
 
     recommendations.forEach(rec => {

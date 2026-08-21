@@ -44,17 +44,36 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     endAdornment,
 }) => {
     const [touched, setTouched] = useState(false);
+    // Local RAW string while typing — prevents "0." from collapsing to 0 and
+    // legitimate 0 values from rendering as empty.
+    const [draft, setDraft] = useState<string | null>(null);
+
+    // When the parent programmatically changes the value, drop the draft —
+    // but ONLY if it no longer parses to the same number (keeps "0." typing).
+    React.useEffect(() => {
+        setDraft(prev => {
+            if (prev === null) return null;
+            if (type === 'number') {
+                const parsed = parseFloat(prev);
+                return !isNaN(parsed) && parsed === Number(value) ? prev : null;
+            }
+            return prev === String(value) ? prev : null;
+        });
+    }, [value, type]);
 
     const result = validate ? validate(value) : { valid: true };
     const errorMsg = result.valid ? null : result.error || 'Valoare invalidă';
     const showError = touched && !result.valid;
     const showSuccess = showSuccessIndicator && touched && result.valid;
 
+    const effectiveValue = draft !== null ? draft : String(value);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value;
 
         if (type === 'number') {
-            // Handle empty string for number inputs
+            // Keep the raw string while typing (allows "0.", "0.5", negatives)
+            setDraft(rawValue);
             if (rawValue === '') {
                 onChange(0);
             } else {
@@ -64,12 +83,14 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
                 }
             }
         } else {
+            setDraft(rawValue);
             onChange(rawValue);
         }
     };
 
     const handleBlur = () => {
         setTouched(true);
+        setDraft(null); // commit: re-sync with the model value (parsed number)
     };
 
     return (
@@ -89,7 +110,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
                 <input
                     type={type}
-                    value={type === 'number' && value === 0 ? '' : value}
+                    value={effectiveValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     placeholder={placeholder}

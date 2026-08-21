@@ -208,50 +208,186 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
     // --- GEORGE FISCHER SPECIALS ---
     gf_coolfit_2_0: {
         label: "GF COOL-FIT 2.0 (PE100 SDR11)",
-        description: "Pre-izolat pentru Apă Gheață/Glicol",
+        description: "Pre-izolat pentru răcire / apă gheață / glicol — d32–d140 (DN25–DN125), PN16",
         category: 'special',
-        material: "PE100 SDR17",
-        maxPressure: 10, // bar
-        tempRange: { min: -10, max: 40 },
-        thermalExpansion: 0.18, // PE
+        material: "PE100 (EN ISO 15494)",
+        maxPressure: 16, // bar, SDR11
+        tempRange: { min: 0, max: 60 },
+        thermalExpansion: 0.18, // PE (mm/m·K)
         roughness: 0.007,
-        insulationType: "GF HE Foam (0.022 W/mK)",
+        insulationType: "GF HE Foam (λ 0.022 W/mK)",
         dimensions: [
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50, insulatedOd: 75 },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.90, insulatedOd: 90 },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.50, insulatedOd: 90 },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 3.40, insulatedOd: 110 },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 4.50, insulatedOd: 110 },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 5.80, insulatedOd: 140 },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 8.50, insulatedOd: 160 },
-            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 12.50, insulatedOd: 200 },
-            { dn: "d160", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 8.20, insulatedOd: 250, supportSpacing: { water: 2.3 } },
-            { dn: "d225", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 12.50, insulatedOd: 315, supportSpacing: { water: 2.6 } },
-            { dn: "d250", inch: "9\"", od: 250, thickness: 14.8, id: 220.4, weight: 14.80, insulatedOd: 355, supportSpacing: { water: 2.7 } },
-            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 20.50, insulatedOd: 450, supportSpacing: { water: 2.9 } },
-            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 35.00, insulatedOd: 560, supportSpacing: { water: 3.2 } },
+            // Sursă: broșura oficială GF COOL-FIT 2.0 2026 (d, D, di, greutate completă kg/m cu manta)
+            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.140, insulatedOd: 75, supportSpacing: { water: 1.2 } },
+            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.534, insulatedOd: 90, supportSpacing: { water: 1.3 } },
+            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 1.722, insulatedOd: 90, supportSpacing: { water: 1.5 } },
+            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.711, insulatedOd: 110, supportSpacing: { water: 1.6 } },
+            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.405, insulatedOd: 125, supportSpacing: { water: 1.75 } },
+            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.320, insulatedOd: 140, supportSpacing: { water: 1.85 } },
+            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 5.692, insulatedOd: 160, supportSpacing: { water: 2.0 } },
+            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.021, insulatedOd: 200, supportSpacing: { water: 2.2 } },
         ]
     },
     gf_coolfit_4_0: {
-        label: "GF COOL-FIT 4.0 (PE100 SDR11)",
-        description: "Industrial Cooling, Pre-izolat, SDR11",
+        label: "GF COOL-FIT 4.0 (PE100 SDR11/SDR17)",
+        description: "Industrial Cooling pre-izolat — d32–d450 (DN25–DN450). SDR11 PN16 (d32–d140), SDR17 PN10 (d160–d450)",
         category: 'special',
-        material: "PE100 SDR11",
-        maxPressure: 16, // bar
-        tempRange: { min: -10, max: 40 },
-        thermalExpansion: 0.18, // PE has high expansion
-        roughness: 0.007, // Very smooth
-        insulationType: "GF HE Foam (0.022 W/mK)",
+        material: "PE100 (EN ISO 15494)",
+        maxPressure: 16, // bar (SDR11); SDR17 → PN10
+        tempRange: { min: -50, max: 60 },
+        thermalExpansion: 0.18, // PE (mm/m·K)
+        roughness: 0.007,
+        insulationType: "GF HE Foam (λ 0.022–0.026 W/mK)",
         dimensions: [
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.50, insulatedOd: 75, supportSpacing: { water: 1.2 } },
-            { dn: "d40", inch: "1-1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.80, insulatedOd: 90, supportSpacing: { water: 1.3 } },
-            { dn: "d50", inch: "1-1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.20, insulatedOd: 110, supportSpacing: { water: 1.5 } },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.80, insulatedOd: 125, supportSpacing: { water: 1.6 } },
-            { dn: "d75", inch: "2-1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.50, insulatedOd: 140, supportSpacing: { water: 1.75 } },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.50, insulatedOd: 160, supportSpacing: { water: 1.85 } },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 6.20, insulatedOd: 180, supportSpacing: { water: 2.0 } },
-            { dn: "d160", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 9.50, insulatedOd: 250, supportSpacing: { water: 2.3 } },
-            { dn: "d225", inch: "8\"", od: 225, thickness: 20.5, id: 184.0, weight: 15.00, insulatedOd: 315, supportSpacing: { water: 2.6 } },
+            // Sursă: fișa tehnică oficială GF COOL-FIT 4.0 2026 (d32–d450, greutăți complete kg/m)
+            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.40, insulatedOd: 90, supportSpacing: { water: 1.2 } },
+            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.02, insulatedOd: 110, supportSpacing: { water: 1.3 } },
+            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.19, insulatedOd: 110, supportSpacing: { water: 1.5 } },
+            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.94, insulatedOd: 125, supportSpacing: { water: 1.6 } },
+            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.70, insulatedOd: 140, supportSpacing: { water: 1.75 } },
+            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.75, insulatedOd: 160, supportSpacing: { water: 1.85 } },
+            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 6.12, insulatedOd: 180, supportSpacing: { water: 2.0 } },
+            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.68, insulatedOd: 225, supportSpacing: { water: 2.2 } },
+            // SDR17 (PN10) — gama mare
+            { dn: "d160", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 9.921, insulatedOd: 250, supportSpacing: { water: 2.3 } },
+            { dn: "d225", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 16.620, insulatedOd: 315, supportSpacing: { water: 2.6 } },
+            { dn: "d250", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 18.180, insulatedOd: 355, supportSpacing: { water: 2.7 } },
+            { dn: "d280", inch: "10\"", od: 280, thickness: 16.6, id: 246.8, weight: 22.640, insulatedOd: 400, supportSpacing: { water: 2.8 } },
+            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 28.510, insulatedOd: 450, supportSpacing: { water: 2.9 } },
+            { dn: "d355", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 35.350, insulatedOd: 500, supportSpacing: { water: 3.0 } },
+            { dn: "d400", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 44.070, insulatedOd: 560, supportSpacing: { water: 3.1 } },
+            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 55.490, insulatedOd: 630, supportSpacing: { water: 3.2 } },
+        ]
+
+    },
+
+    // --- PRODUCĂTORI EUROPA (verificate EN ISO 15875 / KIWA) ---
+    uponor_pexa_sdr73: {
+        label: "Uponor PE-Xa (SDR 7.3)",
+        description: "Combi Pipe PE-Xa cu barieră EVOH — apă caldă/răcire, dimensiuni conform certificat KIWA / EN ISO 15875",
+        category: 'plastic',
+        material: "PE-Xa (DIN 16892 / EN ISO 15875)",
+        maxPressure: 6, // bar (Clasa 2/4/5 conform marcaj Uponor)
+        tempRange: { min: 0, max: 80 },
+        thermalExpansion: 0.14, // mm/m·K (PE-Xa)
+        roughness: 0.007,
+        dimensions: [
+            { dn: "16mm", inch: "1/2\"", od: 16, thickness: 2.2, id: 11.6, weight: 0.093 },
+            { dn: "20mm", inch: "3/4\"", od: 20, thickness: 2.8, id: 14.4, weight: 0.148 },
+            { dn: "25mm", inch: "1\"", od: 25, thickness: 3.5, id: 18.0, weight: 0.233 },
+            { dn: "32mm", inch: "1 1/4\"", od: 32, thickness: 4.4, id: 23.2, weight: 0.381 },
+            { dn: "40mm", inch: "1 1/2\"", od: 40, thickness: 5.5, id: 29.0, weight: 0.595 },
+            { dn: "50mm", inch: "2\"", od: 50, thickness: 6.9, id: 36.2, weight: 0.934 },
+            { dn: "63mm", inch: "2 1/2\"", od: 63, thickness: 8.6, id: 45.8, weight: 1.481 },
+            { dn: "75mm", inch: "3\"", od: 75, thickness: 10.3, id: 54.4, weight: 2.120 },
+            { dn: "90mm", inch: "3 1/2\"", od: 90, thickness: 12.3, id: 65.4, weight: 3.038 },
+            { dn: "110mm", inch: "4\"", od: 110, thickness: 15.1, id: 79.8, weight: 4.601 },
+        ]
+    },
+
+    // --- PRODUCĂTORI ROMÂNIA ---
+    pipelife_pe100_sdr11: {
+        label: "Pipelife România — PE100 SDR11 (PN16)",
+        description: "Țeavă PE100 pentru apă/rețele industriale, EN ISO 15494 — produs în România",
+        category: 'plastic',
+        material: "PE100 (EN ISO 15494)",
+        maxPressure: 16,
+        tempRange: { min: -40, max: 40 },
+        thermalExpansion: 0.18,
+        roughness: 0.007,
+        dimensions: [
+            { dn: "32mm", inch: "1\"", od: 32, thickness: 3.0, id: 26.0, weight: 0.261 },
+            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 0.403 },
+            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 0.627 },
+            { dn: "63mm", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 0.995 },
+            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 1.393 },
+            { dn: "90mm", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 2.013 },
+            { dn: "110mm", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 3.001 },
+            { dn: "125mm", inch: "5\"", od: 125, thickness: 11.4, id: 102.2, weight: 3.888 },
+            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 12.7, id: 114.6, weight: 4.855 },
+            { dn: "160mm", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 6.373 },
+            { dn: "180mm", inch: "7\"", od: 180, thickness: 16.4, id: 147.2, weight: 8.052 },
+            { dn: "200mm", inch: "8\"", od: 200, thickness: 18.2, id: 163.6, weight: 9.940 },
+        ]
+    },
+    valrom_ppr_pn20: {
+        label: "Valrom România — PPR PN20 (SDR 6)",
+        description: "Țeavă polipropilenă PPR pentru apă caldă/încălzire, EN ISO 15874 — produs în România",
+        category: 'plastic',
+        material: "PPR (EN ISO 15874)",
+        maxPressure: 20,
+        tempRange: { min: 0, max: 80 },
+        thermalExpansion: 0.15,
+        roughness: 0.007,
+        dimensions: [
+            { dn: "20mm", inch: "1/2\"", od: 20, thickness: 3.4, id: 13.2, weight: 0.161 },
+            { dn: "25mm", inch: "3/4\"", od: 25, thickness: 4.2, id: 16.6, weight: 0.250 },
+            { dn: "32mm", inch: "1\"", od: 32, thickness: 5.4, id: 21.2, weight: 0.411 },
+            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 6.7, id: 26.6, weight: 0.637 },
+            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 8.3, id: 33.4, weight: 0.989 },
+            { dn: "63mm", inch: "2\"", od: 63, thickness: 10.5, id: 42.0, weight: 1.575 },
+            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 12.5, id: 50.0, weight: 2.234 },
+            { dn: "90mm", inch: "3\"", od: 90, thickness: 15.0, id: 60.0, weight: 3.214 },
+            { dn: "110mm", inch: "4\"", od: 110, thickness: 18.3, id: 73.4, weight: 4.794 },
+            { dn: "125mm", inch: "5\"", od: 125, thickness: 20.8, id: 83.4, weight: 6.196 },
+            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 23.3, id: 93.4, weight: 7.772 },
+            { dn: "160mm", inch: "6\"", od: 160, thickness: 26.6, id: 106.8, weight: 10.140 },
         ]
     },
 };
+
+// ============================================================================
+// Override local (pentru pagina „Standarde Țevi”):
+// utilizatorul poate corecta datele din interfață; override-ul e aplicat
+// peste valorile implicite (care sunt cele verificate/oficiale).
+// ============================================================================
+
+const OVERRIDE_KEY = 'pipe_standards_user_override_v1';
+
+function readOverride(): Record<string, PipeStandard> | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = window.localStorage.getItem(OVERRIDE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeOverride(data: Record<string, PipeStandard>): void {
+    if (typeof window === 'undefined') return;
+    try {
+        window.localStorage.setItem(OVERRIDE_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.error('Nu s-a putut salva override-ul de țevi:', e);
+    }
+}
+
+/** Standardele efective = implicite + override local (dacă există). */
+export function getPipeStandards(): Record<string, PipeStandard> {
+    const override = readOverride();
+    if (!override) return { ...PIPE_STANDARDS };
+    return { ...PIPE_STANDARDS, ...override };
+}
+
+/** Salvează un set complet de standarde ca override local. */
+export function saveUserPipeStandards(data: Record<string, PipeStandard>): void {
+    writeOverride(data);
+}
+
+/** Șterge override-ul și revine la datele oficiale. */
+export function resetUserPipeStandards(): void {
+    if (typeof window === 'undefined') return;
+    try {
+        window.localStorage.removeItem(OVERRIDE_KEY);
+    } catch {
+        // ignore
+    }
+}
+
+/** True dacă există un override local activ. */
+export function hasUserPipeStandardsOverride(): boolean {
+    return readOverride() !== null;
+}

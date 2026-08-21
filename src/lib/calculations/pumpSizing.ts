@@ -273,8 +273,15 @@ export function findOperatingPoint(
 
             const efficiency = interpolateEfficiency(pumpData.curve, intersectFlow);
 
+            // Guard: out-of-curve efficiency → invalid operating point (avoid Infinity/NaN)
+            if (!isFinite(efficiency) || efficiency <= 0) {
+                continue;
+            }
+
             // Calculate power: P = (Q × H × ρ × g) / (η × 3600 × 1000)
             const powerKW = (intersectFlow * intersectHead * 1000 * 9.81) / (efficiency / 100 * 3600 * 1000);
+
+            if (!isFinite(powerKW) || powerKW <= 0) continue;
 
             return {
                 flowM3H: Math.round(intersectFlow * 100) / 100,
@@ -306,10 +313,12 @@ export function calculatePumpSizing(input: PumpSizingInput): PumpSizingResult {
     const designHead = (input.staticHeadM + frictionHeadM) * safetyFactor;
     const designFlow = input.designFlowM3H;
 
-    // Generate system curve
+    // Generate system curve — WITHOUT safety factor (the factor belongs to the
+    // DUTY POINT specification only; baking it into the curve distorts the
+    // real operating point intersection with the pump curve).
     const systemCurve = generateSystemCurve(
         input.staticHeadM,
-        frictionHeadM * safetyFactor,
+        frictionHeadM,
         designFlow
     );
 
@@ -317,8 +326,10 @@ export function calculatePumpSizing(input: PumpSizingInput): PumpSizingResult {
     const estimatedEfficiency = 0.60;
     const requiredPower = (designFlow * designHead * 1000 * 9.81) / (estimatedEfficiency * 3600 * 1000);
 
-    // Estimate NPSH required (rough estimate: 2-4m for most pumps)
-    const requiredNPSH = 2 + (designFlow / 20); // Increases with flow
+    // Estimate NPSH required — SCREENING VALUE ONLY.
+    // NPSH_required is a manufacturer pump property and CANNOT be derived
+    // from flow. This heuristic must never be used for final pump selection.
+    const requiredNPSH = 2 + (designFlow / 20); // Rough screening: 2-4m typical, increases with flow
 
     // Determine pump type
     let recommendedPumpType = 'Circulație';

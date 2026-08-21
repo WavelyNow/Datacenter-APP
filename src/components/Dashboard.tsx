@@ -16,7 +16,6 @@ import {
     Package,
     Cloud
 } from 'lucide-react';
-import { BimImportModal } from './bim/BimImportModal';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources } from '@/lib/calc/resources';
 import { useTranslation } from '@/context/PreferencesContext';
@@ -30,12 +29,12 @@ const DashboardBase = () => {
         equipmentList,
         glycolPercentage,
         safetyMargin,
-        safetyMarginPercentage
+        safetyMarginPercentage,
+        cloudProjectId
     } = useProject();
 
     const { setActiveTab } = useUI();
 
-    const [isBimOpen, setIsBimOpen] = React.useState(false);
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
     const resources = React.useMemo(() => calculateSystemResources(
@@ -85,20 +84,19 @@ const DashboardBase = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex items-center gap-3 mb-4"
+                        className="flex items-center gap-2.5 mb-5"
                     >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-bold">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                            <span className="relative flex h-1.5 w-1.5">
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
                             </span>
                             Sistem Activ
                         </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-bold">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
                             FAZA PLANIFICARE
                         </div>
                     </motion.div>
-                    <h1 className="text-5xl font-bold tracking-tight text-foreground mb-2">
+                    <h1 className="text-5xl font-semibold tracking-tight text-foreground mb-3">
                         Engineering <span className="text-primary">Workspace</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">
@@ -118,14 +116,14 @@ const DashboardBase = () => {
                         </button>
                     </Tooltip>
 
-                    <Tooltip content="Importă segmente și echipamente direct din modele Revit/IFC 3D" side="bottom">
+                    <Tooltip content="Deschide galeria 3D cu produsele producătorilor (modele Sketchfab)" side="bottom">
                         <button
-                            onClick={() => setIsBimOpen(true)}
-                            title="Importă segmente și echipamente direct din modele Revit/IFC 3D"
+                            onClick={() => setActiveTab('bim_gallery')}
+                            title="Deschide galeria 3D cu produsele producătorilor (modele Sketchfab)"
                             className="btn btn-secondary h-12 px-6 gap-2"
                         >
                             <FileBox className="w-4 h-4 text-primary" />
-                            Scanează BIM
+                            Galerie 3D
                         </button>
                     </Tooltip>
 
@@ -175,13 +173,13 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-emerald-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
-                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-border group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                    <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">REAL-TIME</div>
+                        <div className="px-2 py-0.5 rounded-md bg-muted text-primary text-[10px] font-bold border border-border">REAL-TIME</div>
                     </div>
                     <div className="relative z-10">
                         <div className="text-3xl font-bold font-mono tracking-tight">
@@ -227,11 +225,11 @@ const DashboardBase = () => {
                                     <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
 
-                                <button onClick={() => setActiveTab('bim')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
                                     <div className="w-10 h-10 rounded-full bg-secondary/10 text-muted-foreground flex items-center justify-center font-bold border border-secondary/20 group-hover:scale-110 transition-transform">2</div>
                                     <div>
-                                        <div className="font-bold text-sm">Importă Arhitectură</div>
-                                        <div className="text-xs text-muted-foreground">Încarcă model IFC</div>
+                                        <div className="font-bold text-sm">Alege Diametre & Lungimi</div>
+                                        <div className="text-xs text-muted-foreground">Adaugă segmente de țeavă din standarde verificat</div>
                                     </div>
                                     <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
@@ -269,7 +267,7 @@ const DashboardBase = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Status Sincronizare</p>
-                                <p className="text-2xl font-bold">{projectDetails.projectNumber ? "Cloud Activ" : "Doar Local"}</p>
+                                <p className="text-2xl font-bold">{cloudProjectId ? "Cloud Activ" : "Doar Local"}</p>
                             </div>
                         </motion.div>
                     </div>
@@ -313,7 +311,7 @@ const DashboardBase = () => {
                                     </div>
                                 </div>
                                 <div className="text-[10px] text-muted-foreground mt-2 border-t border-border/20 pt-2 flex items-center gap-1">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${safetyMargin ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full ${safetyMargin ? 'bg-primary' : 'bg-amber-500'}`} />
                                     {safetyMargin ? `${safetyMarginPercentage}% Marjă` : "Dezactivat"}
                                 </div>
                             </div>
@@ -376,7 +374,6 @@ const DashboardBase = () => {
             </motion.div>
 
             {/* Modals */}
-            <BimImportModal isOpen={isBimOpen} onClose={() => setIsBimOpen(false)} />
             <TemplateSelector isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
         </motion.div>
     );

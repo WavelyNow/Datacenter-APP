@@ -1,4 +1,5 @@
 import { EquipmentItem, PipeSegment } from '../types';
+import { PIPE_STANDARDS } from '../pipeStandards';
 
 interface SuggestionResult {
     equipment: Partial<EquipmentItem>[];
@@ -45,18 +46,32 @@ export const analyzeSpecifications = (text: string): SuggestionResult => {
     }
 
     // 2. Piping Extraction (e.g., "100m", "DN50")
-    const lengthMatch = lowerText.match(/(\d+)\s*m/);
+    // IMPORTANT: match only pure meters, NOT "600mm"/"30min"/"2N".
+    const lengthMatches = [...lowerText.matchAll(/(?<![\w.,])(\d+(?:[.,]\d+)?)\s*m(?![\w])/g)];
     const sizeMatch = lowerText.match(/dn\s*(\d+)/);
 
-    if (lengthMatch || sizeMatch) {
+    if (lengthMatches.length > 0 || sizeMatch) {
+        // Use the LONGEST detected run as the main run (most representative)
+        const detectedLengths = lengthMatches.map(m => parseFloat(m[1].replace(',', '.')));
+        const pipeLength = detectedLengths.length > 0 ? Math.max(...detectedLengths) : 0;
+
+        // Resolve a real diameter: detected DN, else plausible default DN50
+        const dnDetected = sizeMatch ? `DN${sizeMatch[1]}` : null;
+        const steelStandard = PIPE_STANDARDS['steel_light'];
+        const steel = steelStandard?.dimensions.find(d => d.dn === dnDetected) ?? null;
+
         result.segments.push({
             id: `suggested-seg-${Date.now()}`,
-            name: 'Traseu Sugerat',
-            material: lowerText.includes('otel') || lowerText.includes('oțel') ? 'custom' : 'custom',
-            size: sizeMatch ? `DN${sizeMatch[1]}` : 'DN50',
-            length: lengthMatch ? parseInt(lengthMatch[1]) : 10,
+            name: pipeLength > 0
+                ? `Traseu Sugerat (${pipeLength}m${dnDetected ?? ''})`
+                : 'Traseu Sugerat (LUNGIME IMPLICITĂ — confirmați 10m)',
+            material: steel ? 'steel_light' : 'custom',
+            size: dnDetected ?? 'DN50',
+            length: pipeLength > 0 ? pipeLength : 10,
+            customInnerDiameter: steel ? undefined : 54.5, // DN50 steel ID (60.3×2.9) — fallback, confirm with user
             fluid: 'Apă Glicolată',
-            standard: 'ISO 4200'
+            standard: steel ? (steelStandard?.description ?? 'ISO 4200') : 'ISO 4200',
+            flowRate: undefined
         });
     }
 

@@ -19,6 +19,9 @@ export const CloudBrowserAction = () => {
         setLoading(true);
         setError(null);
         try {
+            if (!supabase) {
+                throw new Error('Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars');
+            }
             const { data, error } = await supabase
                 .from('projects')
                 .select('id, name, description, updated_at, data')

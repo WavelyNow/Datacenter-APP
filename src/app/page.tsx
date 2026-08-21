@@ -4,47 +4,21 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ProjectProvider, useProject } from '@/context/ProjectContext';
 import { UIProvider, useUI } from '@/context/UIContext';
-import { BimProvider } from '@/context/BimContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
-import { CatalogManager } from '@/components/CatalogManager';
-import { PdfWizardModal } from '@/components/PdfWizardModal';
 import { Dashboard } from '@/components/Dashboard';
-import { PipeCatalogModal } from '@/components/PipeCatalogModal';
-import { ProfileCatalogModal } from '@/components/ProfileCatalogModal';
+import { PipeStandardsPage } from '@/components/PipeStandardsPage';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
 // Dynamic imports for heavy components (code splitting)
-const BimPage = dynamic(() => import('@/components/BimPage').then(m => ({ default: m.BimPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>,
-  ssr: false
-});
-
 const BimGalleryPage = dynamic(() => import('@/components/BimGalleryPage').then(m => ({ default: m.BimGalleryPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>,
   ssr: false
 });
 
-const EnergyPage = dynamic(() => import('@/components/EnergyPage').then(m => ({ default: m.EnergyPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
-});
-
 const HydraulicsPage = dynamic(() => import('@/components/HydraulicsPage').then(m => ({ default: m.HydraulicsPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>
-});
-
-const QuantityListPage = dynamic(() => import('@/components/QuantityListPage').then(m => ({ default: m.QuantityListPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>
-});
-
-const CostEstimator = dynamic(() => import('@/components/CostEstimator').then(m => ({ default: m.CostEstimator })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>
-});
-
-const RoomPreparationPage = dynamic(() => import('@/components/room-preparation').then(m => ({ default: m.RoomPreparationPage })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
 });
 
 const NormativeSearchPage = dynamic(() => import('@/components/NormativeSearchPage').then(m => ({ default: m.NormativeSearchPage })), {
@@ -58,10 +32,6 @@ const SpecAssistantPage = dynamic(() => import('@/components/SpecAssistantPage')
 // Add dynamic imports for previously static components
 const HelpPage = dynamic(() => import('@/components/HelpPage').then(m => ({ default: m.HelpPage })), {
   loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
-});
-
-const CommissioningChecklist = dynamic(() => import('@/components/CommissioningChecklist').then(m => ({ default: m.CommissioningChecklist })), {
-  loading: () => <div className="p-8"><TableSkeleton rows={8} /></div>
 });
 
 const PipingRoutingPage = dynamic(() => import('@/components/PipingRoutingPage').then(m => ({ default: m.PipingRoutingPage })), {
@@ -84,8 +54,21 @@ const SettingsPage = dynamic(() => import('@/components/SettingsPage').then(m =>
   loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
 });
 
-const KeyboardShortcutsModal = dynamic(() => import('@/components/KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })), {
-  ssr: false
+// Global modals — lazy-loaded (PdfWizardModal pulls pdf-lib + exceljs, ~1.5MB;
+// ProjectSettingsModal is rarely opened). Keeps the main bundle small.
+const KeyboardShortcutsModal = dynamic(() => import('@/components/KeyboardShortcutsModal').then(m => m.KeyboardShortcutsModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>,
+  ssr: false,
+});
+
+const ProjectSettingsModal = dynamic(() => import('@/components/ProjectSettingsModal').then(m => m.ProjectSettingsModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>,
+  ssr: false,
+});
+
+const PdfWizardModal = dynamic(() => import('@/components/PdfWizardModal').then(m => m.PdfWizardModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>,
+  ssr: false,
 });
 
 // Memoize stable layout components
@@ -94,6 +77,8 @@ const MemoizedHeader = React.memo(Header);
 const MemoizedDashboard = React.memo(Dashboard);
 
 import { ProjectLoadData } from '@/lib/types';
+
+import { useKeyboardShortcuts, createStandardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 import {
   Scale,
@@ -122,13 +107,14 @@ const DashboardContent = () => {
     safetyMarginPercentage,
     supportConfig,
     branding,
+    boqItems,
+    ifcModelUrl,
+    importProjectData,
     isInitialized,
     undo, redo, canUndo, canRedo
   } = useProject();
 
   // Modal States
-  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const [isProfileCatalogOpen, setIsProfileCatalogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -145,7 +131,10 @@ const DashboardContent = () => {
       glycolPercentage,
       safetyMargin,
       safetyMarginPercentage,
-      supportConfig
+      supportConfig,
+      branding,
+      boqItems,
+      ifcModelUrl
     };
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -155,60 +144,21 @@ const DashboardContent = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, ifcModelUrl]);
 
-  // Keyboard Shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+S / Ctrl+S - Save project
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        saveProject();
-      }
-      // Cmd+E / Ctrl+E - Export
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        setIsExportOpen(true);
-      }
-      // Undo: Ctrl+Z
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-        e.preventDefault();
-        undo();
-      }
-      // Redo: Ctrl+Y or Ctrl+Shift+Z
-      if (((e.metaKey || e.ctrlKey) && e.key === 'y') || ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'z')) {
-        e.preventDefault();
-        redo();
-      }
-      // Shortcuts Help: ?
-      if (e.key === '?' && e.shiftKey) {
-        e.preventDefault();
-        setIsShortcutsOpen(true);
-      }
-    };
+  // Keyboard Shortcuts — useKeyboardShortcuts skips shortcuts while typing in
+  // inputs/textarea/contentEditable, so Cmd+Z no longer hijacks native undo in text fields.
+  const shortcuts = React.useMemo(() => createStandardShortcuts({
+    onSave: saveProject,
+    onExport: () => setIsExportOpen(true),
+    onUndo: undo,
+    onRedo: redo,
+    onHelp: () => setIsShortcutsOpen(true)
+  }), [saveProject, undo, redo]);
+  useKeyboardShortcuts(shortcuts);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveProject, redo, undo]);
-
-  // Auto-save to localStorage every 30 seconds
-  React.useEffect(() => {
-    const autoSaveData = {
-      projectDetails,
-      segments,
-      equipmentList,
-      fluidType,
-      glycolPercentage,
-      safetyMargin,
-      safetyMarginPercentage,
-      supportConfig
-    };
-    try {
-      localStorage.setItem('datacenter_autosave', JSON.stringify(autoSaveData));
-    } catch (e) {
-      console.warn('Autosave failed:', e);
-    }
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
+  // NOTE: local persistence of the project is owned by ProjectContext (debounced
+  // writer to 'hydraulic_calc_project_v2'). No autosave writer is needed here.
 
   const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -218,12 +168,9 @@ const DashboardContent = () => {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string);
-        if (data.segments) setSegments(data.segments);
-        if (data.equipmentList) setEquipmentList(data.equipmentList);
-        if (data.projectDetails) setProjectDetails(data.projectDetails);
-        if (data.fluidType) setFluidType(data.fluidType);
-        if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-        if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
+        // Full restore (supportConfig, safetyMarginPercentage, branding...);
+        // validation (non-array segments/equipmentList) happens in importProjectData.
+        importProjectData(data);
       } catch (error) {
         console.error('Error loading project:', error);
         alert('Eroare la încărcarea fișierului.');
@@ -235,16 +182,9 @@ const DashboardContent = () => {
 
   // Wrap setters in useCallback for stable props
   const handleLoadProject = React.useCallback((data: ProjectLoadData) => {
-    if (data.segments) setSegments(data.segments);
-    if (data.equipmentList) setEquipmentList(data.equipmentList);
-    if (data.projectDetails) setProjectDetails(data.projectDetails);
-    if (data.fluidType) setFluidType(data.fluidType);
-    if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-    if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
-  }, [setSegments, setEquipmentList, setProjectDetails, setFluidType, setGlycolPercentage, setSafetyMargin]);
+    importProjectData(data);
+  }, [importProjectData]);
 
-  const toggleCatalog = React.useCallback(() => setIsCatalogOpen(prev => !prev), []);
-  const toggleProfileCatalog = React.useCallback(() => setIsProfileCatalogOpen(prev => !prev), []);
   const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
   const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
   const toggleShortcuts = React.useCallback(() => setIsShortcutsOpen(prev => !prev), []);
@@ -269,8 +209,6 @@ const DashboardContent = () => {
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
       <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={toggleShortcuts} />
-      <PipeCatalogModal isOpen={isCatalogOpen} onClose={toggleCatalog} />
-      <ProfileCatalogModal isOpen={isProfileCatalogOpen} onClose={toggleProfileCatalog} />
       <ProjectSettingsModal
         isOpen={isSettingsOpen}
         onClose={toggleSettings}
@@ -310,9 +248,6 @@ const DashboardContent = () => {
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
           onLoadProject={handleLoadProject}
-          onOpenPipeCatalog={toggleCatalog}
-          onOpenProfileCatalog={toggleProfileCatalog}
-          onOpenEquipmentCatalog={() => setActiveTab('catalogs')}
           onOpenExport={toggleExport}
           onOpenSettings={toggleSettings}
           onSaveProject={saveProject}
@@ -405,17 +340,9 @@ const DashboardContent = () => {
                     </div>
                   )}
 
-                  {/* Tab 6: Catalogs (New) */}
-                  {activeTab === 'catalogs' && (
-                    <CatalogManager />
-                  )}
-
-                  {/* Tab 7: BIM (New) */}
-                  {/* Tab 7: BIM (New) */}
-                  {activeTab === 'bim' && (
-                    <div className="h-full px-6 py-6">
-                      <BimPage />
-                    </div>
+                  {/* Tab: Standarde Țevi (pagina dedicată) */}
+                  {activeTab === 'pipe-standards' && (
+                    <PipeStandardsPage />
                   )}
 
                   {/* Tab: BIM Gallery (Interactive) */}
@@ -425,37 +352,13 @@ const DashboardContent = () => {
                     </div>
                   )}
 
-                  {/* Tab 8: Energy (New) */}
-                  {activeTab === 'energy' && (
-                    <EnergyPage />
-                  )}
-
-                  {/* Tab 9: Cost Estimator */}
-                  {activeTab === 'costs' && (
-                    <CostEstimator />
-                  )}
-
-                  {/* Tab 10: Commissioning Checklist */}
-                  {activeTab === 'checklist' && (
-                    <CommissioningChecklist />
-                  )}
-
-                  {/* Tab 11: Hydraulic Tools (Unified) */}
+                  {/* Tab: Hydraulic Tools (Unified) */}
                   {activeTab === 'hydraulics' && (
                     <HydraulicsPage />
                   )}
 
                   {activeTab === 'help' && (
                     <HelpPage />
-                  )}
-
-                  {activeTab === 'boq' && (
-                    <QuantityListPage />
-                  )}
-
-                  {/* Tab: Room Preparation */}
-                  {activeTab === 'room-prep' && (
-                    <RoomPreparationPage />
                   )}
 
                   {/* Tab: Normative Search */}
@@ -488,9 +391,7 @@ export default function Home() {
   return (
     <ProjectProvider>
       <UIProvider>
-        <BimProvider>
-          <DashboardContent />
-        </BimProvider>
+        <DashboardContent />
       </UIProvider>
     </ProjectProvider>
   );

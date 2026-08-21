@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Scale, ClipboardList, Droplet, FileSpreadsheet, PieChart as PieIcon } from 'lucide-react';
-import { generateBoQ, getDetailedWeightReport, calculatePipeVolume } from '@/lib/calculations';
+import { generateBoQ, getDetailedWeightReport } from '@/lib/calculations';
+import { calculateSystemResources } from '@/lib/calc/resources';
 import { useProject } from '@/context/ProjectContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion, useTransform, useMotionValue, animate } from 'framer-motion';
@@ -34,33 +35,40 @@ export const ResultsDisplay: React.FC = React.memo(() => {
         equipmentList,
         glycolPercentage,
         safetyMargin,
-        safetyMarginPercentage
+        safetyMarginPercentage,
+        fluidType
     } = useProject();
 
-    // Optimize heavy calculations
+    // Optimize heavy calculations — SINGLE source of truth (matches Dashboard/PipeManager)
     const { pipesVolume, equipmentVolume, totalSystemVolume } = useMemo(() => {
-        const pVol = segments.reduce((sum, seg) => sum + (seg ? calculatePipeVolume(seg) : 0), 0);
-        const eVol = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
+        const resources = calculateSystemResources(
+            segments,
+            equipmentList || [],
+            glycolPercentage,
+            { enabled: safetyMargin, percentage: safetyMarginPercentage },
+            fluidType
+        );
         return {
-            pipesVolume: pVol,
-            equipmentVolume: eVol,
-            totalSystemVolume: pVol + eVol
+            pipesVolume: resources.totalPipingVolume,
+            equipmentVolume: resources.totalEquipmentVolume,
+            totalSystemVolume: resources.totalSystemVolume
         };
-    }, [segments, equipmentList]);
+    }, [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage, fluidType]);
 
     const boqItems = useMemo(() => generateBoQ(segments), [segments]);
 
     const totalWeight = useMemo(() => {
-        const detailedWeights = getDetailedWeightReport(segments, equipmentList, glycolPercentage);
+        const detailedWeights = getDetailedWeightReport(segments, equipmentList, glycolPercentage, fluidType);
         return detailedWeights.reduce((sum, item) => sum + item.totalWeight, 0);
-    }, [segments, equipmentList, glycolPercentage]);
+    }, [segments, equipmentList, glycolPercentage, fluidType]);
 
     const { toOrderVolume } = useMemo(() => {
-        const marginMultiplier = safetyMargin ? (1 + (safetyMarginPercentage / 100)) : 1;
-        const buffered = totalSystemVolume * marginMultiplier;
-        const finalVal = Math.ceil(buffered / 50) * 50;
+        // totalSystemVolume from the shared calculator ALREADY includes safety margin
+        // (rounded up to 10 L like Dashboard/PipeManager). No second rounding to 50 L
+        // — one quantity, one number, everywhere.
+        const buffered = totalSystemVolume;
         return {
-            toOrderVolume: finalVal === 0 ? 0 : finalVal
+            toOrderVolume: buffered
         };
     }, [totalSystemVolume, safetyMargin, safetyMarginPercentage]);
 
