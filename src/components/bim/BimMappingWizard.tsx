@@ -91,13 +91,18 @@ export const BimMappingWizard = ({ isOpen, onClose, bimObject, onSave }: BimMapp
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Target Head (kPa)</label>
+                                    <label className="text-sm font-medium">Target Head (kPa → convertit automat în m)</label>
                                     <input
                                         type="number"
                                         className="input-field w-full text-lg font-mono"
                                         value={manualData.head}
                                         onChange={e => setManualData({ ...manualData, head: Number(e.target.value) })}
                                     />
+                                    {manualData.head > 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            = {(manualData.head / 9.81).toFixed(2)} m coloană de apă
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -160,6 +160,7 @@ function findStandardSize(requiredVolume: number): number {
  */
 export function calculateExpansionVessel(input: ExpansionVesselInput): ExpansionVesselResult {
     const warnings: string[] = [];
+    const hardErrors: string[] = [];
 
     // Validate inputs
     if (input.systemVolume <= 0) {
@@ -180,6 +181,9 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
     }
 
     // 1. Calculate expansion coefficient
+    if (input.glycolPercentage > 60) {
+        warnings.push(`Concentrație glicol ${input.glycolPercentage}% peste limita datelor (60%) — valori extrapolate/clampate`);
+    }
     const eMin = getWaterExpansion(input.minTemperature);
     const eMax = getWaterExpansion(input.maxTemperature);
     const glycolMultiplier = getGlycolMultiplier(input.glycolPercentage);
@@ -221,6 +225,28 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
 
     const acceptanceFactor = 1 - (p0Abs / pfAbs);
 
+    if (acceptanceFactor <= 0.05) {
+        // Hard-fail: vessel cannot absorb expansion with these pressures.
+        // Returning a small "recommended" vessel here is FALSE information.
+        hardErrors.push(
+            'Configurație imposibilă: presiunea de umplere ≥ presiunea maximă admisă — verificați supapa de siguranță / presiunea de preîncărcare'
+        );
+        return {
+            expansionVolume: Math.round(expansionVolume * 10) / 10,
+            expansionCoefficient: Math.round(expansionCoefficient * 10000) / 10000,
+            waterReserve: Math.round(waterReserve * 10) / 10,
+            staticPressure: Math.round(staticPressure * 100) / 100,
+            prechargePressure: Math.round(prechargePressure * 10) / 10,
+            fillPressure: Math.round(fillPressure * 10) / 10,
+            maxPressure: Math.round(maxPressure * 10) / 10,
+            requiredVolume: 0,
+            recommendedVessel: 0,
+            acceptanceFactor: Math.round(acceptanceFactor * 100) / 100,
+            isValid: false,
+            warnings: hardErrors
+        };
+    }
+
     if (acceptanceFactor <= 0.1) {
         warnings.push('Factor de acceptare prea mic - diferență insuficientă între presiuni');
     }
@@ -257,7 +283,7 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
         requiredVolume: Math.round(requiredVolume * 10) / 10,
         recommendedVessel,
         acceptanceFactor: Math.round(acceptanceFactor * 100) / 100,
-        isValid: warnings.filter(w => w.includes('!')).length === 0,
+        isValid: hardErrors.length === 0,
         warnings
     };
 }

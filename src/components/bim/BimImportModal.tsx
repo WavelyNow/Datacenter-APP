@@ -14,6 +14,7 @@ const IfcViewer = dynamic(() => import('./IfcViewer').then(mod => mod.IfcViewer)
 import { IfcService } from '@/lib/bim/IfcService';
 import { PipeSegment } from '@/lib/types';
 import { BimObject } from '@/lib/bim/types';
+import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 
 interface BimImportModalProps {
     isOpen: boolean;
@@ -57,15 +58,36 @@ export const BimImportModal: React.FC<BimImportModalProps> = ({ isOpen, onClose 
 
             const pipes: PipeSegment[] = bimObjects
                 .filter(obj => obj.type?.toLowerCase().includes('pipe') || obj.ifcType === 3758099475) // IfcPipeSegment
-                .map(obj => ({
-                    id: `bim-${obj.id}`,
-                    name: obj.name || 'BIM Pipe',
-                    material: 'custom' as const,
-                    standard: 'BIM Import',
-                    size: String(obj.diameter) || 'Unknown',
-                    length: obj.length || 1,
-                    customInnerDiameter: undefined, // Or handle as needed
-                }));
+                .map(obj => {
+                    // BimObject.diameter is a STRING (e.g. "DN50", "108.3", "50mm")
+                    const diameterRaw = parseFloat(String(obj.diameter ?? '').replace(/[^\d.]/g, '')) || 0;
+                    // IFC geometric lengths are METERS. Never invent "1 m" silently.
+                    const lengthRaw = typeof obj.length === 'number' ? obj.length : 0;
+
+                    // Resolve a real standard size when the extracted diameter matches one;
+                    // otherwise fall back to 'custom' WITH explicit dimensions so hydraulics
+                    // and exports see real values (no silent zero-volume segments).
+                    const steelStandard = PIPE_STANDARDS['steel_light'] ?? PIPE_STANDARDS['steel_normal'];
+                    const match = steelStandard?.dimensions.find(d =>
+                        Math.abs(d.id - diameterRaw) < 0.6 ||
+                        Math.abs(d.od - diameterRaw) < 0.6
+                    );
+
+                    const base: PipeSegment = {
+                        id: `bim-${obj.id}`,
+                        name: obj.name || 'BIM Pipe',
+                        material: match ? 'steel_light' : 'custom',
+                        standard: match ? (steelStandard?.label ?? 'ISO 4200') : 'BIM Import',
+                        size: match ? match.dn : (diameterRaw > 0 ? `DN${Math.round(diameterRaw)}` : 'Unknown'),
+                        length: lengthRaw > 0 ? lengthRaw : 1, // 1m only as LAST-RESORT placeholder, flagged via name
+                        customInnerDiameter: diameterRaw > 0 ? diameterRaw : (match ? match.id : undefined),
+                    };
+
+                    return {
+                        ...base,
+                        name: lengthRaw > 0 ? base.name : `${base.name} (LUNGIME NECUNOSCUTĂ — verificați)`,
+                    };
+                });
 
             setFoundPipes(pipes);
             setStatus('extracted');

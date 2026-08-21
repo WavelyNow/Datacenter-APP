@@ -1,4 +1,4 @@
-import { PipeSegment, EquipmentItem } from '../types';
+import { PipeSegment, EquipmentItem, FluidType } from '../types';
 import { getPipeData, getFluidDensity } from './common';
 
 export const calculatePipeVolume = (segment: PipeSegment): number => {
@@ -28,14 +28,16 @@ export const calculatePipeVolume = (segment: PipeSegment): number => {
 export const calculateTotalVolume = (
     segments: PipeSegment[],
     equipmentList: EquipmentItem[],
-    safetyMargin: boolean
+    safetyMargin: boolean,
+    safetyMarginPercentage: number = 5
 ): number => {
     const pipesVolume = segments.reduce((sum, seg) => sum + (seg ? calculatePipeVolume(seg) : 0), 0);
     const equipmentVolume = equipmentList?.reduce((sum, item) => sum + (item.volume || 0), 0) || 0;
 
     const baseVolume = pipesVolume + equipmentVolume;
 
-    return safetyMargin ? baseVolume * 1.05 : baseVolume;
+    // Use the user's CONFIGURED percentage (default 5% — no longer hardcoded)
+    return safetyMargin ? baseVolume * (1 + safetyMarginPercentage / 100) : baseVolume;
 };
 
 export const calculateGlycolVolume = (totalVolume: number, percentage: number): number => {
@@ -50,7 +52,8 @@ export const calculateSystemWeight = (
     segments: PipeSegment[],
     equipmentList: EquipmentItem[],
     totalVolume: number,
-    glycolPercentage: number = 0 // Default to water if not provided
+    glycolPercentage: number = 0, // Default to water if not provided
+    fluidType: FluidType = 'ethylene'
 ): { emptyWeight: number; fluidWeight: number; totalWeight: number } => {
 
     // 1. Calculate Total Empty Pipe Weight
@@ -73,7 +76,7 @@ export const calculateSystemWeight = (
     const equipmentEmptyWeight = equipmentList?.reduce((sum, item) => sum + (item.weight || 0), 0) || 0;
 
     // 3. Calculate Fluid Weight
-    const fluidDensity = getFluidDensity(glycolPercentage);
+    const fluidDensity = getFluidDensity(glycolPercentage, fluidType);
     const fluidWeight = totalVolume * fluidDensity;
 
     const totalEmptyWeight = pipeEmptyWeight + equipmentEmptyWeight;

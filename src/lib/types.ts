@@ -139,6 +139,10 @@ export interface ProjectLoadData {
     fluidType?: FluidType;
     glycolPercentage?: number;
     safetyMargin?: boolean;
+    safetyMarginPercentage?: number;
+    supportConfig?: SupportConfig;
+    branding?: BrandingConfig;
+    boqItems?: BoQItem[];
     ifcModelUrl?: string | null;
 }
 

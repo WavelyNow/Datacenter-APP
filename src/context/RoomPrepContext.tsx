@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useMemo } from 'react';
 import {
     RoomPreparation,
     PhaseStatus,
@@ -15,6 +15,8 @@ interface RoomPrepContextType {
     // Current room
     currentRoom: RoomPreparation | null;
     rooms: RoomPreparation[];
+    /** True once the provider has hydrated from localStorage (client-only). */
+    isInitialized: boolean;
 
     // Room management
     createRoom: (name: string) => RoomPreparation;
@@ -53,32 +55,53 @@ const RoomPrepContext = createContext<RoomPrepContextType | undefined>(undefined
 const STORAGE_KEY = 'datacenter_room_preparations';
 
 export function RoomPrepProvider({ children }: { children: ReactNode }) {
-    // Use lazy initialization to load from localStorage
-    const [rooms, setRooms] = useState<RoomPreparation[]>(() => {
-        if (typeof window === 'undefined') return [];
+    // SSR-safe hydration: start empty, read localStorage only after mount to avoid hydration mismatches.
+    const [rooms, setRooms] = useState<RoomPreparation[]>([]);
+    const [currentRoom, setCurrentRoom] = useState<RoomPreparation | null>(null);
+    const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Hydrate from localStorage (client-side only)
+    useEffect(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                return JSON.parse(stored);
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    setRooms(parsed);
+                }
             }
         } catch (e) {
             console.warn('Failed to load room preparations:', e);
         }
-        return [];
-    });
-    const [currentRoom, setCurrentRoom] = useState<RoomPreparation | null>(null);
-    const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+        setIsInitialized(true);
+    }, []);
 
-    // Save rooms to localStorage when changed
+    // Save rooms to localStorage when changed — ALWAYS (including [] so deletions persist).
+    // Debounced to avoid serializing the whole collection on every mutation.
     useEffect(() => {
-        if (rooms.length > 0) {
+        if (!isInitialized) return;
+        const timer = setTimeout(() => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(rooms));
             } catch (e) {
                 console.warn('Failed to save room preparations:', e);
             }
-        }
-    }, [rooms]);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [rooms, isInitialized]);
+
+    // Keep the rooms array in sync with currentRoom on every mutation, so unsaved
+    // edits are never lost when switching rooms and list progress is always fresh.
+    useEffect(() => {
+        if (!currentRoom) return;
+        const syncedRoom: RoomPreparation = {
+            ...currentRoom,
+            completionPercentage: calculateCompletionPercentage(currentRoom)
+        };
+        setRooms(prev => prev.map(r => (r.id === syncedRoom.id ? syncedRoom : r)));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentRoom]);
 
     // Create new room
     const createRoom = useCallback((name: string): RoomPreparation => {
@@ -279,27 +302,48 @@ export function RoomPrepProvider({ children }: { children: ReactNode }) {
         return progress.percentage === 100;
     }, [getPhaseProgress]);
 
+    // Live completion for the currentRoom exposed to consumers (stale-safe, identity-stable)
+    const derivedCurrentRoom = useMemo<RoomPreparation | null>(() => {
+        if (!currentRoom) return null;
+        const completion = calculateCompletionPercentage(currentRoom);
+        return currentRoom.completionPercentage === completion
+            ? currentRoom
+            : { ...currentRoom, completionPercentage: completion };
+    }, [currentRoom]);
+
+    const value = useMemo<RoomPrepContextType>(() => ({
+        // Derive completionPercentage live instead of storing a stale value on mutations.
+        // Identity is preserved when completion already matches, to avoid needless re-renders.
+        currentRoom: derivedCurrentRoom,
+        rooms,
+        isInitialized,
+        createRoom,
+        loadRoom,
+        saveRoom,
+        deleteRoom,
+        currentPhaseIndex,
+        setCurrentPhaseIndex,
+        nextPhase,
+        prevPhase,
+        updateChecklistItem,
+        toggleItemStatus,
+        setItemValue,
+        updateStructure,
+        updatePhaseStatus,
+        updatePhaseNotes,
+        getPhaseProgress,
+        isPhaseComplete
+    }), [
+        derivedCurrentRoom, rooms, isInitialized,
+        createRoom, loadRoom, saveRoom, deleteRoom,
+        currentPhaseIndex, setCurrentPhaseIndex, nextPhase, prevPhase,
+        updateChecklistItem, toggleItemStatus, setItemValue,
+        updateStructure, updatePhaseStatus, updatePhaseNotes,
+        getPhaseProgress, isPhaseComplete
+    ]);
+
     return (
-        <RoomPrepContext.Provider value={{
-            currentRoom,
-            rooms,
-            createRoom,
-            loadRoom,
-            saveRoom,
-            deleteRoom,
-            currentPhaseIndex,
-            setCurrentPhaseIndex,
-            nextPhase,
-            prevPhase,
-            updateChecklistItem,
-            toggleItemStatus,
-            setItemValue,
-            updateStructure,
-            updatePhaseStatus,
-            updatePhaseNotes,
-            getPhaseProgress,
-            isPhaseComplete
-        }}>
+        <RoomPrepContext.Provider value={value}>
             {children}
         </RoomPrepContext.Provider>
     );

@@ -1,17 +1,20 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calculator, Ruler, Scale, Activity, Box } from 'lucide-react';
-import { PipeSegment } from '@/lib/types';
+import { PipeSegment, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { getFluidDensity } from '@/lib/calculations/common';
+import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 
 interface SegmentDetailSheetProps {
     segment: PipeSegment | null;
     onClose: () => void;
     glycolPercentage: number;
+    fluidType?: FluidType;
 }
 
-export function SegmentDetailSheet({ segment, onClose, glycolPercentage }: SegmentDetailSheetProps) {
+export function SegmentDetailSheet({ segment, onClose, glycolPercentage, fluidType = 'ethylene' }: SegmentDetailSheetProps) {
     const standardData = useMemo(() => {
         if (!segment) return null;
         if (segment.material === 'custom') return null;
@@ -48,19 +51,21 @@ export function SegmentDetailSheet({ segment, onClose, glycolPercentage }: Segme
         const weightPerMeter = dimensionData?.weight || 0;
         const totalEmptyWeight = weightPerMeter * length_m;
 
-        // Fluid weight
-        const fluidDensity = 1000 + (glycolPercentage * 5); // kg/m³ approximation
+        // Fluid weight — SINGLE source of truth (glycol-type aware)
+        const fluidDensity = getFluidDensity(glycolPercentage, fluidType) * 1000; // kg/L → kg/m³
         // 1 m³ = 1000 L
         const volume_m3 = volume_liters / 1000;
         const fluidMass = volume_m3 * fluidDensity;
 
-        // Hydraulics
+        // Hydraulics — real fluid properties (density + kinematic viscosity from type/%),
+        // NOT hardcoded water values (avoids 2-3× pressure-drop underestimation for glycol).
+        const fluidProps = getFluidProperties(fluidType, glycolPercentage);
         const hydraulics = calculateHydraulics(
             segment.flowRate || 0,
             id_mm,
             0.045, // roughness
-            fluidDensity,
-            0.000001
+            fluidProps.densityKgM3,
+            fluidProps.kinematicViscosityM2S
         );
 
         return {
@@ -77,7 +82,7 @@ export function SegmentDetailSheet({ segment, onClose, glycolPercentage }: Segme
             totalOperatingWeight: totalEmptyWeight + fluidMass,
             hydraulics
         };
-    }, [segment, dimensionData, glycolPercentage]);
+    }, [segment, dimensionData, glycolPercentage, fluidType]);
 
     if (!segment) return null;
 

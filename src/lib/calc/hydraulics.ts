@@ -20,8 +20,8 @@ export const calculateHydraulics = (
     flowRate: number,
     innerDiameterMm: number,
     roughnessMm: number = 0.045,
-    fluidDensity: number = 1045, // Example for Glycol 30%
-    kinematicViscosity: number = 2.5e-6 // Example for Glycol 30% @ 7°C
+    fluidDensity: number = 1000,
+    kinematicViscosity: number = 1.004e-6
 ): HydraulicResult => {
 
     if (flowRate <= 0 || innerDiameterMm <= 0) {
@@ -64,7 +64,18 @@ export const calculateHydraulics = (
         const term1 = relativeRoughness / 3.7;
         const term2 = 5.74 / Math.pow(Re, 0.9);
 
-        f = 0.25 / Math.pow(Math.log10(term1 + term2), 2);
+        const fTurbulent = 0.25 / Math.pow(Math.log10(term1 + term2), 2);
+
+        // Transitional (2300 ≤ Re < 4000): interpolate between laminar and turbulent
+        // — matches pressureDrop.ts behavior (no regime discontinuity)
+        if (regime === 'Transitional') {
+            const fLaminar = 64 / Re;
+            const f4000 = 0.25 / Math.pow(Math.log10(term1 + 5.74 / Math.pow(4000, 0.9)), 2);
+            const ratio = (Re - 2300) / 1700;
+            f = fLaminar + (f4000 - fLaminar) * ratio;
+        } else {
+            f = fTurbulent;
+        }
     }
 
     // 6. Pressure Drop (Darcy-Weisbach Equation)

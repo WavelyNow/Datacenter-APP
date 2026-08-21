@@ -6,6 +6,9 @@ interface HistoryState<T> {
     future: T[];
 }
 
+// Hard cap for the undo stack — each entry is a full deep snapshot, so keep memory bounded.
+const HISTORY_LIMIT = 50;
+
 export function useHistory<T>(initialPresent: T) {
     const [state, setState] = useState<HistoryState<T>>({
         past: [],
@@ -26,7 +29,7 @@ export function useHistory<T>(initialPresent: T) {
             return {
                 past: newPast,
                 present: previous,
-                future: [currentState.present, ...currentState.future]
+                future: [currentState.present, ...currentState.future].slice(0, HISTORY_LIMIT)
             };
         });
     }, []);
@@ -55,7 +58,7 @@ export function useHistory<T>(initialPresent: T) {
             if (currentState.present === resolvedPresent) return currentState;
 
             return {
-                past: [...currentState.past, currentState.present],
+                past: [...currentState.past, currentState.present].slice(-HISTORY_LIMIT),
                 present: resolvedPresent,
                 future: []
             };

@@ -23,13 +23,14 @@ interface ExpansionVesselCalculatorProps {
 }
 
 export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVesselCalculatorProps) {
-    const { segments, equipmentList, glycolPercentage, fluidType } = useProject();
+    const { segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage } = useProject();
 
     // Calculate system volume from project data or use external prop
+    // IMPORTANT: pass the user's ACTUAL safety margin (was hardcoded +5% before).
     const systemVolume = useMemo(() => {
         if (externalSystemVolume !== undefined) return externalSystemVolume;
-        return calculateTotalVolume(segments, equipmentList, true);
-    }, [segments, equipmentList, externalSystemVolume]);
+        return calculateTotalVolume(segments, equipmentList, safetyMargin, safetyMarginPercentage);
+    }, [segments, equipmentList, externalSystemVolume, safetyMargin, safetyMarginPercentage]);
 
     // Input state
     const [input, setInput] = useState<ExpansionVesselInput>({
@@ -41,12 +42,15 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
         staticHeight: 5,
         safetyValvePressure: 6,
     });
+    // Track manual overrides so auto-fill never clobbers the user's values
+    const volumeTouched = React.useRef(false);
 
     // Update input when project data changes
     React.useEffect(() => {
         setInput(prev => ({
             ...prev,
-            systemVolume: systemVolume,
+            // Only auto-fill systemVolume if the user hasn't manually overridden it
+            systemVolume: volumeTouched.current ? prev.systemVolume : systemVolume,
             glycolPercentage: glycolPercentage,
             fluidType: fluidType,
         }));
@@ -58,6 +62,7 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
     }, [input]);
 
     const handleInputChange = (field: keyof ExpansionVesselInput, value: number) => {
+        if (field === 'systemVolume') volumeTouched.current = true;
         setInput(prev => ({ ...prev, [field]: value }));
     };
 

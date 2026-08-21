@@ -12,9 +12,9 @@ import {
 describe('Common Utility Functions', () => {
 
     describe('getFluidDensity', () => {
-        it('returns 1.000 kg/L for pure water (0% glycol)', () => {
+        it('returns 1.000 kg/L for pure water (0% glycol) — physical value 0.998 kg/L @20°C', () => {
             const density = getFluidDensity(0);
-            expect(density).toBeCloseTo(1.000, 3);
+            expect(density).toBeCloseTo(0.998, 3);
         });
 
         it('returns higher density for glycol mixtures', () => {
@@ -47,6 +47,16 @@ describe('Common Utility Functions', () => {
         it('returns typical values for common concentrations', () => {
             expect(getFluidDensity(30)).toBeCloseTo(1.038, 2);
             expect(getFluidDensity(40)).toBeCloseTo(1.051, 2);
+        });
+
+        it('distinguishes propylene from ethylene glycol (PG is less dense at same %)', () => {
+            const eg30 = getFluidDensity(30, 'ethylene');
+            const pg30 = getFluidDensity(30, 'propylene');
+            const water = getFluidDensity(30, 'water');
+
+            expect(pg30).toBeLessThan(eg30);
+            expect(pg30).toBeCloseTo(1.024, 2); // PG 30% vol @20°C ≈ 1.024 kg/L
+            expect(water).toBe(0.998);
         });
     });
 

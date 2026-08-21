@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 
 import { TabId } from '@/lib/types';
 
@@ -29,14 +29,14 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
         setIsSidebarCollapsed(prev => !prev);
     }, []);
 
-    const value: UIContextState = {
+    const value: UIContextState = useMemo(() => ({
         activeTab,
         setActiveTab,
         highlightedItemId,
         setHighlightedItemId,
         isSidebarCollapsed,
         toggleSidebar
-    };
+    }), [activeTab, highlightedItemId, isSidebarCollapsed, toggleSidebar]);
 
     return (
         <UIContext.Provider value={value}>

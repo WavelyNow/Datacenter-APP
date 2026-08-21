@@ -1,4 +1,4 @@
-import { PipeSegment } from '../types';
+import { PipeSegment, FluidType } from '../types';
 import { PIPE_STANDARDS } from '../pipeStandards';
 import { MUPRO_MASTER_CATALOG, MuproComponent } from '../muproVerifiedStandards';
 import { getPipeData, getFluidDensity, getClampWeight, ACCESSORY_WEIGHTS } from './common';
@@ -123,10 +123,11 @@ export const calculateSupportReport = (
         addLeftConsole?: boolean;
         addRightConsole?: boolean;
         addUpperRail?: boolean;
-    }
+    },
+    fluidType: FluidType = 'ethylene'
 ): SupportItem[] => {
     const spacing = config.spacing;
-    const fluidDensity = getFluidDensity(glycolPercentage);
+    const fluidDensity = getFluidDensity(glycolPercentage, fluidType);
     const mountingHeight = config.height || 1.5; // Default safe height
 
     // Use values from config

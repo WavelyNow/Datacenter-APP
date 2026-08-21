@@ -17,6 +17,7 @@ export interface ValveSizingInput {
     fluidDensity: number;    // kg/m³ (fluid density)
     temperature?: number;    // °C (optional, for viscosity correction)
     viscosity?: number;      // cSt (optional, kinematic viscosity)
+    circuitPressureDropBar?: number; // bar — ΔP of the controlled branch EXCLUDING the valve (for real valve authority)
 }
 
 export interface ValveSizingResult {
@@ -31,6 +32,7 @@ export interface ValveSizingResult {
     // Flow characteristics
     velocity: number;           // m/s through valve
     authority: number;          // Valve authority (ΔPv / ΔPtotal)
+    authorityEstimated: boolean; // true when circuit ΔP was not provided and authority is estimated
     openingPercent: number;     // Estimated opening percentage
 
     // Validation
@@ -184,19 +186,21 @@ function calculateVelocity(flowM3H: number, dn: string): number {
 
 /**
  * Calculate valve opening percentage based on Kv ratio
- * Uses equal percentage characteristic approximation
+ * True equal-percentage characteristic: x = 1 + ln(Kv_req/Kv_100) / ln(R), R = 50
+ * (The old "30 + 70·√ratio" heuristic returned ~37% for a 100× oversized
+ * valve — the oversized-valve warning never fired. This is the correct curve.)
  */
-function calculateOpening(kvRequired: number, kvAvailable: number): number {
+export function calculateOpening(kvRequired: number, kvAvailable: number): number {
     if (kvAvailable <= 0) return 100;
+    if (kvRequired <= 0) return 0;
 
     const ratio = kvRequired / kvAvailable;
+    const rangeability = 50; // typical equal-% R
 
-    // Equal percentage characteristic: Kv/Kvs = R^(x-1) where R ≈ 50
-    // Simplified: x ≈ 1 + log(Kv/Kvs)/log(R)
-    // For quick estimate: opening ≈ 30 + 70 × (Kv/Kvs)^0.5
-    const opening = 30 + 70 * Math.pow(ratio, 0.5);
+    // x = 1 + ln(ratio)/ln(R), clamped to [0, 1]
+    const x = Math.max(0, Math.min(1, 1 + Math.log(ratio) / Math.log(rangeability)));
 
-    return Math.min(100, Math.max(0, opening));
+    return x * 100;
 }
 
 // ============================================================================
@@ -219,6 +223,7 @@ export function calculateValveSizing(input: ValveSizingInput): ValveSizingResult
             kvAvailable: 0,
             velocity: 0,
             authority: 0,
+            authorityEstimated: true,
             openingPercent: 0,
             isValid: false,
             warnings: ['Debitul trebuie să fie > 0'],
@@ -234,6 +239,7 @@ export function calculateValveSizing(input: ValveSizingInput): ValveSizingResult
             kvAvailable: 0,
             velocity: 0,
             authority: 0,
+            authorityEstimated: true,
             openingPercent: 0,
             isValid: false,
             warnings: ['Căderea de presiune trebuie să fie > 0'],
@@ -254,9 +260,12 @@ export function calculateValveSizing(input: ValveSizingInput): ValveSizingResult
     // Calculate opening percentage
     const openingPercent = calculateOpening(kvRequired, kvAvailable);
 
-    // Valve authority (using the actual pressure drop as fraction of typical 10 bar system)
-    // A good valve authority is > 0.5
-    const authority = input.pressureDrop / (input.pressureDrop + 0.5); // Simplified
+    // Valve authority: N = ΔPvalve / (ΔPvalve + ΔPcircuit)
+    // Real authority needs the measured/calculated circuit ΔP (excluding the valve).
+    // When not provided, fall back to a clearly-labeled estimate.
+    const authorityEstimated = input.circuitPressureDropBar === undefined || input.circuitPressureDropBar <= 0;
+    const circuitDrop = authorityEstimated ? 0.5 : input.circuitPressureDropBar!;
+    const authority = input.pressureDrop / (input.pressureDrop + circuitDrop);
 
     // Validation and warnings
     if (velocity > 4) {
@@ -274,7 +283,9 @@ export function calculateValveSizing(input: ValveSizingInput): ValveSizingResult
     }
 
     if (authority < 0.3) {
-        recommendations.push('Autoritate scăzută - robinet poate fi instabil');
+        recommendations.push(authorityEstimated
+            ? 'Autoritate estimată scăzută — adăugați căderea reală a circuitului pentru verificare'
+            : 'Autoritate scăzută - robinet poate fi instabil');
     }
 
     if (kvRequired > BALL_VALVE_KV['DN200']) {
@@ -294,6 +305,7 @@ export function calculateValveSizing(input: ValveSizingInput): ValveSizingResult
         kvAvailable,
         velocity: Math.round(velocity * 100) / 100,
         authority: Math.round(authority * 100) / 100,
+        authorityEstimated,
         openingPercent: Math.round(openingPercent),
         isValid: warnings.length === 0,
         warnings,

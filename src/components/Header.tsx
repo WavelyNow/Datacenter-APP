@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
 import { Box, Book, Printer, Save, Upload, Layers, Undo, Redo, User, ChevronRight, Settings, LogOut, UserCircle } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
+import { useProject } from '@/context/ProjectContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
 import { Tooltip } from './ui/Tooltip';
@@ -39,6 +40,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
     canRedo
 }) => {
     const { activeTab, setActiveTab } = useUI();
+    const { resetProject } = useProject();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -276,16 +278,18 @@ const HeaderBase: React.FC<HeaderProps> = ({
                                         <button
                                             onClick={() => {
                                                 setIsUserMenuOpen(false);
-                                                // For now, just show an alert - can be replaced with actual logout logic
-                                                if (window.confirm('Sigur doriți să vă deconectați?')) {
-                                                    // Reset to dashboard or trigger actual logout
+                                                // There is NO auth/session in the app — a fake "logout"
+                                                // would lie to the user. This resets the local project
+                                                // (a REAL operation): clears data + cloud link.
+                                                if (window.confirm('Resetare proiect: se șterge TOT conținutul proiectului local (inclusiv link-ul cloud). Continuați?')) {
+                                                    resetProject();
                                                     setActiveTab('dashboard');
                                                 }
                                             }}
                                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                                         >
                                             <LogOut className="w-4 h-4" />
-                                            <span>Deconectare</span>
+                                            <span>Reset Proiect (Șterge tot)</span>
                                         </button>
                                     </div>
                                 </div>

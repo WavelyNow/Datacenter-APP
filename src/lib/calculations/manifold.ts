@@ -6,11 +6,11 @@ import { getPipeData } from './common';
 export type FittingType = 'elbow_90' | 'tee_flow' | 'tee_branch' | 'valve_butterfly' | 'valve_ball' | 'reducer' | 'enlargement';
 
 export const ZETA_VALUES: Record<FittingType, number> = {
-    elbow_90: 0.6, // Short radius / Standard Elbow
-    tee_flow: 0.2, // Run through Tee
-    tee_branch: 1.3, // Flow through Branch
-    valve_butterfly: 0.3, // Fully open
-    valve_ball: 0.1, // Fully open
+    elbow_90: 0.75, // Standard 90° elbow (aligned with fittings.ts K_FACTORS)
+    tee_flow: 0.60, // Run through Tee
+    tee_branch: 1.80, // Flow through Branch
+    valve_butterfly: 0.25, // Fully open
+    valve_ball: 0.05, // Fully open
     reducer: 0.5, // Conservative estimate
     enlargement: 1.0 // Sudden expansion
 };
@@ -47,11 +47,29 @@ export interface SimulationResultNode {
     flowRate: number; // m3/h at this node
 }
 
+/**
+ * Classify flow regime from Reynolds number (Re = v·D/ν).
+ * Uses the correct 2300/4000 Re thresholds (NOT velocity thresholds).
+ */
+export function classifyRegime(
+    velocity: number,
+    diameterM: number,
+    fluidDensity: number,
+    kinematicViscosity: number
+): string {
+    if (velocity <= 0 || diameterM <= 0 || kinematicViscosity <= 0) return 'Laminar';
+    const Re = (velocity * diameterM) / kinematicViscosity;
+    if (Re < 2300) return 'Laminar';
+    if (Re < 4000) return 'Transitional';
+    return 'Turbulent';
+}
+
 export const calculateManifoldSimulation = (
     nodes: ManifoldNode[],
     inletFlowRate: number, // m3/h
     inletTemp: number, // C
-    fluidDensity: number = 1000 // kg/m3
+    fluidDensity: number = 1000, // kg/m3
+    kinematicViscosity: number = 1.004e-6 // m²/s (default water 20°C)
 ): SimulationResultNode[] => {
     let currentFlow = inletFlowRate;
     let currentPressureDrop = 0;
@@ -93,6 +111,7 @@ export const calculateManifoldSimulation = (
         // 4. Zeta / K-Value & Pressure Drop
         let zeta = 0;
         let pressureDrop = 0;
+        let flowRegimeStr = 'Laminar';
 
         // Default length for fitting thermal calc (equivalent length or physical length)
         // For a fitting, surface area is approx same as pipe of length 2xD?
@@ -102,6 +121,7 @@ export const calculateManifoldSimulation = (
         if (node.type === 'fitting' && node.fittingType) {
             zeta = ZETA_VALUES[node.fittingType] || 0;
             pressureDrop = zeta * (fluidDensity * Math.pow(velocity, 2)) / 2;
+            flowRegimeStr = classifyRegime(velocity, id_m, fluidDensity, kinematicViscosity);
             
             // Thermal: Approx surface area for fitting
             elementLength = od_m * 3; // Approx length of a fitting
@@ -109,8 +129,9 @@ export const calculateManifoldSimulation = (
 
         } else if (node.type === 'pipe' && node.length) {
             // Darcy-Weisbach standard pipe calc
-            const res = calculateHydraulics(currentFlow, pipeData.id, 0.045, fluidDensity);
+            const res = calculateHydraulics(currentFlow, pipeData.id, 0.045, fluidDensity, kinematicViscosity);
             pressureDrop = res.pressureDropPa * node.length;
+            flowRegimeStr = res.flowRegime;
             
             elementLength = node.length;
             surfaceArea = Math.PI * od_m * node.length;
@@ -118,6 +139,7 @@ export const calculateManifoldSimulation = (
         } else if (node.type === 'outlet') {
             zeta = ZETA_VALUES['tee_branch'];
             pressureDrop = zeta * (fluidDensity * Math.pow(velocity, 2)) / 2;
+            flowRegimeStr = classifyRegime(velocity, id_m, fluidDensity, kinematicViscosity);
             
             elementLength = od_m * 2;
             surfaceArea = Math.PI * od_m * elementLength;
@@ -125,6 +147,7 @@ export const calculateManifoldSimulation = (
             // Inlet has no loss usually, reference point
              pressureDrop = 0;
              surfaceArea = 0;
+             flowRegimeStr = classifyRegime(velocity, id_m, fluidDensity, kinematicViscosity);
         }
 
         currentPressureDrop += pressureDrop;
@@ -154,7 +177,7 @@ export const calculateManifoldSimulation = (
             pressureDropPa: pressureDrop,
             cumulativePressureDropPa: currentPressureDrop,
             kValue: zeta,
-            flowRegime: velocity > 4000 ? 'Turbulent' : (velocity > 2300 ? 'Transitional' : 'Laminar'), // Re check simplified
+            flowRegime: flowRegimeStr,
             temp: parseFloat(currentTemp.toFixed(4)),
             flowRate: currentFlow
         });

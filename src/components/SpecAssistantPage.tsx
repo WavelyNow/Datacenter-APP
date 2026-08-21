@@ -6,6 +6,7 @@ import { Sparkles, FileText, Plus, Check, Loader2, ArrowRight, AlertCircle, Tras
 import { useProject } from '@/context/ProjectContext';
 import { analyzeSpecifications } from '@/lib/calculations/specAssistant';
 import { EquipmentItem, PipeSegment } from '@/lib/types';
+import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 
 export const SpecAssistantPage = () => {
     const { projectDetails, setProjectDetails, setEquipmentList, addSegments } = useProject();
@@ -23,12 +24,13 @@ export const SpecAssistantPage = () => {
         // Save text to project context
         setProjectDetails({ ...projectDetails, specifications: specText });
         
-        // Simulate "AI" thinking
-        setTimeout(() => {
+        // Rule-based parser (NO fake latency — results are instant, honest labeling)
+        try {
             const analysis = analyzeSpecifications(specText);
             setResults(analysis);
+        } finally {
             setIsAnalyzing(false);
-        }, 1500);
+        }
     };
 
     const handleAddEquipment = (item: Partial<EquipmentItem>) => {
@@ -48,6 +50,9 @@ export const SpecAssistantPage = () => {
         setAddedIds(new Set());
     };
 
+    // True when the text contains an actual pipe length in meters (not mm/cm)
+    const textDetected = /(?<![\w.,])\d+(?:[.,]\d+)?\s*m(?!\w)/i.test(specText);
+
     return (
         <div className="max-w-6xl mx-auto p-8 space-y-8 pb-32">
             <header>
@@ -55,10 +60,10 @@ export const SpecAssistantPage = () => {
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
                         <Sparkles className="w-6 h-6" />
                     </div>
-                    <h1 className="text-3xl font-bold">Asistent Specificații AI</h1>
+                    <h1 className="text-3xl font-bold">Asistent Specificații</h1>
                 </div>
                 <p className="text-muted-foreground">
-                    Introdu textul din Caietul de Sarcini pentru a primi sugestii automate de echipamente și materiale.
+                    Extrage automat (pe bază de reguli text) echipamente și conducte din Caietul de Sarcini. Valorile sugerate sunt estimări — verificați-le înainte de a le adăuga în proiect.
                 </p>
             </header>
 
@@ -85,7 +90,7 @@ export const SpecAssistantPage = () => {
                             className="btn btn-primary w-full mt-6 h-12 gap-2 shadow-lg shadow-primary/20"
                         >
                             {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                            {isAnalyzing ? 'Se analizează...' : 'Analizează cu AI'}
+                            {isAnalyzing ? 'Se analizează...' : 'Analizează textul'}
                         </button>
                     </div>
                 </div>
@@ -161,7 +166,14 @@ export const SpecAssistantPage = () => {
                                                     </div>
                                                     <div>
                                                         <h4 className="text-sm font-bold">{seg.size} - {seg.length}m</h4>
-                                                        <p className="text-xs text-muted-foreground">{seg.material === 'custom' ? 'Oțel' : seg.material}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {seg.material === 'custom'
+                                                                ? 'Oțel (presupus — confirmați)'
+                                                                : (PIPE_STANDARDS[seg.material as keyof typeof PIPE_STANDARDS]?.label ?? seg.material)}
+                                                            {seg.length === 10 && !textDetected
+                                                                ? ' · LUNGIME IMPLICITĂ — verificați'
+                                                                : ''}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <button

@@ -95,6 +95,8 @@ const MemoizedDashboard = React.memo(Dashboard);
 
 import { ProjectLoadData } from '@/lib/types';
 
+import { useKeyboardShortcuts, createStandardShortcuts } from '@/hooks/useKeyboardShortcuts';
+
 import {
   Scale,
   Camera,
@@ -122,6 +124,9 @@ const DashboardContent = () => {
     safetyMarginPercentage,
     supportConfig,
     branding,
+    boqItems,
+    ifcModelUrl,
+    importProjectData,
     isInitialized,
     undo, redo, canUndo, canRedo
   } = useProject();
@@ -145,7 +150,10 @@ const DashboardContent = () => {
       glycolPercentage,
       safetyMargin,
       safetyMarginPercentage,
-      supportConfig
+      supportConfig,
+      branding,
+      boqItems,
+      ifcModelUrl
     };
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -155,60 +163,21 @@ const DashboardContent = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, ifcModelUrl]);
 
-  // Keyboard Shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+S / Ctrl+S - Save project
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-        saveProject();
-      }
-      // Cmd+E / Ctrl+E - Export
-      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-        e.preventDefault();
-        setIsExportOpen(true);
-      }
-      // Undo: Ctrl+Z
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-        e.preventDefault();
-        undo();
-      }
-      // Redo: Ctrl+Y or Ctrl+Shift+Z
-      if (((e.metaKey || e.ctrlKey) && e.key === 'y') || ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'z')) {
-        e.preventDefault();
-        redo();
-      }
-      // Shortcuts Help: ?
-      if (e.key === '?' && e.shiftKey) {
-        e.preventDefault();
-        setIsShortcutsOpen(true);
-      }
-    };
+  // Keyboard Shortcuts — useKeyboardShortcuts skips shortcuts while typing in
+  // inputs/textarea/contentEditable, so Cmd+Z no longer hijacks native undo in text fields.
+  const shortcuts = React.useMemo(() => createStandardShortcuts({
+    onSave: saveProject,
+    onExport: () => setIsExportOpen(true),
+    onUndo: undo,
+    onRedo: redo,
+    onHelp: () => setIsShortcutsOpen(true)
+  }), [saveProject, undo, redo]);
+  useKeyboardShortcuts(shortcuts);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [saveProject, redo, undo]);
-
-  // Auto-save to localStorage every 30 seconds
-  React.useEffect(() => {
-    const autoSaveData = {
-      projectDetails,
-      segments,
-      equipmentList,
-      fluidType,
-      glycolPercentage,
-      safetyMargin,
-      safetyMarginPercentage,
-      supportConfig
-    };
-    try {
-      localStorage.setItem('datacenter_autosave', JSON.stringify(autoSaveData));
-    } catch (e) {
-      console.warn('Autosave failed:', e);
-    }
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig]);
+  // NOTE: local persistence of the project is owned by ProjectContext (debounced
+  // writer to 'hydraulic_calc_project_v2'). No autosave writer is needed here.
 
   const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -218,12 +187,9 @@ const DashboardContent = () => {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string);
-        if (data.segments) setSegments(data.segments);
-        if (data.equipmentList) setEquipmentList(data.equipmentList);
-        if (data.projectDetails) setProjectDetails(data.projectDetails);
-        if (data.fluidType) setFluidType(data.fluidType);
-        if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-        if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
+        // Full restore (supportConfig, safetyMarginPercentage, branding...);
+        // validation (non-array segments/equipmentList) happens in importProjectData.
+        importProjectData(data);
       } catch (error) {
         console.error('Error loading project:', error);
         alert('Eroare la încărcarea fișierului.');
@@ -235,13 +201,8 @@ const DashboardContent = () => {
 
   // Wrap setters in useCallback for stable props
   const handleLoadProject = React.useCallback((data: ProjectLoadData) => {
-    if (data.segments) setSegments(data.segments);
-    if (data.equipmentList) setEquipmentList(data.equipmentList);
-    if (data.projectDetails) setProjectDetails(data.projectDetails);
-    if (data.fluidType) setFluidType(data.fluidType);
-    if (typeof data.glycolPercentage === 'number') setGlycolPercentage(data.glycolPercentage);
-    if (typeof data.safetyMargin === 'boolean') setSafetyMargin(data.safetyMargin);
-  }, [setSegments, setEquipmentList, setProjectDetails, setFluidType, setGlycolPercentage, setSafetyMargin]);
+    importProjectData(data);
+  }, [importProjectData]);
 
   const toggleCatalog = React.useCallback(() => setIsCatalogOpen(prev => !prev), []);
   const toggleProfileCatalog = React.useCallback(() => setIsProfileCatalogOpen(prev => !prev), []);

@@ -3,6 +3,10 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Module-level registries shared by ALL Modal instances
+const openModals: string[] = [];
+let scrollLockCount = 0;
+
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -29,6 +33,7 @@ export const Modal: React.FC<ModalProps> = ({
     const previousActiveElement = useRef<HTMLElement | null>(null);
     // Use React's useId for stable unique IDs (avoids hydration mismatch)
     const uniqueId = useId();
+    const id = uniqueId;
     const titleId = `modal-title-${uniqueId}`;
     const descId = `modal-desc-${uniqueId}`;
 
@@ -55,26 +60,37 @@ export const Modal: React.FC<ModalProps> = ({
         }
     }, [isOpen]);
 
-    // Handle ESC key
+    // Handle ESC key — close ONLY the TOPMOST open modal (module-level registry).
+    // Previously EVERY open modal registered its own listener, so Escape closed
+    // ALL stacked modals at once (data loss in nested flows).
     useEffect(() => {
+        if (!isOpen) return;
+
         const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen) {
+            if (e.key !== 'Escape') return;
+            const top = openModals[openModals.length - 1];
+            if (top === id) {
                 onClose();
             }
         };
+        openModals.push(id);
         window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [isOpen, onClose]);
-
-    // Lock body scroll
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
         return () => {
-            document.body.style.overflow = '';
+            const idx = openModals.lastIndexOf(id);
+            if (idx >= 0) openModals.splice(idx, 1);
+            window.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, onClose, id]);
+
+    // Lock body scroll — ref-counted so closing one nested modal never
+    // unlocks the scroll while another modal is still open.
+    useEffect(() => {
+        if (!isOpen) return;
+        scrollLockCount++;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            scrollLockCount = Math.max(0, scrollLockCount - 1);
+            if (scrollLockCount === 0) document.body.style.overflow = '';
         };
     }, [isOpen]);
 

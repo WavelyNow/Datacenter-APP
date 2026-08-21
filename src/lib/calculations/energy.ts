@@ -33,6 +33,7 @@ export interface EnergyMetrics {
 
     // PUE calculation
     pue: number;                      // Power Usage Effectiveness
+    pueIsEstimate: boolean;           // true when PUE could not be computed from real IT load (fallback used)
     pueIdeal: number;                 // Theoretical best PUE based on equipment
 
     // Annual estimates (80% load factor)
@@ -91,25 +92,27 @@ export function calculateEnergyMetrics(
 
     // 2. Calculate PUE (Power Usage Effectiveness)
     // PUE = Total Facility Power / IT Equipment Power
-    // If no IT load defined, estimate based on cooling capacity
-    const effectiveITLoad = totalITLoad > 0
-        ? totalITLoad
-        : totalCoolingInfrastructure * 0.85; // Assume 85% of cooling is for IT
-
     let pue: number;
-    if (effectiveITLoad > 0) {
-        // Real calculation: (IT + Cooling Infrastructure + Pumps + Other) / IT
-        const overheadPower = totalCoolingInfrastructure + totalPumpPower;
-        pue = (effectiveITLoad + overheadPower) / effectiveITLoad;
+    let pueIsEstimate = false;
+    if (totalITLoad > 0 && totalFacilityPower > 0) {
+        // Real measurement: total facility power / IT power
+        pue = totalFacilityPower / totalITLoad;
     } else if (totalFacilityPower > 0) {
-        // No IT load specified - estimate based on typical ratios
-        pue = 1.6; // Industry average fallback
+        // No IT-type equipment defined — cannot compute a real PUE.
+        // Fall back to a typical industry figure but FLAG it as an estimate
+        // (never present a guessed ratio as a calculation).
+        pue = 1.6; // Industry average fallback (labeled estimate)
+        pueIsEstimate = true;
     } else {
-        pue = 1.0; // No equipment = perfect efficiency (placeholder)
+        // No equipment at all — no meaningful PUE
+        pue = 1.0;
+        pueIsEstimate = true;
     }
 
-    // Clamp PUE to realistic range
-    pue = Math.max(1.0, Math.min(3.0, pue));
+    // Clamp PUE to realistic range (flag when clamped)
+    const clamped = Math.max(1.0, Math.min(3.0, pue));
+    if (clamped !== pue) pueIsEstimate = true;
+    pue = clamped;
 
     // 3. Calculate ideal PUE based on equipment selection
     const hasModernChiller = equipmentList.some(e =>
@@ -212,7 +215,7 @@ export function calculateEnergyMetrics(
         });
     }
 
-    if (pue > 1.5) {
+    if (pue > 1.5 && !pueIsEstimate) {
         recommendations.push({
             id: 'optimize-pue',
             title: 'Optimizare PUE',
@@ -229,6 +232,7 @@ export function calculateEnergyMetrics(
         totalPumpPower,
         totalFacilityPower,
         pue,
+        pueIsEstimate,
         pueIdeal,
         annualEnergyKwh,
         annualCO2Tons,

@@ -179,10 +179,12 @@ describe('Hydraulics Calculations', () => {
 
             const withWater = calculateSystemWeight([], [], volume, 0);
             const withGlycol30 = calculateSystemWeight([], [], volume, 30);
+            const withGlycol30PG = calculateSystemWeight([], [], volume, 30, 'propylene');
 
-            // Water density ~1.0, glycol 30% ~1.038
-            expect(withWater.fluidWeight).toBeCloseTo(1000, 0);
+            // Water density 0.998 kg/L @20°C, EG 30% ≈ 1.038, PG 30% ≈ 1.024
+            expect(withWater.fluidWeight).toBeCloseTo(998, 0);
             expect(withGlycol30.fluidWeight).toBeCloseTo(1038, 0);
+            expect(withGlycol30PG.fluidWeight).toBeCloseTo(1024, 0);
         });
 
         it('handles custom pipe weights', () => {

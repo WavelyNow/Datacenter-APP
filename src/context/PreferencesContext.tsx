@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useSyncExternalStore, useRef } from 'react';
 
 // Types
 export type UnitSystem = 'metric' | 'imperial';
@@ -67,20 +67,26 @@ const PreferencesContext = createContext<PreferencesContextType | undefined>(und
 const STORAGE_KEY = 'datacenter_user_preferences';
 
 export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
-    // Use lazy initial state to load from localStorage synchronously
-    const [preferences, setPreferences] = useState<UserPreferences>(() => {
-        if (typeof window === 'undefined') return defaultPreferences;
+    // SSR-safe hydration: render defaults first, read localStorage only after mount
+    // to avoid hydration mismatches (provider lives in the root layout and is server-rendered).
+    const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
+    const [isInitialized, setIsInitialized] = useState(false);
+    const skipNextSaveRef = useRef(false);
+
+    useEffect(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
-                return { ...defaultPreferences, ...parsed };
+                if (parsed && typeof parsed === 'object') {
+                    setPreferences({ ...defaultPreferences, ...parsed });
+                }
             }
         } catch (e) {
             console.warn('Failed to load preferences:', e);
         }
-        return defaultPreferences;
-    });
+        setIsInitialized(true);
+    }, []);
 
     // Use useSyncExternalStore for SSR-safe online status
     const isOnline = useSyncExternalStore(
@@ -89,14 +95,19 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         getServerSnapshot
     );
 
-    // Save preferences to localStorage when changed
+    // Save preferences to localStorage when changed (after hydration only)
     useEffect(() => {
+        if (!isInitialized) return;
+        if (skipNextSaveRef.current) {
+            skipNextSaveRef.current = false;
+            return;
+        }
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
         } catch (e) {
             console.warn('Failed to save preferences:', e);
         }
-    }, [preferences]);
+    }, [preferences, isInitialized]);
 
     const updatePreference = useCallback(<K extends keyof UserPreferences>(
         key: K,
@@ -106,8 +117,18 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const resetPreferences = useCallback(() => {
+        // Bypass the next save effect so defaults are not immediately re-written to storage
+        skipNextSaveRef.current = true;
         setPreferences(defaultPreferences);
-        localStorage.removeItem(STORAGE_KEY);
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch (e) {
+            console.warn('Failed to reset preferences:', e);
+        }
+        // Safety net: clear the flag even if no state update fires the save effect
+        setTimeout(() => {
+            skipNextSaveRef.current = false;
+        }, 0);
     }, []);
 
     const value = React.useMemo(() => ({

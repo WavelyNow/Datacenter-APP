@@ -1,6 +1,7 @@
 
-import { PipeSegment, EquipmentItem } from '@/lib/types';
+import { PipeSegment, EquipmentItem, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
+import { getFluidDensity } from '@/lib/calculations/common';
 
 export interface SystemResources {
     // Volumes (Liters)
@@ -30,19 +31,28 @@ export const calculateSystemResources = (
     segments: PipeSegment[],
     equipmentList: EquipmentItem[],
     glycolPercentage: number,
-    safetyMarginStats: { enabled: boolean; percentage: number }
+    safetyMarginStats: { enabled: boolean; percentage: number },
+    fluidType: FluidType = 'ethylene'
 ): SystemResources => {
 
-    // 1. Piping Volume
-    const totalPipingVolume = segments.reduce((sum, s) => {
+    // 1. Piping Volume + Weight
+    let totalPipingVolume = 0;
+    let totalPipingWeight = 0;
+
+    for (const s of segments) {
         let id_mm = 0;
+        let weightPerM = 0;
         if (s.material === 'custom') {
             id_mm = s.customInnerDiameter || 0;
+            weightPerM = s.customWeight || 0;
         } else {
             const standard = PIPE_STANDARDS[s.material];
             if (standard) {
                 const pipe = standard.dimensions.find(d => d.dn === s.size);
-                if (pipe) id_mm = pipe.id;
+                if (pipe) {
+                    id_mm = pipe.id;
+                    weightPerM = pipe.weight || 0;
+                }
             }
         }
 
@@ -52,8 +62,9 @@ export const calculateSystemResources = (
         const length_dm = s.length * 10; // 1 m = 10 dm
 
         const vol_liters = Math.PI * Math.pow(radius_dm, 2) * length_dm;
-        return sum + vol_liters;
-    }, 0);
+        totalPipingVolume += vol_liters;
+        totalPipingWeight += weightPerM * s.length;
+    }
 
     // 2. Equipment Volume
     const totalEquipmentVolume = equipmentList.reduce((sum, eq) => sum + (eq.volume || 0), 0);
@@ -77,13 +88,9 @@ export const calculateSystemResources = (
     // 6. Weights (Simplified)
     const totalEquipmentWeight = equipmentList.reduce((sum, eq) => sum + (eq.weight || 0), 0);
 
-    // Fluid Density approx (Water=1kg/L, Glycol~1.11kg/L pure -> Mixed density linear approx)
-    // 30% Glycol density approx 1.045 kg/L
-    const fluidDensity = 1 + (glycolPercentage * 0.0015); // Rough linear approx
-    const totalFluidWeight = totalSystemVolume * fluidDensity;
-
-    // Pipe Weight estimation would require standard weight data per meter
-    const totalPipingWeight = 0; // Placeholder for future expansion
+    // Fluid density via the SINGLE source of truth (glycol-type aware)
+    const fluidDensity = getFluidDensity(glycolPercentage, fluidType) * 1000; // kg/L → kg/m³ (density per L used below)
+    const totalFluidWeight = totalSystemVolume * (fluidDensity / 1000); // L × kg/L
 
     const totalOperationalWeight = totalEquipmentWeight + totalPipingWeight + totalFluidWeight;
 

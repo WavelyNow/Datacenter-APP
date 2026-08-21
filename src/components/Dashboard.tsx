@@ -30,7 +30,8 @@ const DashboardBase = () => {
         equipmentList,
         glycolPercentage,
         safetyMargin,
-        safetyMarginPercentage
+        safetyMarginPercentage,
+        cloudProjectId
     } = useProject();
 
     const { setActiveTab } = useUI();
@@ -269,7 +270,7 @@ const DashboardBase = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Status Sincronizare</p>
-                                <p className="text-2xl font-bold">{projectDetails.projectNumber ? "Cloud Activ" : "Doar Local"}</p>
+                                <p className="text-2xl font-bold">{cloudProjectId ? "Cloud Activ" : "Doar Local"}</p>
                             </div>
                         </motion.div>
                     </div>

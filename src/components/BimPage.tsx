@@ -119,6 +119,9 @@ export const BimPage = () => {
             }
 
             setStatus('uploading');
+            if (!supabase) {
+                throw new Error('Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars');
+            }
             const fileExt = fileToUpload.name.split('.').pop();
             const fileName = `${Math.random().toString(36).substring(7)}_${Date.now()}.${fileExt}`;
             const filePath = `${fileName}`;
@@ -674,8 +677,11 @@ export const BimPage = () => {
                         proofImage: data.mappedProduct.imageUrl,
                         // Custom fields
                         flowRate: data.engineeringData.flow,
-                        head: data.engineeringData.head,
-                        volume: 10 // default
+                        // Wizard head is entered in kPa (per label "Target Head (kPa)").
+                        // EquipmentItem.head is defined as METERS of pressure head:
+                        // convert: h [m] = ΔP [kPa] / (ρ·g) ≈ kPa / 9.81 for water.
+                        head: data.engineeringData.head / 9.81,
+                        volume: 10 // default water content supply — confirm with user
                     };
 
                     setEquipmentList(prev => [...prev, mappedItem]);

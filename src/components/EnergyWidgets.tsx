@@ -11,13 +11,16 @@ interface PueGaugeProps {
     pueIdeal?: number;
     efficiencyClass?: EfficiencyClass;
     efficiencyScore?: number;
+    /** true when PUE is an ESTIMATE (no IT equipment defined) — label it honestly */
+    isEstimate?: boolean;
 }
 
 export const PueGauge = ({
     pue = 1.6,
     pueIdeal,
     efficiencyClass,
-    efficiencyScore
+    efficiencyScore,
+    isEstimate = false
 }: PueGaugeProps) => {
     // Normalize for gauge: 1.0 = 0%, 2.0 = 100% (roughly)
     const percentage = Math.min(Math.max((pue - 1.0) * 100, 0), 100);
@@ -50,7 +53,7 @@ export const PueGauge = ({
             <div className="text-center relative -mt-8">
                 <div className={`text-4xl font-black ${color} tracking-tighter`}>{pue.toFixed(2)}</div>
                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">
-                    {pue === 1.0 ? 'Add Equipment' : 'Calculated PUE'}
+                    {isEstimate ? 'PUE ESTIMAT' : 'Calculated PUE'}
                 </div>
             </div>
 

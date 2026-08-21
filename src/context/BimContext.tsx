@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { BimObject } from '@/lib/bim/types';
 import { RevitElement } from '@/lib/bim/revit';
 
@@ -28,7 +28,7 @@ export const BimProvider = ({ children }: { children: ReactNode }) => {
     const [revitElements, setRevitElements] = useState<RevitElement[]>([]);
     const [isSyncingRevit, setIsSyncingRevit] = useState(false);
 
-    const value: BimContextState = {
+    const value: BimContextState = useMemo(() => ({
         foundPipes,
         setFoundPipes,
         bimStatus,
@@ -39,7 +39,7 @@ export const BimProvider = ({ children }: { children: ReactNode }) => {
         setRevitElements,
         isSyncingRevit,
         setIsSyncingRevit
-    };
+    }), [foundPipes, bimStatus, parsingProgress, revitElements, isSyncingRevit]);
 
     return (
         <BimContext.Provider value={value}>

@@ -47,7 +47,7 @@ Designed to replace fragmented spreadsheets, this suite provides a unified envir
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 16 (Turbopack)](https://nextjs.org/)
-- **State Management**: React Context with History Persistence
+- **State Management**: React Context with in-memory Undo/Redo history (capped, not persisted) + localStorage autosave
 - **3D Engine**: Three.js & Web-IFC
 - **Animations**: Framer Motion
 - **Styling**: TailwindCSS 4

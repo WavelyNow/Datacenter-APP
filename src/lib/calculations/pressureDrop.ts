@@ -10,27 +10,28 @@ import { PipeSegment, FluidType } from '../types';
 // Fluid Properties Data
 // ============================================================================
 
-// Dynamic viscosity (Pa·s) at 20°C for different glycol concentrations
+// Dynamic viscosity (Pa·s) at 20°C for different glycol concentrations (VOLUME %)
 // Format: [percentage, ethylene viscosity, propylene viscosity]
+// Source: ASHRAE Handbook—Fundamentals Ch.31 / Dow Fluid Tables (adjustments per audit)
 const VISCOSITY_DATA: [number, number, number][] = [
     [0, 0.00100, 0.00100],  // Pure water
-    [10, 0.00112, 0.00115],
-    [20, 0.00140, 0.00150],
-    [30, 0.00185, 0.00220],
-    [40, 0.00260, 0.00350],
-    [50, 0.00400, 0.00600],
-    [60, 0.00650, 0.01100],
+    [10, 0.00135, 0.00155],
+    [20, 0.00200, 0.00220],
+    [30, 0.00245, 0.00310],
+    [40, 0.00320, 0.00470],
+    [50, 0.00440, 0.00820],
+    [60, 0.00600, 0.01600],
 ];
 
-// Density (kg/m³) at 20°C
+// Density (kg/m³) at 20°C (VOLUME %) — aligned with common.ts getFluidDensity (kg/L × 1000)
 const DENSITY_DATA: [number, number, number][] = [
     [0, 998, 998],   // Pure water
-    [10, 1012, 1008],
-    [20, 1026, 1017],
-    [30, 1040, 1027],
-    [40, 1054, 1036],
-    [50, 1067, 1045],
-    [60, 1080, 1054],
+    [10, 1011, 1008],
+    [20, 1024, 1016],
+    [30, 1038, 1024],
+    [40, 1051, 1032],
+    [50, 1065, 1041],
+    [60, 1077, 1050],
 ];
 
 // Pipe roughness (mm) by material type
@@ -84,6 +85,45 @@ export function getDensity(fluidType: FluidType, glycolPercentage: number): numb
     if (fluidType === 'water') return 998;
     const index = fluidType === 'ethylene' ? 1 : 2;
     return interpolate(DENSITY_DATA, glycolPercentage, index as 1 | 2);
+}
+
+export interface FluidProperties {
+    densityKgM3: number;
+    dynamicViscosityPaS: number;
+    kinematicViscosityM2S: number;
+    specificHeatJkgK: number;
+    note?: string;
+}
+
+/**
+ * Single source of truth for glycol-water fluid properties at 20°C.
+ * Use everywhere instead of inline density/viscosity approximations.
+ * @param fluidType water | ethylene | propylene (see FluidType)
+ * @param glycolPercentage volume %
+ * @param tempC design temperature (defaults 20°C; data table is 20°C)
+ */
+export function getFluidProperties(fluidType: FluidType, glycolPercentage: number, tempC: number = 20): FluidProperties {
+    const densityKgM3 = getDensity(fluidType, glycolPercentage);
+    const dynamicViscosityPaS = getViscosity(fluidType, glycolPercentage);
+    const kinematicViscosityM2S = dynamicViscosityPaS / densityKgM3;
+
+    // Specific heat approximation (linear, valid 0–60%): water 4186 J/kg·K
+    // EG ~ -11.2 J/kg·K per % (30% → ~3850), PG ~ -14.5 J/kg·K per % (30% → ~3750)
+    let specificHeatJkgK = 4186;
+    if (fluidType === 'ethylene') specificHeatJkgK = Math.max(3300, 4186 - 11.2 * Math.min(100, Math.max(0, glycolPercentage)));
+    else if (fluidType === 'propylene') specificHeatJkgK = Math.max(3100, 4186 - 14.5 * Math.min(100, Math.max(0, glycolPercentage)));
+
+    // Temperature correction: viscosity decreases with temperature (~2.5%/°C above 20°C, increases below)
+    const tempFactor = Math.max(0.5, Math.min(2.5, Math.pow(1.025, 20 - tempC)));
+    const correctedViscosity = dynamicViscosityPaS * tempFactor;
+
+    return {
+        densityKgM3,
+        dynamicViscosityPaS: correctedViscosity,
+        kinematicViscosityM2S: correctedViscosity / densityKgM3,
+        specificHeatJkgK,
+        note: tempC !== 20 ? `Proprietăți corectate aproximativ pentru ${tempC}°C` : undefined
+    };
 }
 
 /**
@@ -216,6 +256,9 @@ export function calculatePressureDrop(
     }
 
     // Get fluid properties
+    if (glycolPercentage > 60) {
+        warnings.push(`Concentrație ${glycolPercentage}% glicol peste limita datelor (60%) — proprietăți extrapolate/clampate`);
+    }
     const density = getDensity(fluidType, glycolPercentage);
     const viscosity = getViscosity(fluidType, glycolPercentage);
     const roughness = getRoughness(material) / 1000;  // Convert to meters
