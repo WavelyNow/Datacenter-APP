@@ -17,7 +17,7 @@ export async function generateSupportPage(
     }
 
     // Section Header 5
-    ctx.currentPage.drawText('5. DETALII SUPORȚI & PRINDERI', {
+    ctx.currentPage.drawText('5. DETALII SUPORTI & PRINDERI', {
         x: 50,
         y: ctx.currentY,
         size: 12,
@@ -29,7 +29,7 @@ export async function generateSupportPage(
 
     // Description with spacing variable
     const spacing = data.supportConfig.spacing;
-    ctx.currentPage.drawText(`Configurație: ${data.supportConfig.pipesPerSupport} ${data.supportConfig.pipesPerSupport === 1 ? 'țeavă' : 'țevi'} per suport, pas ${spacing}m.`, {
+    ctx.currentPage.drawText(`Configuratie: ${data.supportConfig.pipesPerSupport} ${data.supportConfig.pipesPerSupport === 1 ? 'teava' : 'tevi'} per suport, pas ${spacing}m.`, {
         x: 50,
         y: ctx.currentY,
         size: 9,
@@ -44,7 +44,7 @@ export async function generateSupportPage(
     const supportReport = calculateSupportReport(data.segments, data.glycolPercentage, config);
 
     if (!supportReport || supportReport.length === 0) {
-        ctx.currentPage.drawText('Nu există date.', { x: 50, y: ctx.currentY, size: 10, font: ctx.fontRegular });
+        ctx.currentPage.drawText('Nu exista date.', { x: 50, y: ctx.currentY, size: 10, font: ctx.fontRegular });
         ctx.currentY -= 20;
         return;
     }
@@ -58,7 +58,7 @@ export async function generateSupportPage(
         `${item.mountingType === 'concrete' ? 'Beton' : 'Susp.'} (${config.height}m)`
     ]);
 
-    const headers = ['SEGMENT', 'ȚEVI/SUP.', 'SARCINĂ (KG)', 'ANCORĂ (KG)', 'PROFIL', 'MONTAJ'];
+    const headers = ['SEGMENT', 'TEVI/SUP.', 'SARCINA (KG)', 'ANCORA (KG)', 'PROFIL', 'MONTAJ'];
 
     // Draw Table
     ctx.currentY = await drawTable(ctx, {

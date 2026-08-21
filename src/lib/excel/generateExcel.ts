@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { ProjectDetails, PipeSegment, EquipmentItem, SupportConfig } from '@/lib/types';
-import { calculatePipeVolume } from '@/lib/calculations';
+import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
 
 interface ExcelExportData {
     projectDetails: ProjectDetails;
@@ -114,12 +114,18 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         cellUnit.alignment = { vertical: 'bottom', horizontal: 'left' };
     };
 
-    // Calc Volumes — marja REALĂ din proiect (nu 5% hardcodat)
-    const pipesVolume = data.segments.reduce((sum, seg) => sum + (seg ? (calculatePipeVolume(seg) || 0) : 0), 0);
-    const equipmentVolume = data.equipmentList.reduce((sum, item) => sum + (item.volume || 0), 0);
-    const marginPct = data.safetyMargin ? (data.safetyMarginPercentage ?? 5) : 0;
-    const totalVolumeGross = (pipesVolume + equipmentVolume) * (1 + marginPct / 100);
-    const glycol = totalVolumeGross * (data.glycolPercentage / 100);
+    // Calc Volumes — sumarul de comandă (aceleași cifre ca în PDF/Dashboard)
+    const purchase = calculatePurchaseSummary(
+        data.segments,
+        data.equipmentList,
+        data.glycolPercentage,
+        (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
+        data.safetyMargin ?? false,
+        data.safetyMarginPercentage ?? 5,
+        []
+    );
+    const totalVolumeGross = purchase.rawTotalL;
+    const glycol = purchase.totalGlycolL;
 
     // Row 7: Metrics Row 1
     drawMetric(7, 2, 'Total System Volume', totalVolumeGross.toFixed(0), 'Liters');

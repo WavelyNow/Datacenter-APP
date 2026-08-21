@@ -1,5 +1,6 @@
 import { PDFPage, PDFFont, RGB } from 'pdf-lib';
 import { PDFContext } from './SectionGenerator';
+import { sanitizePdfText } from '../utils';
 
 interface TableOptions {
     x: number;
@@ -18,13 +19,18 @@ export const drawTable = async (
 ): Promise<number> => {
     const { currentPage: page, theme, fontRegular, fontBold } = ctx;
     const { x, headers, rows, colWidths, rowHeight = 25, align = [], showBorders = true } = options;
+    const safeHeaders = headers.map(h => sanitizePdfText(h));
+    const safeRows = rows.map(r => r.map(c => sanitizePdfText(c)));
+    const drawTextSafe = (p: PDFPage, text: string, xPos: number, yPos: number, w: number, f: PDFFont, c: RGB, a: string) => {
+        drawCellText(p, sanitizePdfText(text), xPos, yPos, w, f, c, a);
+    };
 
     const tableWidth = colWidths.reduce((acc, w) => acc + w, 0);
 
     // Helper: Wrap Text
     const wrapText = (text: string, font: PDFFont, size: number, maxWidth: number): string[] => {
         if (!text) return [''];
-        const words = text.split(' ');
+        const words = sanitizePdfText(text).split(' ');
         const lines: string[] = [];
         let currentLine = words[0];
 
@@ -69,7 +75,7 @@ export const drawTable = async (
         const colWidth = colWidths[i];
         const alignment = align[i] || 'left';
 
-        drawCellText(page, header, currentX, startY - (rowHeight / 2) - 4, colWidth, fontBold, showBorders ? theme.white : theme.text, alignment);
+        drawTextSafe(page, header, currentX, startY - (rowHeight / 2) - 4, colWidth, fontBold, showBorders ? theme.white : theme.text, alignment);
 
         if (showBorders) {
             page.drawLine({

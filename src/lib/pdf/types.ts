@@ -40,5 +40,6 @@ export interface PdfData {
         accentColor: string;
         pdfTheme: 'modern' | 'classic' | 'industrial';
     };
+    fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
     options?: PdfOptions;
 }

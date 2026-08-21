@@ -143,7 +143,21 @@ export interface ProjectLoadData {
     supportConfig?: SupportConfig;
     branding?: BrandingConfig;
     boqItems?: BoQItem[];
+    fittingItems?: FittingItem[];
     ifcModelUrl?: string | null;
+}
+
+/**
+ * Fitting (vană / cot / teu / etc.) folosit în proiect:
+ * același model precum Fitting din calculations/fittings — salvat în proiect
+ * pentru pierderi hidraulice și listă de cumpărat.
+ */
+export interface FittingItem {
+    id: string;
+    type: string;      // FittingType (elbow_90_std, tee_branch, valve_ball...)
+    size: string;      // DN (ex. "DN50")
+    quantity: number;
+    description?: string;
 }
 
 export interface CloudProject {

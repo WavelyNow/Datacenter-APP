@@ -12,7 +12,7 @@ export async function generateEnergyPage(
     // --- Header ---
     await ctx.checkSpace(200);
 
-    ctx.currentPage.drawText('RAPORT SUSTENABILITATE & EFICIENȚĂ', {
+    ctx.currentPage.drawText('RAPORT SUSTENABILITATE & EFICIENTA', {
         x: 50,
         y: ctx.currentY,
         size: 14,
@@ -21,7 +21,7 @@ export async function generateEnergyPage(
     });
     ctx.currentY -= 30;
 
-    ctx.currentPage.drawText('Analiza amprentei de carbon și a eficienței energetice (PUE)', {
+    ctx.currentPage.drawText('Analiza amprentei de carbon si a eficientei energetice (PUE)', {
         x: 50,
         y: ctx.currentY,
         size: 10,
@@ -47,13 +47,13 @@ export async function generateEnergyPage(
         borderWidth: 1,
     });
 
-    // Real calculation — no hardcoded values
-    const metrics = calculateEnergyMetrics(data.equipmentList, data.projectDetails?.location ?? 'București');
+    // Real calculation - no hardcoded values
+    const metrics = calculateEnergyMetrics(data.equipmentList, data.projectDetails?.location ?? 'Bucuresti');
     const hasMetrics = metrics.totalFacilityPower > 0;
     const pueValue = hasMetrics ? metrics.pue : null;
     const pueLabel = hasMetrics
         ? (metrics.pueIsEstimate ? 'PUE ESTIMAT' : 'PUE CALCULAT')
-        : 'PUE — N/A';
+        : 'PUE - N/A';
 
     const pueColor = pueValue === null
         ? theme.textLight
@@ -68,7 +68,7 @@ export async function generateEnergyPage(
         color: theme.textLight,
     });
 
-    const pueString = pueValue === null ? '—' : pueValue.toFixed(2);
+    const pueString = pueValue === null ? '-' : pueValue.toFixed(2);
     const pueWidth = ctx.fontBold.widthOfTextAtSize(pueString, 36);
     ctx.currentPage.drawText(pueString, {
         x: (width - 100) / 2 + 50 - (pueWidth / 2),
@@ -79,7 +79,7 @@ export async function generateEnergyPage(
     });
 
     if (pueValue === null) {
-        const naNote = 'Nu există echipamente introduse — PUE nu poate fi calculat.';
+        const naNote = 'Nu exista echipamente introduse - PUE nu poate fi calculat.';
         const naWidth = ctx.fontRegular.widthOfTextAtSize(naNote, 8);
         ctx.currentPage.drawText(naNote, {
             x: (width - 100) / 2 + 50 - (naWidth / 2),
@@ -94,12 +94,12 @@ export async function generateEnergyPage(
 
     // --- 2. RECOMMENDATIONS ---
     const totalVolume = calculateTotalVolume(data.segments, data.equipmentList, false);
-    // CO₂ from REAL annual energy (load factor 80%, EU grid factor) — not a mock.
+    // CO₂ from REAL annual energy (load factor 80%, EU grid factor) - not a mock.
     const co2Tons = metrics.totalFacilityPower > 0 ? metrics.annualCO2Tons : null;
 
     await ctx.checkSpace(150);
 
-    ctx.currentPage.drawText('IMPACT & RECOMANDĂRI', {
+    ctx.currentPage.drawText('IMPACT & RECOMANDARI', {
         x: 50,
         y: ctx.currentY,
         size: 12,
@@ -109,12 +109,12 @@ export async function generateEnergyPage(
     ctx.currentY -= 20;
 
     const recommendations = [
-        `• Volumul sistemului: ${totalVolume.toFixed(0)} L (bază, fără marjă).`,
+        `• Volumul sistemului: ${totalVolume.toFixed(0)} L (baza, fara marja).`,
         co2Tons !== null
-            ? `• Amprentă CO₂ estimată: ~${(co2Tons * 1000).toFixed(0)} kg/an (la factor de încărcare 80%).`
-            : '• Amprentă CO₂: nu se poate calcula — introduceți echipamente cu putere nominală.',
-        '• Free Cooling: recomandăm activarea modului Free Cooling la temperaturi sub 10°C.',
-        '• Mentenanță: verificați concentrația de glicol anual pentru a menține eficiența transferului termic.'
+            ? `• Amprenta CO₂ estimata: ~${(co2Tons * 1000).toFixed(0)} kg/an (la factor de incarcare 80%).`
+            : '• Amprenta CO₂: nu se poate calcula - introduceti echipamente cu putere nominala.',
+        '• Free Cooling: recomandam activarea modului Free Cooling la temperaturi sub 10°C.',
+        '• Mentenanta: verificati concentratia de glicol anual pentru a mentine eficienta transferului termic.'
     ];
 
     recommendations.forEach(rec => {

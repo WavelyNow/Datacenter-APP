@@ -2,6 +2,7 @@ import { PDFDocument, PDFPage, PDFFont, PDFImage } from 'pdf-lib';
 import { ProjectDetails } from '@/lib/types';
 import { drawHeader, drawFooter } from './common';
 import { PdfTheme } from '../styles';
+import { sanitizePdfText } from '../utils';
 
 export class PDFContext {
     pdfDoc: PDFDocument;
@@ -32,8 +33,7 @@ export class PDFContext {
         this.theme = theme;
         this.logoImage = logoImage;
 
-        // Note: No addPage() here because constructors cannot be async.
-        // We will call addPage() manually at the start of generatePdf.
+        // Note: No addPage() here because constructors cannot be async.        // We will call addPage() manually at the start of generatePdf.
     }
 
     async addPage() {
@@ -72,8 +72,8 @@ export class PDFContext {
             this.fontRegular,
             this.pageNumber,
             this.theme,
-            this.projectDetails.projectName,
-            this.projectDetails.revision
+            sanitizePdfText(this.projectDetails.projectName),
+            sanitizePdfText(this.projectDetails.revision)
         );
     }
 

@@ -96,7 +96,7 @@ export async function generatePage2(
 
         ctx.currentY = await drawTable(ctx, {
             x: 50,
-            headers: ['TIP ȚEAVĂ', 'DIMENSIUNE', 'LUNGIME (m)', 'GREUTATE MAT. (kg)', 'GREUTATE FL. (kg)'],
+            headers: ['TIP TEAVA', 'DIMENSIUNE', 'LUNGIME (m)', 'GREUTATE MAT. (kg)', 'GREUTATE FL. (kg)'],
             rows: pipeRows,
             colWidths: [150, 80, 70, 100, 100],
             align: ['left', 'center', 'center', 'right', 'right']

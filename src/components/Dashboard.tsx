@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources } from '@/lib/calc/resources';
+import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
 import { useTranslation } from '@/context/PreferencesContext';
 import { Tooltip } from './ui/Tooltip';
 
@@ -30,7 +31,9 @@ const DashboardBase = () => {
         glycolPercentage,
         safetyMargin,
         safetyMarginPercentage,
-        cloudProjectId
+        cloudProjectId,
+        fluidType,
+        fittingItems
     } = useProject();
 
     const { setActiveTab } = useUI();
@@ -43,6 +46,17 @@ const DashboardBase = () => {
         glycolPercentage,
         { enabled: safetyMargin, percentage: safetyMarginPercentage }
     ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage]);
+
+    // Sumarul de comandă (aceleași cifre ca PDF/Excel): glicol cu pierderi fittinguri
+    const purchase = React.useMemo(() => calculatePurchaseSummary(
+        segments,
+        equipmentList,
+        glycolPercentage,
+        fluidType,
+        safetyMargin,
+        safetyMarginPercentage,
+        fittingItems
+    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -316,18 +330,20 @@ const DashboardBase = () => {
                                 </div>
                             </div>
 
-                            {/* Total Purchase */}
-                            <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20 flex flex-col justify-between shadow-[0_0_30px_-10px_rgba(var(--primary),0.2)]">
+                            {/* Total Purchase — cu pierderi fittinguri (același calcul ca PDF/Excel) */}
+                            <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20 flex flex-col justify-between">
                                 <div>
                                     <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1">Total De Cumpărat</p>
                                     <div className="flex items-baseline gap-2">
-                                        <p className="text-2xl font-black text-primary">{resources.totalSystemVolume.toFixed(0)}</p>
+                                        <p className="text-2xl font-black text-primary">{purchase.totalGlycolL.toFixed(0)}</p>
                                         <span className="text-sm font-medium text-primary/70">litri</span>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-primary/70 mt-2 border-t border-primary/20 pt-2 font-medium">
-                                    Premixat {glycolPercentage}% Glicol
-                                </p>
+                                <div className="text-[10px] text-primary/70 mt-2 border-t border-primary/20 pt-2 space-y-0.5 font-medium">
+                                    <p>Premixat {glycolPercentage}% Glicol ({fluidType === 'propylene' ? 'Propilen' : fluidType === 'ethylene' ? 'Etilen' : 'Apă'})</p>
+                                    <p>incl. +{purchase.fittingsAllowancePercent}% fittinguri & umplere</p>
+                                    <p>≈ {purchase.canisters10L.toFixed(1)} canistre × 10 L</p>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

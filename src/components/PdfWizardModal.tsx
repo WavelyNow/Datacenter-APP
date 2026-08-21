@@ -17,6 +17,7 @@ interface PdfWizardModalProps {
         glycolPercentage: number;
         safetyMargin: boolean;
         safetyMarginPercentage: number;
+        fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
         supportConfig: {
             spacing: number;
             mountingType: 'concrete' | 'suspended';

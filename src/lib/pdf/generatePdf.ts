@@ -1,7 +1,9 @@
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { PdfData } from './types';
-import { generatePage1 } from './templates/page1';
+import { generateSitePage } from './templates/sitePage';
+import { generatePipeQuantityPage } from './templates/pipeQuantityPage';
+import { generatePurchasePage } from './templates/purchasePage';
 import { generatePage2 } from './templates/page2';
 import { generateSupportPage } from './templates/supportPage';
 import { generateEnergyPage } from './templates/energyPage';
@@ -66,10 +68,7 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
         console.log('[DEBUG] No company logo provided');
     }
 
-    // Define Page Options
-    const showVolume = data.options?.includeVolume !== false;
-    const showBoQ = data.options?.includeBoQ !== false;
-    const showPage1 = showVolume || showBoQ;
+    // Define Page Options (anexe opționale; paginile principale sunt mereu incluse)
     const showWeights = data.options?.includeWeights === true;
     const showSupports = data.options?.includeSupports === true;
 
@@ -80,12 +79,12 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
     const ctx = new PDFContext(pdfDoc, fontRegular, fontBold, data.projectDetails, theme, logoImage);
     await ctx.addPage(); // Explicitly add the first page now that it's async
 
-    // Generate Content Flow
-    if (showPage1) {
-        console.log('[DEBUG] Generating page 1 (Volume & Materials)');
-        await generatePage1(ctx, data);
-        console.log('[DEBUG] Page 1 generated successfully');
-    }
+    // --- PAGINI PRINCIPALE: SITE → CANTITATE ȚEAVĂ → LISTĂ DE CUMPĂRAT ---
+    await generateSitePage(ctx, data);
+    await generatePipeQuantityPage(ctx, data);
+    await generatePurchasePage(ctx, data);
+
+    // --- ANEXE OPȚIONALE (la cerere) ---
     if (showWeights) {
         console.log('[DEBUG] Generating page 2 (Weights)');
         await generatePage2(ctx, data);

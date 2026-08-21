@@ -420,32 +420,33 @@ import {
     FittingType
 } from '@/lib/calculations/fittings';
 import { Plus, Trash2 } from 'lucide-react';
+import { useProject } from '@/context/ProjectContext';
+import { FittingItem } from '@/lib/types';
 
 function FittingsTool() {
-    const [fittings, setFittings] = useState<Fitting[]>([
-        createFitting('elbow_90_std', 'DN50', 4),
-        createFitting('tee_branch', 'DN50', 2),
-        createFitting('valve_ball', 'DN50', 2),
-    ]);
+    // Fittingurile sunt PARTE din proiect (persistate) — apar în listele de cumpărat
+    // din PDF/Excel și alimentează pierderile hidraulice.
+    const { fittingItems, setFittingItems } = useProject();
     const [flowRate, setFlowRate] = useState(10);
     const [innerDiameter, setInnerDiameter] = useState(53);
     const [density, setDensity] = useState(1038);
 
+    const fittings = fittingItems;
+    const setFittings = setFittingItems;
+
     const fittingTypes = getFittingTypes();
-    const result = calculateFittingsPressureLoss(fittings, flowRate, innerDiameter, density);
+    const result = calculateFittingsPressureLoss(fittings as Fitting[], flowRate, innerDiameter, density);
 
     const addFitting = () => {
-        setFittings([...fittings, createFitting('elbow_90_std', 'DN50', 1)]);
+        setFittings(prev => [...prev, createFitting('elbow_90_std', 'DN50', 1) as FittingItem]);
     };
 
     const updateFitting = <K extends keyof Fitting>(index: number, field: K, value: Fitting[K]) => {
-        const updated = [...fittings];
-        updated[index] = { ...updated[index], [field]: value };
-        setFittings(updated);
+        setFittings(prev => prev.map((f, i) => i === index ? { ...f, [field]: value } as FittingItem : f));
     };
 
     const removeFitting = (index: number) => {
-        setFittings(fittings.filter((_, i) => i !== index));
+        setFittings(prev => prev.filter((_, i) => i !== index));
     };
 
     return (

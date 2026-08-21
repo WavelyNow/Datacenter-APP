@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem, ProjectLoadData } from '@/lib/types';
+import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem, ProjectLoadData, FittingItem } from '@/lib/types';
 import { useHistory } from '@/hooks/useHistory';
 import { supabase } from '@/lib/supabase';
 
@@ -24,6 +24,7 @@ export interface ProjectDataState {
     branding: BrandingConfig;
     cloudProjectId: string | null;
     boqItems: BoQItem[];
+    fittingItems: FittingItem[];
 }
 
 interface ProjectState {
@@ -63,6 +64,10 @@ interface ProjectState {
     boqItems: BoQItem[];
     setBoqItems: (items: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) => void;
 
+    // Fittinguri (vane, coturi, teuri) — pentru pierderi și listă de cumpărat
+    fittingItems: FittingItem[];
+    setFittingItems: (items: FittingItem[] | ((prev: FittingItem[]) => FittingItem[])) => void;
+
     // Local file import (full document replace, defaults for missing fields)
     importProjectData: (data: ProjectLoadData) => void;
 
@@ -99,6 +104,7 @@ const serializeProjectState = (s: ProjectDataState): string => JSON.stringify({
     branding: s.branding,
     cloudProjectId: s.cloudProjectId,
     boqItems: s.boqItems,
+    fittingItems: s.fittingItems,
 });
 
 const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
@@ -112,6 +118,7 @@ const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
     supportConfig: s.supportConfig,
     branding: s.branding,
     boqItems: s.boqItems,
+    fittingItems: s.fittingItems,
     ifcModelUrl: s.ifcModelUrl,
 });
 
@@ -126,6 +133,7 @@ const applyProjectData = (base: ProjectDataState, data: ProjectLoadData): Projec
 
     if (Array.isArray(data.segments)) out.segments = data.segments;
     if (Array.isArray(data.equipmentList)) out.equipmentList = data.equipmentList;
+    if (Array.isArray(data.fittingItems)) out.fittingItems = data.fittingItems;
     if (data.projectDetails && typeof data.projectDetails === 'object') {
         out.projectDetails = {
             ...data.projectDetails,
@@ -193,7 +201,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             pdfTheme: 'modern' as const
         } as BrandingConfig,
         cloudProjectId: null as string | null,
-        boqItems: [] as BoQItem[]
+        boqItems: [] as BoQItem[],
+        fittingItems: [] as FittingItem[]
     }), []);
 
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory<ProjectDataState>(defaultState);
@@ -375,6 +384,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         set(prev => ({ ...prev, branding: { ...prev.branding, ...config } }));
     }, [set]);
 
+    const setFittingItems = useCallback((val: FittingItem[] | ((prev: FittingItem[]) => FittingItem[])) =>
+        set(prev => ({ ...prev, fittingItems: typeof val === 'function' ? val(prev.fittingItems) : val })), [set]);
+
     const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
         set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
 
@@ -407,6 +419,10 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
         // BoQ
         boqItems: state.boqItems, setBoqItems,
+
+        // Fittinguri (pierderi + listă de cumpărat)
+        fittingItems: state.fittingItems, setFittingItems,
+
         importProjectData,
         // Full local reset (clears everything, incl. cloud link)
         resetProject: () => reset(defaultState),
@@ -415,7 +431,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
-        setBoqItems, importProjectData, reset
+        setBoqItems, setFittingItems, importProjectData, reset
     ]);
 
     return (
