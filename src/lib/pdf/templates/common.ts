@@ -28,8 +28,13 @@ export async function drawSectionTitle(
  */
 export async function beginSection(
     ctx: PDFContext,
-    title: string
+    title: string,
+    freshPage: boolean = false
 ): Promise<void> {
+    if (freshPage) {
+        ctx.drawFooter();
+        await ctx.addPage();
+    }
     await ctx.checkSpace(90);
     ctx.currentY = await drawSectionTitle(ctx.currentPage, ctx.fontBold, 50, ctx.currentY, title, ctx.theme);
 }
@@ -63,7 +68,8 @@ export const drawHeader = async (
 
     // Stânga: referință proiect (mic, gri)
     const refText = sanitizePdfText(`${projectDetails.projectNumber || ''}  ·  ${projectDetails.projectName || ''}`);
-    page.drawText(refText.slice(0, 60), {
+    const refDisplay = refText.length > 60 ? refText.slice(0, 57) + '...' : refText;
+    page.drawText(refDisplay, {
         x: margin,
         y: height - margin + 6,
         size: 8,

@@ -19,6 +19,27 @@ export const getClampWeight = (sizeStr: string): number => {
     return ACCESSORY_WEIGHTS.CLAMP_LARGE;
 };
 
+/** Diametrul interior REAL (mm) al unui segment — SINGURA sursa comuna.
+ *  Prioritate documentata: custom -> diameter explicit (BIM) -> standard.
+ *  Regula pentru `diameter`: daca e EXACT numarul DN din nume (ex. 100 pt
+ *  DN100) il tratam ca DN nominal si folosim ID-ul real din standard;
+ *  altfel il folosim ca diametru interior explicit (valoare BIM). */
+export function resolveInnerDiameterMm(segment: { material: string; size: string; customInnerDiameter?: number; diameter?: number } | null | undefined): number {
+    if (!segment) return 0;
+    if (segment.material === 'custom' && segment.customInnerDiameter && segment.customInnerDiameter > 0) {
+        return segment.customInnerDiameter;
+    }
+    const dim = getPipeData(segment.material, segment.size);
+    if (segment.diameter && segment.diameter > 0) {
+        const dnNum = parseInt(String(segment.size).replace(/\D+/g, ''), 10);
+        const isNominalDn = dnNum > 0 && Math.abs(segment.diameter - dnNum) < 0.6;
+        if (!isNominalDn) {
+            return segment.diameter; // valoare explicită de ID (BIM/custom numeric)
+        }
+    }
+    return dim?.id || 0;
+}
+
 // Helper to get pipe data safely
 export const getPipeData = (material: string, size: string) => {
     if (material === 'custom') return null;

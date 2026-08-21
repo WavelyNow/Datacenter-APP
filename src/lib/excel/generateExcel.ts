@@ -125,7 +125,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         data.safetyMarginPercentage ?? 5,
         data.fittingItems ?? []
     );
-    const marginPct = data.safetyMargin ? (data.safetyMarginPercentage ?? 5) : 0;
+    const marginPct = purchase.marginPercent; // clampat 0-20 (acelasi ca PDF)
     const totalVolumeGross = purchase.rawTotalL;
     const glycol = purchase.totalGlycolL;
 

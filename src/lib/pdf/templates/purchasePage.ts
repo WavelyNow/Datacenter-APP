@@ -43,7 +43,7 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         data.fittingItems ?? []
     );
 
-    await beginSection(ctx, 'LISTA DE CUMPARAT');
+    await beginSection(ctx, 'LISTA DE CUMPARAT', true); // pagina noua — raportul are mereu 3 pagini clare
 
     // ---------- 1. GLICOL ----------
     await ctx.checkSpace(40);

@@ -113,3 +113,27 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         expect(p.fittingsTotalCount).toBe(3);
     });
 });
+
+describe('Margin consistency (0-20 peste tot — PDF nu poate contrazice calculul)', () => {
+    it('clamps margin to 20% max (same as UI & API)', () => {
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', true, 25, []);
+        expect(p.marginPercent).toBe(20);
+        const p2 = calculatePurchaseSummary(segments, [], 30, 'ethylene', true, -5, []);
+        expect(p2.marginPercent).toBe(0);
+        expect(p2.marginL).toBe(0);
+    });
+
+    it('marginL is consistent: rawTotalL - baseL = marginL', () => {
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', true, 12, []);
+        expect(p.rawTotalL).toBeCloseTo(p.pipeVolumeL + p.fittingsVolumeL + p.equipmentVolumeL + p.marginL, 4);
+    });
+
+    it('breakdown sum equals rawTotal (exact, no floating surprise)', () => {
+        const fittings = [{ id: 'f1', type: 'elbow_90_std', size: 'DN50', quantity: 3 }];
+        const p = calculatePurchaseSummary(segments, [{ id: 'e1', type: 'Chiller', name: 'C', volume: 50, weight: 100 }], 30, 'propylene', true, 8, fittings);
+        const sum = p.pipeVolumeL + p.fittingsVolumeL + p.equipmentVolumeL + p.marginL;
+        expect(sum).toBeCloseTo(p.rawTotalL, 4);
+        expect(p.totalGlycolL).toBe(Math.ceil(p.rawTotalL / 10) * 10);
+        expect(p.totalGlycolL % 10).toBe(0);
+    });
+});

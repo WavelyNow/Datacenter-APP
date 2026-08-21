@@ -234,7 +234,7 @@ export const FluidComposition: React.FC = () => {
                             <input
                                 type="range"
                                 min="0"
-                                max="10"
+                                max="20"
                                 step="0.1"
                                 value={safetyMarginPercentage}
                                 onChange={(e) => setSafetyMarginPercentage(parseFloat(e.target.value))}

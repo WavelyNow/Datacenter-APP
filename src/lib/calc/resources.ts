@@ -1,7 +1,7 @@
 
 import { PipeSegment, EquipmentItem, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
-import { getFluidDensity } from '@/lib/calculations/common';
+import { getFluidDensity, resolveInnerDiameterMm } from '@/lib/calculations/common';
 
 export interface SystemResources {
     // Volumes (Liters)
@@ -40,21 +40,11 @@ export const calculateSystemResources = (
     let totalPipingWeight = 0;
 
     for (const s of segments) {
-        let id_mm = 0;
-        let weightPerM = 0;
-        if (s.material === 'custom') {
-            id_mm = s.customInnerDiameter || 0;
-            weightPerM = s.customWeight || 0;
-        } else {
-            const standard = PIPE_STANDARDS[s.material];
-            if (standard) {
-                const pipe = standard.dimensions.find(d => d.dn === s.size);
-                if (pipe) {
-                    id_mm = pipe.id;
-                    weightPerM = pipe.weight || 0;
-                }
-            }
-        }
+        if (!s) continue;
+        const id_mm = resolveInnerDiameterMm(s);
+        const weightPerM = s.material === 'custom'
+            ? (s.customWeight || 0)
+            : (PIPE_STANDARDS[s.material]?.dimensions.find(d => d.dn === s.size)?.weight ?? 0);
 
         // Volume = Pi * r^2 * h
         // Convert mm to dm: 1 dm = 100 mm

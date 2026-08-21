@@ -1,20 +1,9 @@
 import { PipeSegment, EquipmentItem, FluidType } from '../types';
-import { getPipeData, getFluidDensity } from './common';
+import { getPipeData, getFluidDensity, resolveInnerDiameterMm } from './common';
 
 export const calculatePipeVolume = (segment: PipeSegment): number => {
     if (!segment) return 0;
-    let innerDiameterMm = 0;
-
-    if (segment.diameter && segment.diameter > 0) {
-        innerDiameterMm = segment.diameter;
-    } else if (segment.material === 'custom') {
-        innerDiameterMm = segment.customInnerDiameter || 0;
-    } else {
-        const pipeData = getPipeData(segment.material, segment.size);
-        if (pipeData) {
-            innerDiameterMm = pipeData.id;
-        }
-    }
+    const innerDiameterMm = resolveInnerDiameterMm(segment);
 
     if (innerDiameterMm <= 0) return 0;
 

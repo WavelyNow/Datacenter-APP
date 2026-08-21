@@ -1,4 +1,5 @@
 import { PdfData } from '../types';
+import { calculatePurchaseSummary } from '../../calculations/purchase';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
 import { beginSection } from './common';
@@ -53,10 +54,15 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
         ['Revizie', pd.revision || '-'],
     ]);
 
+    const purchase = calculatePurchaseSummary(
+        data.segments, data.equipmentList, data.glycolPercentage,
+        (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
+        data.safetyMargin, data.safetyMarginPercentage ?? 5, data.fittingItems ?? []
+    );
     await drawGroup('Fluid de lucru', [
         ['Tip fluid', data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura'],
         ['Concentratie', `${data.glycolPercentage} % vol`],
-        ['Marja de siguranta (configurata de utilizator)', data.safetyMargin ? `${data.safetyMarginPercentage ?? 5} %` : '0 %'],
+        ['Marja de siguranta (configurata de utilizator)', purchase.marginPercent > 0 ? `${purchase.marginPercent} %` : '0 % (dezactivata)'],
     ]);
 
     await ctx.checkSpace(30);

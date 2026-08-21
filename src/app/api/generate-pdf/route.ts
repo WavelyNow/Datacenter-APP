@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
         if (typeof data.safetyMarginPercentage !== 'number' || !isFinite(data.safetyMarginPercentage)) {
             data.safetyMarginPercentage = 5;
         }
-        data.safetyMarginPercentage = Math.max(0, Math.min(30, data.safetyMarginPercentage));
+        data.safetyMarginPercentage = Math.max(0, Math.min(20, data.safetyMarginPercentage)); // unificat cu purchase (0-20)
 
         // Logo & fotografii — base64 valid si sub 5MB (nu abuz de resurse server)
         if (data.projectDetails?.companyLogo) {

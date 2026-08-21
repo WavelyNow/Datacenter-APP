@@ -12,6 +12,7 @@ import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types'
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
+import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
 import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -161,8 +162,8 @@ const PipeRow = React.memo(({
 
                     {/* Fittinguri pe această mărime (coturi / teuri / vane) */}
                     <div className="col-span-2 flex flex-col gap-1 text-xs" onClick={(e) => e.stopPropagation()}>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                            {segment.size} · {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60" title="Bucati totale pe aceasta masura (toate segmentele DN)">
+                            {segment.size} (total pe masura) · {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
                         </span>
                         {[
                             { key: 'elbow_90_std', label: 'Coturi' },
@@ -372,7 +373,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         }, 0);
     }, [segments, glycolPercentage, fluidType]);
 
-    // Use centralized resource calculation
+    // Resurse (volum + greutati) — afisare detaliata
     const resources: SystemResources = useMemo(() => calculateSystemResources(
         segments,
         equipmentList,
@@ -380,6 +381,12 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         { enabled: safetyMargin, percentage: safetyMarginPercentage },
         fluidType
     ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage, fluidType]);
+
+    // Sumar de comanda — ACELEAȘI cifre ca Dashboard/PDF (cu volum fittinguri real)
+    const purchase = useMemo(() => calculatePurchaseSummary(
+        segments, equipmentList, glycolPercentage, fluidType,
+        safetyMargin, safetyMarginPercentage, fittingItems
+    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems]);
 
     // Derived system sizing for pumps
     const maxFlowRate = useMemo(() => {
@@ -599,27 +606,34 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                     </button>
 
                                     <div className="flex flex-wrap items-center justify-end gap-x-8 gap-y-4 text-sm w-full md:w-auto">
-                                        {/* Detailed Breakdown - Purchasing Formula */}
+                                        {/* Detailed Breakdown - Purchasing Formula (aceleasi cifre ca Dashboard/PDF) */}
                                         <div className="flex items-center gap-6 pr-6 border-r border-border/30">
 
                                             {/* Components */}
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
                                                 <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Piping</span>
-                                                <span className="font-mono font-medium text-sm">{resources.totalPipingVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                                <span className="font-mono font-medium text-sm">{purchase.pipeVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                            </div>
+
+                                            <div className="text-muted-foreground/30 font-light">+</div>
+
+                                            <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
+                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Fittinguri</span>
+                                                <span className="font-mono font-medium text-sm">{purchase.fittingsVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
                                             <div className="text-muted-foreground/30 font-light">+</div>
 
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
                                                 <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Equip</span>
-                                                <span className="font-mono font-medium text-sm">{resources.totalEquipmentVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                                <span className="font-mono font-medium text-sm">{purchase.equipmentVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
                                             <div className="text-muted-foreground/30 font-light">+</div>
 
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
-                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Safety {safetyMargin ? `(${safetyMarginPercentage}%)` : ''}</span>
-                                                <span className="font-mono font-medium text-sm">{resources.safetyMarginVolume.toFixed(0)} <span className="text-[10px]">L</span></span>
+                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Marja {safetyMargin ? `(${purchase.marginPercent}%)` : ''}</span>
+                                                <span className="font-mono font-medium text-sm">{purchase.marginL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
                                             <div className="text-muted-foreground/30 font-light">=</div>
@@ -628,10 +642,10 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                             <div className="flex flex-col items-end">
                                                 <span className="text-[9px] text-indigo-400 uppercase tracking-widest font-bold mb-1 flex items-center gap-1.5">
                                                     <ShoppingCart className="w-3 h-3" />
-                                                    Total Solution To Buy
+                                                    Total De Cumpărat
                                                 </span>
                                                 <span className="font-mono font-black text-xl text-indigo-500 bg-indigo-500/10 px-2 rounded-md border border-indigo-500/20">
-                                                    {resources.totalSystemVolume.toFixed(0)} <span className="text-sm font-normal text-indigo-400">L</span>
+                                                    {purchase.totalGlycolL.toFixed(0)} <span className="text-sm font-normal text-indigo-400">L</span>
                                                 </span>
                                             </div>
                                         </div>

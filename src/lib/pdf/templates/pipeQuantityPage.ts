@@ -3,6 +3,7 @@ import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
 import { beginSection } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
+import { sanitizePdfText } from '../utils';
 
 /**
  * PAGINA 2 — CANTITATE TEAVA & FITTINGURI
@@ -56,8 +57,8 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         const w = [colW * 0.12, colW * 0.4, colW * 0.16, colW * 0.16, colW * 0.16][i];
         const textW = fontBold.widthOfTextAtSize(cell, 9);
         const isNum = i >= 2;
-        const cx = isNum ? tx + w - textW - 6 : tx + 6;
-        currentPage.drawText(sanitizeText(cell), { x: cx, y: startY - rowH / 2 - 4.5, size: 9, font: fontBold, color: theme.primary });
+        const cx = i === 0 ? tx + (w - textW) / 2 : isNum ? tx + w - textW - 6 : tx + 6;
+        currentPage.drawText(sanitizePdfText(cell), { x: cx, y: startY - rowH / 2 - 4.5, size: 9, font: fontBold, color: theme.primary });
         tx += w;
     });
     currentPage.drawLine({ start: { x: M, y: startY - rowH }, end: { x: M + colW, y: startY - rowH }, thickness: 0.6, color: theme.border });
@@ -106,6 +107,4 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
     ctx.currentY -= 14;
 }
 
-function sanitizeText(t: string): string {
-    return t;
-}
+
