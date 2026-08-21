@@ -104,25 +104,19 @@ export function HydraulicsPage() {
                 })}
             </div>
 
-            {/* Content Area */}
+            {/* Content Area — tool-urile raman MONTATE (ascunse) ca sa nu se piarda parametrii */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
-                {activeTool === 'expansion' && <ExpansionVesselCalculator />}
-
-                {activeTool === 'thermal' && (
-                    <ThermalExpansionTool />
-                )}
-
-                {activeTool === 'valve' && (
-                    <ValveSizingTool />
-                )}
-
-                {activeTool === 'fittings' && (
-                    <FittingsTool />
-                )}
-
-                {activeTool === 'pump' && (
-                    <PumpSizingTool />
-                )}
+                {[
+                    { id: 'expansion', el: <ExpansionVesselCalculator /> },
+                    { id: 'thermal', el: <ThermalExpansionTool /> },
+                    { id: 'valve', el: <ValveSizingTool /> },
+                    { id: 'fittings', el: <FittingsTool /> },
+                    { id: 'pump', el: <PumpSizingTool /> },
+                ].map(tool => (
+                    <div key={tool.id} style={{ display: activeTool === tool.id ? 'block' : 'none' }}>
+                        {tool.el}
+                    </div>
+                ))}
             </div>
         </div>
     );

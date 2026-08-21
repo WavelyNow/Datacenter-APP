@@ -125,6 +125,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         data.safetyMarginPercentage ?? 5,
         data.fittingItems ?? []
     );
+    const marginPct = data.safetyMargin ? (data.safetyMarginPercentage ?? 5) : 0;
     const totalVolumeGross = purchase.rawTotalL;
     const glycol = purchase.totalGlycolL;
 
@@ -200,7 +201,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
             p.material.replace(/_/g, ' ').toUpperCase().replace('STEEL', 'Steel').replace('LIGHT', 'Light'),
             p.size,
             p.length.toFixed(1) + ' m',
-            (p.length * 1.1).toFixed(1) + ' m'
+            (p.length * (1 + marginPct / 100)).toFixed(1) + ' m'
         ]);
 
     styleTable(
@@ -223,7 +224,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     eqTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
 
     const eqRows = data.equipmentList.map(eq => [
-        (eq.type || 'A').charAt(0).toUpperCase() + eq.type.slice(1),
+        (() => { const t = eq.type || 'Altele'; return t.charAt(0).toUpperCase() + t.slice(1); })(),
         eq.name,
         eq.volume + ' L',
         eq.weight + ' kg'

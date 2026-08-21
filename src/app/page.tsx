@@ -218,15 +218,18 @@ const DashboardContent = () => {
       </a>
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
-      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={toggleShortcuts} />
+      {isShortcutsOpen && <KeyboardShortcutsModal isOpen onClose={toggleShortcuts} />}
+      {isSettingsOpen && (
       <ProjectSettingsModal
-        isOpen={isSettingsOpen}
+        isOpen
         onClose={toggleSettings}
         projectDetails={projectDetails}
         onProjectDetailsChange={setProjectDetails}
       />
+      )}
+      {isExportOpen && (
       <PdfWizardModal
-        isOpen={isExportOpen}
+        isOpen
         onClose={toggleExport}
         data={{
           projectDetails,
@@ -241,6 +244,7 @@ const DashboardContent = () => {
           fittingItems: fittingItems || []
         }}
       />
+      )}
 
 
       {/* 2. Sidebar Navigation */}

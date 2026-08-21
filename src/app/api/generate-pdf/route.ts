@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePdf } from '@/lib/pdf/generatePdf';
 import { PdfData } from '@/lib/pdf/types';
-import { validatePipeSegment, validateEquipmentItem, sanitizeProjectName, VALIDATION_LIMITS } from '@/lib/validation';
+import { validatePipeSegment, validateEquipmentItem, sanitizeProjectName, validateBase64Image, VALIDATION_LIMITS } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 // Vercel: timp suficient pentru font embed + pdf-lib
@@ -66,6 +66,19 @@ export async function POST(req: NextRequest) {
         }
         data.safetyMarginPercentage = Math.max(0, Math.min(30, data.safetyMarginPercentage));
 
+        // Logo & fotografii — base64 valid si sub 5MB (nu abuz de resurse server)
+        if (data.projectDetails?.companyLogo) {
+            const logoRes = validateBase64Image(data.projectDetails.companyLogo as string);
+            if (!logoRes.isValid) errors.push(`Logo: ${logoRes.errors.join('; ')}`);
+        }
+        (data.equipmentList ?? []).forEach((eq, i) => {
+            const imgs = [...(eq.photos || []), eq.glycolProofImage, eq.proofImage].filter(Boolean) as string[];
+            imgs.forEach((img, j) => {
+                const res = validateBase64Image(img.startsWith('data:') ? img : `data:image/jpeg;base64,${img}`);
+                if (!res.isValid) errors.push(`Equipment ${i + 1} foto ${j + 1}: ${res.errors.join('; ')}`);
+            });
+        });
+
         // Fittinguri — cantitati valide
         if (data.fittingItems !== undefined) {
             if (!Array.isArray(data.fittingItems)) errors.push('fittingItems must be an array');
@@ -80,23 +93,15 @@ export async function POST(req: NextRequest) {
         }
         
         if (errors.length > 0) {
-            console.log('[DEBUG] Validation failed with errors:', errors);
             return NextResponse.json({
                 error: 'Validation failed',
                 details: errors
             }, { status: 400 });
         }
 
-        console.log('[DEBUG] Starting PDF generation with data:', {
-            segmentsCount: data.segments?.length || 0,
-            equipmentCount: data.equipmentList?.length || 0,
-            projectName: data.projectDetails?.projectName,
-            options: data.options
-        });
         const pdfBuffer = await generatePdf(data);
-        console.log(`[DEBUG] PDF generation completed, buffer size: ${pdfBuffer.length} bytes`);
 
-        const filename = `Proiect_${sanitizeProjectName(data.projectDetails.projectName)}_Rev${data.projectDetails.revision}.pdf`;
+        const filename = `Proiect_${sanitizeProjectName(data.projectDetails.projectName)}_Rev${sanitizeProjectName(String(data.projectDetails.revision ?? 'A'))}.pdf`;
 
         return new NextResponse(Buffer.from(pdfBuffer), {
             status: 200,

@@ -241,7 +241,7 @@ export const calculateSupportReport = (
 
         // Total Load on Anchors
         const totalAnchorLoad = designLoad + (totalSupportSelfWeight * 1.35);
-        const anchorReaction = totalAnchorLoad / numAnchors;
+        const anchorReaction = (totalAnchorLoad / numAnchors) * 1.2; // x1.2 — factorul afisat in UI (regula practica)
 
         // Quantity (Total supports needed)
         // Logic Update: Calculate effective route length based on piping.

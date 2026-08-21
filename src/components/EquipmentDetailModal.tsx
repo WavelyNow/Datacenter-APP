@@ -8,7 +8,10 @@ import {
     Upload, Trash2, Plus, Check, Settings, Download
 } from 'lucide-react';
 import { EquipmentItem } from '@/lib/types';
-import Equipment3DViewer from './Equipment3DViewer';
+import dynamic from 'next/dynamic';
+const Equipment3DViewer = dynamic(() => import('./Equipment3DViewer'), { ssr: false });
+import { validateUploadFile } from '@/lib/validation';
+import { toast } from 'sonner';
 
 interface EquipmentDetailModalProps {
     isOpen: boolean;
@@ -46,6 +49,8 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
     const handleGlycolImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        const err = validateUploadFile(file, 2);
+        if (err) { toast.error(err); return; }
         const reader = new FileReader();
         reader.onloadend = () => onUpdate({ glycolProofImage: reader.result as string });
         reader.readAsDataURL(file);
@@ -54,6 +59,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
     const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { toast.error('Fișierul PDF depășește 5 MB'); return; }
         const reader = new FileReader();
         reader.onloadend = () => onUpdate({ technicalSheet: reader.result as string });
         reader.readAsDataURL(file);
@@ -61,12 +67,23 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        if (!files) return;
+        if (!files || files.length === 0) return;
+        const currentPhotos = equipment.photos || [];
+        if (currentPhotos.length + files.length > 10) {
+            toast.error('Maxim 10 fotografii per echipament');
+            return;
+        }
+        for (const file of Array.from(files)) {
+            const err = validateUploadFile(file, 2);
+            if (err) { toast.error(`${file.name}: ${err}`); return; }
+        }
+        // Acumulare locala — fara race condition (inainte doar ultima fotografie ramanea)
+        const newPhotos = [...currentPhotos];
         Array.from(files).forEach(file => {
             const reader = new FileReader();
             reader.onloadend = () => {
-                const currentPhotos = equipment.photos || [];
-                onUpdate({ photos: [...currentPhotos, reader.result as string] });
+                newPhotos.push(reader.result as string);
+                onUpdate({ photos: [...newPhotos] });
             };
             reader.readAsDataURL(file);
         });

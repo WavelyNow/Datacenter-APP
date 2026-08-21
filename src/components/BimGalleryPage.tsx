@@ -92,10 +92,24 @@ export const BimGalleryPage = () => {
         });
     }, [catalog3DItems, filterManufacturer, filterCategory, searchTerm]);
 
+    const VALID_TYPES = ['Chiller', 'CRAH / CCU', 'Dry Cooler / Turn Răcire', 'Puffer / Rezervor Tampon', 'Schimbător Căldură (Plaques)', 'Grup Pompare', 'Unitate internă (CDU)', 'Altele'];
+    const CATEGORY_MAP: Record<string, string> = {
+        Cooling: 'Chiller', Racks: 'Altele', Power: 'Altele', 'Power Distribution': 'Altele',
+        'Integrated Solutions': 'Altele', 'Cooling Accessories': 'Grup Pompare', Safety: 'Altele',
+        Security: 'Altele', Infrastructure: 'Altele', 'IT Systems': 'Altele', Generator: 'Altele',
+        Container: 'Altele', Piping: 'Altele', Switchgear: 'Altele', AHU: 'Altele',
+        'Cooling Tower': 'Altele', 'In-Row Cooling': 'CRAH / CCU', 'Vane & Robineți': 'Altele',
+        Fitinguri: 'Altele', 'Filtre & Separatoare': 'Altele', Cuplaje: 'Altele',
+        'Vane de Reglaj': 'Altele', 'Clapete Sens': 'Altele', 'Vane Echilibrare': 'Altele',
+    };
+
     const addToProject = (catalogItem: CatalogEquipment) => {
+        const normalizedType = catalogItem.type && VALID_TYPES.includes(catalogItem.type)
+            ? catalogItem.type
+            : (CATEGORY_MAP[catalogItem.category] ?? 'Altele');
         const newItem: EquipmentItem = {
             id: `eq-import-${crypto.randomUUID()}`,
-            type: catalogItem.category || 'Altele',
+            type: normalizedType,
             name: catalogItem.model,
             manufacturer: catalogItem.manufacturer,
             volume: catalogItem.volume || 0,
@@ -155,7 +169,7 @@ export const BimGalleryPage = () => {
 
                     {isCatalog ? (
                         <button
-                            onClick={() => addToProject(item as CatalogEquipment)}
+                            onClick={(e) => { e.stopPropagation(); addToProject(item as CatalogEquipment); }}
                             className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-md shrink-0 flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-3.5 h-3.5" /> Adaugă
@@ -167,6 +181,7 @@ export const BimGalleryPage = () => {
                                     e.stopPropagation();
                                     const confirm = window.confirm('Are you sure you want to remove this model from your project?');
                                     if (confirm) {
+                                        if (item.model3d?.startsWith('blob:')) URL.revokeObjectURL(item.model3d);
                                         setEquipmentList((prev: EquipmentItem[]) => prev.filter(i => i.id !== item.id));
                                     }
                                 }}

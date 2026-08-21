@@ -163,7 +163,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN125',
                 length: 45,
@@ -171,7 +171,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN100',
                 length: 80,
@@ -292,7 +292,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN150',
                 length: 80,
@@ -300,7 +300,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN125',
                 length: 120,
@@ -308,7 +308,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             },
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN100',
                 length: 200,

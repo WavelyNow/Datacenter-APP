@@ -32,8 +32,6 @@ export const BrandingManager: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [sections, setSections] = useState<PDFSection[]>(DEFAULT_SECTIONS);
-    const [showPageNumbers, setShowPageNumbers] = useState(true);
-    const [compactMode, setCompactMode] = useState(false);
 
     // PDF Preview State
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -105,6 +103,7 @@ export const BrandingManager: React.FC = () => {
     const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { alert('Logo-ul depășește 2 MB — alegeți un fișier mai mic.'); return; }
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target?.result as string;
@@ -180,17 +179,6 @@ export const BrandingManager: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Options */}
-                    <div className="flex items-center gap-4 pt-2 border-t border-border">
-                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground">
-                            <input type="checkbox" checked={showPageNumbers} onChange={(e) => setShowPageNumbers(e.target.checked)} className="w-3.5 h-3.5 rounded" />
-                            {t('branding.pageNumbers')}
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground">
-                            <input type="checkbox" checked={compactMode} onChange={(e) => setCompactMode(e.target.checked)} className="w-3.5 h-3.5 rounded" />
-                            {t('branding.compact')}
-                        </label>
-                    </div>
                 </div>
 
                 {/* Right: Real PDF Preview */}

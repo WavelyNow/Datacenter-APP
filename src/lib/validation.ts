@@ -98,3 +98,15 @@ export const sanitizeProjectName = (name: string): string => {
   // Remove special characters that could cause file system issues
   return name.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim();
 };
+
+/** Validare la upload (client): dimensiune + tip. Întoarce mesaj de eroare sau null. */
+export function validateUploadFile(file: File, maxMb: number, allowedTypes: string[] = ['image/png', 'image/jpeg', 'image/webp']): string | null {
+    if (!file) return 'Fișier lipsă';
+    if (file.size > maxMb * 1024 * 1024) {
+        return `Fișierul depășește ${maxMb} MB (are ${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+    }
+    if (allowedTypes.length && !allowedTypes.includes(file.type)) {
+        return `Tip neacceptat: ${file.type || 'necunoscut'}`;
+    }
+    return null;
+}

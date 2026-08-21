@@ -10,8 +10,18 @@ import fs from 'fs';
 import path from 'path';
 import { base64ToUint8Array } from './utils';
 
+// Cache la nivel de modul — fontul nu trebuie re-incarcat la fiecare request
+const fontCache = new Map<string, Promise<ArrayBuffer>>();
+
 // Helper to fetch fonts — fs în dezvoltare, URL pe Vercel (public/ nu e pe filesystem)
-async function fetchFont(filename: string): Promise<ArrayBuffer> {
+function fetchFont(filename: string): Promise<ArrayBuffer> {
+    if (fontCache.has(filename)) return fontCache.get(filename)!;
+    const promise = loadFont(filename);
+    fontCache.set(filename, promise);
+    return promise;
+}
+
+async function loadFont(filename: string): Promise<ArrayBuffer> {
     const paths = [
         path.join(process.cwd(), 'public', 'fonts', filename),
         path.join(process.cwd(), 'fonts', filename),

@@ -10,6 +10,8 @@ import { EquipmentDetailModal } from './EquipmentDetailModal';
 import { useTranslation } from '@/context/PreferencesContext';
 import { useProject } from '@/context/ProjectContext';
 import { getFluidDensity } from '@/lib/calculations/common';
+import { validateUploadFile } from '@/lib/validation';
+import { toast } from 'sonner';
 import { ValidatedInput, NumberInput } from '@/components/ui/ValidatedInput';
 import { motion } from 'framer-motion';
 import { itemVariants } from '@/lib/animations';
@@ -76,6 +78,8 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            const err = validateUploadFile(file, 2);
+            if (err) { toast.error(err); return; }
             const reader = new FileReader();
             reader.onloadend = () => {
                 onUpdate(item.id, 'proofImage', reader.result as string);
@@ -86,6 +90,7 @@ const EquipmentRow = React.memo(({ item, viewMode, onUpdate, onRemove, onCopy, o
 
     const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        if (file && file.size > 5 * 1024 * 1024) { toast.error('PDF-ul depășește 5 MB'); e.target.value = ''; return; }
         if (file && file.type === 'application/pdf') {
             const reader = new FileReader();
             reader.onloadend = () => {

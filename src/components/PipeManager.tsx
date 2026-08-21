@@ -93,7 +93,7 @@ const PipeRow = React.memo(({
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2, delay: index * 0.05 }}
+            transition={{ duration: 0.15, delay: Math.min(index, 8) * 0.03 }}
             className={`grid grid-cols-12 gap-6 px-8 py-5 items-center transition-all group relative border-b border-border/30 last:border-0 hover:bg-muted/40`}
             onContextMenu={(e) => onContextMenu(e, segment.id)} // [NEW] Trigger
         >
@@ -298,12 +298,13 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         onFittingItemsChange?.(next);
     }, [fittingItems, onFittingItemsChange]);
 
-    // Virtualizer with slightly larger estimate for "airy" rows
+    // Virtualizer — chei stabile pe id + estimare corecta pe viewMode + masurare reala
     const rowVirtualizer = useVirtualizer({
         count: segments.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 100, // Increased for spacing
-        overscan: 5,
+        estimateSize: () => (viewMode === 'config' ? 150 : 90),
+        getItemKey: i => segments[i]?.id ?? i,
+        overscan: 6,
     });
 
     const addSegment = useCallback(() => {
@@ -564,6 +565,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                     transform: `translateY(${virtualRow.start}px)`,
                                                 }}
                                             >
+                                                <div ref={rowVirtualizer.measureElement} data-index={virtualRow.index}>
                                                 <PipeRow
                                                     segment={segment}
                                                     index={virtualRow.index}
@@ -578,6 +580,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                     fittings={fitBySize[segment.size]}
                                                     onFittingCountChange={handleFittingCount}
                                                 />
+                                                </div>
                                             </div>
                                         );
                                     })}

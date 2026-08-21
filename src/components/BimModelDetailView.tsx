@@ -3,7 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Box, Settings, CheckCircle, Plus, FileText } from 'lucide-react';
-import Equipment3DViewer from './Equipment3DViewer';
+import dynamic from 'next/dynamic';
+const Equipment3DViewer = dynamic(() => import('./Equipment3DViewer'), { ssr: false });
 import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 
 interface BimModelDetailViewProps {

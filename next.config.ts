@@ -28,7 +28,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['puppeteer'],
   turbopack: {},
   reactCompiler: true,
   async headers() {
