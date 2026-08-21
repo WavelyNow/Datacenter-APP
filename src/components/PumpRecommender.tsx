@@ -12,7 +12,9 @@ interface Pump {
     efficiencyClass: 'IE3' | 'IE4' | 'IE5';
 }
 
-// Mock Database of Pumps for Datacenter Applications
+// Catalog orientativ de pompe pentru răcire datacenter.
+// Datele sunt REFERINȚE de dimensionare (nu listă oficială de prețuri/curbe —
+// verifică întotdeauna curba reală la producător înainte de achiziție).
 const PUMP_DATABASE: Pump[] = [
     { id: '1', manufacturer: 'Grundfos', model: 'MAGNA3 25-60', maxFlow: 8, maxHead: 60, power: '85W', efficiencyClass: 'IE5' },
     { id: '2', manufacturer: 'Grundfos', model: 'MAGNA3 32-120 F', maxFlow: 18, maxHead: 120, power: '340W', efficiencyClass: 'IE5' },
@@ -29,15 +31,21 @@ interface PumpRecommenderProps {
 
 export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderProps) {
 
-    // Logic: Find pumps where MaxFlow >= Required and MaxHead >= Required (plus some safety margin usually, but kept simple here)
+    // Logic: match pe debit/presiune + verificare aproximativă de curbă.
+    // O pompă NU poate livra head-ul maxim la debit maxim simultan — verificăm
+    // dacă punctul de lucru e pe o curbă plauzibilă (aprox. parabolică):
+    // head_available(Q) ≈ maxHead × (1 − (Q/Qmax)²).
     const matches = useMemo(() => {
         if (requiredFlow <= 0 || requiredHead <= 0) return [];
 
-        return PUMP_DATABASE.filter(p =>
-            p.maxFlow >= requiredFlow * 1.1 && // 10% margin
-            p.maxHead >= requiredHead * 1.1    // 10% margin
-        ).sort((a, b) => {
-            // Sort by "closeness" to requirements (smallest sufficient pump first)
+        return PUMP_DATABASE.filter(p => {
+            if (p.maxFlow < requiredFlow * 1.1) return false;
+            // Verificare curbă: head disponibil la debitul cerut (aproximare tipică)
+            const qRatio = Math.min(1, requiredFlow / p.maxFlow);
+            const headAtQ = p.maxHead * (1 - Math.pow(qRatio, 2));
+            return headAtQ >= requiredHead * 1.1;
+        }).sort((a, b) => {
+            // Closest to requirements first (smallest sufficient pump)
             const scoreA = (a.maxFlow - requiredFlow) + (a.maxHead - requiredHead);
             const scoreB = (b.maxFlow - requiredFlow) + (b.maxHead - requiredHead);
             return scoreA - scoreB;
@@ -49,10 +57,11 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
         head: requiredHead.toFixed(1)
     };
 
-    if (requiredFlow === 0 && requiredHead === 0) {
+    // Stare goală: orice valoare lipsă = "introduceți date", NU "nu există pompe"
+    if (requiredFlow <= 0 || requiredHead <= 0) {
         return (
             <div className="bg-card/50 border border-border/50 rounded-xl p-6 backdrop-blur-sm flex items-center justify-center text-muted-foreground text-sm h-full">
-                Enter flow rates to see pump recommendations.
+                Introduceți debitul și presiunea necesară pentru recomandări.
             </div>
         );
     }
@@ -116,8 +125,8 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
                 ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-center space-y-3 opacity-70">
                         <AlertTriangle className="w-8 h-8 text-yellow-500" />
-                        <p className="text-sm font-medium">No standard pumps match these requirements.</p>
-                        <p className="text-xs text-muted-foreground max-w-[200px]">The required flow or head exceeds our standard catalog database.</p>
+                        <p className="text-sm font-medium">Nicio pompă din catalogul orientativ nu acoperă punctul de lucru.</p>
+                        <p className="text-xs text-muted-foreground max-w-[240px]">Debitul sau înălțimea necesară depășește catalogul de referință. Verificați curba reală la producător.</p>
                     </div>
                 )}
             </div>

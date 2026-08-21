@@ -29,7 +29,7 @@ type Category = 'general' | 'bim' | 'engineering' | 'export';
 
 const categories: { id: Category; label: string; icon: LucideIcon }[] = [
     { id: 'general', label: 'General & Dashboard', icon: Info },
-    { id: 'bim', label: 'BIM & Import', icon: Box },
+    { id: 'bim', label: 'Galerie 3D & Modele', icon: Box },
     { id: 'engineering', label: 'Inginerie & Calcul', icon: Zap },
     { id: 'export', label: 'Export & Rapoarte', icon: FileText },
 ];

@@ -4,7 +4,7 @@
  * Ø interior ≈ Ø exterior − 2 × grosime. Greutăți > 0. ODs rezonabile.
  */
 
-import { PIPE_STANDARDS, getPipeStandards } from '@/lib/pipeStandards';
+import { PIPE_STANDARDS, getPipeStandards, saveUserPipeStandards, resetUserPipeStandards, PipeStandard } from '@/lib/pipeStandards';
 
 describe('Pipe standards data integrity', () => {
     it('every dimension has consistent geometry (id ≈ od − 2×thickness)', () => {
@@ -73,5 +73,29 @@ describe('Pipe standards data integrity', () => {
         // In test env (jsdom), localStorage is fresh → no override
         const merged = getPipeStandards();
         expect(Object.keys(merged).length).toBeGreaterThanOrEqual(Object.keys(PIPE_STANDARDS).length);
+    });
+
+    it('local override applies INSTANTLY to PIPE_STANDARDS (Proxy view used by all calcs)', () => {
+        // Save an override for one standard
+        const custom: Record<string, PipeStandard> = {
+            gf_coolfit_2_0: {
+                ...PIPE_STANDARDS['gf_coolfit_2_0'],
+                dimensions: [{ dn: 'd32', inch: '1"', od: 32, thickness: 3.0, id: 26.0, weight: 1.20 }],
+            },
+        };
+        saveUserPipeStandards(custom);
+
+        // Direct index access (the way calcs read it) reflects the override
+        const effective = PIPE_STANDARDS['gf_coolfit_2_0'];
+        expect(effective.dimensions[0].thickness).toBe(3.0);
+        expect(effective.dimensions[0].id).toBe(26.0);
+
+        // Object.entries also sees merged data
+        const entries = Object.entries(PIPE_STANDARDS);
+        expect(entries.length).toBeGreaterThanOrEqual(Object.keys(custom).length);
+
+        // Reset → back to official
+        resetUserPipeStandards();
+        expect(PIPE_STANDARDS['gf_coolfit_2_0'].dimensions[0].thickness).toBe(2.9);
     });
 });

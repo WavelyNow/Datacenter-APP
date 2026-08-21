@@ -33,24 +33,24 @@ export const helpRegistry: Record<string, HelpItem> = {
     },
     'bim-upload': {
         id: 'bim-upload',
-        title: 'Import Fișiere BIM (IFC)',
-        description: 'Încarcă modelul 3D al instalației pentru a extrage automat cantitățile de materiale.',
+        title: 'Galerie 3D — Modele producători & import GLB',
+        description: 'Explorarea modelelor 3D ale producătorilor sau importul propriilor fișiere .glb/.gltf (ex. modele GF descărcate de pe cad.georgfischer.com).',
         category: 'bim',
         tips: [
-            'Sunt suportate fișiere .ifc standard (IFC2x3, IFC4).',
-            'Aplicația detectează automat sistemele (Tur/Retur) și conexiunile.',
-            'Dacă un echipament nu este recunoscut, poți folosi "Wizard-ul" pentru mapare manuală.'
+            'Butonul "Import GLB" acceptă fișiere .glb / .gltf descărcate de la producători.',
+            'Modelele Sketchfab din librărie sunt verificate (nu conțin id-uri inventate).',
+            'Producătorii care nu publică pe Sketchfab (STULZ, Delta, CoolIT, Rittal, nVent) oferă BIM/CAD pe site-urile lor.'
         ]
     },
     'bim-checklist': {
         id: 'bim-checklist',
-        title: 'Sumar Echipamente BIM',
-        description: 'Lista completă a obiectelor detectate în fișierul importat.',
+        title: 'Standarde Țevi — datele oficiale',
+        description: 'Pagina "Standarde Țevi" conține dimensiunile verificate (Ø exterior/interior, grosime, greutate) pentru GF COOL-FIT, Uponor, Pipelife, Valrom ș.a. — editabile local.',
         category: 'bim',
         tips: [
-            'Folosește "Group by System" pentru a organiza lista.',
-            'Elementele cu "Roșu" necesită atenție (nu sunt mapate la un produs din catalog).',
-            'Poți exporta această listă separat folosind butonul "Export BOM".'
+            'Ø interior = Ø exterior − 2 × grosime (apăsă butonul de auto-corectare dacă diferă).',
+            'Modificările salvate se aplică instant în toate calculele proiectului.',
+            '"Date Oficiale" readuce valorile verificate din librăria aplicației.'
         ]
     },
     'nav-dashboard': {

@@ -26,7 +26,7 @@ export interface PipeStandard {
     dimensions: PipeDimension[];
 }
 
-export const PIPE_STANDARDS: Record<string, PipeStandard> = {
+const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
     // --- METALS ---
     steel_light: {
         label: "Oțel - Ușoară (Light II)",
@@ -344,19 +344,25 @@ export const PIPE_STANDARDS: Record<string, PipeStandard> = {
 
 const OVERRIDE_KEY = 'pipe_standards_user_override_v1';
 
+// Cache pentru override (citit o singură dată din localStorage, invalidat la save/reset)
+let overrideCache: Record<string, PipeStandard> | null = null;
+
 function readOverride(): Record<string, PipeStandard> | null {
     if (typeof window === 'undefined') return null;
+    if (overrideCache !== null) return overrideCache;
     try {
         const raw = window.localStorage.getItem(OVERRIDE_KEY);
-        if (!raw) return null;
+        if (!raw) { overrideCache = null; return null; }
         const parsed = JSON.parse(raw);
-        return parsed && typeof parsed === 'object' ? parsed : null;
+        overrideCache = parsed && typeof parsed === 'object' ? parsed : null;
+        return overrideCache;
     } catch {
         return null;
     }
 }
 
 function writeOverride(data: Record<string, PipeStandard>): void {
+    overrideCache = data;
     if (typeof window === 'undefined') return;
     try {
         window.localStorage.setItem(OVERRIDE_KEY, JSON.stringify(data));
@@ -368,17 +374,43 @@ function writeOverride(data: Record<string, PipeStandard>): void {
 /** Standardele efective = implicite + override local (dacă există). */
 export function getPipeStandards(): Record<string, PipeStandard> {
     const override = readOverride();
-    if (!override) return { ...PIPE_STANDARDS };
-    return { ...PIPE_STANDARDS, ...override };
+    if (!override) return { ...BASE_PIPE_STANDARDS };
+    return { ...BASE_PIPE_STANDARDS, ...override };
 }
 
-/** Salvează un set complet de standarde ca override local. */
+/**
+ * PIPE_STANDARDS — vedere UNIFICATĂ (implicite + override local).
+ * Este un Proxy dinamic: orice citire (indexare, Object.entries, Object.values)
+ * reflectă modificările salvate din pagina „Standarde Țevi" — fără a modifica
+ * niciun consumator. Calculele folosesc deci întotdeauna datele curente.
+ */
+export const PIPE_STANDARDS: Record<string, PipeStandard> = new Proxy(BASE_PIPE_STANDARDS, {
+    get(target, prop) {
+        if (typeof prop === 'string') {
+            const merged = getPipeStandards();
+            if (prop in merged) return merged[prop];
+        }
+        return Reflect.get(target, prop);
+    },
+    has(target, prop) {
+        return prop in getPipeStandards();
+    },
+    ownKeys() {
+        return Reflect.ownKeys(getPipeStandards());
+    },
+    getOwnPropertyDescriptor(target, prop) {
+        return Reflect.getOwnPropertyDescriptor(getPipeStandards(), prop);
+    },
+}) as Record<string, PipeStandard>;
+
+/** Salvează un set complet de standarde ca override local (aplicat instant în toate calculele). */
 export function saveUserPipeStandards(data: Record<string, PipeStandard>): void {
     writeOverride(data);
 }
 
 /** Șterge override-ul și revine la datele oficiale. */
 export function resetUserPipeStandards(): void {
+    overrideCache = null;
     if (typeof window === 'undefined') return;
     try {
         window.localStorage.removeItem(OVERRIDE_KEY);
