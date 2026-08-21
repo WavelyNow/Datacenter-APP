@@ -8,7 +8,7 @@ import {
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
-import { PipeSegment, FluidType, EquipmentItem } from '@/lib/types';
+import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
@@ -16,7 +16,6 @@ import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
-import { SegmentDetailSheet } from './SegmentDetailSheet';
 import { PumpRecommender } from './PumpRecommender';
 // Duplicate imports removed
 import { ThermalAnalysisSheet } from './ThermalAnalysisSheet';
@@ -38,6 +37,8 @@ interface PipeManagerProps {
     glycolPercentage?: number;
     safetyMargin?: boolean;
     safetyMarginPercentage?: number;
+    fittingItems?: FittingItem[];
+    onFittingItemsChange?: (items: FittingItem[]) => void;
     className?: string;
     isLoading?: boolean;
 }
@@ -52,10 +53,10 @@ const PipeRow = React.memo(({
     updateSegment,
     duplicateSegment,
     removeSegment,
-    onSelect,
     onAnalyzeThermal,
     onContextMenu, // [NEW] Handler
-    isSelected
+    fittings,
+    onFittingCountChange
 }: {
     segment: PipeSegment;
     index: number;
@@ -65,10 +66,10 @@ const PipeRow = React.memo(({
     updateSegment: (id: string, updates: Partial<PipeSegment>) => void;
     duplicateSegment: (id: string) => void;
     removeSegment: (id: string) => void;
-    onSelect: (id: string) => void;
     onAnalyzeThermal: (id: string) => void;
     onContextMenu: (e: React.MouseEvent, id: string) => void; // [NEW] signature
-    isSelected: boolean;
+    fittings?: Record<string, number>;
+    onFittingCountChange?: (type: string, size: string, count: number) => void;
 }) => {
     const isCustom = segment.material === 'custom';
     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
@@ -95,10 +96,7 @@ const PipeRow = React.memo(({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2, delay: index * 0.05 }}
-            className={`grid grid-cols-12 gap-6 px-8 py-5 items-center transition-all group relative border-b border-border/30 last:border-0 cursor-pointer 
-                ${isSelected ? 'bg-primary/5 border-l-4 border-l-primary shadow-sm' : 'hover:bg-muted/40 border-l-4 border-l-transparent'}
-            `}
-            onClick={() => onSelect(segment.id)}
+            className={`grid grid-cols-12 gap-6 px-8 py-5 items-center transition-all group relative border-b border-border/30 last:border-0 hover:bg-muted/40`}
             onContextMenu={(e) => onContextMenu(e, segment.id)} // [NEW] Trigger
         >
             {/* Index */}
@@ -163,24 +161,29 @@ const PipeRow = React.memo(({
                         />
                     </div>
 
-                    {/* Details Readout */}
-                    <div className="col-span-2 flex flex-col justify-center text-xs text-muted-foreground group/vol relative">
-                        <div className="flex flex-col cursor-help items-center md:items-start">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onSelect(segment.id);
-                                }}
-                                className="text-[10px] uppercase tracking-wider opacity-50 mb-1 flex items-center gap-1 hover:text-primary hover:opacity-100 transition-all"
-                            >
-                                Volum <Calculator className="w-3 h-3 opacity-50" />
-                            </button>
-                            <span className="font-mono text-foreground font-medium">
-                                {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(2)} <span className="text-muted-foreground font-normal">L</span>
-                            </span>
-                        </div>
-
-                        {/* Tooltip removed in favor of Sheet */}
+                    {/* Fittinguri pe această mărime (coturi / teuri / vane) */}
+                    <div className="col-span-2 flex flex-col gap-1 text-xs" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                            {segment.size} · {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
+                        </span>
+                        {[
+                            { key: 'elbow_90_std', label: 'Coturi' },
+                            { key: 'tee_branch', label: 'Teuri' },
+                            { key: 'valve_ball', label: 'Vane' },
+                        ].map(f => (
+                            <div key={f.key} className="flex items-center gap-2">
+                                <span className="w-12 text-[10px] text-muted-foreground">{f.label}</span>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    value={fittings?.[f.key] ?? 0}
+                                    onChange={(e) => onFittingCountChange?.(f.key, segment.size, Math.max(0, parseInt(e.target.value) || 0))}
+                                    className="w-14 bg-muted/40 border border-border/40 rounded-md px-1.5 py-0.5 text-center font-mono text-[11px] outline-none focus:border-primary/50"
+                                    title={`Numar ${f.label.toLowerCase()} pe ${segment.size} — apar in lista de cumparat`}
+                                />
+                            </div>
+                        ))}
                     </div>
 
                     {/* Actions */}
@@ -270,13 +273,32 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
     glycolPercentage = 0,
     safetyMargin = false,
     safetyMarginPercentage = 5,
+    fittingItems = [],
+    onFittingItemsChange,
     className,
     isLoading = false
 }) => {
     const [viewMode, setViewMode] = useState<'config' | 'hydraulics' | 'simulator'>('config');
-    const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
     const [thermalAnalysisId, setThermalAnalysisId] = useState<string | null>(null);
     const parentRef = useRef<HTMLDivElement>(null);
+
+    // Fittinguri agregate pe mărime (pentru inputurile din tabel)
+    const fitBySize = React.useMemo(() => {
+        const map: Record<string, Record<string, number>> = {};
+        for (const f of fittingItems) {
+            if (!map[f.size]) map[f.size] = {};
+            map[f.size][f.type] = f.quantity;
+        }
+        return map;
+    }, [fittingItems]);
+
+    const handleFittingCount = React.useCallback((type: string, size: string, count: number) => {
+        const others = fittingItems.filter(f => !(f.type === type && f.size === size));
+        const next = count > 0
+            ? [...others, { id: `fit-${type}-${size}`, type, size, quantity: count }]
+            : others;
+        onFittingItemsChange?.(next);
+    }, [fittingItems, onFittingItemsChange]);
 
     // Virtualizer with slightly larger estimate for "airy" rows
     const rowVirtualizer = useVirtualizer({
@@ -553,10 +575,10 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                     updateSegment={updateSegment}
                                                     duplicateSegment={duplicateSegment}
                                                     removeSegment={removeSegment}
-                                                    isSelected={selectedSegmentId === segment.id}
-                                                    onSelect={setSelectedSegmentId}
                                                     onAnalyzeThermal={setThermalAnalysisId}
                                                     onContextMenu={handleContextMenu}
+                                                    fittings={fitBySize[segment.size]}
+                                                    onFittingCountChange={handleFittingCount}
                                                 />
                                             </div>
                                         );
@@ -656,12 +678,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                     )}
                 </AnimatePresence>
 
-                <SegmentDetailSheet
-                    segment={segments.find(s => s.id === selectedSegmentId) || null}
-                    onClose={() => setSelectedSegmentId(null)}
-                    glycolPercentage={glycolPercentage}
-                    fluidType={fluidType}
-                />
 
                 <ThermalAnalysisSheet
                     segment={segments.find(s => s.id === thermalAnalysisId) || null}

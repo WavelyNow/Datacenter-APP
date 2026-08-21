@@ -177,7 +177,7 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
             { dn: "32mm", inch: "1\"", od: 32, thickness: 2.0, id: 28.0, weight: 0.20 },
             { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 2.4, id: 35.2, weight: 0.30 },
             { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 3.0, id: 44.0, weight: 0.46 },
-            { dn: "63mm", inch: "2\"", od: 63, thickness: 3.8, id: 55.4, weight: 0.72 },
+            { dn: "63mm", inch: "2\"", od: 63, thickness: 3.7, id: 55.6, weight: 0.66 },
             { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 4.5, id: 66.0, weight: 1.02 },
             { dn: "90mm", inch: "3\"", od: 90, thickness: 5.4, id: 79.2, weight: 1.46 },
             { dn: "110mm", inch: "4\"", od: 110, thickness: 6.6, id: 96.8, weight: 2.18 },

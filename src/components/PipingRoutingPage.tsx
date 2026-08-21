@@ -24,6 +24,7 @@ export function PipingRoutingPage() {
         equipmentList, setEquipmentList,
         fluidType, glycolPercentage,
         safetyMargin, safetyMarginPercentage, setSafetyMargin,
+        fittingItems, setFittingItems,
         isInitialized
     } = useProject();
 
@@ -142,6 +143,8 @@ export function PipingRoutingPage() {
                                     fluidType={fluidType}
                                     glycolPercentage={glycolPercentage}
                                     safetyMarginPercentage={safetyMarginPercentage}
+                                    fittingItems={fittingItems}
+                                    onFittingItemsChange={setFittingItems}
                                     isLoading={!isInitialized}
                                     className="h-[calc(100vh-320px)] min-h-[600px]"
                                 />
