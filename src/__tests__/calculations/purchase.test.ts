@@ -23,9 +23,9 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         expect(dn50.weightKg).toBeGreaterThan(30); // ~4.08 kg/m × 10 m
     });
 
-    it('applies fittings allowance (8%) and margin, then rounds up to 10 L canisters', () => {
-        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, []);
-        expect(p.fittingsAllowancePercent).toBe(FITTINGS_ALLOWANCE_PERCENT);
+    it('applies fittings allowance (8% explicit) and margin, then rounds up to 10 L canisters', () => {
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], 8);
+        expect(p.fittingsAllowancePercent).toBe(8);
         expect(p.fittingsAllowanceL).toBeCloseTo(p.pipeVolumeL * 0.08, 1);
         // fără marjă: raw = pipe + 8%
         expect(p.rawTotalL).toBeCloseTo(p.pipeVolumeL * 1.08, 1);
@@ -69,5 +69,33 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         const p = calculatePurchaseSummary([], [], 30, 'ethylene', true, 5, []);
         expect(Number.isFinite(p.totalGlycolL)).toBe(true);
         expect(p.totalGlycolL).toBe(0);
+    });
+
+    it('REAL scenario: equipment-heavy system (2×2000L chillers + 5000L vessel) — allowance is ONLY on pipe volume', () => {
+        // 10,000 L sistem "înainte": 9000 L echipamente + 1000 L țeavă
+        const equipment = [
+            { id: 'c1', type: 'Chiller', name: 'Chiller 1', volume: 2000, weight: 4500 },
+            { id: 'c2', type: 'Chiller', name: 'Chiller 2', volume: 2000, weight: 4500 },
+            { id: 'v1', type: 'Puffer / Rezervor Tampon', name: 'Vas 5000L', volume: 5000, weight: 800 },
+        ];
+        const pipe: PipeSegment[] = [{ id: 'p1', material: 'steel_light', standard: 'EN 10255', size: 'DN100', length: 20 }];
+        // țeavă DN100: id 107.1 → π·(0.1071/2)²·20·1000 ≈ 180 L — ajustăm lungimea ca să iasă ~1000 L
+        // DN250: id 254.5? folosim DN250 steel_light...
+        const bigPipe: PipeSegment[] = [{ id: 'p1', material: 'steel_light', standard: 'EN 10255', size: 'DN250', length: 50 }];
+        const p = calculatePurchaseSummary(bigPipe, equipment, 30, 'ethylene', false, 0, [], 8);
+
+        // Verificare: allowance-ul se aplică DOAR pe volumul de țeavă
+        expect(p.fittingsAllowancePercent).toBe(8);
+        expect(p.fittingsAllowanceL).toBeCloseTo(p.pipeVolumeL * 0.08, 1);
+        // Impactul pe tot sistemul e mic: allowance = 8% × (țeavă / sistem total)
+        const totalImpactPct = p.fittingsAllowanceL / (p.pipeVolumeL + p.equipmentVolumeL) * 100;
+        expect(totalImpactPct).toBeLessThan(3); // sub 3% din totalul sistemului
+    });
+
+    it('allowance is clamped to 0–15%', () => {
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], 150);
+        expect(p.fittingsAllowancePercent).toBe(15);
+        const p2 = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], -3);
+        expect(p2.fittingsAllowancePercent).toBe(0);
     });
 });

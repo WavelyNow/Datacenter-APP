@@ -1,57 +1,71 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
+import { drawSectionTitle } from './common';
 import { sanitizePdfText } from '../utils';
 
 /**
- * PAGINA 1 - SITE & DATE PROIECT
- * (site-ul de datacenter pentru care se da comanda)
+ * PAGINA 1 — DATE SITE & PROIECT
+ * (site-ul de datacenter pentru care se dă comanda — minimal & premium)
  */
 export async function generateSitePage(ctx: PDFContext, data: PdfData) {
-    const { width, theme } = ctx;
+    const { width, theme, fontBold, fontRegular, currentPage } = ctx;
     const pd = data.projectDetails;
-    const S = (t: string | undefined) => sanitizePdfText(t || '—');
 
-    await ctx.checkSpace(220);
+    await ctx.checkSpace(340);
+    const M = 50;
 
-    // Titlu
-    const title = 'COMANDA - DATE SITE & PROIECT';
-    const titleWidth = ctx.fontBold.widthOfTextAtSize(title, 16);
-    ctx.currentPage.drawText(title, { x: (width - titleWidth) / 2, y: ctx.currentY, size: 16, font: ctx.fontBold, color: theme.primary });
-    ctx.currentY -= 34;
+    // Titlu principal
+    ctx.currentY = drawSectionTitle(currentPage, fontBold, M, ctx.currentY, 'RAPORT DE COMANDA', theme);
 
-    // Nume proiect mare
+    // Nume proiect
     const projectName = sanitizePdfText(pd.projectName || 'Proiect');
-    const nameWidth = ctx.fontBold.widthOfTextAtSize(projectName, 20);
-    ctx.currentPage.drawText(projectName, { x: (width - nameWidth) / 2, y: ctx.currentY, size: 20, font: ctx.fontBold, color: theme.text });
+    currentPage.drawText(projectName, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
     ctx.currentY -= 28;
 
-    // Info site - tabel simplu 2 coloane
-    const rows: [string, string][] = [
-        ['Nr. Proiect', pd.projectNumber || '-'],
+    // Subtitlu
+    const fluidName = data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura';
+    currentPage.drawText(
+        `Site datacenter  ·  ${sanitizePdfText(pd.location || '-')}  ·  ${sanitizePdfText(pd.date || '-')}`,
+        { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight }
+    );
+    ctx.currentY -= 32;
+
+    const colW = width - M * 2;
+    const drawGroup = async (label: string, rows: [string, string][]) => {
+        currentPage.drawText(label.toUpperCase(), { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 16;
+        await drawTable(ctx, {
+            x: M,
+            headers: ['', ''],
+            rows: rows.map(r => [sanitizePdfText(r[0]), sanitizePdfText(r[1])]),
+            colWidths: [colW * 0.42, colW * 0.58],
+            rowHeight: 21,
+            showBorders: false,
+        });
+        ctx.currentY -= 14;
+    };
+
+    await drawGroup('Proiect', [
+        ['Nr. proiect', pd.projectNumber || '-'],
         ['Proiectant', pd.designer || '-'],
         ['Beneficiar', pd.beneficiary || '-'],
-        ['Locatie site datacenter', pd.location || '-'],
-        ['Data', pd.date || '-'],
         ['Revizie', pd.revision || '-'],
-        ['Fluid', data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura'],
-        ['Concentratie glicol', `${data.glycolPercentage} % vol`],
+    ]);
+
+    await drawGroup('Fluid de lucru', [
+        ['Tip fluid', fluidName],
+        ['Concentratie', `${data.glycolPercentage} % vol`],
         ['Marja siguranta', data.safetyMargin ? `${data.safetyMarginPercentage ?? 5} %` : '0 %'],
-    ];
+        ['Pierderi fittinguri (din volum teava)', `${(data.fittingsAllowancePercent ?? 5)} %`],
+    ]);
 
-    await drawTable(ctx, {
-        x: 60,
-                headers: ['', ''],
-        rows,
-        colWidths: [(width - 120) * 0.35, (width - 120) * 0.65],
-        rowHeight: 24,
-        showBorders: false,
-    });
+    ctx.currentY -= 8;
 
-    ctx.currentY -= 30;
-
-    // Nota
-    const note = 'Raport de comanda - cantitatile de mai jos includ pierderile prin fittinguri si marja de siguranta.';
-    ctx.currentPage.drawText(note, { x: 60, y: ctx.currentY, size: 9, font: ctx.fontRegular, color: theme.textLight });
-    ctx.currentY -= 20;
+    // Notă — discretă
+    currentPage.drawText(
+        'Cantitatile de mai jos (teava + glicol) sunt calculate automat din proiect, cu pierderile prin fittinguri si marja de siguranta.',
+        { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
+    );
+    ctx.currentY -= 18;
 }

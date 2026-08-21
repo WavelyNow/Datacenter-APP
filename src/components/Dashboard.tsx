@@ -33,7 +33,9 @@ const DashboardBase = () => {
         safetyMarginPercentage,
         cloudProjectId,
         fluidType,
-        fittingItems
+        fittingItems,
+        fittingsAllowancePercent,
+        setFittingsAllowancePercent
     } = useProject();
 
     const { setActiveTab } = useUI();
@@ -55,8 +57,9 @@ const DashboardBase = () => {
         fluidType,
         safetyMargin,
         safetyMarginPercentage,
-        fittingItems
-    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems]);
+        fittingItems,
+        fittingsAllowancePercent
+    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems, fittingsAllowancePercent]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -341,7 +344,20 @@ const DashboardBase = () => {
                                 </div>
                                 <div className="text-[10px] text-primary/70 mt-2 border-t border-primary/20 pt-2 space-y-0.5 font-medium">
                                     <p>Premixat {glycolPercentage}% Glicol ({fluidType === 'propylene' ? 'Propilen' : fluidType === 'ethylene' ? 'Etilen' : 'Apă'})</p>
-                                    <p>incl. +{purchase.fittingsAllowancePercent}% fittinguri & umplere</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <span>Pierderi fittinguri:</span>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={15}
+                                            step={1}
+                                            value={fittingsAllowancePercent}
+                                            onChange={(e) => setFittingsAllowancePercent(parseFloat(e.target.value) || 0)}
+                                            className="w-12 bg-background/60 border border-primary/20 rounded px-1 py-0.5 text-center font-mono text-[10px] outline-none focus:border-primary"
+                                            title="% din volumul de țeavă (vane, coturi, teuri, umplere) — implicit 5%"
+                                        />
+                                        <span>% din țeavă ({purchase.fittingsAllowanceL.toFixed(0)} L)</span>
+                                    </div>
                                     <p>≈ {purchase.canisters10L.toFixed(1)} canistre × 10 L</p>
                                 </div>
                             </div>

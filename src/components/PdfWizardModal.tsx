@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Layers, Settings, Anchor, LucideIcon, FileSpreadsheet } from 'lucide-react';
+import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Settings, Wrench, LucideIcon, FileSpreadsheet } from 'lucide-react';
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
 
@@ -17,6 +17,7 @@ interface PdfWizardModalProps {
         glycolPercentage: number;
         safetyMargin: boolean;
         safetyMarginPercentage: number;
+        fittingsAllowancePercent?: number;
         fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
         supportConfig: {
             spacing: number;
@@ -37,36 +38,30 @@ interface PdfWizardModalProps {
     };
 }
 
-type Preset = 'basic' | 'standard' | 'full' | 'custom' | 'excel';
+type Preset = 'basic' | 'standard' | 'custom' | 'excel';
 
 const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
     basic: {
-        name: 'Basic Report',
-        desc: 'Essential volume summary and BoQ in PDF.',
+        name: 'Raport Comanda',
+        desc: 'Site + teava + lista de cumparat (recomandat).',
         icon: Package,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: false, includeWeights: false, includePhotos: false, includeEnergy: false }
+        options: {}
     },
     standard: {
-        name: 'Standard Report',
-        desc: 'Includes supports and mounting details.',
-        icon: Anchor,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: false, includePhotos: false, includeEnergy: false }
-    },
-    full: {
-        name: 'Full Report',
-        desc: 'Complete documentation with weights & photos.',
-        icon: Layers,
-        options: { includeVolume: true, includeBoQ: true, includeSupports: true, includeWeights: true, includePhotos: true, includeEnergy: true }
+        name: 'Raport Comanda + Rezumat Hugraulica',
+        desc: 'Raportul de comanda cu detaliile hidraulice incluse.',
+        icon: Wrench,
+        options: {}
     },
     excel: {
-        name: 'Excel Data Export',
-        desc: 'Raw data tables for external processing.',
+        name: 'Excel Date Export',
+        desc: 'Date tabelare pentru prelucrare externa.',
         icon: FileSpreadsheet,
         options: {}
     },
     custom: {
-        name: 'Custom',
-        desc: 'Manually configure all options.',
+        name: 'Personalizat',
+        desc: 'Configureaza manual.',
         icon: Settings,
         options: {}
     }
@@ -280,62 +275,28 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 return (
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center space-y-2">
-                            <h3 className="text-2xl font-bold text-foreground">Customize Options</h3>
-                            <p className="text-muted-foreground">Fine-tune what information is included in your report.</p>
+                            <h3 className="text-2xl font-bold text-foreground">Continutul raportului</h3>
+                            <p className="text-muted-foreground">Raportul de comanda este fix si minimal — 3 pagini, mereu aceleasi:</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {[
-                                { key: 'includeVolume', label: 'Summary & Volume', desc: 'Total volume calculations and fluid specs.' },
-                                { key: 'includeBoQ', label: 'Bill of Quantities', desc: 'Detailed list of materials and equipment.' },
-                                { key: 'includeSupports', label: 'Supports & Mounting', desc: 'Support calculations and specifications.' },
-                                { key: 'includeWeights', label: 'Weight Table', desc: 'Static load analysis for structural engineering.' },
-                                { key: 'includeEnergy', label: 'Sustainability Report', desc: 'PUE analysis and Carbon Footprint estimation.' },
-                                { key: 'includePhotos', label: 'Photo Documentation', desc: 'Appendix with equipment images and data sheets.' }
-                            ].map((opt) => (
-                                <label
-                                    key={opt.key}
-                                    className={`flex items-start gap-4 p-5 rounded-xl border cursor-pointer transition-all ${options[opt.key as keyof PdfOptions]
-                                        ? 'bg-primary/5 border-primary/30'
-                                        : 'bg-card border-border hover:bg-muted/10'
-                                        }`}
-                                >
-                                    <div className={`mt-1 w-6 h-6 rounded-lg border flex items-center justify-center transition-all ${options[opt.key as keyof PdfOptions]
-                                        ? 'bg-primary border-primary shadow-lg shadow-primary/20'
-                                        : 'border-muted-foreground bg-muted'
-                                        }`}>
-                                        {options[opt.key as keyof PdfOptions] && <Check className="w-4 h-4 text-primary-foreground" />}
+                                { nr: '1', label: 'Date site', desc: 'Proiect, proiectant, beneficiar, locatie, fluid & concentratie.' },
+                                { nr: '2', label: 'Cantitate teava', desc: 'Pe DN si material: lungime, volum din diametrul interior, greutate.' },
+                                { nr: '3', label: 'Lista de cumparat', desc: 'Glicol (cu pierderi fittinguri + marja), teava, fittinguri.' },
+                            ].map((s) => (
+                                <div key={s.nr} className="p-5 rounded-xl border border-border bg-card flex items-start gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                                        {s.nr}
                                     </div>
-                                    <input
-                                        type="checkbox"
-                                        className="hidden"
-                                        checked={options[opt.key as keyof PdfOptions] as boolean}
-                                        onChange={() => toggleOption(opt.key as keyof PdfOptions)}
-                                    />
                                     <div>
-                                        <span className={`text-base font-bold block mb-1 ${options[opt.key as keyof PdfOptions] ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                            {opt.label}
-                                        </span>
-                                        <p className="text-xs text-muted-foreground leading-relaxed">{opt.desc}</p>
-
-                                        {/* Special case for Supports spacing */}
-                                        {opt.key === 'includeSupports' && options.includeSupports && (
-                                            <div className="mt-3 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                                                <span className="text-xs font-bold text-primary uppercase tracking-wider">Spacing:</span>
-                                                <select
-                                                    value={options.supportSpacing}
-                                                    onChange={(e) => setOptions(prev => ({ ...prev, supportSpacing: parseFloat(e.target.value) }))}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="bg-card border border-primary/30 text-foreground text-xs rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-primary"
-                                                >
-                                                    <option value="1.5">1.5m</option>
-                                                    <option value="2.0">2.0m</option>
-                                                    <option value="2.5">2.5m</option>
-                                                </select>
-                                            </div>
-                                        )}
+                                        <span className="text-sm font-bold block mb-1 text-foreground">{s.label}</span>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
                                     </div>
-                                </label>
+                                </div>
                             ))}
+                        </div>
+                        <div className="p-4 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground">
+                            Fittingurile definite in proiect (Hidraulica &gt; Pierderi Locale) apar automat in lista de cumparat. Marja de pierderi fittinguri si marja de siguranta se seteaza in proiect.
                         </div>
                     </div>
                 );

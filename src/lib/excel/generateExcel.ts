@@ -10,6 +10,7 @@ interface ExcelExportData {
     glycolPercentage: number;
     safetyMargin?: boolean;
     safetyMarginPercentage?: number;
+    fittingsAllowancePercent?: number;
     supportConfig: SupportConfig;
     branding: {
         primaryColor: string;
@@ -122,7 +123,8 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
         data.safetyMargin ?? false,
         data.safetyMarginPercentage ?? 5,
-        []
+        [],
+        data.fittingsAllowancePercent ?? 5
     );
     const totalVolumeGross = purchase.rawTotalL;
     const glycol = purchase.totalGlycolL;

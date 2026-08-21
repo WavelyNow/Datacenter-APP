@@ -16,6 +16,12 @@ export interface PdfOptions {
     };
 }
 
+/**
+ * Opțiuni simplificate (raport comandă): anexele suporturi/foto/energie
+ * au fost eliminate complet — raportul conține doar: Site → Țeavă → Cumpărare.
+ */
+export type PdfReportMode = 'order';
+
 export interface PdfData {
     projectDetails: ProjectDetails;
     segments: PipeSegment[];
@@ -41,5 +47,6 @@ export interface PdfData {
         pdfTheme: 'modern' | 'classic' | 'industrial';
     };
     fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
+    fittingsAllowancePercent?: number;
     options?: PdfOptions;
 }

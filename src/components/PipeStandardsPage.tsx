@@ -2,11 +2,10 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-    Book, Search, Save, RotateCcw, Plus, Trash2, Download, Check, Pencil,
-    X, Info, ShieldCheck, AlertTriangle
+    Book, Search, Save, RotateCcw, Plus, Trash2, Download, Check,
+    Info, ShieldCheck, AlertTriangle
 } from 'lucide-react';
 import {
-    PIPE_STANDARDS,
     getPipeStandards,
     saveUserPipeStandards,
     resetUserPipeStandards,
@@ -35,7 +34,6 @@ export const PipeStandardsPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<PipeCategory>('all');
     const [hasOverride, setHasOverride] = useState<boolean>(() => hasUserPipeStandardsOverride());
     const [savedFlash, setSavedFlash] = useState(false);
-    const [drafts, setDrafts] = useState<Record<string, { label: string; description: string; category: PipeStandard['category']; material: string; maxPressure: number }>>({});
     // Working copy: key → standard (copy of getPipeStandards on mount)
     const [standards, setStandards] = useState<Record<string, PipeStandard>>(() => {
         const standards = getPipeStandards();
@@ -378,7 +376,7 @@ export const PipeStandardsPage: React.FC = () => {
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                     <p><strong>Surse:</strong> GF COOL-FIT 2.0/4.0 — broșuri & fișe tehnice oficiale 2026 (d32–d140 / d32–d450, PN16 SDR11 / PN10 SDR17, greutăți complete cu manta). Uponor PE-Xa — certificat KIWA, EN ISO 15875. Pipelife/Valrom România — EN ISO 15494 / EN ISO 15874.</p>
-                    <p><strong>Sfaturi:</strong> Ø interior trebuie să fie «Ø exterior − 2 × grosime». Dacă nu se potrivește, apare un buton de auto-corectare. Salvează pentru a aplica modificările în tot proiectul; „Date Oficiale" revine la valorile verificate.</p>
+                    <p><strong>Sfaturi:</strong> Ø interior trebuie să fie «Ø exterior − 2 × grosime». Dacă nu se potrivește, apare un buton de auto-corectare. Salvează pentru a aplica modificările în tot proiectul; &bdquo;Date Oficiale&rdquo; revine la valorile verificate.</p>
                 </div>
             </div>
         </div>

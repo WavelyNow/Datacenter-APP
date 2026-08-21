@@ -37,14 +37,15 @@ export class PDFContext {
     }
 
     async addPage() {
-        this.currentPage = this.pdfDoc.addPage();
+        // A4 (595.28 × 841.89 pt) — format european, aspect professional
+        this.currentPage = this.pdfDoc.addPage([595.28, 841.89]);
         const { width, height } = this.currentPage.getSize();
         this.width = width;
         this.height = height;
         this.pageNumber++;
 
-        // Initial Y (will be refined by drawHeader)
-        this.currentY = height - 40;
+        // Initial Y (spațiu aerisit sub hairline-ul header-ului)
+        this.currentY = height - 84;
         await this.drawHeader();
     }
 

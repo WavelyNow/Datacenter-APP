@@ -1,10 +1,19 @@
 import { EquipmentItem, PipeSegment } from '../types';
 import { PIPE_STANDARDS } from '../pipeStandards';
 
+interface SuggestedMaterial {
+    id: string;
+    category: string;
+    description: string;
+    quantity: number;
+    unit: string;
+    notes?: string;
+}
+
 interface SuggestionResult {
     equipment: Partial<EquipmentItem>[];
     segments: Partial<PipeSegment>[];
-    materials: any[];
+    materials: SuggestedMaterial[];
 }
 
 export const analyzeSpecifications = (text: string): SuggestionResult => {

@@ -4,10 +4,6 @@ import { PdfData } from './types';
 import { generateSitePage } from './templates/sitePage';
 import { generatePipeQuantityPage } from './templates/pipeQuantityPage';
 import { generatePurchasePage } from './templates/purchasePage';
-import { generatePage2 } from './templates/page2';
-import { generateSupportPage } from './templates/supportPage';
-import { generateEnergyPage } from './templates/energyPage';
-import { generatePage3 } from './templates/page3';
 import { PDFContext } from './templates/SectionGenerator';
 import { getTheme } from './styles';
 import fs from 'fs';
@@ -17,18 +13,20 @@ import { base64ToUint8Array } from './utils';
 // Helper to fetch fonts from filesystem (Server-Side)
 async function fetchFont(filename: string): Promise<ArrayBuffer> {
     const filePath = path.join(process.cwd(), 'public', 'fonts', filename);
-    console.log(`[DEBUG] Attempting to load font from: ${filePath}`);
     try {
         const fileBuffer = fs.readFileSync(filePath);
-        console.log(`[DEBUG] Font loaded successfully: ${filename}`);
         return fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength) as ArrayBuffer;
-    } catch (error) {
-        console.error(`[DEBUG] Failed to load font: ${filename}`, error);
-        throw error;
+    } catch {
+        throw new Error(`Font file not found: ${filePath}`);
     }
 }
 
-
+/**
+ * RAPORT DE COMANDA — 3 pagini, minimal & premium:
+ * 1. Site & date proiect
+ * 2. Cantitate teava
+ * 3. Lista de cumparat (glicol cu pierderi fittinguri + marja, teava, fittinguri)
+ */
 export async function generatePdf(data: PdfData): Promise<Uint8Array> {
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
@@ -38,9 +36,8 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
     try {
         const fontBytes = await fetchFont('Arial.ttf');
         fontRegular = await pdfDoc.embedFont(fontBytes);
-        console.log('[DEBUG] Successfully embedded Arial font');
-    } catch (error) {
-        console.warn('[DEBUG] Failed to embed Arial font, falling back to Helvetica', error);
+    } catch {
+        console.warn('[PDF] Arial.ttf unavailable — falling back to Helvetica');
         fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
     }
     // Reuse Regular font for Bold since we lack a Bold variant, ensuring no crash.
@@ -48,76 +45,28 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
 
     let logoImage = undefined;
     if (data.projectDetails.companyLogo) {
-        console.log('[DEBUG] Attempting to embed company logo');
         try {
-            const logoBytes = base64ToUint8Array(data.projectDetails.companyLogo);
-            console.log(`[DEBUG] Logo base64 converted, length: ${logoBytes.length}`);
-            // Try PNG first, then JPG if it fails
-            try {
-                logoImage = await pdfDoc.embedPng(logoBytes);
-                console.log('[DEBUG] Logo embedded as PNG');
-            } catch (pngError) {
-                console.log('[DEBUG] PNG embedding failed, trying JPG', pngError);
-                logoImage = await pdfDoc.embedJpg(logoBytes);
-                console.log('[DEBUG] Logo embedded as JPG');
-            }
-        } catch (e) {
-            console.warn('[DEBUG] Could not embed custom logo, falling back to none.', e);
+            logoImage = await pdfDoc.embedJpg(base64ToUint8Array(data.projectDetails.companyLogo as string));
+        } catch {
+            console.warn('[PDF] Could not embed custom logo');
+            logoImage = undefined;
         }
-    } else {
-        console.log('[DEBUG] No company logo provided');
     }
-
-    // Define Page Options (anexe opționale; paginile principale sunt mereu incluse)
-    const showWeights = data.options?.includeWeights === true;
-    const showSupports = data.options?.includeSupports === true;
-
-    // --- PAGE GENERATION ---
 
     // Initialize Layout Context
     const theme = getTheme(data.branding);
     const ctx = new PDFContext(pdfDoc, fontRegular, fontBold, data.projectDetails, theme, logoImage);
-    await ctx.addPage(); // Explicitly add the first page now that it's async
+    await ctx.addPage();
 
-    // --- PAGINI PRINCIPALE: SITE → CANTITATE ȚEAVĂ → LISTĂ DE CUMPĂRAT ---
+    // 1. Site & proiect
     await generateSitePage(ctx, data);
+    // 2. Cantitate teava
     await generatePipeQuantityPage(ctx, data);
+    // 3. Lista de cumparat
     await generatePurchasePage(ctx, data);
 
-    // --- ANEXE OPȚIONALE (la cerere) ---
-    if (showWeights) {
-        console.log('[DEBUG] Generating page 2 (Weights)');
-        await generatePage2(ctx, data);
-        console.log('[DEBUG] Page 2 generated successfully');
-    }
-    if (showSupports) {
-        console.log('[DEBUG] Generating support page');
-        await generateSupportPage(ctx, data);
-        console.log('[DEBUG] Support page generated successfully');
-    }
-
-    if (data.options?.includeEnergy) {
-        console.log('[DEBUG] Generating Energy page');
-        await generateEnergyPage(ctx, data);
-        console.log('[DEBUG] Energy page generated successfully');
-    }
-
-    // Always check for photos Annex if weights/supports are requested
-    if (showWeights || showSupports) {
-        console.log('[DEBUG] Generating page 3 (Photos Annex)');
-        await generatePage3(ctx, data);
-        console.log('[DEBUG] Page 3 generated successfully');
-    }
-
-    // Finalize (footer on last page)
+    // Footer pe ultima pagina
     ctx.finish();
-
-    // If no pages were added (e.g. user deselected everything), add a placeholder
-    if (pdfDoc.getPageCount() === 0) {
-        const page = pdfDoc.addPage();
-        const { height } = page.getSize();
-        page.drawText('Nu s-a selectat nicio secțiune pentru raport.', { x: 50, y: height - 100, font: fontRegular, size: 12 });
-    }
 
     const pdfBytes = await pdfDoc.save();
     return pdfBytes;

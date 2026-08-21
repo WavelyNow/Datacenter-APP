@@ -15,8 +15,9 @@ import { PipeSegment, EquipmentItem, FluidType, FittingItem } from '../types';
 import { calculatePipeVolume } from './hydraulics';
 import { getPipeData, getFluidDensity } from './common';
 
-/** Pierderi/volum suplimentar prin fittinguri + umplere (practică uzuală: 5–10%). */
-export const FITTINGS_ALLOWANCE_PERCENT = 8;
+/** Pierderi/volum suplimentar prin fittinguri + umplere — implicit 5% DIN VOLUMUL DE ȚEAVĂ
+ *  (valoare configurabilă în proiect; practică uzuală 3–10%). */
+export const FITTINGS_ALLOWANCE_PERCENT = 5;
 
 export interface PurchaseLine {
     size: string;
@@ -69,7 +70,8 @@ export function calculatePurchaseSummary(
     fluidType: FluidType,
     safetyMargin: boolean,
     safetyMarginPercentage: number,
-    fittingItems: FittingItem[] = []
+    fittingItems: FittingItem[] = [],
+    fittingsAllowancePercent: number = FITTINGS_ALLOWANCE_PERCENT
 ): PurchaseSummary {
     // 1. Agregare țeavă pe (material, DN)
     const byKey = new Map<string, PurchaseLine>();
@@ -110,7 +112,8 @@ export function calculatePurchaseSummary(
     const equipmentWeightKg = equipmentList.reduce((sum, eq) => sum + (eq.weight || 0), 0);
 
     // 3. Glicol de cumpărat
-    const fittingsAllowanceL = pipeVolumeL * (FITTINGS_ALLOWANCE_PERCENT / 100);
+    const allowancePct = Math.max(0, Math.min(15, fittingsAllowancePercent));
+    const fittingsAllowanceL = pipeVolumeL * (allowancePct / 100);
     const baseL = pipeVolumeL + fittingsAllowanceL + equipmentVolumeL;
     const marginPercent = safetyMargin ? safetyMarginPercentage : 0;
     const marginL = baseL * (marginPercent / 100);
@@ -140,7 +143,7 @@ export function calculatePurchaseSummary(
         pipeTotalWeightKg: pipeWeightKg,
         equipmentVolumeL,
         equipmentTotalWeightKg: equipmentWeightKg,
-        fittingsAllowancePercent: FITTINGS_ALLOWANCE_PERCENT,
+        fittingsAllowancePercent: allowancePct,
         fittingsAllowanceL,
         marginPercent,
         marginL,

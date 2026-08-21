@@ -1,6 +1,24 @@
 import { PDFPage, PDFFont, PDFImage, rgb } from 'pdf-lib';
 import { ProjectDetails } from '../../types';
 import { PdfTheme } from '../styles';
+import { sanitizePdfText } from '../utils';
+
+/**
+ * Titlu de secțiune premium: bară de accent + text caps.
+ * Returnează noul Y (după titlu + spațiu).
+ */
+export function drawSectionTitle(
+    page: PDFPage,
+    fontBold: PDFFont,
+    x: number,
+    y: number,
+    title: string,
+    theme: PdfTheme
+): number {
+    page.drawRectangle({ x, y: y + 1, width: 3.5, height: 13, color: theme.primary });
+    page.drawText(sanitizePdfText(title), { x: x + 10, y, size: 12.5, font: fontBold, color: theme.text });
+    return y - 26;
+}
 
 export const drawHeader = async (
     page: PDFPage,
@@ -11,68 +29,43 @@ export const drawHeader = async (
     logoImage?: PDFImage
 ): Promise<number> => {
     const { width, height } = page.getSize();
-    const topBandY = height - 25;
+    const margin = 50;
 
-    // Draw Logo on the Right
+    // Logo mic dreapta (dacă există)
     if (logoImage) {
         const logoDims = logoImage.scale(1);
         let scale = 0.5;
-        const maxHeight = 65;
-        if (logoDims.height * scale > maxHeight) {
-            scale = maxHeight / logoDims.height;
-        }
-
+        const maxHeight = 32;
+        if (logoDims.height * scale > maxHeight) scale = maxHeight / logoDims.height;
         const logoWidth = logoDims.width * scale;
         const logoHeight = logoDims.height * scale;
-
-        // Subtle Logo Background (Glass/White)
-        page.drawRectangle({
-            x: width - 55 - logoWidth,
-            y: topBandY - logoHeight - 5,
-            width: logoWidth + 10,
-            height: logoHeight + 10,
-            color: rgb(1, 1, 1),
-            opacity: 0.1,
-        });
-
         page.drawImage(logoImage, {
-            x: width - 50 - logoWidth,
-            y: topBandY - logoHeight,
+            x: width - margin - logoWidth,
+            y: height - margin - logoHeight,
             width: logoWidth,
             height: logoHeight
         });
     }
 
-    // Left Side: Project Info
-    const refText = `PROIECT: ${projectDetails.projectNumber || '-'}`;
-    const revText = `REVIZIE: ${projectDetails.revision || '-'}`;
-
-    page.drawText(refText, {
-        x: 50,
-        y: height - 45,
+    // Stânga: referință proiect (mic, gri)
+    const refText = sanitizePdfText(`${projectDetails.projectNumber || ''}  ·  ${projectDetails.projectName || ''}`);
+    page.drawText(refText.slice(0, 60), {
+        x: margin,
+        y: height - margin + 6,
         size: 8,
         font: fontRegular,
-        color: theme.textLight
+        color: theme.textLight,
     });
 
-    page.drawText(revText, {
-        x: 50,
-        y: height - 57,
-        size: 8,
-        font: fontRegular,
-        color: theme.textLight
-    });
-
-    // Divider Line (Pushed further down)
-    const dividerY = height - 105;
+    // Hairline sub header
     page.drawLine({
-        start: { x: 50, y: dividerY },
-        end: { x: width - 50, y: dividerY },
-        thickness: 0.5,
-        color: theme.border
+        start: { x: margin, y: height - margin - 12 },
+        end: { x: width - margin, y: height - margin - 12 },
+        thickness: 0.6,
+        color: theme.border,
     });
 
-    return dividerY - 40; // Ensure at least 40px air before ANY content
+    return height - margin - 12;
 };
 
 export const drawFooter = (
@@ -80,25 +73,22 @@ export const drawFooter = (
     fontRegular: PDFFont,
     pageNumber: number,
     theme: PdfTheme,
-    projectName: string = 'Data Center Cooling',
-    revision: string = 'A'
-) => {
-    const { width } = page.getSize();
-    const footerText = `Proiect: ${projectName} | Revizie: ${revision} | Pagina ${pageNumber}`;
+    projectName?: string,
+    revision?: string
+): void => {
+    const { width, height } = page.getSize();
+    const margin = 50;
 
-    // Draw line above footer text
+    // Hairline sus
     page.drawLine({
-        start: { x: 50, y: 40 },
-        end: { x: width - 50, y: 40 },
-        thickness: 0.5,
-        color: theme.border
+        start: { x: margin, y: margin - 18 },
+        end: { x: width - margin, y: margin - 18 },
+        thickness: 0.6,
+        color: theme.border,
     });
 
-    page.drawText(footerText, {
-        x: 50,
-        y: 25,
-        size: 8,
-        font: fontRegular,
-        color: theme.textLight,
-    });
+    // Pagină — centrat, mic
+    const pageText = `${pageNumber}`;
+    const w = fontRegular.widthOfTextAtSize(pageText, 7.5);
+    page.drawText(pageText, { x: (width - w) / 2, y: margin - 32, size: 7.5, font: fontRegular, color: theme.textLight });
 };

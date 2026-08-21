@@ -79,12 +79,14 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
             if (stored) {
                 const parsed = JSON.parse(stored);
                 if (parsed && typeof parsed === 'object') {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect -- mounted-gate pattern (SSR-safe)
                     setPreferences({ ...defaultPreferences, ...parsed });
                 }
             }
         } catch (e) {
             console.warn('Failed to load preferences:', e);
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- mounted-gate pattern (SSR-safe)
         setIsInitialized(true);
     }, []);
 

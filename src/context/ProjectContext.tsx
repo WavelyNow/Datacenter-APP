@@ -25,6 +25,7 @@ export interface ProjectDataState {
     cloudProjectId: string | null;
     boqItems: BoQItem[];
     fittingItems: FittingItem[];
+    fittingsAllowancePercent: number;
 }
 
 interface ProjectState {
@@ -67,6 +68,8 @@ interface ProjectState {
     // Fittinguri (vane, coturi, teuri) — pentru pierderi și listă de cumpărat
     fittingItems: FittingItem[];
     setFittingItems: (items: FittingItem[] | ((prev: FittingItem[]) => FittingItem[])) => void;
+    fittingsAllowancePercent: number;
+    setFittingsAllowancePercent: (pct: number) => void;
 
     // Local file import (full document replace, defaults for missing fields)
     importProjectData: (data: ProjectLoadData) => void;
@@ -105,6 +108,7 @@ const serializeProjectState = (s: ProjectDataState): string => JSON.stringify({
     cloudProjectId: s.cloudProjectId,
     boqItems: s.boqItems,
     fittingItems: s.fittingItems,
+    fittingsAllowancePercent: s.fittingsAllowancePercent,
 });
 
 const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
@@ -119,6 +123,7 @@ const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
     branding: s.branding,
     boqItems: s.boqItems,
     fittingItems: s.fittingItems,
+    fittingsAllowancePercent: s.fittingsAllowancePercent,
     ifcModelUrl: s.ifcModelUrl,
 });
 
@@ -134,6 +139,7 @@ const applyProjectData = (base: ProjectDataState, data: ProjectLoadData): Projec
     if (Array.isArray(data.segments)) out.segments = data.segments;
     if (Array.isArray(data.equipmentList)) out.equipmentList = data.equipmentList;
     if (Array.isArray(data.fittingItems)) out.fittingItems = data.fittingItems;
+    if (typeof data.fittingsAllowancePercent === 'number') out.fittingsAllowancePercent = data.fittingsAllowancePercent;
     if (data.projectDetails && typeof data.projectDetails === 'object') {
         out.projectDetails = {
             ...data.projectDetails,
@@ -202,7 +208,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         } as BrandingConfig,
         cloudProjectId: null as string | null,
         boqItems: [] as BoQItem[],
-        fittingItems: [] as FittingItem[]
+        fittingItems: [] as FittingItem[],
+        fittingsAllowancePercent: 5
     }), []);
 
     const { state, set, undo, redo, canUndo, canRedo, reset } = useHistory<ProjectDataState>(defaultState);
@@ -387,6 +394,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const setFittingItems = useCallback((val: FittingItem[] | ((prev: FittingItem[]) => FittingItem[])) =>
         set(prev => ({ ...prev, fittingItems: typeof val === 'function' ? val(prev.fittingItems) : val })), [set]);
 
+    const setFittingsAllowancePercent = useCallback((pct: number) =>
+        set(prev => ({ ...prev, fittingsAllowancePercent: Math.max(0, Math.min(15, pct)) })), [set]);
+
     const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
         set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
 
@@ -422,6 +432,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
         // Fittinguri (pierderi + listă de cumpărat)
         fittingItems: state.fittingItems, setFittingItems,
+        fittingsAllowancePercent: state.fittingsAllowancePercent, setFittingsAllowancePercent,
 
         importProjectData,
         // Full local reset (clears everything, incl. cloud link)
@@ -431,7 +442,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
-        setBoqItems, setFittingItems, importProjectData, reset
+        setBoqItems, setFittingItems, setFittingsAllowancePercent, importProjectData, reset
     ]);
 
     return (

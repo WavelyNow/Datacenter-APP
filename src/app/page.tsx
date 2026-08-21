@@ -112,7 +112,8 @@ const DashboardContent = () => {
     importProjectData,
     isInitialized,
     undo, redo, canUndo, canRedo,
-    fittingItems
+    fittingItems,
+    fittingsAllowancePercent
   } = useProject();
 
   // Modal States
@@ -136,6 +137,7 @@ const DashboardContent = () => {
       branding,
       boqItems,
       fittingItems,
+      fittingsAllowancePercent,
       ifcModelUrl
     };
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -146,7 +148,7 @@ const DashboardContent = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, fittingItems, ifcModelUrl]);
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, fittingItems, fittingsAllowancePercent, ifcModelUrl]);
 
   // Keyboard Shortcuts — useKeyboardShortcuts skips shortcuts while typing in
   // inputs/textarea/contentEditable, so Cmd+Z no longer hijacks native undo in text fields.
@@ -230,7 +232,8 @@ const DashboardContent = () => {
           safetyMarginPercentage: safetyMarginPercentage || 5,
           supportConfig: supportConfig,
           branding: branding,
-          fittingItems: fittingItems || []
+          fittingItems: fittingItems || [],
+          fittingsAllowancePercent: fittingsAllowancePercent ?? 5
         }}
       />
 

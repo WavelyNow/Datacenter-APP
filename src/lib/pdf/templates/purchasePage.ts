@@ -1,6 +1,7 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
+import { drawSectionTitle } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
 
 const FITTING_LABELS_RO: Record<string, string> = {
@@ -19,11 +20,13 @@ const FITTING_LABELS_RO: Record<string, string> = {
 };
 
 /**
- * PAGINA 3 - LISTA DE CUMPARAT
- * (glicol cu pierderi fittinguri + marja, teava, fittinguri)
+ * PAGINA 3 — LISTA DE CUMPARAT
+ * (glicol cu pierderi fittinguri + marja, teava, fittinguri — clar si premium)
  */
 export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
-    const { width, theme } = ctx;
+    const { width, theme, fontBold, fontRegular, currentPage } = ctx;
+    const M = 50;
+    const colW = width - M * 2;
 
     const purchase = calculatePurchaseSummary(
         data.segments,
@@ -32,100 +35,91 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
         data.safetyMargin,
         data.safetyMarginPercentage ?? 5,
-        data.fittingItems ?? []
+        data.fittingItems ?? [],
+        data.fittingsAllowancePercent ?? 5
     );
 
-    await ctx.checkSpace(260);
+    await ctx.checkSpace(300);
+    ctx.currentY = drawSectionTitle(currentPage, fontBold, M, ctx.currentY, 'LISTA DE CUMPARAT', theme);
+    ctx.currentY -= 6;
 
-    // Titlu
-    const title = 'LISTA DE CUMPARAT';
-    const titleWidth = ctx.fontBold.widthOfTextAtSize(title, 16);
-    ctx.currentPage.drawText(title, { x: (width - titleWidth) / 2, y: ctx.currentY, size: 16, font: ctx.fontBold, color: theme.primary });
-    ctx.currentY -= 34;
-
-    // --- FLUID / GLICOL ---
-    const fluidTitle = '1. Glicol - cantitatea de comandat';
-    ctx.currentPage.drawText(fluidTitle, { x: 60, y: ctx.currentY, size: 12, font: ctx.fontBold, color: theme.text });
-    ctx.currentY -= 20;
-
-    const fluidName = data.fluidType === 'propylene' ? 'Propilen Glicol' : data.fluidType === 'water' ? 'Apa pura' : 'Etilen Glicol';
-    const rows: [string, string][] = [
-        ['Volum teava (calculat din Ø interior)', `${purchase.pipeVolumeL.toFixed(1)} L`],
-        [`Pierderi fittinguri + umplere (+${purchase.fittingsAllowancePercent}%)`, `${purchase.fittingsAllowanceL.toFixed(1)} L`],
-        ['Volum apa echipamente', `${purchase.equipmentVolumeL.toFixed(1)} L`],
-        [`Marja siguranta (${purchase.marginPercent}%)`, `${purchase.marginL.toFixed(1)} L`],
-    ];
-    await drawTable(ctx, {
-        x: 60,
-                headers: ['', ''],
-        rows,
-        colWidths: [(width - 120) * 0.7, (width - 120) * 0.3],
-        rowHeight: 20,
-        showBorders: false,
-    });
-    ctx.currentY -= 10;
-
-    // TOTAL glicol - evidentiat
-    const totalLabel = `TOTAL DE CUMPARAT: ${purchase.totalGlycolL.toFixed(0)} L ${fluidName} (${data.glycolPercentage}%)`;
-    const tlWidth = ctx.fontBold.widthOfTextAtSize(totalLabel, 14);
-    ctx.currentPage.drawText(totalLabel, {
-        x: 60,
-                size: 14,
-        font: ctx.fontBold,
-        color: theme.primary,
-    });
+    // --- 1. GLICOL ---
+    currentPage.drawText('1. FLUID (GLICOL)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
     ctx.currentY -= 16;
 
-    if (purchase.canisters10L > 0) {
-        const canText = `Aprox. ${purchase.canisters10L.toFixed(1)} canistre de 10 L - greutate fluid ~${purchase.fluidWeightKg.toFixed(0)} kg`;
-        ctx.currentPage.drawText(canText, { x: 60, y: ctx.currentY, size: 10, font: ctx.fontRegular, color: theme.textLight });
-        ctx.currentY -= 30;
-    } else {
-        ctx.currentY -= 12;
-    }
+    const fluidName = data.fluidType === 'propylene' ? 'Propilen Glicol' : data.fluidType === 'water' ? 'Apa pura' : 'Etilen Glicol';
+    const breakdown: [string, string][] = [
+        ['Volum teava (din diametrul interior)', `${purchase.pipeVolumeL.toFixed(1)} L`],
+        [`Pierderi fittinguri + umplere (${purchase.fittingsAllowancePercent}% din TEAVA)`, `${purchase.fittingsAllowanceL.toFixed(1)} L`],
+        ['Volum apa echipamente', `${purchase.equipmentVolumeL.toFixed(1)} L`],
+        [`Marja de siguranta (${purchase.marginPercent}%)`, `${purchase.marginL.toFixed(1)} L`],
+    ];
+    await drawTable(ctx, {
+        x: M,
+        headers: ['', ''],
+        rows: breakdown,
+        colWidths: [colW * 0.68, colW * 0.32],
+        rowHeight: 21,
+        showBorders: false,
+        align: ['left', 'right'],
+    });
+    ctx.currentY -= 12;
 
-    // --- TEAVA ---
-    const pipeTitle = '2. Teava';
-    ctx.currentPage.drawText(pipeTitle, { x: 60, y: ctx.currentY, size: 12, font: ctx.fontBold, color: theme.text });
-    ctx.currentY -= 20;
+    // TOTAL — casetă evidențiată
+    const boxH = 44;
+    const boxY = ctx.currentY - boxH;
+    currentPage.drawRectangle({
+        x: M, y: boxY, width: colW, height: boxH,
+        color: theme.bgLight,
+        borderColor: theme.primary,
+        borderWidth: 1,
+    });
+    currentPage.drawText('TOTAL DE CUMPARAT', { x: M + 14, y: boxY + boxH - 16, size: 8, font: fontBold, color: theme.textLight });
+    const totalText = `${purchase.totalGlycolL.toFixed(0)} L`;
+    currentPage.drawText(totalText, { x: M + 14, y: boxY + 10, size: 20, font: fontBold, color: theme.primary });
+    const subText = `${fluidName} ${data.glycolPercentage}%  ·  ${purchase.canisters10L.toFixed(1)} canistre de 10 L  ·  ~${purchase.fluidWeightKg.toFixed(0)} kg`;
+    const subW = fontRegular.widthOfTextAtSize(subText, 9);
+    currentPage.drawText(subText, { x: M + colW - subW - 14, y: boxY + 26, size: 9, font: fontRegular, color: theme.text });
 
+    ctx.currentY = boxY - 26;
+
+    // --- 2. TEAVA ---
     if (purchase.pipeLines.length > 0) {
-        const pipeRows = purchase.pipeLines.map(l => [l.size, l.label, `${l.lengthM.toFixed(1)} m`, `${l.weightKg.toFixed(1)} kg`]);
+        currentPage.drawText('2. TEAVA', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 16;
         await drawTable(ctx, {
-            x: 60,
-                        headers: ['DN', 'Material', 'Lungime', 'Greutate'],
-            rows: pipeRows,
-            colWidths: [(width - 120) * 0.12, (width - 120) * 0.44, (width - 120) * 0.22, (width - 120) * 0.22],
-            rowHeight: 20,
+            x: M,
+            headers: ['DN', 'Material', 'Lungime (m)', 'Greutate (kg)'],
+            rows: purchase.pipeLines.map(l => [l.size, l.label, l.lengthM.toFixed(1), l.weightKg.toFixed(1)]),
+            colWidths: [colW * 0.12, colW * 0.46, colW * 0.21, colW * 0.21],
+            rowHeight: 21,
             align: ['center', 'left', 'right', 'right'],
         });
-        ctx.currentY -= 26;
+        ctx.currentY -= 24;
     }
 
-    // --- FITTINGURI ---
+    // --- 3. FITTINGURI ---
     if (purchase.fittingItems.length > 0) {
-        const fitTitle = '3. Fittinguri (vane, coturi, teuri)';
-        ctx.currentPage.drawText(fitTitle, { x: 60, y: ctx.currentY, size: 12, font: ctx.fontBold, color: theme.text });
-        ctx.currentY -= 20;
-
-        const fitRows = purchase.fittingItems.map(f => [
-            f.size,
-            FITTING_LABELS_RO[f.type] || f.type,
-            `${f.quantity} buc`,
-        ]);
-        fitRows.push(['', 'TOTAL', `${purchase.fittingItems.reduce((s, f) => s + f.quantity, 0)} buc`]);
+        currentPage.drawText('3. FITTINGURI (VANE, COTURI, TEURI)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 16;
         await drawTable(ctx, {
-            x: 60,
-                        headers: ['DN', 'Tip', 'Cantitate'],
-            rows: fitRows,
-            colWidths: [(width - 120) * 0.15, (width - 120) * 0.55, (width - 120) * 0.3],
-            rowHeight: 20,
+            x: M,
+            headers: ['DN', 'Tip', 'Cantitate'],
+            rows: purchase.fittingItems.map(f => [
+                f.size,
+                FITTING_LABELS_RO[f.type] || f.type,
+                `${f.quantity} buc`,
+            ]),
+            colWidths: [colW * 0.15, colW * 0.55, colW * 0.3],
+            rowHeight: 21,
             align: ['center', 'left', 'right'],
         });
-        ctx.currentY -= 26;
+        ctx.currentY -= 22;
     } else {
-        const hint = 'Sugestie: definiti fittingurile (vane, coturi, teuri) in Hidraulica -> Pierderi Locale, pentru a le include in comanda.';
-        ctx.currentPage.drawText(hint, { x: 60, y: ctx.currentY, size: 9, font: ctx.fontRegular, color: theme.textLight });
-        ctx.currentY -= 20;
+        currentPage.drawText(
+            'Sugestie: definiti vanele/coturile/teurile in Hidraulica > Pierderi Locale pentru a le include in comanda.',
+            { x: M, y: ctx.currentY, size: 9, font: fontRegular, color: theme.textLight }
+        );
+        ctx.currentY -= 18;
     }
 }
