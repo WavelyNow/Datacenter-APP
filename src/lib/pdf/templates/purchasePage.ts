@@ -122,4 +122,40 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         );
         ctx.currentY -= 18;
     }
+
+    // --- 4. GREUTATI ESTIMATIVE ---
+    const emptyWeight = purchase.pipeTotalWeightKg + purchase.equipmentTotalWeightKg;
+    const withFluidWeight = emptyWeight + purchase.fluidWeightKg;
+    if (withFluidWeight > 0) {
+        currentPage.drawText('4. GREUTATI ESTIMATIVE', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 16;
+        await drawTable(ctx, {
+            x: M,
+            headers: ['Component', 'Greutate'],
+            rows: [
+                ['Teava (goala)', `${purchase.pipeTotalWeightKg.toFixed(1)} kg`],
+                ['Echipamente (goale)', `${purchase.equipmentTotalWeightKg.toFixed(1)} kg`],
+                [`Fluid (${purchase.totalGlycolL} L ${fluidName} ${data.glycolPercentage}%)`, `${purchase.fluidWeightKg.toFixed(1)} kg`],
+            ],
+            colWidths: [colW * 0.68, colW * 0.32],
+            rowHeight: 21,
+            showBorders: false,
+            align: ['left', 'right'],
+        });
+        ctx.currentY -= 8;
+        const boxH2 = 44;
+        const boxY2 = ctx.currentY - boxH2;
+        currentPage.drawRectangle({
+            x: M, y: boxY2, width: colW, height: boxH2,
+            color: theme.bgLight,
+            borderColor: theme.text,
+            borderWidth: 0.8,
+        });
+        currentPage.drawText('INSTALATIE FARA FLUID', { x: M + 14, y: boxY2 + boxH2 - 15, size: 7.5, font: fontBold, color: theme.textLight });
+        currentPage.drawText(`${emptyWeight.toFixed(0)} kg`, { x: M + 14, y: boxY2 + 8, size: 17, font: fontBold, color: theme.text });
+        currentPage.drawText('INSTALATIE CU FLUID (IN FUNCTIUNE)', { x: M + colW * 0.55 + 14, y: boxY2 + boxH2 - 15, size: 7.5, font: fontBold, color: theme.textLight });
+        const wText = `${withFluidWeight.toFixed(0)} kg`;
+        currentPage.drawText(wText, { x: M + colW * 0.55 + 14, y: boxY2 + 8, size: 17, font: fontBold, color: theme.primary });
+        ctx.currentY = boxY2 - 20;
+    }
 }
