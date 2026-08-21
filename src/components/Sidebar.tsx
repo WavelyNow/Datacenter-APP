@@ -173,7 +173,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
                         <div className="animate-in fade-in slide-in-from-left-4 duration-300">
                             <h1 className="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap">{t('sidebar.brand')}</h1>
                             <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
                                 {t('common.systemActive')}
                             </p>
                         </div>

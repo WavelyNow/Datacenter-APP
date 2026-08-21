@@ -159,9 +159,9 @@ export const SpecAssistantPage = () => {
                                     <div className="space-y-3">
                                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-2">Tubulatură & Trasee</p>
                                         {results.segments.map((seg) => (
-                                            <div key={seg.id} className="glass-panel p-4 rounded-2xl border border-border/50 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                                            <div key={seg.id} className="glass-panel p-4 rounded-2xl border border-border/50 flex items-center justify-between group hover:border-border transition-all">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                                                    <div className="p-2 bg-muted rounded-lg text-primary">
                                                         <ArrowRight className="w-4 h-4" />
                                                     </div>
                                                     <div>

@@ -102,7 +102,7 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
                                                 <p>Distance: <span className="text-foreground font-mono">{point.length.toFixed(1)} m</span></p>
                                                 <p>Total Drop: <span className="text-pink-500 font-mono font-bold">{point.pressure.toFixed(2)} kPa</span></p>
                                                 {point.velocity > 0 && (
-                                                    <p>Velocity: <span className={`font-mono ${point.velocity > 2.5 ? 'text-red-500 font-bold' : 'text-emerald-500'}`}>{point.velocity.toFixed(2)} m/s</span></p>
+                                                    <p>Velocity: <span className={`font-mono ${point.velocity > 2.5 ? 'text-red-500 font-bold' : 'text-primary'}`}>{point.velocity.toFixed(2)} m/s</span></p>
                                                 )}
                                             </div>
                                         </div>

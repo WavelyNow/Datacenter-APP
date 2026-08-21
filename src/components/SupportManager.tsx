@@ -112,7 +112,7 @@ export const SupportManager: React.FC = () => {
                             </div>
 
                             {/* Pipes per Support Card */}
-                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all group">
+                            <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-border transition-all group">
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-3">
                                         <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -254,7 +254,7 @@ export const SupportManager: React.FC = () => {
                         </div>
 
                         {/* Modular Topology Configuration */}
-                        <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-emerald-500/30 transition-all">
+                        <div className="bg-muted/10 p-6 rounded-2xl border border-border hover:border-border transition-all">
                             <h4 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                 <Layers className="w-5 h-5 text-secondary" />
                                 Configurație Modulară (Elemente Adiționale)

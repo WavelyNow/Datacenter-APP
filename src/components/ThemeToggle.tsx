@@ -27,7 +27,7 @@ export function ThemeToggle() {
             aria-label="Toggle theme"
         >
             {isDark ? (
-                <Moon className="h-[1.1rem] w-[1.1rem] transition-all duration-500 text-teal-300 animate-in fade-in zoom-in-50" />
+                <Moon className="h-[1.1rem] w-[1.1rem] transition-all duration-500 text-muted-foreground animate-in fade-in zoom-in-50" />
             ) : (
                 <Sun className="h-[1.1rem] w-[1.1rem] transition-all duration-500 text-amber-500 animate-in fade-in zoom-in-50" />
             )}

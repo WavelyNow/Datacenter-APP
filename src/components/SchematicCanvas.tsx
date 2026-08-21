@@ -129,7 +129,7 @@ export const SchematicCanvas: React.FC<SchematicCanvasProps> = ({ segments }) =>
                 {[
                     { label: 'Steel', color: 'bg-indigo-500' },
                     { label: 'Copper', color: 'bg-orange-400' },
-                    { label: 'Plastic', color: 'bg-emerald-500' },
+                    { label: 'Plastic', color: 'bg-primary' },
                     { label: 'Custom', color: 'bg-amber-500' },
                 ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">

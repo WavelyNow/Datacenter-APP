@@ -88,7 +88,7 @@ const DashboardBase = () => {
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
                             <span className="relative flex h-1.5 w-1.5">
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
                             </span>
                             Sistem Activ
                         </div>
@@ -173,13 +173,13 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-emerald-500/30 group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
-                    <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-border group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                    <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">REAL-TIME</div>
+                        <div className="px-2 py-0.5 rounded-md bg-muted text-primary text-[10px] font-bold border border-border">REAL-TIME</div>
                     </div>
                     <div className="relative z-10">
                         <div className="text-3xl font-bold font-mono tracking-tight">
@@ -311,7 +311,7 @@ const DashboardBase = () => {
                                     </div>
                                 </div>
                                 <div className="text-[10px] text-muted-foreground mt-2 border-t border-border/20 pt-2 flex items-center gap-1">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${safetyMargin ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    <span className={`w-1.5 h-1.5 rounded-full ${safetyMargin ? 'bg-primary' : 'bg-amber-500'}`} />
                                     {safetyMargin ? `${safetyMarginPercentage}% Marjă` : "Dezactivat"}
                                 </div>
                             </div>

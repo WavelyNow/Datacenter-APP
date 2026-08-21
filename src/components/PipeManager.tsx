@@ -232,7 +232,7 @@ const PipeRow = React.memo(({
                             <div className="flex-1 space-y-2">
                                 <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-300 ${isHighVelocity ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                        className={`h-full rounded-full transition-all duration-300 ${isHighVelocity ? 'bg-red-500' : 'bg-primary'}`}
                                         style={{ width: `${Math.min((hydraulics.velocity / 3) * 100, 100)}%` }}
                                     />
                                 </div>

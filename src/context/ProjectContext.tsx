@@ -189,7 +189,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         } as SupportConfig,
         branding: {
             primaryColor: '#3b82f6',
-            accentColor: '#10b981',
+            accentColor: '#0071e3',
             pdfTheme: 'modern' as const
         } as BrandingConfig,
         cloudProjectId: null as string | null,

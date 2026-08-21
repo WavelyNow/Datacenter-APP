@@ -220,13 +220,13 @@ export function ExpansionVesselCalculator({ externalSystemVolume }: ExpansionVes
                 <div className="space-y-4">
                     {/* Main Result */}
                     <div className={`rounded-xl p-6 border ${result.isValid
-                        ? 'bg-linear-to-br from-emerald-500/10 to-cyan-500/10 border-emerald-500/30'
+                        ? 'bg-muted border-border'
                         : 'bg-linear-to-br from-red-500/10 to-orange-500/10 border-red-500/30'
                         }`}>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm text-zinc-400">Vas Recomandat</span>
                             {result.isValid ? (
-                                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                                <CheckCircle className="w-5 h-5 text-primary" />
                             ) : (
                                 <AlertTriangle className="w-5 h-5 text-red-400" />
                             )}

@@ -236,7 +236,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                                                     >
                                                         {isCloud && (
                                                             <div className="absolute top-2 right-2 flex gap-1 z-10">
-                                                                <span className="bg-indigo-500/10 text-indigo-600 dark:text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
+                                                                <span className="bg-indigo-500/10 text-indigo-600 dark:text-primary text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-500/20 flex items-center gap-1">
                                                                     <Cloud className="w-3 h-3" /> {t('catalog.cloudLabel')}
                                                                 </span>
                                                                 <div
@@ -281,7 +281,7 @@ export const EquipmentCatalogModal: React.FC<EquipmentCatalogModalProps> = ({ is
                     /* CREATE VIEW */
                     <div className="flex-1 overflow-y-auto p-6 bg-muted/10">
                         <div className="max-w-lg mx-auto space-y-4">
-                            <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-emerald-400 mb-4 flex items-center gap-2">
+                            <div className="bg-indigo-500/5 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-600 dark:text-primary mb-4 flex items-center gap-2">
                                 <Cloud className="w-4 h-4" />
                                 {t('catalog.form.notice')}
                             </div>

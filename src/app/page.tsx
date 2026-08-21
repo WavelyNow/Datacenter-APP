@@ -6,8 +6,6 @@ import { ProjectProvider, useProject } from '@/context/ProjectContext';
 import { UIProvider, useUI } from '@/context/UIContext';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { ProjectSettingsModal } from '@/components/ProjectSettingsModal';
-import { PdfWizardModal } from '@/components/PdfWizardModal';
 import { Dashboard } from '@/components/Dashboard';
 import { PipeStandardsPage } from '@/components/PipeStandardsPage';
 import { PageTransition } from '@/components/ui/PageTransition';
@@ -56,8 +54,21 @@ const SettingsPage = dynamic(() => import('@/components/SettingsPage').then(m =>
   loading: () => <div className="p-8"><TableSkeleton rows={4} /></div>
 });
 
-const KeyboardShortcutsModal = dynamic(() => import('@/components/KeyboardShortcutsModal').then(m => ({ default: m.KeyboardShortcutsModal })), {
-  ssr: false
+// Global modals — lazy-loaded (PdfWizardModal pulls pdf-lib + exceljs, ~1.5MB;
+// ProjectSettingsModal is rarely opened). Keeps the main bundle small.
+const KeyboardShortcutsModal = dynamic(() => import('@/components/KeyboardShortcutsModal').then(m => m.KeyboardShortcutsModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={6} /></div>,
+  ssr: false,
+});
+
+const ProjectSettingsModal = dynamic(() => import('@/components/ProjectSettingsModal').then(m => m.ProjectSettingsModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>,
+  ssr: false,
+});
+
+const PdfWizardModal = dynamic(() => import('@/components/PdfWizardModal').then(m => m.PdfWizardModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>,
+  ssr: false,
 });
 
 // Memoize stable layout components

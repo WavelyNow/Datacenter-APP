@@ -64,11 +64,11 @@ export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className 
         >
             <span
                 className={`w-2 h-2 rounded-full ${isOnline
-                    ? 'bg-emerald-500 animate-pulse'
+                    ? 'bg-primary animate-pulse'
                     : 'bg-amber-500'
                     }`}
             />
-            <span className={isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+            <span className={isOnline ? 'text-primary dark:text-primary' : 'text-amber-600 dark:text-amber-400'}>
                 {isOnline ? 'Online' : 'Offline'}
             </span>
         </div>

@@ -96,8 +96,8 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
                                 <div className="text-right">
                                     <div className="text-xs font-mono text-muted-foreground">{pump.power}</div>
                                     <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded inline-block mt-1
-                                        ${pump.efficiencyClass === 'IE5' ? 'bg-emerald-500/20 text-emerald-500' :
-                                            pump.efficiencyClass === 'IE4' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}
+                                        ${pump.efficiencyClass === 'IE5' ? 'bg-primary/20 text-primary' :
+                                            pump.efficiencyClass === 'IE4' ? 'bg-muted text-primary' : 'bg-muted text-muted-foreground'}
                                     `}>
                                         {pump.efficiencyClass}
                                     </div>
