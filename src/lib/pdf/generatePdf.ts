@@ -10,15 +10,26 @@ import fs from 'fs';
 import path from 'path';
 import { base64ToUint8Array } from './utils';
 
-// Helper to fetch fonts from filesystem (Server-Side)
+// Helper to fetch fonts — fs în dezvoltare, URL pe Vercel (public/ nu e pe filesystem)
 async function fetchFont(filename: string): Promise<ArrayBuffer> {
-    const filePath = path.join(process.cwd(), 'public', 'fonts', filename);
-    try {
-        const fileBuffer = fs.readFileSync(filePath);
-        return fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength) as ArrayBuffer;
-    } catch {
-        throw new Error(`Font file not found: ${filePath}`);
+    const paths = [
+        path.join(process.cwd(), 'public', 'fonts', filename),
+        path.join(process.cwd(), 'fonts', filename),
+    ];
+    for (const p of paths) {
+        try {
+            const fileBuffer = fs.readFileSync(p);
+            return fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength) as ArrayBuffer;
+        } catch {
+            // try next
+        }
     }
+    // Fallback: fetch de pe site (funcționează și pe Vercel/serverless)
+    const base = process.env.NEXT_PUBLIC_SITE_URL
+        || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const res = await fetch(`${base}/fonts/${filename}`);
+    if (res.ok) return await res.arrayBuffer();
+    throw new Error(`Font unavailable: ${filename}`);
 }
 
 /**
@@ -45,11 +56,17 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
 
     let logoImage = undefined;
     if (data.projectDetails.companyLogo) {
+        const logoBytes = base64ToUint8Array(data.projectDetails.companyLogo as string);
+        const isPng = (data.projectDetails.companyLogo as string).includes('image/png');
         try {
-            logoImage = await pdfDoc.embedJpg(base64ToUint8Array(data.projectDetails.companyLogo as string));
+            logoImage = isPng ? await pdfDoc.embedPng(logoBytes) : await pdfDoc.embedJpg(logoBytes);
         } catch {
-            console.warn('[PDF] Could not embed custom logo');
-            logoImage = undefined;
+            try {
+                logoImage = await pdfDoc.embedPng(logoBytes);
+            } catch {
+                console.warn('[PDF] Could not embed custom logo');
+                logoImage = undefined;
+            }
         }
     }
 

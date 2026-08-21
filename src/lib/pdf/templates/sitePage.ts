@@ -54,7 +54,7 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
         ['Tip fluid', fluidName],
         ['Concentratie', `${data.glycolPercentage} % vol`],
         ['Marja siguranta', data.safetyMargin ? `${data.safetyMarginPercentage ?? 5} %` : '0 %'],
-        ['Pierderi fittinguri (din volum teava)', `${(data.fittingsAllowancePercent ?? 5)} %`],
+        ['Pierderi fittinguri (din volum teava)', `${Math.min(15, data.fittingsAllowancePercent ?? 5)} %`],
     ]);
 
     await ctx.checkSpace(30);

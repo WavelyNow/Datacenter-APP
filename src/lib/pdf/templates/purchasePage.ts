@@ -17,6 +17,8 @@ const FITTING_LABELS_RO: Record<string, string> = {
     valve_gate: 'Vana sertar',
     check_swing: 'Clapeta sens (swing)',
     check_lift: 'Clapeta sens (lift)',
+    valve_check_swing: 'Clapeta sens (swing)',
+    valve_check_lift: 'Clapeta sens (lift)',
 };
 
 /**

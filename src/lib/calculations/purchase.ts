@@ -13,6 +13,7 @@
 
 import { PipeSegment, EquipmentItem, FluidType, FittingItem } from '../types';
 import { calculatePipeVolume } from './hydraulics';
+import { PIPE_STANDARDS } from '../pipeStandards';
 import { getPipeData, getFluidDensity } from './common';
 
 /** Pierderi/volum suplimentar prin fittinguri + umplere — implicit 5% DIN VOLUMUL DE ȚEAVĂ
@@ -88,10 +89,11 @@ export function calculatePurchaseSummary(
 
         const id = `${seg.material}|${seg.size}`;
         const existing = byKey.get(id);
+        const standard = PIPE_STANDARDS[seg.material];
         const entry: PurchaseLine = existing ?? {
             size: seg.size,
             material: seg.material,
-            label: pipeData ? `${seg.material} ${seg.size}` : seg.size,
+            label: standard ? `${standard.label} ${seg.size}` : (seg.material === 'custom' ? `Custom ${seg.size}` : seg.size),
             lengthM: 0,
             liters: 0,
             weightKg: 0,

@@ -4,6 +4,7 @@ import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
 
 import { generateExcelReport } from '@/lib/excel/generateExcel';
+import { toast } from 'sonner';
 import { createPortal } from 'react-dom';
 
 interface PdfWizardModalProps {
@@ -90,13 +91,14 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         supportSpacing: 2.0
     });
 
-    // Invalidate preview when options change
+    // Invalidate preview when options change — dar NU revoca blob-ul imediat
+    // (revocarea instantanee omora iframe-ul — blob-ul e inlocuit la handlePreview).
+    // Curatenia se face la unmount / la inlocuire.
     useEffect(() => {
         if (previewUrl) {
-            URL.revokeObjectURL(previewUrl);
             setPreviewUrl(null);
         }
-    }, [options, selectedPreset, previewUrl]);
+    }, [options, selectedPreset]);
 
     // Cleanup preview URL on unmount or close
     useEffect(() => {
@@ -125,10 +127,6 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
 
     if (!isOpen || !mounted) return null;
 
-    const toggleOption = (key: keyof PdfOptions) => {
-        setOptions(prev => ({ ...prev, [key]: !prev[key] as boolean }));
-    };
-
     const selectPreset = (preset: Preset) => {
         setSelectedPreset(preset);
         if (preset !== 'custom' && preset !== 'excel') {
@@ -148,7 +146,6 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 }))
             };
             const pdfData: PdfData = { ...sanitizedData, options };
-            console.log('[DEBUG] Sending PDF data:', pdfData);
             const response = await fetch('/api/generate-pdf', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -157,18 +154,15 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('[DEBUG] PDF generation failed:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText
-                });
-                throw new Error('Generation failed');
+                console.error('[PDF] Generation failed:', response.status, errorText.slice(0, 300));
+                toast.error('Generarea PDF-ului a esuat. Verificati datele si incercati din nou.');
+                return null;
             }
             const blob = await response.blob();
             return blob;
         } catch (error) {
-            console.error('PDF Error:', error);
-            alert('Error generating PDF');
+            console.error('[PDF] Error:', error);
+            toast.error('Eroare de retea la generarea PDF-ului.');
             return null;
         } finally {
             setIsGenerating(false);
@@ -309,7 +303,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                         </div>
                         <div className="flex-1 min-h-0 bg-muted/20 rounded-xl border border-border shadow-2xl overflow-hidden relative group">
                             {previewUrl ? (
-                                <iframe src={previewUrl} className="w-full h-full bg-white" />
+                                <iframe src={previewUrl} className="w-full h-[62vh] min-h-[420px] bg-white" title="Preview PDF" />
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                                     <div className="w-20 h-20 rounded-full bg-muted border border-border flex items-center justify-center mb-6 shadow-xl">
@@ -360,7 +354,15 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             </p>
 
                             <button
-                                onClick={selectedPreset === 'excel' ? () => { generateExcelReport(data); onClose(); } : handleDownload}
+                                onClick={selectedPreset === 'excel' ? async () => {
+                    try {
+                        await generateExcelReport(data);
+                        toast.success('Excel generat');
+                    } catch (e) {
+                        console.error('[Excel]', e);
+                        toast.error('Generarea Excel-ului a esuat.');
+                    }
+                } : handleDownload}
                                 className="w-full btn btn-primary btn-lg gap-2 text-base shadow-xl shadow-primary/20"
                             >
                                 <Download className="w-5 h-5" />

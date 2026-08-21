@@ -11,6 +11,7 @@ interface ExcelExportData {
     safetyMargin?: boolean;
     safetyMarginPercentage?: number;
     fittingsAllowancePercent?: number;
+    fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
     supportConfig: SupportConfig;
     branding: {
         primaryColor: string;
@@ -123,7 +124,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
         data.safetyMargin ?? false,
         data.safetyMarginPercentage ?? 5,
-        [],
+        data.fittingItems ?? [],
         data.fittingsAllowancePercent ?? 5
     );
     const totalVolumeGross = purchase.rawTotalL;
@@ -134,7 +135,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     drawMetric(7, 5, 'Glycol Needed', glycol.toFixed(0), 'Liters');
 
     // Row 10: Metrics Row 2
-    const fluidName = data.fluidType === 'ethylene' ? 'Ethylene Glycol' : 'Propylene Glycol';
+    const fluidName = data.fluidType === 'ethylene' ? 'Ethylene Glycol' : data.fluidType === 'water' ? 'Pure Water' : 'Propylene Glycol';
     drawMetric(10, 2, 'Fluid Type', fluidName, '');
     drawMetric(10, 5, 'Concentration', `${data.glycolPercentage}%`, '');
 
@@ -224,7 +225,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     eqTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
 
     const eqRows = data.equipmentList.map(eq => [
-        eq.type.charAt(0).toUpperCase() + eq.type.slice(1),
+        (eq.type || 'A').charAt(0).toUpperCase() + eq.type.slice(1),
         eq.name,
         eq.volume + ' L',
         eq.weight + ' kg'

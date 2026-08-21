@@ -60,9 +60,6 @@ export const validatePipeSegment = (segment: PipeSegment): ValidationResult => {
     if (!segment.customInnerDiameter || segment.customInnerDiameter <= 0) {
       errors.push('Custom inner diameter must be greater than 0');
     }
-    if (!segment.customWeight || segment.customWeight <= 0) {
-      errors.push('Custom weight must be greater than 0');
-    }
   }
 
   return {

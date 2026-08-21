@@ -5,8 +5,7 @@ import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
 import Image from 'next/image';
 import {
-    Layout, GripVertical, Eye, EyeOff, AlignLeft, AlignCenter, AlignRight,
-    Trash2, RefreshCw, ChevronUp, ChevronDown,
+    Layout, Eye, Trash2, RefreshCw,
     Image as ImageIcon, Loader2, RefreshCcw
 } from 'lucide-react';
 import { PDFSection, PDFSectionId, PDFAlignment } from '@/lib/types';
@@ -103,35 +102,6 @@ export const BrandingManager: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const toggleSection = (id: PDFSectionId) => {
-        setSections(prev => prev.map(s =>
-            s.id === id ? { ...s, enabled: !s.enabled } : s
-        ));
-    };
-
-    const setAlignment = (id: PDFSectionId, alignment: PDFAlignment) => {
-        setSections(prev => prev.map(s =>
-            s.id === id ? { ...s, alignment } : s
-        ));
-    };
-
-    const moveSection = (id: PDFSectionId, direction: 'up' | 'down') => {
-        setSections(prev => {
-            const sorted = [...prev].sort((a, b) => a.order - b.order);
-            const index = sorted.findIndex(s => s.id === id);
-            if (index === -1) return prev;
-            if (direction === 'up' && index === 0) return prev;
-            if (direction === 'down' && index === sorted.length - 1) return prev;
-
-            const swapIndex = direction === 'up' ? index - 1 : index + 1;
-            return sorted.map((s, i) => {
-                if (i === index) return { ...s, order: sorted[swapIndex].order };
-                if (i === swapIndex) return { ...s, order: sorted[index].order };
-                return s;
-            });
-        });
-    };
-
     const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -195,43 +165,19 @@ export const BrandingManager: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Section List */}
+                    {/* Raport de comanda — sectiunile sunt fixe (Site → Teava → Comanda → Greutati) */}
                     <div className="space-y-1.5">
-                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('branding.sections')}</h3>
-                        {sortedSections.map((section, idx) => (
-                            <div
-                                key={section.id}
-                                className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${section.enabled ? 'bg-card border-border' : 'bg-muted/10 border-transparent opacity-40'
-                                    }`}
-                            >
-                                <GripVertical className="w-3 h-3 text-muted-foreground/30" />
-                                <button onClick={() => toggleSection(section.id)} className={`p-1 rounded ${section.enabled ? 'text-primary' : 'text-muted-foreground'}`}>
-                                    {section.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                                </button>
-                                <span className={`flex-1 text-xs font-medium ${section.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                    {t(`branding.sectionLabels.${section.id}`)}
-                                </span>
-                                {section.enabled && (
-                                    <div className="flex items-center gap-0.5 bg-muted/20 rounded p-0.5">
-                                        {(['left', 'center', 'right'] as PDFAlignment[]).map(align => (
-                                            <button
-                                                key={align}
-                                                onClick={() => setAlignment(section.id, align)}
-                                                className={`p-1 rounded ${section.alignment === align ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
-                                            >
-                                                {align === 'left' && <AlignLeft className="w-3 h-3" />}
-                                                {align === 'center' && <AlignCenter className="w-3 h-3" />}
-                                                {align === 'right' && <AlignRight className="w-3 h-3" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                <div className="flex gap-0.5">
-                                    <button onClick={() => moveSection(section.id, 'up')} disabled={idx === 0} className="p-0.5 text-muted-foreground disabled:opacity-20"><ChevronUp className="w-3.5 h-3.5" /></button>
-                                    <button onClick={() => moveSection(section.id, 'down')} disabled={idx === sortedSections.length - 1} className="p-0.5 text-muted-foreground disabled:opacity-20"><ChevronDown className="w-3.5 h-3.5" /></button>
-                                </div>
+                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Continutul raportului</h3>
+                        {['Date site & proiect', 'Cantitate teava', 'Lista de cumparat (glicol + fittinguri)', 'Greutati estimative'].map(label => (
+                            <div key={label} className="flex items-center gap-2 p-2 rounded-lg bg-card border border-border">
+                                <Eye className="w-3.5 h-3.5 text-primary" />
+                                <span className="flex-1 text-xs font-medium text-foreground">{label}</span>
+                                <span className="text-[9px] text-muted-foreground">mereu inclus</span>
                             </div>
                         ))}
+                        <p className="text-[10px] text-muted-foreground pt-1">
+                            Raportul de comanda este fix si minimal — sectiunile nu se pot dezactiva.
+                        </p>
                     </div>
 
                     {/* Options */}
