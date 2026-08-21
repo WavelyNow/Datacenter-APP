@@ -61,7 +61,7 @@ export class PDFContext {
     }
 
     async checkSpace(neededHeight: number) {
-        if (this.currentY - neededHeight < 60) { // Increased bottom margin
+        if (this.currentY - neededHeight < 90) { // Margine jos generoasă — nimic nu atinge footer-ul
             this.drawFooter();
             await this.addPage();
         }

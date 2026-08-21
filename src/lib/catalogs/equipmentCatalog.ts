@@ -7,6 +7,7 @@ import { VERTIV_CATALOG } from './manufacturers/vertiv';
 import { SCHNEIDER_CATALOG } from './manufacturers/schneider';
 import { GENERAL_CATALOG } from './manufacturers/general';
 import { MODEL3D_CATALOG } from './model3dCatalog';
+import { TECH_2026_CATALOG } from './tech2026';
 
 export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // ==========================================================================
@@ -244,4 +245,9 @@ export const EQUIPMENT_CATALOG: CatalogEquipment[] = [
     // MODELE 3D VERIFICATE (Sketchfab) — produse noi 2024–2026
     // ==========================================================================
     ...MODEL3D_CATALOG,
+
+    // ==========================================================================
+    // TEHNOLOGIE 2024–2026 — produse noi (lansări oficiale verificate)
+    // ==========================================================================
+    ...TECH_2026_CATALOG,
 ];

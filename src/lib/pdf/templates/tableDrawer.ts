@@ -11,29 +11,30 @@ interface TableOptions {
     align?: ('left' | 'center' | 'right')[];
     showBorders?: boolean;
     stripeColors?: (RGB | undefined)[];
+    fontSize?: number;
 }
+
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
 export const drawTable = async (
     ctx: PDFContext,
     options: TableOptions
 ): Promise<number> => {
-    const { currentPage: page, theme, fontRegular, fontBold } = ctx;
-    const { x, headers, rows, colWidths, rowHeight = 25, align = [], showBorders = true } = options;
+    const { theme, fontRegular, fontBold } = ctx;
+    const {
+        x, headers, rows, colWidths, rowHeight = 22, align = [], showBorders = false,
+        fontSize = 8.5,
+    } = options;
+
     const safeHeaders = headers.map(h => sanitizePdfText(h));
     const safeRows = rows.map(r => r.map(c => sanitizePdfText(c)));
-    const drawTextSafe = (p: PDFPage, text: string, xPos: number, yPos: number, w: number, f: PDFFont, c: RGB, a: string) => {
-        drawCellText(p, sanitizePdfText(text), xPos, yPos, w, f, c, a);
-    };
-
     const tableWidth = colWidths.reduce((acc, w) => acc + w, 0);
 
-    // Helper: Wrap Text
     const wrapText = (text: string, font: PDFFont, size: number, maxWidth: number): string[] => {
         if (!text) return [''];
         const words = sanitizePdfText(text).split(' ');
         const lines: string[] = [];
-        let currentLine = words[0];
-
+        let currentLine = words[0] ?? '';
         for (let i = 1; i < words.length; i++) {
             const word = words[i];
             const width = font.widthOfTextAtSize(currentLine + " " + word, size);
@@ -48,108 +49,83 @@ export const drawTable = async (
         return lines;
     };
 
-    // Helper: Draw Text with Alignment
     const drawCellText = (p: PDFPage, text: string, xPos: number, yPos: number, width: number, font: PDFFont, color: RGB, alignment: string) => {
-        const textWidth = font.widthOfTextAtSize(text, 8);
-        let finalX = xPos + 8;
+        const textWidth = font.widthOfTextAtSize(text, fontSize);
+        let finalX = xPos + 6;
         if (alignment === 'center') finalX = xPos + (width / 2) - (textWidth / 2);
-        else if (alignment === 'right') finalX = xPos + width - textWidth - 8;
-
-        p.drawText(text, { x: finalX, y: yPos, size: 8, font, color });
+        else if (alignment === 'right') finalX = xPos + width - textWidth - 6;
+        p.drawText(text, { x: finalX, y: yPos, size: fontSize, font, color });
     };
 
-    // --- 1. Draw Headers ---
-    await ctx.checkSpace(rowHeight + 10);
-    let startY = ctx.currentY;
+    // Antetul tabelului — desenat la o coordonată dată (repetat la trecerea de pagină)
+    const drawHeaderAt = (p: PDFPage, y: number) => {
+        p.drawRectangle({ x, y: y - rowHeight, width: tableWidth, height: rowHeight, color: theme.bgLight });
+        let hx = x;
+        safeHeaders.forEach((h, i) => {
+            drawCellText(p, h, hx, y - (rowHeight / 2) - (fontSize / 2) - 1, colWidths[i], fontBold, theme.text, align[i] || 'left');
+            hx += colWidths[i];
+        });
+        p.drawLine({ start: { x, y: y - rowHeight }, end: { x: x + tableWidth, y: y - rowHeight }, thickness: 0.7, color: theme.border });
+    };
 
-    page.drawRectangle({
-        x,
-        y: startY - rowHeight,
-        width: tableWidth,
-        height: rowHeight,
-        color: showBorders ? theme.primary : theme.bgLight,
-    });
+    // Pas 1: spațiu + antet inițial
+    await ctx.checkSpace(rowHeight + 14);
+    let headerY = ctx.currentY;
+    let headerPage: PDFPage = ctx.currentPage;
+    drawHeaderAt(headerPage, headerY);
+    ctx.currentY = headerY - rowHeight;
 
-    let currentX = x;
-    headers.forEach((header, i) => {
-        const colWidth = colWidths[i];
-        const alignment = align[i] || 'left';
-
-        drawTextSafe(page, header, currentX, startY - (rowHeight / 2) - 4, colWidth, fontBold, showBorders ? theme.white : theme.text, alignment);
-
-        if (showBorders) {
-            page.drawLine({
-                start: { x: currentX, y: startY },
-                end: { x: currentX, y: startY - rowHeight },
-                thickness: 0.5,
-                color: theme.border
-            });
-        }
-        currentX += colWidth;
-    });
-
-    if (showBorders) {
-        page.drawLine({ start: { x: x + tableWidth, y: startY }, end: { x: x + tableWidth, y: startY - rowHeight }, thickness: 0.5, color: theme.border });
-        page.drawLine({ start: { x, y: startY }, end: { x: x + tableWidth, y: startY }, thickness: 0.5, color: theme.border });
-        page.drawLine({ start: { x, y: startY - rowHeight }, end: { x: x + tableWidth, y: startY - rowHeight }, thickness: 0.5, color: theme.border });
-    }
-
-    ctx.currentY = startY - rowHeight;
-
-    // --- 2. Draw Rows ---
-    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-        const row = rows[rowIndex];
-        const wrappedRows = row.map((cell, idx) => wrapText(cell?.toString() || '', fontRegular, 8, colWidths[idx] - 16));
+    // Pas 2: rânduri (cu antet repetat când se trece pagina)
+    for (let i = 0; i < safeRows.length; i++) {
+        const row = safeRows[i];
+        const wrappedRows = row.map((cell, idx) => wrapText(cell || '', fontRegular, fontSize, colWidths[idx] - 12));
         const maxLines = Math.max(...wrappedRows.map(l => l.length));
-        const actualRowHeight = Math.max(rowHeight, maxLines * 11 + 10);
+        const actualRowHeight = Math.max(rowHeight, maxLines * (fontSize + 3) + 10);
 
-        await ctx.checkSpace(actualRowHeight);
-        startY = ctx.currentY;
-
-        // Striping / Custom Colors
-        const customColor = options.stripeColors?.[rowIndex];
-        if (customColor) {
-            page.drawRectangle({
-                x,
-                y: startY - actualRowHeight,
-                width: tableWidth,
-                height: actualRowHeight,
-                color: customColor
-            });
-        } else if (!showBorders && rowIndex % 2 === 1) {
-            page.drawRectangle({ x, y: startY - actualRowHeight, width: tableWidth, height: actualRowHeight, color: theme.bgLight });
+        await ctx.checkSpace(actualRowHeight + rowHeight + 14);
+        // Dacă s-a întrerupt pagina, redesenăm antetul (currentPage s-a schimbat)
+        if (ctx.currentPage !== headerPage) {
+            headerPage = ctx.currentPage;
+            headerY = ctx.currentY;
+            drawHeaderAt(headerPage, headerY);
+            ctx.currentY = headerY - rowHeight;
         }
 
-        currentX = x;
-        row.forEach((cell, i) => {
-            const colWidth = colWidths[i];
-            const alignment = align[i] || 'left';
-            const lines = wrappedRows[i];
+        const startY = ctx.currentY;
 
-            lines.forEach((line, lineIdx) => {
-                drawCellText(ctx.currentPage, line, currentX, startY - 16 - (lineIdx * 11), colWidth, fontRegular, theme.text, alignment);
+        // Zebra subtilă
+        if (i % 2 === 1 && !showBorders) {
+            ctx.currentPage.drawRectangle({ x, y: startY - actualRowHeight, width: tableWidth, height: actualRowHeight, color: theme.bgLight });
+        }
+
+        let currentX = x;
+        row.forEach((cell, ci) => {
+            const colWidth = colWidths[ci];
+            const alignment = align[ci] || 'left';
+            const lines = wrappedRows[ci];
+            const lineHeight = fontSize + 3;
+            const blockH = lines.length * lineHeight;
+            // Centrăm pe verticală block-ul de text în rând
+            const firstLineY = startY - 7 - (blockH - lineHeight) / 2;
+            lines.forEach((line, li) => {
+                drawCellText(ctx.currentPage, line, currentX, firstLineY - li * lineHeight, colWidth, fontRegular, theme.text, alignment);
             });
-
-            if (showBorders) {
-                ctx.currentPage.drawLine({
-                    start: { x: currentX, y: startY },
-                    end: { x: currentX, y: startY - actualRowHeight },
-                    thickness: 0.5,
-                    color: theme.border
-                });
-            }
             currentX += colWidth;
         });
 
-        if (showBorders) {
-            ctx.currentPage.drawLine({ start: { x: x + tableWidth, y: startY }, end: { x: x + tableWidth, y: startY - actualRowHeight }, thickness: 0.5, color: theme.border });
-            ctx.currentPage.drawLine({ start: { x, y: startY - actualRowHeight }, end: { x: x + tableWidth, y: startY - actualRowHeight }, thickness: 0.5, color: theme.border });
-        } else {
-            ctx.currentPage.drawLine({ start: { x, y: startY - actualRowHeight }, end: { x: x + tableWidth, y: startY - actualRowHeight }, thickness: 0.3, color: theme.border });
-        }
+        // Linie separatoare fină
+        const lineY = showBorders ? startY - actualRowHeight + 1 : startY - actualRowHeight;
+        ctx.currentPage.drawLine({
+            start: { x, y: lineY },
+            end: { x: x + tableWidth, y: lineY },
+            thickness: showBorders ? 0.7 : 0.3,
+            color: theme.border,
+        });
 
         ctx.currentY = startY - actualRowHeight;
     }
 
+    // Spațiu după tabel
+    ctx.currentY -= 10;
     return ctx.currentY;
 };

@@ -1,12 +1,11 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
-import { drawSectionTitle } from './common';
+import { beginSection } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
 
 /**
  * PAGINA 2 — CANTITATE TEAVA
- * (ce teava intra in lucrare, pe material si diametru)
  */
 export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
     const { width, theme, fontBold, fontRegular, currentPage } = ctx;
@@ -24,9 +23,7 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         data.fittingsAllowancePercent ?? 5
     );
 
-    await ctx.checkSpace(240);
-    ctx.currentY = drawSectionTitle(currentPage, fontBold, M, ctx.currentY, 'CANTITATE DE TEAVA', theme);
-    ctx.currentY -= 6;
+    await beginSection(ctx, 'CANTITATE DE TEAVA');
 
     if (purchase.pipeLines.length === 0) {
         currentPage.drawText('Nu exista segmente de teava definite in proiect.', { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight });
@@ -34,34 +31,24 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         return;
     }
 
-    // Tabel: DN | Material | Lungime | Volum | Greutate
-    const headers = ['DN', 'Material', 'Lungime (m)', 'Volum (L)', 'Greutate (kg)'];
-    const rows = purchase.pipeLines.map(l => [
-        l.size,
-        l.label,
-        l.lengthM.toFixed(1),
-        l.liters.toFixed(1),
-        l.weightKg.toFixed(1),
-    ]);
-    rows.push([
-        'TOTAL',
-        `${purchase.pipeLines.length} dim.`,
-        purchase.pipeTotalLengthM.toFixed(1),
-        purchase.pipeVolumeL.toFixed(1),
-        purchase.pipeTotalWeightKg.toFixed(1),
-    ]);
-
     await drawTable(ctx, {
         x: M,
-        headers,
-        rows,
+        headers: ['DN', 'Material', 'Lungime (m)', 'Volum (L)', 'Greutate (kg)'],
+        rows: purchase.pipeLines.map(l => [
+            l.size,
+            l.label,
+            l.lengthM.toFixed(1),
+            l.liters.toFixed(1),
+            l.weightKg.toFixed(1),
+        ]).concat([
+            ['TOTAL', `${purchase.pipeLines.length} dim.`, purchase.pipeTotalLengthM.toFixed(1), purchase.pipeVolumeL.toFixed(1), purchase.pipeTotalWeightKg.toFixed(1)],
+        ]),
         colWidths: [colW * 0.12, colW * 0.4, colW * 0.16, colW * 0.16, colW * 0.16],
         rowHeight: 21,
         align: ['center', 'left', 'right', 'right', 'right'],
     });
 
-    ctx.currentY -= 24;
-
+    await ctx.checkSpace(60);
     if (purchase.equipmentVolumeL > 0) {
         currentPage.drawText(`Volum apa echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`, {
             x: M, y: ctx.currentY, size: 10, font: fontBold, color: theme.text,
@@ -69,7 +56,6 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         ctx.currentY -= 16;
     }
 
-    // Notă explicativă pe scurt
     currentPage.drawText(
         `Volumul tevii este calculat din diametrul INTERIOR real (standardele verificate). Pierderi fittinguri: +${purchase.fittingsAllowancePercent}% din acest volum (vezi pagina urmatoare).`,
         { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }

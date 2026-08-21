@@ -429,29 +429,30 @@ const DashboardBase = () => {
                             <h3 className="font-bold text-sm uppercase tracking-wider">Actualizări Sistem</h3>
                         </div>
 
-                        <div className="space-y-6 relative z-10 flex-1">
-                            <div className="group">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-bold text-foreground">Motor Energie</span>
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">Live</span>
+                        <div className="space-y-4 relative z-10 flex-1">
+                            {[
+                                { tag: '2026', title: 'CDU-uri de 2.5 MW', desc: 'Motivair MCDU-70 (Schneider) — centralizate, scalabile la 10 MW+ pentru platforme AI.' },
+                                { tag: '2025', title: 'CoolChip CDU 70-600 kW', desc: 'Vertiv — seria completă: in-rack 100 kW, in-row 600 kW, și lichid-aer 70 kW (retrofit).' },
+                                { tag: '2025', title: 'Uși răcite 75 kW/rack', desc: 'ChilledDoor RDHx (Schneider/Motivair) — schimbător pe ușa spate, agnostic OCP/Open19.' },
+                                { tag: '2024', title: 'Apă caldă W32+', desc: 'STULZ CyberCool — free-cooling pe circuite calde ASHRAE W32-W+; CDU 345–1380 kW.' },
+                                { tag: '2026', title: 'DC 3 MW pe CDU', desc: 'Delta GoCool-3000 (GTC 2026) și CoolIT CHx2000 — popularizarea răcirii pe lichid la scară.' },
+                            ].map(item => (
+                                <div key={item.title} className="group">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <span className="text-xs font-semibold text-foreground">{item.title}</span>
+                                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">{item.tag}</span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground leading-relaxed">{item.desc}</p>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Analiza energetică activă</p>
-                            </div>
+                            ))}
 
-                            <div className="w-full h-px bg-white/5" />
-
-                            <div className="group">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-bold text-foreground">Solver Hidraulic</span>
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary/10 text-muted-foreground border border-secondary/20">Beta</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground">Calcule presiune active</p>
-                            </div>
-
-                            <div className="mt-auto pt-6">
-                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                                    <p className="text-[10px] font-mono text-primary mb-2">AI INSIGHT</p>
-                                    <p className="text-xs text-muted-foreground italic">Sistemul funcționează în parametri normali.</p>
+                            <div className="mt-auto pt-4">
+                                <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
+                                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1.5">Trend 2026</p>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Răcirea pe lichid devine standard: CDU-uri 1–3 MW, operare cu apă caldă (32–45°C) și distribuție 800VDC.
+                                        Dimensionați-vă conductele pentru debite mari la temperaturi ridicate — CoolFit 4.0 (PN10/SDR17) e soluția pre-izolată.
+                                    </p>
                                 </div>
                             </div>
                         </div>

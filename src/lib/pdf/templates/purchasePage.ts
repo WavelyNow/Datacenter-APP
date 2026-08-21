@@ -1,7 +1,7 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
-import { drawSectionTitle } from './common';
+import { beginSection } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
 
 const FITTING_LABELS_RO: Record<string, string> = {
@@ -21,12 +21,12 @@ const FITTING_LABELS_RO: Record<string, string> = {
 
 /**
  * PAGINA 3 — LISTA DE CUMPARAT
- * (glicol cu pierderi fittinguri + marja, teava, fittinguri — clar si premium)
  */
 export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
     const { width, theme, fontBold, fontRegular, currentPage } = ctx;
     const M = 50;
     const colW = width - M * 2;
+    const boxH = 46;
 
     const purchase = calculatePurchaseSummary(
         data.segments,
@@ -39,34 +39,31 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         data.fittingsAllowancePercent ?? 5
     );
 
-    await ctx.checkSpace(300);
-    ctx.currentY = drawSectionTitle(currentPage, fontBold, M, ctx.currentY, 'LISTA DE CUMPARAT', theme);
-    ctx.currentY -= 6;
+    await beginSection(ctx, 'LISTA DE CUMPARAT');
 
-    // --- 1. GLICOL ---
+    // ---------- 1. GLICOL ----------
+    await ctx.checkSpace(40);
     currentPage.drawText('1. FLUID (GLICOL)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
-    ctx.currentY -= 16;
+    ctx.currentY -= 15;
 
     const fluidName = data.fluidType === 'propylene' ? 'Propilen Glicol' : data.fluidType === 'water' ? 'Apa pura' : 'Etilen Glicol';
-    const breakdown: [string, string][] = [
-        ['Volum teava (din diametrul interior)', `${purchase.pipeVolumeL.toFixed(1)} L`],
-        [`Pierderi fittinguri + umplere (${purchase.fittingsAllowancePercent}% din TEAVA)`, `${purchase.fittingsAllowanceL.toFixed(1)} L`],
-        ['Volum apa echipamente', `${purchase.equipmentVolumeL.toFixed(1)} L`],
-        [`Marja de siguranta (${purchase.marginPercent}%)`, `${purchase.marginL.toFixed(1)} L`],
-    ];
     await drawTable(ctx, {
         x: M,
         headers: ['', ''],
-        rows: breakdown,
+        rows: [
+            ['Volum teava (din diametrul interior)', `${purchase.pipeVolumeL.toFixed(1)} L`],
+            [`Pierderi fittinguri + umplere (${purchase.fittingsAllowancePercent}% din TEAVA)`, `${purchase.fittingsAllowanceL.toFixed(1)} L`],
+            ['Volum apa echipamente', `${purchase.equipmentVolumeL.toFixed(1)} L`],
+            [`Marja de siguranta (${purchase.marginPercent}%)`, `${purchase.marginL.toFixed(1)} L`],
+        ],
         colWidths: [colW * 0.68, colW * 0.32],
         rowHeight: 21,
         showBorders: false,
         align: ['left', 'right'],
     });
-    ctx.currentY -= 12;
 
-    // TOTAL — casetă evidențiată
-    const boxH = 44;
+    // TOTAL — caseta (cu spațiu rezervat înainte)
+    await ctx.checkSpace(boxH + 34);
     const boxY = ctx.currentY - boxH;
     currentPage.drawRectangle({
         x: M, y: boxY, width: colW, height: boxH,
@@ -74,19 +71,19 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         borderColor: theme.primary,
         borderWidth: 1,
     });
-    currentPage.drawText('TOTAL DE CUMPARAT', { x: M + 14, y: boxY + boxH - 16, size: 8, font: fontBold, color: theme.textLight });
-    const totalText = `${purchase.totalGlycolL.toFixed(0)} L`;
-    currentPage.drawText(totalText, { x: M + 14, y: boxY + 10, size: 20, font: fontBold, color: theme.primary });
+    currentPage.drawText('TOTAL DE CUMPARAT', { x: M + 14, y: boxY + boxH - 17, size: 8, font: fontBold, color: theme.textLight });
+    currentPage.drawText(`${purchase.totalGlycolL.toFixed(0)} L`, { x: M + 14, y: boxY + 10, size: 21, font: fontBold, color: theme.primary });
     const subText = `${fluidName} ${data.glycolPercentage}%  ·  ${purchase.canisters10L.toFixed(1)} canistre de 10 L  ·  ~${purchase.fluidWeightKg.toFixed(0)} kg`;
     const subW = fontRegular.widthOfTextAtSize(subText, 9);
-    currentPage.drawText(subText, { x: M + colW - subW - 14, y: boxY + 26, size: 9, font: fontRegular, color: theme.text });
+    currentPage.drawText(subText, { x: M + colW - subW - 14, y: boxY + 27, size: 9, font: fontRegular, color: theme.text });
 
-    ctx.currentY = boxY - 26;
+    ctx.currentY = boxY - 24;
 
-    // --- 2. TEAVA ---
+    // ---------- 2. TEAVA ----------
     if (purchase.pipeLines.length > 0) {
+        await ctx.checkSpace(60);
         currentPage.drawText('2. TEAVA', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
-        ctx.currentY -= 16;
+        ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
             headers: ['DN', 'Material', 'Lungime (m)', 'Greutate (kg)'],
@@ -95,13 +92,14 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
             rowHeight: 21,
             align: ['center', 'left', 'right', 'right'],
         });
-        ctx.currentY -= 24;
+        ctx.currentY -= 10;
     }
 
-    // --- 3. FITTINGURI ---
+    // ---------- 3. FITTINGURI ----------
     if (purchase.fittingItems.length > 0) {
+        await ctx.checkSpace(60);
         currentPage.drawText('3. FITTINGURI (VANE, COTURI, TEURI)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
-        ctx.currentY -= 16;
+        ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
             headers: ['DN', 'Tip', 'Cantitate'],
@@ -114,21 +112,23 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
             rowHeight: 21,
             align: ['center', 'left', 'right'],
         });
-        ctx.currentY -= 22;
+        ctx.currentY -= 10;
     } else {
+        await ctx.checkSpace(30);
         currentPage.drawText(
-            'Sugestie: definiti vanele/coturile/teurile in Hidraulica > Pierderi Locale pentru a le include in comanda.',
+            'Sugestie: definiti vanele/coturile/teurile in tabelul de teava sau in Hidraulica > Pierderi Locale.',
             { x: M, y: ctx.currentY, size: 9, font: fontRegular, color: theme.textLight }
         );
-        ctx.currentY -= 18;
+        ctx.currentY -= 16;
     }
 
-    // --- 4. GREUTATI ESTIMATIVE ---
+    // ---------- 4. GREUTATI ESTIMATIVE ----------
     const emptyWeight = purchase.pipeTotalWeightKg + purchase.equipmentTotalWeightKg;
     const withFluidWeight = emptyWeight + purchase.fluidWeightKg;
     if (withFluidWeight > 0) {
+        await ctx.checkSpace(80 + boxH);
         currentPage.drawText('4. GREUTATI ESTIMATIVE', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
-        ctx.currentY -= 16;
+        ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
             headers: ['Component', 'Greutate'],
@@ -142,20 +142,19 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
             showBorders: false,
             align: ['left', 'right'],
         });
-        ctx.currentY -= 8;
-        const boxH2 = 44;
-        const boxY2 = ctx.currentY - boxH2;
+
+        await ctx.checkSpace(boxH + 30);
+        const boxY2 = ctx.currentY - boxH;
         currentPage.drawRectangle({
-            x: M, y: boxY2, width: colW, height: boxH2,
+            x: M, y: boxY2, width: colW, height: boxH,
             color: theme.bgLight,
             borderColor: theme.text,
             borderWidth: 0.8,
         });
-        currentPage.drawText('INSTALATIE FARA FLUID', { x: M + 14, y: boxY2 + boxH2 - 15, size: 7.5, font: fontBold, color: theme.textLight });
-        currentPage.drawText(`${emptyWeight.toFixed(0)} kg`, { x: M + 14, y: boxY2 + 8, size: 17, font: fontBold, color: theme.text });
-        currentPage.drawText('INSTALATIE CU FLUID (IN FUNCTIUNE)', { x: M + colW * 0.55 + 14, y: boxY2 + boxH2 - 15, size: 7.5, font: fontBold, color: theme.textLight });
-        const wText = `${withFluidWeight.toFixed(0)} kg`;
-        currentPage.drawText(wText, { x: M + colW * 0.55 + 14, y: boxY2 + 8, size: 17, font: fontBold, color: theme.primary });
+        currentPage.drawText('INSTALATIE FARA FLUID', { x: M + 14, y: boxY2 + boxH - 16, size: 7.5, font: fontBold, color: theme.textLight });
+        currentPage.drawText(`${emptyWeight.toFixed(0)} kg`, { x: M + 14, y: boxY2 + 9, size: 18, font: fontBold, color: theme.text });
+        currentPage.drawText('INSTALATIE CU FLUID (IN FUNCTIUNE)', { x: M + colW / 2 + 14, y: boxY2 + boxH - 16, size: 7.5, font: fontBold, color: theme.textLight });
+        currentPage.drawText(`${withFluidWeight.toFixed(0)} kg`, { x: M + colW / 2 + 14, y: boxY2 + 9, size: 18, font: fontBold, color: theme.primary });
         ctx.currentY = boxY2 - 20;
     }
 }

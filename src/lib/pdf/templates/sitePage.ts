@@ -1,27 +1,24 @@
 import { PdfData } from '../types';
 import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
-import { drawSectionTitle } from './common';
+import { beginSection } from './common';
 import { sanitizePdfText } from '../utils';
 
 /**
  * PAGINA 1 — DATE SITE & PROIECT
- * (site-ul de datacenter pentru care se dă comanda — minimal & premium)
  */
 export async function generateSitePage(ctx: PDFContext, data: PdfData) {
     const { width, theme, fontBold, fontRegular, currentPage } = ctx;
     const pd = data.projectDetails;
-
-    await ctx.checkSpace(340);
     const M = 50;
+    const colW = width - M * 2;
 
-    // Titlu principal
-    ctx.currentY = drawSectionTitle(currentPage, fontBold, M, ctx.currentY, 'RAPORT DE COMANDA', theme);
+    await beginSection(ctx, 'RAPORT DE COMANDA');
 
     // Nume proiect
     const projectName = sanitizePdfText(pd.projectName || 'Proiect');
     currentPage.drawText(projectName, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
-    ctx.currentY -= 28;
+    ctx.currentY -= 26;
 
     // Subtitlu
     const fluidName = data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura';
@@ -29,12 +26,12 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
         `Site datacenter  ·  ${sanitizePdfText(pd.location || '-')}  ·  ${sanitizePdfText(pd.date || '-')}`,
         { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight }
     );
-    ctx.currentY -= 32;
+    ctx.currentY -= 30;
 
-    const colW = width - M * 2;
     const drawGroup = async (label: string, rows: [string, string][]) => {
+        await ctx.checkSpace(70);
         currentPage.drawText(label.toUpperCase(), { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
-        ctx.currentY -= 16;
+        ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
             headers: ['', ''],
@@ -43,7 +40,7 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
             rowHeight: 21,
             showBorders: false,
         });
-        ctx.currentY -= 14;
+        ctx.currentY -= 12;
     };
 
     await drawGroup('Proiect', [
@@ -60,9 +57,7 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
         ['Pierderi fittinguri (din volum teava)', `${(data.fittingsAllowancePercent ?? 5)} %`],
     ]);
 
-    ctx.currentY -= 8;
-
-    // Notă — discretă
+    await ctx.checkSpace(30);
     currentPage.drawText(
         'Cantitatile de mai jos (teava + glicol) sunt calculate automat din proiect, cu pierderile prin fittinguri si marja de siguranta.',
         { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }

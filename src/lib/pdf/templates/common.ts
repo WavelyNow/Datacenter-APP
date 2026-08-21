@@ -2,22 +2,36 @@ import { PDFPage, PDFFont, PDFImage, rgb } from 'pdf-lib';
 import { ProjectDetails } from '../../types';
 import { PdfTheme } from '../styles';
 import { sanitizePdfText } from '../utils';
+import type { PDFContext } from './SectionGenerator';
 
 /**
  * Titlu de secțiune premium: bară de accent + text caps.
+ * APELEAZĂ MAI ÎNTÂI checkSpace — titlul nu se poate tăia între pagini.
  * Returnează noul Y (după titlu + spațiu).
  */
-export function drawSectionTitle(
+export async function drawSectionTitle(
     page: PDFPage,
     fontBold: PDFFont,
     x: number,
     y: number,
     title: string,
     theme: PdfTheme
-): number {
+): Promise<number> {
     page.drawRectangle({ x, y: y + 1, width: 3.5, height: 13, color: theme.primary });
     page.drawText(sanitizePdfText(title), { x: x + 10, y, size: 12.5, font: fontBold, color: theme.text });
     return y - 26;
+}
+
+/**
+ * Începe o secțiune cu titlu — asigură spațiu înainte (fără suprapuneri la
+ * trecerea de pagină), desenează titlul și lăsă spațiu sub el.
+ */
+export async function beginSection(
+    ctx: PDFContext,
+    title: string
+): Promise<void> {
+    await ctx.checkSpace(90);
+    ctx.currentY = await drawSectionTitle(ctx.currentPage, ctx.fontBold, 50, ctx.currentY, title, ctx.theme);
 }
 
 export const drawHeader = async (
