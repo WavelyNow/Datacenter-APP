@@ -47,6 +47,5 @@ export interface PdfData {
         pdfTheme: 'modern' | 'classic' | 'industrial';
     };
     fittingItems?: { id: string; type: string; size: string; quantity: number; description?: string }[];
-    fittingsAllowancePercent?: number;
     options?: PdfOptions;
 }

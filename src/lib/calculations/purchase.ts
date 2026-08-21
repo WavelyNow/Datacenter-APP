@@ -1,24 +1,43 @@
 /**
- * SUMAR DE COMANDĂ — „cât trebuie să cumpăr”
+ * SUMAR DE COMANDĂ — „cât trebuie să cumpăr"
  *
- * Cantitatea de glicol/ofertă finală ia în calcul:
- *  - volumul real al țevilor (Ø interior, din standardele verificate) + echipamente
- *  - FITTINGS ALLOWANCE: pierderi/volum suplimentar prin vane, coturi, teuri,
- *    umplere instalație (practică de proiect: ~8% din volumul de țeavă)
- *  - marja de siguranță configurată în proiect
- *  - rotunjire la containere comerciale (canistre de 10 L)
+ * Cantitatea de glicol este calculată EXACT, fără procente imaginare:
+ *  - volumul real al țevilor (Ø interior, standarde verificate)
+ *  - VOLUMUL FITTINGURILOR — calculat din numărul real de vane/coturi/teuri
+ *    trecute de utilizator (volumul intern al fiecărui fitting, în funcție
+ *    de diametrul real al țevii pe care stă)
+ *  - volumul apei din echipamente
+ *  - marja de siguranță CONFIGURATĂ de utilizator (0–20%)
+ *  - rotunjire la canistre de 10 L
  *
- * Fișierul este SINGURA sursă pentru cifrele de cumpărare (PDF, Excel, Dashboard).
+ * Fișierul este SINGURA SURSĂ pentru cifrele de cumpărare (PDF, Excel, Dashboard).
  */
 
 import { PipeSegment, EquipmentItem, FluidType, FittingItem } from '../types';
 import { calculatePipeVolume } from './hydraulics';
-import { PIPE_STANDARDS } from '../pipeStandards';
 import { getPipeData, getFluidDensity } from './common';
+import { PIPE_STANDARDS } from '../pipeStandards';
 
-/** Pierderi/volum suplimentar prin fittinguri + umplere — implicit 5% DIN VOLUMUL DE ȚEAVĂ
- *  (valoare configurabilă în proiect; practică uzuală 3–10%). */
-export const FITTINGS_ALLOWANCE_PERCENT = 5;
+/** Volumul intern estimat al fittingurilor, exprimat în MULTIPLI DE DIAMETRU
+ *  (L_eq fizic ≈ lungimea echivalentă internă a corpului fittingului):
+ *  V = π/4 · D² · (mult × D)  — adică un „bucățel" de țeavă de lungime mult×D. */
+export const FITTING_DIAMETER_MULTIPLIERS: Record<string, number> = {
+    elbow_90_std: 2.0,
+    elbow_90_lr: 1.6,
+    elbow_45: 1.6,
+    tee_branch: 2.0,
+    tee_run: 1.6,
+    reducer: 1.0,
+    enlargement: 1.0,
+    valve_ball: 1.0,
+    valve_butterfly: 1.2,
+    valve_globe: 2.0,
+    valve_gate: 2.0,
+    check_swing: 2.0,
+    check_lift: 2.0,
+    valve_check_swing: 2.0,
+    valve_check_lift: 2.0,
+};
 
 export interface PurchaseLine {
     size: string;
@@ -36,14 +55,16 @@ export interface PurchaseSummary {
     pipeVolumeL: number;
     pipeTotalWeightKg: number;
 
+    // Fittinguri — volumul REAL din numărul introdus
+    fittingsVolumeL: number;
+    fittingsTotalCount: number;
+
     // Echipamente
     equipmentVolumeL: number;
     equipmentTotalWeightKg: number;
 
     // Glicol
-    fittingsAllowancePercent: number;
-    fittingsAllowanceL: number;   // % din volumul de țeavă (vane, coturi, teuri, umplere)
-    marginPercent: number;        // marja din proiect
+    marginPercent: number;        // marja din proiect (configurată de utilizator)
     marginL: number;
     rawTotalL: number;            // înainte de rotunjire
     totalGlycolL: number;         // CÂT SE CUMPĂRĂ (rotunjit la 10 L)
@@ -54,6 +75,25 @@ export interface PurchaseSummary {
     fittingItems: { type: string; size: string; quantity: number }[];
 }
 
+/** Rezolvă diametrul interior real (mm) pentru o mărime dată:
+ *  caută întâi în standardul țevii, apoi în tabelele metalice standard. */
+function resolveInnerDiameterMm(material: string, size: string, customId?: number): number {
+    if (material === 'custom' && customId) return customId;
+    const standard = PIPE_STANDARDS[material];
+    if (standard) {
+        const dim = standard.dimensions.find(d => d.dn === size);
+        if (dim && dim.id > 0) return dim.id;
+    }
+    // Fallback: caută orice standard cu această mărime (sau DN numeric → oțel)
+    for (const std of Object.values(PIPE_STANDARDS)) {
+        const dim = std.dimensions.find(d => d.dn === size);
+        if (dim && dim.id > 0) return dim.id;
+    }
+    const num = parseInt(String(size).replace(/\D+/g, ''), 10);
+    if (num > 0) return Math.max(10, num - 6); // aproximare DN→ID (DN nominal - perete)
+    return 0;
+}
+
 /**
  * Calculează sumarul complet de comandă.
  * @param segments trasee de țeavă
@@ -61,8 +101,8 @@ export interface PurchaseSummary {
  * @param glycolPercentage % glicol (0–100)
  * @param fluidType tip glicol
  * @param safetyMargin marja activă?
- * @param safetyMarginPercentage % marjă
- * @param fittingItems fittingurile definite în proiect (vane, coturi, teuri)
+ * @param safetyMarginPercentage % marjă (0–20)
+ * @param fittingItems fittingurile definite în proiect (coturi, teuri, vane — cu cantități)
  */
 export function calculatePurchaseSummary(
     segments: PipeSegment[],
@@ -71,8 +111,7 @@ export function calculatePurchaseSummary(
     fluidType: FluidType,
     safetyMargin: boolean,
     safetyMarginPercentage: number,
-    fittingItems: FittingItem[] = [],
-    fittingsAllowancePercent: number = FITTINGS_ALLOWANCE_PERCENT
+    fittingItems: FittingItem[] = []
 ): PurchaseSummary {
     // 1. Agregare țeavă pe (material, DN)
     const byKey = new Map<string, PurchaseLine>();
@@ -81,7 +120,7 @@ export function calculatePurchaseSummary(
 
     for (const seg of segments) {
         if (!seg) continue;
-        const liters = calculatePipeVolume(seg);
+        const liters = calculatePipeVolume(seg) || 0;
         const pipeData = getPipeData(seg.material, seg.size);
         const weightPerM = seg.material === 'custom'
             ? (seg.customWeight || 0)
@@ -93,7 +132,7 @@ export function calculatePurchaseSummary(
         const entry: PurchaseLine = existing ?? {
             size: seg.size,
             material: seg.material,
-            label: standard ? `${standard.label} ${seg.size}` : (seg.material === 'custom' ? `Custom ${seg.size}` : seg.size),
+            label: standard ? `${standard.label}` : (seg.material === 'custom' ? 'Teava custom' : seg.material),
             lengthM: 0,
             liters: 0,
             weightKg: 0,
@@ -109,44 +148,55 @@ export function calculatePurchaseSummary(
 
     const pipeLines = [...byKey.values()].sort((a, b) => a.size.localeCompare(b.size, undefined, { numeric: true }));
 
-    // 2. Echipamente
+    // 2. VOLUMUL FITTINGURILOR — calculat din nr. real introdus
+    let fittingsVolumeL = 0;
+    let fittingsTotalCount = 0;
+    const fitMap = new Map<string, { type: string; size: string; quantity: number }>();
+
+    for (const f of fittingItems) {
+        const count = Math.max(0, Math.floor(Number(f?.quantity) || 0));
+        if (count <= 0) continue;
+        fittingsTotalCount += count;
+
+        const mult = FITTING_DIAMETER_MULTIPLIERS[f.type] ?? 1.5;
+        const idMm = resolveInnerDiameterMm('', f.size) || resolveInnerDiameterMm('steel_light', f.size);
+        const dM = idMm / 1000;
+        // V = π/4 · D² · (mult · D) → litri
+        if (dM > 0) {
+            fittingsVolumeL += count * (Math.PI / 4) * dM * dM * (mult * dM) * 1000;
+        }
+
+        const key = `${f.type}|${f.size}`;
+        const existing = fitMap.get(key);
+        if (existing) existing.quantity += count;
+        else fitMap.set(key, { type: f.type, size: f.size, quantity: count });
+    }
+
+    // 3. Echipamente
     const equipmentVolumeL = equipmentList.reduce((sum, eq) => sum + (eq.volume || 0), 0);
     const equipmentWeightKg = equipmentList.reduce((sum, eq) => sum + (eq.weight || 0), 0);
 
-    // 3. Glicol de cumpărat
-    const allowancePct = Math.max(0, Math.min(15, fittingsAllowancePercent));
-    const fittingsAllowanceL = pipeVolumeL * (allowancePct / 100);
-    const baseL = pipeVolumeL + fittingsAllowanceL + equipmentVolumeL;
-    const marginPercent = safetyMargin ? safetyMarginPercentage : 0;
+    // 4. Glicol de cumpărat: (țeavă + fittinguri + echipamente) × marjă
+    const baseL = pipeVolumeL + fittingsVolumeL + equipmentVolumeL;
+    const marginPercent = safetyMargin ? Math.max(0, Math.min(20, safetyMarginPercentage)) : 0;
     const marginL = baseL * (marginPercent / 100);
     const rawTotalL = baseL + marginL;
 
-    // Rotunjire la canistre de 10 L
     const totalGlycolL = Math.ceil(rawTotalL / 10) * 10;
     const canisters10L = totalGlycolL / 10;
 
-    // Greutate fluid pe tipul real de glicol
     const densityKgL = getFluidDensity(glycolPercentage, fluidType);
     const fluidWeightKg = totalGlycolL * densityKgL;
-
-    // 4. Fittinguri agregate (pentru listă de cumpărat)
-    const fitMap = new Map<string, { type: string; size: string; quantity: number }>();
-    for (const f of fittingItems) {
-        const key = `${f.type}|${f.size}`;
-        const existing = fitMap.get(key);
-        if (existing) existing.quantity += f.quantity;
-        else fitMap.set(key, { type: f.type, size: f.size, quantity: f.quantity });
-    }
 
     return {
         pipeLines,
         pipeTotalLengthM: pipeLines.reduce((s, l) => s + l.lengthM, 0),
         pipeVolumeL,
         pipeTotalWeightKg: pipeWeightKg,
+        fittingsVolumeL,
+        fittingsTotalCount,
         equipmentVolumeL,
         equipmentTotalWeightKg: equipmentWeightKg,
-        fittingsAllowancePercent: allowancePct,
-        fittingsAllowanceL,
         marginPercent,
         marginL,
         rawTotalL,

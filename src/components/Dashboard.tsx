@@ -36,9 +36,7 @@ const DashboardBase = () => {
         safetyMarginPercentage,
         cloudProjectId,
         fluidType,
-        fittingItems,
-        fittingsAllowancePercent,
-        setFittingsAllowancePercent
+        fittingItems
     } = useProject();
 
     const { setActiveTab } = useUI();
@@ -60,9 +58,8 @@ const DashboardBase = () => {
         fluidType,
         safetyMargin,
         safetyMarginPercentage,
-        fittingItems,
-        fittingsAllowancePercent
-    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems, fittingsAllowancePercent]);
+        fittingItems
+    ), [segments, equipmentList, glycolPercentage, fluidType, safetyMargin, safetyMarginPercentage, fittingItems]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -344,13 +341,13 @@ const DashboardBase = () => {
                                 <div className="flex h-3.5 w-full overflow-hidden rounded-full bg-muted">
                                     <div className="bg-primary" style={{ width: `${(purchase.pipeVolumeL / purchase.rawTotalL) * 100}%` }} title={`Țeavă: ${purchase.pipeVolumeL.toFixed(0)} L`} />
                                     <div className="bg-primary/70" style={{ width: `${(purchase.equipmentVolumeL / purchase.rawTotalL) * 100}%` }} title={`Echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`} />
-                                    <div className="bg-primary/45" style={{ width: `${(purchase.fittingsAllowanceL / purchase.rawTotalL) * 100}%` }} title={`Fittinguri: ${purchase.fittingsAllowanceL.toFixed(0)} L`} />
+                                    <div className="bg-primary/45" style={{ width: `${(purchase.fittingsVolumeL / purchase.rawTotalL) * 100}%` }} title={`Fittinguri: ${purchase.fittingsVolumeL.toFixed(0)} L`} />
                                     <div className="bg-primary/25" style={{ width: `${(purchase.marginL / purchase.rawTotalL) * 100}%` }} title={`Marjă: ${purchase.marginL.toFixed(0)} L`} />
                                 </div>
                                 <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-muted-foreground">
                                     <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" />Țeavă {purchase.pipeVolumeL.toFixed(0)} L</span>
                                     <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/70 inline-block" />Echipamente {purchase.equipmentVolumeL.toFixed(0)} L</span>
-                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/45 inline-block" />Fittinguri {purchase.fittingsAllowanceL.toFixed(0)} L</span>
+                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/45 inline-block" />Fittinguri {purchase.fittingsVolumeL.toFixed(0)} L</span>
                                     <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/25 inline-block" />Marjă {purchase.marginL.toFixed(0)} L</span>
                                 </div>
                             </div>
@@ -398,20 +395,7 @@ const DashboardBase = () => {
                                 </div>
                                 <div className="text-[10px] text-primary/70 mt-2 border-t border-primary/20 pt-2 space-y-0.5 font-medium">
                                     <p>Premixat {glycolPercentage}% Glicol ({fluidType === 'propylene' ? 'Propilen' : fluidType === 'ethylene' ? 'Etilen' : 'Apă'})</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <span>Pierderi fittinguri:</span>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            max={15}
-                                            step={1}
-                                            value={fittingsAllowancePercent}
-                                            onChange={(e) => setFittingsAllowancePercent(parseFloat(e.target.value) || 0)}
-                                            className="w-12 bg-background/60 border border-primary/20 rounded px-1 py-0.5 text-center font-mono text-[10px] outline-none focus:border-primary"
-                                            title="% din volumul de țeavă (vane, coturi, teuri, umplere) — implicit 5%"
-                                        />
-                                        <span>% din țeavă ({purchase.fittingsAllowanceL.toFixed(0)} L)</span>
-                                    </div>
+                                    <p>Fittinguri ({purchase.fittingsTotalCount} buc — calculate din numar): +{purchase.fittingsVolumeL.toFixed(1)} L</p>
                                     <p>≈ {purchase.canisters10L.toFixed(1)} canistre × 10 L</p>
                                 </div>
                             </div>

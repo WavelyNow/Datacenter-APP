@@ -144,7 +144,6 @@ export interface ProjectLoadData {
     branding?: BrandingConfig;
     boqItems?: BoQItem[];
     fittingItems?: FittingItem[];
-    fittingsAllowancePercent?: number;
     ifcModelUrl?: string | null;
 }
 

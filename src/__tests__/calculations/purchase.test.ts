@@ -1,10 +1,11 @@
 /**
  * Regresie: sumarul de comandă („cât trebuie să cumpăr").
- * Verifică: volum țeavă real, allowance fittinguri, marjă, rotunjire 10 L,
- * agregare mărimi și cantități de vană/cot/teu.
+ * Model nou: volumul fittingurilor se CALCULEAZĂ din numărul real introdus
+ * (coturi/teuri/vane pe DN) — nu din procente generice. Marja rămâne
+ * configurată de utilizator.
  */
 
-import { calculatePurchaseSummary, FITTINGS_ALLOWANCE_PERCENT } from '@/lib/calculations/purchase';
+import { calculatePurchaseSummary, FITTING_DIAMETER_MULTIPLIERS } from '@/lib/calculations/purchase';
 import { PipeSegment } from '@/lib/types';
 
 const segments: PipeSegment[] = [
@@ -15,7 +16,6 @@ const segments: PipeSegment[] = [
 describe('Purchase summary (cât trebuie să cumpăr)', () => {
     it('computes pipe volumes from real diameters and aggregates per DN', () => {
         const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, []);
-        // DN50: id 54.5 → π·(0.0545/2)²·10·1000 ≈ 23.3 L ; DN100: id 107.1 → π·(0.1071/2)²·5·1000 ≈ 45.0 L
         expect(p.pipeVolumeL).toBeGreaterThan(60);
         expect(p.pipeLines.length).toBe(2);
         const dn50 = p.pipeLines.find(l => l.size === 'DN50')!;
@@ -23,32 +23,26 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         expect(dn50.weightKg).toBeGreaterThan(30); // ~4.08 kg/m × 10 m
     });
 
-    it('applies fittings allowance (8% explicit) and margin, then rounds up to 10 L canisters', () => {
-        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], 8);
-        expect(p.fittingsAllowancePercent).toBe(8);
-        expect(p.fittingsAllowanceL).toBeCloseTo(p.pipeVolumeL * 0.08, 1);
-        // fără marjă: raw = pipe + 8%
-        expect(p.rawTotalL).toBeCloseTo(p.pipeVolumeL * 1.08, 1);
-        expect(p.totalGlycolL).toBe(p.rawTotalL > 0 ? Math.ceil(p.rawTotalL / 10) * 10 : 0);
-        expect(p.canisters10L).toBe(p.totalGlycolL / 10);
-        expect(p.totalGlycolL % 10).toBe(0);
+    it('fitting volume is COMPUTED from real counts (DN-dependent), not a % of pipe', () => {
+        const fittings = [
+            { id: 'f1', type: 'elbow_90_std', size: 'DN50', quantity: 4 },
+            { id: 'f2', type: 'tee_branch', size: 'DN100', quantity: 2 },
+        ];
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, fittings);
+
+        const d50 = 54.5 / 1000; // ID real DN50 (oțel ușoară)
+        const d100 = 107.1 / 1000;
+        const expected = 4 * (Math.PI / 4) * d50 * d50 * (FITTING_DIAMETER_MULTIPLIERS['elbow_90_std'] * d50) * 1000
+            + 2 * (Math.PI / 4) * d100 * d100 * (FITTING_DIAMETER_MULTIPLIERS['tee_branch'] * d100) * 1000;
+
+        expect(p.fittingsVolumeL).toBeCloseTo(expected, 4);
+        expect(p.fittingsTotalCount).toBe(6);
+        // Fără marjă: raw = pipe + fittings + equip
+        expect(p.rawTotalL).toBeCloseTo(p.pipeVolumeL + p.fittingsVolumeL, 1);
+        expect(p.fittingsVolumeL).toBeLessThan(p.pipeVolumeL * 0.3); // sensibil, nu exagerat
     });
 
-    it('margin increases quantity and is included in canister count', () => {
-        const pNo = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, []);
-        const pYes = calculatePurchaseSummary(segments, [], 30, 'ethylene', true, 10, []);
-        expect(pYes.marginPercent).toBe(10);
-        expect(pYes.marginL).toBeGreaterThan(0);
-        expect(pYes.totalGlycolL).toBeGreaterThanOrEqual(pNo.totalGlycolL);
-    });
-
-    it('equipment water content is added to the purchase volume', () => {
-        const p = calculatePurchaseSummary(segments, [{ id: 'e1', type: 'Chiller', name: 'C1', volume: 50, weight: 100 }], 30, 'ethylene', false, 0, []);
-        expect(p.equipmentVolumeL).toBe(50);
-        expect(p.rawTotalL).toBeCloseTo((p.pipeVolumeL + p.fittingsAllowanceL) + 50, 1);
-    });
-
-    it('aggregates fitting items by type+DN for the buy list', () => {
+    it('aggregates fitting items by type+DN for the buy list (duplicates merged)', () => {
         const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [
             { id: 'f1', type: 'elbow_90_std', size: 'DN50', quantity: 4 },
             { id: 'f2', type: 'elbow_90_std', size: 'DN50', quantity: 2 },
@@ -58,6 +52,25 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         expect(elbows.quantity).toBe(6);
         const valve = p.fittingItems.find(f => f.type === 'valve_ball')!;
         expect(valve.quantity).toBe(1);
+        expect(p.fittingsTotalCount).toBe(7);
+    });
+
+    it('margin is user-configurable and applied AFTER fittings; rounds up to 10 L canisters', () => {
+        const fittings = [{ id: 'f1', type: 'valve_ball', size: 'DN50', quantity: 2 }];
+        const pNo = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, fittings);
+        const pYes = calculatePurchaseSummary(segments, [], 30, 'ethylene', true, 10, fittings);
+
+        expect(pYes.marginPercent).toBe(10);
+        expect(pYes.marginL).toBeCloseTo(pYes.rawTotalL * 0.1 / 1.1, 1);
+        expect(pYes.totalGlycolL).toBeGreaterThanOrEqual(pNo.totalGlycolL);
+        expect(pYes.totalGlycolL % 10).toBe(0);
+        expect(pYes.canisters10L).toBe(pYes.totalGlycolL / 10);
+    });
+
+    it('equipment water content is added to the purchase volume', () => {
+        const p = calculatePurchaseSummary(segments, [{ id: 'e1', type: 'Chiller', name: 'C1', volume: 50, weight: 100 }], 30, 'ethylene', false, 0, []);
+        expect(p.equipmentVolumeL).toBe(50);
+        expect(p.rawTotalL).toBeCloseTo(p.pipeVolumeL + 50, 1);
     });
 
     it('fluid weight uses the real glycol density for the selected type', () => {
@@ -71,31 +84,32 @@ describe('Purchase summary (cât trebuie să cumpăr)', () => {
         expect(p.totalGlycolL).toBe(0);
     });
 
-    it('REAL scenario: equipment-heavy system (2×2000L chillers + 5000L vessel) — allowance is ONLY on pipe volume', () => {
-        // 10,000 L sistem "înainte": 9000 L echipamente + 1000 L țeavă
+    it('REAL scenario: equipment-heavy system — fittings from counts, small impact', () => {
         const equipment = [
             { id: 'c1', type: 'Chiller', name: 'Chiller 1', volume: 2000, weight: 4500 },
             { id: 'c2', type: 'Chiller', name: 'Chiller 2', volume: 2000, weight: 4500 },
             { id: 'v1', type: 'Puffer / Rezervor Tampon', name: 'Vas 5000L', volume: 5000, weight: 800 },
         ];
-        const pipe: PipeSegment[] = [{ id: 'p1', material: 'steel_light', standard: 'EN 10255', size: 'DN100', length: 20 }];
-        // țeavă DN100: id 107.1 → π·(0.1071/2)²·20·1000 ≈ 180 L — ajustăm lungimea ca să iasă ~1000 L
-        // DN250: id 254.5? folosim DN250 steel_light...
-        const bigPipe: PipeSegment[] = [{ id: 'p1', material: 'steel_light', standard: 'EN 10255', size: 'DN250', length: 50 }];
-        const p = calculatePurchaseSummary(bigPipe, equipment, 30, 'ethylene', false, 0, [], 8);
-
-        // Verificare: allowance-ul se aplică DOAR pe volumul de țeavă
-        expect(p.fittingsAllowancePercent).toBe(8);
-        expect(p.fittingsAllowanceL).toBeCloseTo(p.pipeVolumeL * 0.08, 1);
-        // Impactul pe tot sistemul e mic: allowance = 8% × (țeavă / sistem total)
-        const totalImpactPct = p.fittingsAllowanceL / (p.pipeVolumeL + p.equipmentVolumeL) * 100;
-        expect(totalImpactPct).toBeLessThan(3); // sub 3% din totalul sistemului
+        const bigPipe: PipeSegment[] = [{ id: 'p1', material: 'gf_coolfit_4_0', standard: 'GF 4.0', size: 'd160', length: 50 }];
+        const fittings = [
+            { id: 'f1', type: 'elbow_90_std', size: 'd160', quantity: 6 },
+            { id: 'f2', type: 'valve_ball', size: 'd160', quantity: 2 },
+        ];
+        const p = calculatePurchaseSummary(bigPipe, equipment, 30, 'ethylene', false, 0, fittings);
+        expect(Number.isFinite(p.totalGlycolL)).toBe(true);
+        expect(p.pipeVolumeL).toBeGreaterThan(700); // d160 × 50 m ≈ 780 L
+        // 6 coturi + 2 vane pe d160 — volumul lor e mic față de sistemul de ~10.000 L
+        expect(p.fittingsVolumeL).toBeLessThan(p.pipeVolumeL * 0.3);
+        expect(p.totalGlycolL).toBeGreaterThan(9000);
     });
 
-    it('allowance is clamped to 0–15%', () => {
-        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], 150);
-        expect(p.fittingsAllowancePercent).toBe(15);
-        const p2 = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, [], -3);
-        expect(p2.fittingsAllowancePercent).toBe(0);
+    it('fittings on unknown sizes do not produce NaN (safe fallback)', () => {
+        const fittings = [
+            { id: 'f1', type: 'elbow_90_std', size: 'DX99', quantity: 2 },
+            { id: 'f2', type: 'elbow_90_std', size: 'DN50', quantity: 1 },
+        ];
+        const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, fittings);
+        expect(Number.isFinite(p.fittingsVolumeL)).toBe(true);
+        expect(p.fittingsTotalCount).toBe(3);
     });
 });

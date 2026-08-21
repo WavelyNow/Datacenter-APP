@@ -15,13 +15,16 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
 
     await beginSection(ctx, 'RAPORT DE COMANDA');
 
-    // Nume proiect
+    // Nume proiect (trunchiat cu grija — fără depășire)
     const projectName = sanitizePdfText(pd.projectName || 'Proiect');
-    currentPage.drawText(projectName, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
+    const maxNameW = colW - 20;
+    let name = projectName;
+    while (fontBold.widthOfTextAtSize(name, 19) > maxNameW && name.length > 6) name = name.slice(0, -1);
+    if (name !== projectName) name += '...';
+    currentPage.drawText(name, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
     ctx.currentY -= 26;
 
     // Subtitlu
-    const fluidName = data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura';
     currentPage.drawText(
         `Site datacenter  ·  ${sanitizePdfText(pd.location || '-')}  ·  ${sanitizePdfText(pd.date || '-')}`,
         { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight }
@@ -51,15 +54,14 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
     ]);
 
     await drawGroup('Fluid de lucru', [
-        ['Tip fluid', fluidName],
+        ['Tip fluid', data.fluidType === 'ethylene' ? 'Etilen Glicol' : data.fluidType === 'propylene' ? 'Propilen Glicol' : 'Apa pura'],
         ['Concentratie', `${data.glycolPercentage} % vol`],
-        ['Marja siguranta', data.safetyMargin ? `${data.safetyMarginPercentage ?? 5} %` : '0 %'],
-        ['Pierderi fittinguri (din volum teava)', `${Math.min(15, data.fittingsAllowancePercent ?? 5)} %`],
+        ['Marja de siguranta (configurata de utilizator)', data.safetyMargin ? `${data.safetyMarginPercentage ?? 5} %` : '0 %'],
     ]);
 
     await ctx.checkSpace(30);
     currentPage.drawText(
-        'Cantitatile de mai jos (teava + glicol) sunt calculate automat din proiect, cu pierderile prin fittinguri si marja de siguranta.',
+        'Cantitatile sunt calculate automat: volum teava di interior real + volum fittinguri din numarul introdus + apa echipamente, apoi marja de siguranta.',
         { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
     );
     ctx.currentY -= 18;

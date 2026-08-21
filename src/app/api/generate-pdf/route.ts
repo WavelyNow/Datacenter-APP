@@ -61,10 +61,6 @@ export async function POST(req: NextRequest) {
             data.glycolPercentage = 0;
         }
         data.glycolPercentage = Math.max(0, Math.min(100, data.glycolPercentage));
-        if (typeof data.fittingsAllowancePercent !== 'number' || !isFinite(data.fittingsAllowancePercent)) {
-            data.fittingsAllowancePercent = 5;
-        }
-        data.fittingsAllowancePercent = Math.max(0, Math.min(15, data.fittingsAllowancePercent));
         if (typeof data.safetyMarginPercentage !== 'number' || !isFinite(data.safetyMarginPercentage)) {
             data.safetyMarginPercentage = 5;
         }

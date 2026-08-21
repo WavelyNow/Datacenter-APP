@@ -5,7 +5,8 @@ import { beginSection } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
 
 /**
- * PAGINA 2 — CANTITATE TEAVA
+ * PAGINA 2 — CANTITATE TEAVA & FITTINGURI
+ * (ce intra in lucrare — teava pe DN + fittingurile cu cantitati)
  */
 export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
     const { width, theme, fontBold, fontRegular, currentPage } = ctx;
@@ -19,8 +20,7 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         (data.fluidType as 'ethylene' | 'propylene' | 'water') || 'ethylene',
         data.safetyMargin,
         data.safetyMarginPercentage ?? 5,
-        data.fittingItems ?? [],
-        data.fittingsAllowancePercent ?? 5
+        data.fittingItems ?? []
     );
 
     await beginSection(ctx, 'CANTITATE DE TEAVA');
@@ -31,34 +31,81 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         return;
     }
 
+    // Tabel teava, cu randul TOTAL evidentiat (fill)
+    const rows = purchase.pipeLines.map(l => [
+        l.size, l.label, l.lengthM.toFixed(1), l.liters.toFixed(1), l.weightKg.toFixed(1),
+    ]).concat([
+        ['TOTAL', `${purchase.pipeLines.length} dim.`, purchase.pipeTotalLengthM.toFixed(1), purchase.pipeVolumeL.toFixed(1), purchase.pipeTotalWeightKg.toFixed(1)],
+    ]);
     await drawTable(ctx, {
         x: M,
         headers: ['DN', 'Material', 'Lungime (m)', 'Volum (L)', 'Greutate (kg)'],
-        rows: purchase.pipeLines.map(l => [
-            l.size,
-            l.label,
-            l.lengthM.toFixed(1),
-            l.liters.toFixed(1),
-            l.weightKg.toFixed(1),
-        ]).concat([
-            ['TOTAL', `${purchase.pipeLines.length} dim.`, purchase.pipeTotalLengthM.toFixed(1), purchase.pipeVolumeL.toFixed(1), purchase.pipeTotalWeightKg.toFixed(1)],
-        ]),
+        rows: rows.slice(0, -1),
         colWidths: [colW * 0.12, colW * 0.4, colW * 0.16, colW * 0.16, colW * 0.16],
         rowHeight: 21,
         align: ['center', 'left', 'right', 'right', 'right'],
     });
+    await ctx.checkSpace(40);
+    // Randul TOTAL — fundal accent + bold
+    const totalRow = rows[rows.length - 1];
+    const startY = ctx.currentY;
+    const rowH = 22;
+    currentPage.drawRectangle({ x: M, y: startY - rowH, width: colW, height: rowH, color: theme.bgLight });
+    let tx = M;
+    totalRow.forEach((cell, i) => {
+        const w = [colW * 0.12, colW * 0.4, colW * 0.16, colW * 0.16, colW * 0.16][i];
+        const textW = fontBold.widthOfTextAtSize(cell, 9);
+        const isNum = i >= 2;
+        const cx = isNum ? tx + w - textW - 6 : tx + 6;
+        currentPage.drawText(sanitizeText(cell), { x: cx, y: startY - rowH / 2 - 4.5, size: 9, font: fontBold, color: theme.primary });
+        tx += w;
+    });
+    currentPage.drawLine({ start: { x: M, y: startY - rowH }, end: { x: M + colW, y: startY - rowH }, thickness: 0.6, color: theme.border });
+    ctx.currentY = startY - rowH - 4;
 
-    await ctx.checkSpace(60);
+    // Fittinguri (dacă există) — cantități trecute de utilizator
+    if (purchase.fittingItems.length > 0) {
+        await ctx.checkSpace(70);
+        currentPage.drawText('FITTINGURI (CANTITATI INTRODUSE)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 15;
+        await drawTable(ctx, {
+            x: M,
+            headers: ['DN', 'Tip', 'Bucati'],
+            rows: purchase.fittingItems.map(f => [f.size, f.type.replace(/_/g, ' '), `${f.quantity}`]),
+            colWidths: [colW * 0.15, colW * 0.55, colW * 0.3],
+            rowHeight: 21,
+            align: ['center', 'left', 'right'],
+        });
+        ctx.currentY -= 8;
+        await ctx.checkSpace(30);
+        currentPage.drawText(
+            `Volumul acestor fittinguri (calculate din diametrul real): +${purchase.fittingsVolumeL.toFixed(1)} L`,
+            { x: M, y: ctx.currentY, size: 9, font: fontBold, color: theme.text }
+        );
+        ctx.currentY -= 16;
+    } else {
+        await ctx.checkSpace(30);
+        currentPage.drawText(
+            'Sugestie: treceti coturile/teurile/vanele in tabelul de teava (coloana Fittinguri) — volumul lor se calculeaza automat.',
+            { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
+        );
+        ctx.currentY -= 16;
+    }
+
+    await ctx.checkSpace(30);
     if (purchase.equipmentVolumeL > 0) {
         currentPage.drawText(`Volum apa echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`, {
             x: M, y: ctx.currentY, size: 10, font: fontBold, color: theme.text,
         });
-        ctx.currentY -= 16;
+        ctx.currentY -= 14;
     }
-
     currentPage.drawText(
-        `Volumul tevii este calculat din diametrul INTERIOR real (standardele verificate). Pierderi fittinguri: +${purchase.fittingsAllowancePercent}% din acest volum (vezi pagina urmatoare).`,
-        { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
+        'Volumul tevii este calculat din diametrul INTERIOR real (standardele verificate).',
+        { x: M, y: ctx.currentY, size: 8, font: fontRegular, color: theme.textLight }
     );
-    ctx.currentY -= 18;
+    ctx.currentY -= 14;
+}
+
+function sanitizeText(t: string): string {
+    return t;
 }
