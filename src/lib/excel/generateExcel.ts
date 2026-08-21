@@ -8,6 +8,8 @@ interface ExcelExportData {
     equipmentList: EquipmentItem[];
     fluidType: string;
     glycolPercentage: number;
+    safetyMargin?: boolean;
+    safetyMarginPercentage?: number;
     supportConfig: SupportConfig;
     branding: {
         primaryColor: string;
@@ -112,10 +114,11 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         cellUnit.alignment = { vertical: 'bottom', horizontal: 'left' };
     };
 
-    // Calc Volumes
+    // Calc Volumes — marja REALĂ din proiect (nu 5% hardcodat)
     const pipesVolume = data.segments.reduce((sum, seg) => sum + (seg ? (calculatePipeVolume(seg) || 0) : 0), 0);
     const equipmentVolume = data.equipmentList.reduce((sum, item) => sum + (item.volume || 0), 0);
-    const totalVolumeGross = (pipesVolume + equipmentVolume) * 1.05;
+    const marginPct = data.safetyMargin ? (data.safetyMarginPercentage ?? 5) : 0;
+    const totalVolumeGross = (pipesVolume + equipmentVolume) * (1 + marginPct / 100);
     const glycol = totalVolumeGross * (data.glycolPercentage / 100);
 
     // Row 7: Metrics Row 1

@@ -12,7 +12,7 @@ import { PipeSegment, FluidType } from '../types';
 
 // Dynamic viscosity (Pa·s) at 20°C for different glycol concentrations (VOLUME %)
 // Format: [percentage, ethylene viscosity, propylene viscosity]
-// Source: ASHRAE Handbook—Fundamentals Ch.31 / Dow Fluid Tables (adjustments per audit)
+// Source: ASHRAE Handbook—Fundamentals Ch.31 / Dow Fluid Tables (values through 100%)
 const VISCOSITY_DATA: [number, number, number][] = [
     [0, 0.00100, 0.00100],  // Pure water
     [10, 0.00135, 0.00155],
@@ -21,6 +21,8 @@ const VISCOSITY_DATA: [number, number, number][] = [
     [40, 0.00320, 0.00470],
     [50, 0.00440, 0.00820],
     [60, 0.00600, 0.01600],
+    [80, 0.00790, 0.02300],
+    [100, 0.01800, 0.05200],
 ];
 
 // Density (kg/m³) at 20°C (VOLUME %) — aligned with common.ts getFluidDensity (kg/L × 1000)
@@ -32,6 +34,8 @@ const DENSITY_DATA: [number, number, number][] = [
     [40, 1051, 1032],
     [50, 1065, 1041],
     [60, 1077, 1050],
+    [80, 1098, 1063],
+    [100, 1113, 1036],
 ];
 
 // Pipe roughness (mm) by material type
@@ -54,7 +58,7 @@ const PIPE_ROUGHNESS: Record<string, number> = {
  * Linear interpolation for fluid properties
  */
 function interpolate(data: [number, number, number][], percentage: number, fluidIndex: 1 | 2): number {
-    const p = Math.max(0, Math.min(60, percentage));
+    const p = Math.max(0, Math.min(100, percentage));
 
     for (let i = 0; i < data.length - 1; i++) {
         const [p1, ...values1] = data[i];

@@ -8,21 +8,23 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { PipeSegment } from '@/lib/types';
+import { PipeSegment, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { Activity } from 'lucide-react';
 
 interface PressureDropChartProps {
     segments: PipeSegment[];
     glycolPercentage: number;
+    fluidType?: FluidType;
 }
 
-export function PressureDropChart({ segments, glycolPercentage }: PressureDropChartProps) {
+export function PressureDropChart({ segments, glycolPercentage, fluidType = 'ethylene' }: PressureDropChartProps) {
     const data = useMemo(() => {
         let cumulativeLength = 0;
         let cumulativePressure = 0;
-        const density = 1000 + (glycolPercentage * 5);
+        const props = getFluidProperties(fluidType, glycolPercentage);
         const points = [];
 
         for (let i = 0; i < segments.length; i++) {
@@ -36,8 +38,8 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
                 segment.flowRate || 0,
                 id_mm,
                 0.045,
-                density,
-                0.000001
+                props.densityKgM3,
+                props.kinematicViscosityM2S
             );
 
             const segmentPressureDrop = hydraulics.pressureDropKpa * segment.length;
@@ -60,7 +62,7 @@ export function PressureDropChart({ segments, glycolPercentage }: PressureDropCh
             { name: 'Start', length: 0, pressure: 0, velocity: 0, segmentName: 'Source', segmentDrop: 0 },
             ...points
         ];
-    }, [segments, glycolPercentage]);
+    }, [segments, glycolPercentage, fluidType]);
 
     if (segments.length === 0) return null;
 

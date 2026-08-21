@@ -48,6 +48,7 @@ const PipeRow = React.memo(({
     index,
     viewMode,
     glycolPercentage,
+    fluidType,
     updateSegment,
     duplicateSegment,
     removeSegment,
@@ -60,6 +61,7 @@ const PipeRow = React.memo(({
     index: number;
     viewMode: 'config' | 'hydraulics';
     glycolPercentage: number;
+    fluidType: FluidType;
     updateSegment: (id: string, updates: Partial<PipeSegment>) => void;
     duplicateSegment: (id: string) => void;
     removeSegment: (id: string) => void;
@@ -72,15 +74,16 @@ const PipeRow = React.memo(({
     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
     const id_mm = isCustom ? (segment.customInnerDiameter || 0) : (standardData?.dimensions.find(d => d.dn === segment.size)?.id || 0);
 
-    // Hydraulics Calc
-    const density = 1000 + (glycolPercentage * 5);
+    // Hydraulics Calc — REAL fluid properties (density + viscosity per TYPE and %),
+    // nu formula liniară veche 1000 + %×5 care dădea valori diferite de restul aplicației
+    const fluidProps = getFluidProperties(fluidType, glycolPercentage);
     const hydraulics = useMemo(() => calculateHydraulics(
         segment.flowRate || 0,
         id_mm,
         0.045,
-        density,
-        0.000001
-    ), [segment.flowRate, id_mm, density]);
+        fluidProps.densityKgM3,
+        fluidProps.kinematicViscosityM2S
+    ), [segment.flowRate, id_mm, fluidProps.densityKgM3, fluidProps.kinematicViscosityM2S]);
 
     const isHighVelocity = hydraulics.velocity > 2.5;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -546,6 +549,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                                     index={virtualRow.index}
                                                     viewMode={viewMode}
                                                     glycolPercentage={glycolPercentage}
+                                                    fluidType={fluidType}
                                                     updateSegment={updateSegment}
                                                     duplicateSegment={duplicateSegment}
                                                     removeSegment={removeSegment}
@@ -637,6 +641,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                 <PressureDropChart
                                     segments={segments}
                                     glycolPercentage={glycolPercentage}
+                                    fluidType={fluidType}
                                 />
                             </div>
 
