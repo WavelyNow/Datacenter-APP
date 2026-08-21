@@ -26,6 +26,10 @@ export const mockProjectContextValue = {
     setSafetyMargin: jest.fn(),
     safetyMarginPercentage: 5,
     setSafetyMarginPercentage: jest.fn(),
+    fittingItems: [],
+    setFittingItems: jest.fn(),
+    fittingsAllowancePercent: 5,
+    setFittingsAllowancePercent: jest.fn(),
     activeTab: 'dashboard',
     setActiveTab: jest.fn(),
     supportConfig: {

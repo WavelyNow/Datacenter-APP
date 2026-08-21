@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2 } from 'lucide-react';
+import { Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2, CheckCircle2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useProject } from '@/context/ProjectContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
@@ -36,6 +36,16 @@ const HeaderBase: React.FC<HeaderProps> = ({
     const { resetProject } = useProject();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
+    // Feedback discret: "Salvat local" după autosave
+    const [savedFlash, setSavedFlash] = useState(false);
+    useEffect(() => {
+        const handler = () => {
+            setSavedFlash(true);
+            setTimeout(() => setSavedFlash(false), 1600);
+        };
+        window.addEventListener('opencode:project-saved', handler);
+        return () => window.removeEventListener('opencode:project-saved', handler);
+    }, []);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -101,6 +111,11 @@ const HeaderBase: React.FC<HeaderProps> = ({
                         <span>{projectDetails.projectNumber || 'PR-000'}</span>
                         <ChevronRight className="w-3 h-3 opacity-50" />
                         <span className="text-primary">{getTabName(activeTab)}</span>
+                        {savedFlash && (
+                            <span className="ml-1.5 inline-flex items-center gap-1 text-emerald-600 text-[9px] font-bold animate-in fade-in zoom-in-95 duration-200">
+                                <CheckCircle2 className="w-3 h-3" /> Salvat local
+                            </span>
+                        )}
                     </div>
 
                     {/* Project Title Input */}

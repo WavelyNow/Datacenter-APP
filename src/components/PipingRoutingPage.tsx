@@ -6,6 +6,7 @@ import { useTranslation } from '@/context/PreferencesContext';
 import { PipeManager } from './PipeManager';
 import { EquipmentManager } from './EquipmentManager';
 import { FluidComposition } from './FluidComposition';
+import { LiveSchematic } from './LiveSchematic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutGrid,
@@ -127,8 +128,12 @@ export function PipingRoutingPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.3 }}
-                            className="h-full"
+                            className="h-full space-y-6"
                         >
+                            {/* Schemă live — mereu vizibilă în tab-ul de segmente */}
+                            {activeTab === 'segments' && (
+                                <LiveSchematic segments={segments} equipmentList={equipmentList} />
+                            )}
                             {activeTab === 'segments' && (
                                 <PipeManager
                                     segments={segments}

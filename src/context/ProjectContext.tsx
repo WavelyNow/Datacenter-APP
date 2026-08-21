@@ -243,6 +243,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const timer = setTimeout(() => {
             try {
                 localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(state));
+                // Feedback discret pentru utilizator: "salvat local"
+                window.dispatchEvent(new CustomEvent('opencode:project-saved'));
             } catch (e) {
                 console.error('Failed to persist project:', e);
             }

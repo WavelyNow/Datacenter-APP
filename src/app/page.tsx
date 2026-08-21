@@ -8,6 +8,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Dashboard } from '@/components/Dashboard';
 import { PipeStandardsPage } from '@/components/PipeStandardsPage';
+import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
@@ -163,6 +164,13 @@ const DashboardContent = () => {
 
   // NOTE: local persistence of the project is owned by ProjectContext (debounced
   // writer to 'hydraulic_calc_project_v2'). No autosave writer is needed here.
+
+  // Dashboard "Export Comandă" -> deschide PdfWizard (eveniment decuplat)
+  React.useEffect(() => {
+    const handler = () => setIsExportOpen(true);
+    window.addEventListener('opencode:open-export', handler);
+    return () => window.removeEventListener('opencode:open-export', handler);
+  }, []);
 
   const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -389,6 +397,7 @@ const DashboardContent = () => {
           </PageTransition>
         </div>
       </main>
+      <OnboardingOverlay />
     </div>
   );
 };

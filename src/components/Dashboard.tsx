@@ -14,7 +14,10 @@ import {
     TrendingUp,
     Scale,
     Package,
-    Cloud
+    Cloud,
+    Printer,
+    Check,
+    Circle
 } from 'lucide-react';
 import { TemplateSelector } from './TemplateSelector';
 import { calculateSystemResources } from '@/lib/calc/resources';
@@ -95,8 +98,7 @@ const DashboardBase = () => {
             className="max-w-[1600px] mx-auto p-8 space-y-12"
         >
             {/* Hero Section */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">
-                <div className="relative z-10">
+            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">                <div className="relative z-10">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -226,6 +228,32 @@ const DashboardBase = () => {
             <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-8">
+                    {/* Pasul următor — strip de completare */}
+                    <motion.div variants={itemVariants} className="glass-panel p-4 rounded-2xl flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mr-1">Progres:</span>
+                        {[
+                            { done: (segments || []).length > 0, label: 'Segmente', tab: 'config' as const },
+                            { done: (equipmentList || []).length > 0, label: 'Echipamente', tab: 'config' as const },
+                            { done: (fittingItems || []).length > 0, label: 'Fittinguri', tab: 'hydraulics' as const },
+                            { done: true, label: 'Standarde verificate', tab: 'pipe-standards' as const },
+                        ].map((step) => (
+                            <button
+                                key={step.label}
+                                onClick={() => setActiveTab(step.tab)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.03] ${
+                                    step.done
+                                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                        : 'bg-muted text-muted-foreground border-border hover:text-foreground'
+                                }`}
+                            >
+                                {step.done ? <Check className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
+                                {step.label}
+                            </button>
+                        ))}
+                        <span className="ml-auto text-[11px] text-muted-foreground">
+                            {segments.length > 0 && equipmentList.length > 0 ? 'Sistem definit — vezi comanda mai jos' : 'Adaugă segmente pentru a calcula'}
+                        </span>
+                    </motion.div>
                     {/* Getting Started (Conditional) */}
                     {segments.length === 0 && equipmentList.length === 0 && (
                         <motion.div variants={itemVariants} className="glass-panel p-8 rounded-3xl border border-primary/20 relative overflow-hidden">
@@ -295,12 +323,38 @@ const DashboardBase = () => {
                             <Package className="w-24 h-24 text-primary transform rotate-12" />
                         </div>
 
-                        <div className="flex items-center gap-3 mb-6 relative z-10">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Activity className="w-5 h-5 text-primary" />
+                        <div className="flex items-center justify-between mb-6 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg">
+                                    <Activity className="w-5 h-5 text-primary" />
+                                </div>
+                                <h3 className="font-bold text-lg">Cerințe Fluid</h3>
                             </div>
-                            <h3 className="font-bold text-lg">Cerințe Fluid</h3>
+                            <button
+                                onClick={() => window.dispatchEvent(new CustomEvent('opencode:open-export'))}
+                                className="btn btn-sm btn-primary gap-1.5"
+                            >
+                                <Printer className="w-3.5 h-3.5" /> Export Comandă
+                            </button>
                         </div>
+
+                        {/* Bară vizuală stack: țeavă / echipamente / fittinguri / marjă */}
+                        {purchase.rawTotalL > 0 && (
+                            <div className="mb-5 relative z-10">
+                                <div className="flex h-3.5 w-full overflow-hidden rounded-full bg-muted">
+                                    <div className="bg-primary" style={{ width: `${(purchase.pipeVolumeL / purchase.rawTotalL) * 100}%` }} title={`Țeavă: ${purchase.pipeVolumeL.toFixed(0)} L`} />
+                                    <div className="bg-primary/70" style={{ width: `${(purchase.equipmentVolumeL / purchase.rawTotalL) * 100}%` }} title={`Echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`} />
+                                    <div className="bg-primary/45" style={{ width: `${(purchase.fittingsAllowanceL / purchase.rawTotalL) * 100}%` }} title={`Fittinguri: ${purchase.fittingsAllowanceL.toFixed(0)} L`} />
+                                    <div className="bg-primary/25" style={{ width: `${(purchase.marginL / purchase.rawTotalL) * 100}%` }} title={`Marjă: ${purchase.marginL.toFixed(0)} L`} />
+                                </div>
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-muted-foreground">
+                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" />Țeavă {purchase.pipeVolumeL.toFixed(0)} L</span>
+                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/70 inline-block" />Echipamente {purchase.equipmentVolumeL.toFixed(0)} L</span>
+                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/45 inline-block" />Fittinguri {purchase.fittingsAllowanceL.toFixed(0)} L</span>
+                                    <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/25 inline-block" />Marjă {purchase.marginL.toFixed(0)} L</span>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
 
