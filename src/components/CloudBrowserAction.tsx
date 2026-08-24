@@ -46,6 +46,9 @@ export const CloudBrowserAction = () => {
         }
     }, [isOpen]);
 
+    // Cloud neconfigurat (env lipsește) → ascundem butoanele; fără toasts de eroare la fiecare click
+    if (!supabase) return null;
+
     const handleSave = async () => {
         setSaving(true);
         try {

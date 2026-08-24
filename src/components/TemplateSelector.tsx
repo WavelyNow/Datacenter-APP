@@ -20,7 +20,10 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onClose }) => {
-    const { projectDetails, setProjectDetails, setSegments, setEquipmentList, setGlycolPercentage, setFluidType } = useProject();
+    const {
+        projectDetails, setProjectDetails, setSegments, setEquipmentList,
+        setGlycolPercentage, setFluidType, setFittingItems, setBoqItems
+    } = useProject();
     const { t } = useTranslation();
     const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +40,14 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
 
         // Apply template data - merge with existing project details
         if (selectedTemplate.projectDetails) {
-            setProjectDetails({ ...projectDetails, ...selectedTemplate.projectDetails });
+            setProjectDetails({
+                ...projectDetails,
+                ...selectedTemplate.projectDetails,
+                date: new Date().toISOString().split('T')[0], // data proiectului = ziua aplicarii
+            });
         }
 
-        // Generate fresh IDs for segments and equipment
+        // Generate fresh IDs for segments, equipment and fittings
         const segmentsWithNewIds = selectedTemplate.segments.map(seg => ({
             ...seg,
             id: `seg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -51,8 +58,15 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ isOpen, onCl
             id: `eq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         }));
 
+        const fittingsWithNewIds = (selectedTemplate.fittingItems ?? []).map(f => ({
+            ...f,
+            id: `tpl-fit-${Math.random().toString(36).substr(2, 9)}`
+        }));
+
         setSegments(segmentsWithNewIds);
         setEquipmentList(equipmentWithNewIds);
+        setFittingItems(fittingsWithNewIds);
+        setBoqItems([]); // lista de cumpărat se recalculeaza din segmente+echipamente+fittinguri
         setGlycolPercentage(selectedTemplate.glycolPercentage);
         setFluidType(selectedTemplate.fluidType);
 

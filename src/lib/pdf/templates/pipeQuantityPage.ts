@@ -3,7 +3,18 @@ import { PDFContext } from './SectionGenerator';
 import { drawTable } from './tableDrawer';
 import { beginSection } from './common';
 import { calculatePurchaseSummary } from '../../calculations/purchase';
+import { PIPE_STANDARDS } from '../../pipeStandards';
 import { sanitizePdfText } from '../utils';
+
+/** ID interior real (mm) pentru desenul schemei — cauta in toate standardele. */
+function resolveIdForPrint(size: string): number {
+    for (const std of Object.values(PIPE_STANDARDS)) {
+        const dim = std.dimensions.find(d => d.dn === size);
+        if (dim && dim.id) return dim.id;
+    }
+    const num = parseInt(size.replace(/\D+/g, ''), 10);
+    return num > 0 ? Math.max(10, num - 6) : 20;
+}
 
 /**
  * PAGINA 2 — CANTITATE TEAVA & FITTINGURI
@@ -91,6 +102,45 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
             { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
         );
         ctx.currentY -= 16;
+    }
+
+    // ---------- SCHEMA SISTEM (desenata live din segmente) ----------
+    if (purchase.pipeLines.length > 0) {
+        await ctx.checkSpace(110);
+        currentPage.drawText('SCHEMA SISTEM', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentY -= 14;
+
+        const schH = 54;
+        const schY = ctx.currentY - schH;
+        const schX0 = M;
+        const schX1 = M + colW;
+        const scaleLen = colW / Math.max(purchase.pipeTotalLengthM, 1);
+
+        // linia de baza
+        currentPage.drawLine({ start: { x: schX0, y: schY }, end: { x: schX1, y: schY }, thickness: 0.4, color: theme.border });
+
+        let cx = schX0;
+        purchase.pipeLines.forEach((l) => {
+            const idMm = resolveIdForPrint(l.size);
+            const thickness = Math.max(1.5, Math.min(8, idMm / 25));
+            const w = Math.max(14, l.lengthM * scaleLen);
+            const segX1 = Math.min(cx + w, schX1 - 1);
+
+            currentPage.drawLine({
+                start: { x: cx, y: schY }, end: { x: segX1, y: schY },
+                thickness, color: theme.primary,
+            });
+            // Eticheta DN deasupra, lungimea dedesubt
+            currentPage.drawText(l.size + (w > 70 ? ` · ${l.lengthM.toFixed(1)} m` : ''), {
+                x: cx + (segX1 - cx) / 2 - fontRegular.widthOfTextAtSize(l.size, 7.5) / 2,
+                y: schY + thickness / 2 + 7, size: 7.5, font: fontBold, color: theme.text,
+            });
+            // nod intre segmente
+            currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
+            cx = segX1;
+        });
+        currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
+        ctx.currentY = schY - 18;
     }
 
     await ctx.checkSpace(30);

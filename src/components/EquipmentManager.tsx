@@ -308,6 +308,10 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
         return equipmentList.reduce((acc, item) => acc + (item.volume || 0), 0);
     }, [equipmentList]);
 
+    const totalWeightKg = useMemo(() => {
+        return equipmentList.reduce((acc, item) => acc + (item.weight || 0) + ((item.volume || 0) * fluidDensityKgL), 0);
+    }, [equipmentList, fluidDensityKgL]);
+
     const openDetailModal = (item: EquipmentItem) => {
         setSelectedEquipment(item);
     };
@@ -463,6 +467,20 @@ export const EquipmentManager: React.FC<EquipmentManagerProps> = ({
                         <div className="flex items-baseline gap-2">
                             <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">{t('equipmentManager.total')}</span>
                             <span className="text-2xl font-bold text-foreground font-mono">{totalVolume.toFixed(2)} <span className="text-base text-muted-foreground">L</span></span>
+                        </div>
+                    </div>
+                )}
+                {viewMode === 'weights' && equipmentList.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                            <Info className="w-3.5 h-3.5" />
+                            <span>Greutate echipamente + fluid (estimata)</span>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">{t('equipmentManager.total')}</span>
+                            <span className="text-2xl font-bold text-foreground font-mono">
+                                {totalWeightKg.toFixed(0)} <span className="text-base text-muted-foreground">kg</span>
+                            </span>
                         </div>
                     </div>
                 )}

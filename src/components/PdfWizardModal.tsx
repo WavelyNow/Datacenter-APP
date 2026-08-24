@@ -38,19 +38,13 @@ interface PdfWizardModalProps {
     };
 }
 
-type Preset = 'basic' | 'standard' | 'custom' | 'excel';
+type Preset = 'basic' | 'custom' | 'excel';
 
 const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
     basic: {
         name: 'Raport Comanda',
         desc: 'Site + teava + lista de cumparat (recomandat).',
         icon: Package,
-        options: {}
-    },
-    standard: {
-        name: 'Raport Comanda + Rezumat Hugraulica',
-        desc: 'Raportul de comanda cu detaliile hidraulice incluse.',
-        icon: Wrench,
         options: {}
     },
     excel: {

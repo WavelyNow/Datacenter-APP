@@ -3,7 +3,7 @@
  * Pre-configured project setups for common datacenter scenarios
  */
 
-import { PipeSegment, EquipmentItem, ProjectDetails } from '../types';
+import { PipeSegment, EquipmentItem, ProjectDetails, FittingItem } from '../types';
 
 export interface ProjectTemplate {
     id: string;
@@ -19,6 +19,7 @@ export interface ProjectTemplate {
     projectDetails: Partial<ProjectDetails>;
     segments: PipeSegment[];
     equipment: EquipmentItem[];
+    fittingItems: FittingItem[];
     glycolPercentage: number;
     fluidType: 'ethylene' | 'propylene' | 'water';
 }
@@ -45,6 +46,12 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             projectName: 'Small Datacenter Project',
             projectNumber: `DC-SM-${new Date().getFullYear()}`,
         },
+    fittingItems: [
+        { id: 'tpl-e1', type: 'elbow_90_std', size: 'DN25', quantity: 6 },
+        { id: 'tpl-e2', type: 'elbow_90_std', size: 'DN40', quantity: 4 },
+        { id: 'tpl-e3', type: 'tee_branch', size: 'DN25', quantity: 2 },
+        { id: 'tpl-v1', type: 'valve_ball', size: 'DN40', quantity: 2 },
+    ],
         glycolPercentage: 30,
         fluidType: 'ethylene',
         segments: [
@@ -150,12 +157,19 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             projectName: 'Medium Datacenter Project',
             projectNumber: `DC-MD-${new Date().getFullYear()}`,
         },
+    fittingItems: [
+        { id: 'tpl-e1', type: 'elbow_90_std', size: 'DN50', quantity: 8 },
+        { id: 'tpl-e2', type: 'elbow_90_std', size: 'DN80', quantity: 6 },
+        { id: 'tpl-e3', type: 'tee_branch', size: 'DN50', quantity: 4 },
+        { id: 'tpl-e4', type: 'tee_branch', size: 'DN80', quantity: 2 },
+        { id: 'tpl-v1', type: 'valve_ball', size: 'DN80', quantity: 4 },
+    ],
         glycolPercentage: 35,
         fluidType: 'ethylene',
         segments: [
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN150',
                 length: 30,
@@ -279,12 +293,19 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             projectName: 'Enterprise Datacenter Project',
             projectNumber: `DC-ENT-${new Date().getFullYear()}`,
         },
+    fittingItems: [
+        { id: 'tpl-e1', type: 'elbow_90_std', size: 'DN100', quantity: 10 },
+        { id: 'tpl-e2', type: 'elbow_90_std', size: 'DN150', quantity: 8 },
+        { id: 'tpl-e3', type: 'tee_branch', size: 'DN100', quantity: 6 },
+        { id: 'tpl-e4', type: 'tee_branch', size: 'DN150', quantity: 4 },
+        { id: 'tpl-v1', type: 'valve_ball', size: 'DN150', quantity: 6 },
+    ],
         glycolPercentage: 40,
         fluidType: 'propylene',  // Food-grade for heat recovery
         segments: [
             {
                 id: genId(),
-                material: 'steel_light',
+                material: 'steel_medium',
                 standard: 'EN 10255',
                 size: 'DN200',
                 length: 50,
@@ -429,6 +450,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
             projectName: 'New Project',
             projectNumber: `PROJ-${new Date().getFullYear()}-001`,
         },
+    fittingItems: [],
         glycolPercentage: 30,
         fluidType: 'ethylene',
         segments: [],

@@ -112,7 +112,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     icon: <Cuboid className="w-4 h-4 hover:text-primary" />,
                     category: 'navigation', // Treat as nav to item
                     action: () => {
-                        setActiveTab('boq' as TabId);
+                        setActiveTab('config' as TabId);
                         setHighlightedItemId(eq.id); // Context highlight
                     }
                 });
@@ -134,7 +134,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     icon: <Package className="w-4 h-4 hover:text-primary" />,
                     category: 'navigation',
                     action: () => {
-                        setActiveTab('boq' as TabId);
+                        setActiveTab('config' as TabId);
                         setHighlightedItemId(seg.id);
                     }
                 });

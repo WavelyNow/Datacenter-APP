@@ -9,7 +9,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types';
-import { calculateHydraulics } from '@/lib/calc/hydraulics';
+import { calculateHydraulics, suggestPipeSize } from '@/lib/calc/hydraulics';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
@@ -144,6 +144,29 @@ const PipeRow = React.memo(({
                                     ))}
                                 </select>
                             )}
+                            {/* Sugestie DN din debit — scopul principal al aplicatiei */}
+                            {(() => {
+                                const flow = segment.flowRate || 0;
+                                if (flow <= 0 || !standardData) return null;
+                                const dims = standardData.dimensions ?? [];
+                                const sugg = suggestPipeSize(flow, dims, 2.5, fluidProps.kinematicViscosityM2S, fluidProps.densityKgM3);
+                                if (!sugg) return null;
+                                return (
+                                    <div className="mt-1 flex items-center gap-2 text-xs">
+                                        <span className={`px-2 py-0.5 rounded-full font-medium ${sugg.withinLimit ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                                            Recomandat: {sugg.size} · {sugg.velocity.toFixed(1)} m/s {!sugg.withinLimit && '(peste limita — alege mai mare)'}
+                                        </span>
+                                        {sugg.size !== segment.size && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); updateSegment(segment.id, { size: sugg.size }); }}
+                                                className="text-primary hover:underline font-medium"
+                                            >
+                                                Aplica
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
 
@@ -162,8 +185,11 @@ const PipeRow = React.memo(({
 
                     {/* Fittinguri pe această mărime (coturi / teuri / vane) */}
                     <div className="col-span-2 flex flex-col gap-1 text-xs" onClick={(e) => e.stopPropagation()}>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60" title="Bucati totale pe aceasta masura (toate segmentele DN)">
-                            {segment.size} (total pe masura) · {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60" title="Volumul acestui segment">
+                            Volum: {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
+                        </span>
+                        <span className="text-[9px] text-muted-foreground/50 -mb-0.5" title="Bucati totale pe aceasta masura (toate segmentele cu acest DN)">
+                            Fittinguri ({segment.size} — total pe masura)
                         </span>
                         {[
                             { key: 'elbow_90_std', label: 'Coturi' },

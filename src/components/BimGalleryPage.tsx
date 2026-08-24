@@ -39,6 +39,10 @@ export const BimGalleryPage = () => {
             toast.error('Doar fișiere .glb sau .gltf');
             return;
         }
+        if (file.size > 200 * 1024 * 1024) {
+            toast.error('Modelul depășește 200 MB');
+            return;
+        }
         const url = URL.createObjectURL(file);
         const name = file.name.replace(/\.(glb|gltf)$/i, '');
         const newItem: EquipmentItem = {
@@ -85,7 +89,7 @@ export const BimGalleryPage = () => {
                 return (
                     item.model.toLowerCase().includes(term) ||
                     item.description?.toLowerCase().includes(term) ||
-                    item.manufacturer.toLowerCase().includes(term)
+                    (item.manufacturer || 'Generic').toLowerCase().includes(term)
                 );
             }
             return true;

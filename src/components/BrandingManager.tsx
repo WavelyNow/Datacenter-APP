@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PDFSection, PDFSectionId, PDFAlignment } from '@/lib/types';
 import { PdfData, PdfOptions } from '@/lib/pdf/types';
+import { validateUploadFile } from '@/lib/validation';
 import { DocumentSkeleton } from '@/components/ui/Skeleton';
 
 const DEFAULT_SECTIONS: PDFSection[] = [
@@ -35,6 +36,7 @@ export const BrandingManager: React.FC = () => {
 
     // PDF Preview State
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const previewUrlRef = useRef<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
 
     const sortedSections = [...sections].sort((a, b) => a.order - b.order);
@@ -80,8 +82,9 @@ export const BrandingManager: React.FC = () => {
             if (!response.ok) throw new Error('Generation failed');
             const blob = await response.blob();
 
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
             const url = URL.createObjectURL(blob);
+            previewUrlRef.current = url;
             setPreviewUrl(url);
         } catch (error) {
             console.error('PDF Preview Error:', error);
@@ -95,7 +98,8 @@ export const BrandingManager: React.FC = () => {
         generatePreview();
         // Cleanup
         return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+            previewUrlRef.current = null;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -103,7 +107,8 @@ export const BrandingManager: React.FC = () => {
     const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        if (file.size > 2 * 1024 * 1024) { alert('Logo-ul depășește 2 MB — alegeți un fișier mai mic.'); return; }
+        const err = validateUploadFile(file, 2);
+        if (err) { alert(err); return; }
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target?.result as string;

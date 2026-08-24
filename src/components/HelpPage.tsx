@@ -190,7 +190,7 @@ export const HelpPage = () => {
                             <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">Pierderi de Sarcină (Pa/m)</p>
                             <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
                                 <p className="text-[10px] leading-relaxed italic">
-                                    &quot;Dimensionarea optimă țintește o pierdere liniară de **150 - 250 Pa/m** pentru eficiență energetică maximă.&quot;
+                                    &quot;Dimensionarea optimă țintește o pierdere liniară de 150 - 250 Pa/m pentru eficiență energetică maximă.&quot;
                                 </p>
                             </div>
                         </div>
@@ -204,7 +204,7 @@ export const HelpPage = () => {
                                 </div>
                                 <div className="p-2 rounded-lg bg-secondary/5 border border-secondary/10">
                                     <p className="text-[9px] font-bold text-secondary-foreground">Glicol 30%</p>
-                                    <p className="text-[10px]">1045 kg/m³</p>
+                                    <p className="text-[10px]">1038 kg/m³</p>
                                 </div>
                             </div>
                         </div>
@@ -216,9 +216,7 @@ export const HelpPage = () => {
                     <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
                         Folosește modulul de <strong>Inginerie Avansată</strong> pentru dimensionări precise în medii critice.
                     </p>
-                    <button className="w-full py-2 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:brightness-110 transition-all">
-                        Solicită Demo
-                    </button>
+                    
                 </div>
             </div>
         </div>

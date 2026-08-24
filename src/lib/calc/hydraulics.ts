@@ -90,3 +90,35 @@ export const calculateHydraulics = (
         reynoldsNumber: Math.round(Re)
     };
 };
+
+/**
+ * SUGERIE DN pentru un debit dat — funcția „aflarea diametrelor".
+ * Returnează prima mărime din standard în care viteza ≤ vMax
+ * (plus viteza rezultată). Dacă nicio mărime nu e suficientă, returnează
+ * cea mai mare (cu viteza peste limita — marcată).
+ */
+export interface PipeSizeSuggestion {
+    size: string;
+    velocity: number;
+    withinLimit: boolean;
+}
+
+export const suggestPipeSize = (
+    flowRateM3H: number,
+    dimensions: { dn: string; id: number }[],
+    vMax: number = 2.5,
+    kinematicViscosity: number = 1.004e-6,
+    fluidDensity: number = 998
+): PipeSizeSuggestion | null => {
+    if (flowRateM3H <= 0 || dimensions.length === 0) return null;
+    const sorted = [...dimensions].sort((a, b) => (a.id || 0) - (b.id || 0));
+    let fallback: PipeSizeSuggestion | null = null;
+    for (const d of sorted) {
+        if (!d.id || d.id <= 0) continue;
+        const res = calculateHydraulics(flowRateM3H, d.id, 0.045, fluidDensity, kinematicViscosity);
+        const cand: PipeSizeSuggestion = { size: d.dn, velocity: res.velocity, withinLimit: res.velocity <= vMax };
+        if (cand.withinLimit) return cand;
+        fallback = cand; // cea mai apropiata (vizibil peste limita)
+    }
+    return fallback;
+};

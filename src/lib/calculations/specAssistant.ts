@@ -70,10 +70,25 @@ export const analyzeSpecifications = (text: string): SuggestionResult => {
         const steelSeries = ['steel_light', 'steel_medium', 'steel_heavy'];
         let steel: { dn: string; id: number; od: number; thickness: number; weight: number } | null = null;
         let steelLabel = '';
+        let fallbackId = 54.5; // DN50 ID — fallback real (nu 0!) pentru DN-uri mari fara potrivire
         for (const key of steelSeries) {
             const std = PIPE_STANDARDS[key];
             const dim = std?.dimensions.find(d => d.dn === dnDetected) ?? null;
             if (dim) { steel = dim; steelLabel = std.label; break; }
+        }
+        // fallback: cauta in toate standardele cea mai apropiata dimensiune ca ID
+        if (!steel && dnDetected) {
+            const dnNum = parseInt(dnDetected.replace(/\D+/g, ''), 10) || 0;
+            let best: { id: number } | null = null;
+            let bestDiff = Infinity;
+            for (const std of Object.values(PIPE_STANDARDS)) {
+                for (const dim of std.dimensions) {
+                    if (!dim.id) continue;
+                    const diff = Math.abs(parseInt(dim.dn.replace(/\D+/g, ''), 10) - dnNum);
+                    if (diff < bestDiff) { bestDiff = diff; best = dim; }
+                }
+            }
+            if (best) fallbackId = best.id;
         }
 
         result.segments.push({
@@ -84,10 +99,9 @@ export const analyzeSpecifications = (text: string): SuggestionResult => {
             material: steel ? 'steel_light' : 'custom',
             size: dnDetected ?? 'DN50',
             length: pipeLength > 0 ? pipeLength : 10,
-            customInnerDiameter: steel ? undefined : undefined,
+            customInnerDiameter: steel ? undefined : fallbackId,
             fluid: 'Apă Glicolată',
-            standard: steel ? (steelLabel || 'EN 10255') : 'ISO 4200',
-            flowRate: undefined
+            standard: steel ? (steelLabel || 'EN 10255') : 'ISO 4200'
         });
     }
 
