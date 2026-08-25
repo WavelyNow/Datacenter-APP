@@ -9,7 +9,8 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types';
-import { calculateHydraulics, suggestPipeSize } from '@/lib/calc/hydraulics';
+import { calculateHydraulics, suggestPipeSize, calculateFlowFromLoad } from '@/lib/calc/hydraulics';
+import { calculateFittingsPressureLoss, Fitting } from '@/lib/calculations/fittings';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
@@ -78,6 +79,11 @@ const PipeRow = React.memo(({
 
     // Hydraulics Calc — REAL fluid properties (density + viscosity per TYPE and %),
     // nu formula liniară veche 1000 + %×5 care dădea valori diferite de restul aplicației
+    // Helper „debit din sarcina": kW + dT introduse inline cand debitul nu e cunoscut
+    const [loadKwDraft, setLoadKwDraft] = useState<string | number>('');
+    const [dT, setDt] = useState(7);
+
+    const hasFlow = (segment.flowRate || 0) > 0;
     const fluidProps = getFluidProperties(fluidType, glycolPercentage);
     const hydraulics = useMemo(() => calculateHydraulics(
         segment.flowRate || 0,
@@ -88,6 +94,19 @@ const PipeRow = React.memo(({
     ), [segment.flowRate, id_mm, fluidProps.densityKgM3, fluidProps.kinematicViscosityM2S]);
 
     const isHighVelocity = hydraulics.velocity > 2.5;
+
+    // Pierderi locale prin coturi/teuri/vane trecute pe aceasta masura (K x rho v^2/2)
+    const fitMap = fittings || {};
+    const hasAnyFitting = Object.values(fitMap).some(q => (q ?? 0) > 0);
+    let fittingLossKPa: ReturnType<typeof calculateFittingsPressureLoss> | null = null;
+    if (fitMap && hasAnyFitting && hasFlow && id_mm > 0) {
+        const list: Fitting[] = Object.entries(fitMap)
+            .filter(([, q]) => (q ?? 0) > 0)
+            .map(([type, quantity]) => ({ id: type, type: type as never, size: segment.size, quantity }));
+        if (list.length > 0) {
+            fittingLossKPa = calculateFittingsPressureLoss(list as Fitting[], segment.flowRate || 0, id_mm, fluidProps.densityKgM3);
+        }
+    }
 
     return (
         <motion.div
@@ -144,6 +163,48 @@ const PipeRow = React.memo(({
                                     ))}
                                 </select>
                             )}
+                            {/* Helper: nu stii debitul? Calculeaza-l din sarcina (kW / dT) */}
+                            {(segment.flowRate ?? 0) <= 0 && standardData && (
+                                <div className="mt-1 flex items-center gap-1.5 text-xs">
+                                    <span className="text-[10px] text-muted-foreground">Din sarcină:</span>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        placeholder="kW"
+                                        value={loadKwDraft || ''}
+                                        onChange={(e) => setLoadKwDraft(parseFloat(e.target.value) || '')}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-14 bg-background border border-border/50 rounded px-1 py-0.5 text-center font-mono outline-none focus:border-primary"
+                                    />
+                                    <span className="text-muted-foreground/60">/</span>
+                                    <input
+                                        type="number"
+                                        min={0.5}
+                                        max={20}
+                                        value={dT}
+                                        onChange={(e) => setDt(parseFloat(e.target.value) || 7)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        title="ΔT tur-retur (K)"
+                                        className="w-10 bg-background border border-border/50 rounded px-1 py-0.5 text-center font-mono outline-none focus:border-primary"
+                                    />
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const kw = Number(loadKwDraft);
+                                            if (kw > 0) {
+                                                const r = calculateFlowFromLoad(kw, dT, fluidType, glycolPercentage);
+                                                updateSegment(segment.id, { flowRate: Math.round(r.flowM3H * 10) / 10 });
+                                            }
+                                        }}
+                                        disabled={!loadKwDraft}
+                                        className="px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 font-medium disabled:opacity-30"
+                                        title="kW / ΔT -> m³/h, cu proprietatile reale ale glicolului"
+                                    >
+                                        → m³/h
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Sugestie DN din debit — scopul principal al aplicatiei */}
                             {(() => {
                                 const flow = segment.flowRate || 0;
@@ -278,8 +339,13 @@ const PipeRow = React.memo(({
                         <div className="text-sm font-mono text-foreground font-semibold">
                             {hydraulics.pressureDropPa} <span className="text-xs text-muted-foreground font-normal">Pa/m</span>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1 font-medium opacity-70">
-                            Total: {(hydraulics.pressureDropKpa * segment.length).toFixed(2)} kPa
+                        {fittingLossKPa && (
+                            <div className="text-xs text-muted-foreground mt-1 font-medium opacity-80" title={`K total: ${fittingLossKPa.totalKFactor.toFixed(1)}`}>
+                                Fittinguri: +{fittingLossKPa.totalPressureDropKPa.toFixed(2)} kPa
+                            </div>
+                        )}
+                        <div className="text-xs mt-1 font-medium text-primary font-bold">
+                            Total{fittingLossKPa ? ' (cu fittinguri)' : ''}: {((hydraulics.pressureDropKpa * segment.length) + (fittingLossKPa?.totalPressureDropKPa ?? 0)).toFixed(2)} kPa
                         </div>
                     </div>
                 </>
@@ -558,7 +624,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                                     <>
                                         <div className="col-span-5">Pipe Specification</div>
                                         <div className="col-span-3">Length (m)</div>
-                                        <div className="col-span-2">Details</div>
+                                        <div className="col-span-2">Fittinguri (buc) · Volum</div>
                                         <div className="col-span-1 text-right">Actions</div>
                                     </>
                                 ) : (
