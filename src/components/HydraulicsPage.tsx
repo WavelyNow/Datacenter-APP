@@ -13,7 +13,7 @@ import {
 // Import all calculator components
 import { ExpansionVesselCalculator } from './ExpansionVesselCalculator';
 
-type HydraulicTool = 'expansion' | 'thermal' | 'valve' | 'fittings' | 'pump';
+type HydraulicTool = 'flow' | 'expansion' | 'thermal' | 'valve' | 'fittings' | 'pump';
 
 interface ToolTab {
     id: HydraulicTool;
@@ -107,6 +107,7 @@ export function HydraulicsPage() {
             {/* Content Area — tool-urile raman MONTATE (ascunse) ca sa nu se piarda parametrii */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
                 {[
+                    { id: 'flow', el: <FlowAndSizeTool /> },
                     { id: 'expansion', el: <ExpansionVesselCalculator /> },
                     { id: 'thermal', el: <ThermalExpansionTool /> },
                     { id: 'valve', el: <ValveSizingTool /> },
@@ -413,9 +414,132 @@ import {
     Fitting,
     FittingType
 } from '@/lib/calculations/fittings';
+import { calculateFlowFromLoad, suggestPipeSize } from '@/lib/calc/hydraulics';
+import { getFluidProperties } from '@/lib/calculations/pressureDrop';
+import { suggestGlycolPercent } from '@/lib/calculations/glycol';
+import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { Plus, Trash2 } from 'lucide-react';
 import { useProject } from '@/context/ProjectContext';
 import { FittingItem } from '@/lib/types';
+
+
+function FlowAndSizeTool() {
+    const { fluidType, glycolPercentage, setGlycolPercentage } = useProject();
+    const [powerKw, setPowerKw] = useState(500);
+    const [deltaT, setDeltaT] = useState(8);
+    const [minTemp, setMinTemp] = useState(-25);
+    const [material, setMaterial] = useState('steel_light');
+
+    const { flowM3H, massFlowKgS } = calculateFlowFromLoad(powerKw, deltaT, fluidType, glycolPercentage);
+    const props = getFluidProperties(fluidType, glycolPercentage);
+    const std = PIPE_STANDARDS[material];
+    const dims = (std?.dimensions ?? []).map(d => ({ dn: d.dn, id: d.id }));
+    const sugg = suggestPipeSize(flowM3H, dims, 2.5, props.kinematicViscosityM2S, props.densityKgM3);
+
+    const recPct: number | null = fluidType === 'water'
+        ? 0
+        : suggestGlycolPercent(minTemp, fluidType === 'propylene' ? 'propylene' : 'ethylene');
+
+    const inputCls = "w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none";
+    const lbl = "block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1";
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Gauge className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold text-foreground">Debit din sarcina termica + DN recomandat</h2>
+                    <p className="text-sm text-muted-foreground">Q = P / (cp · ρ · ΔT) — apoi cel mai mic DN cu viteza sub limita</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Inputs */}
+                <div className="bg-muted/50 rounded-xl p-4 border border-border space-y-4">
+                    <h3 className="text-sm font-bold text-foreground mb-2">Sarcina termica</h3>
+                    <div>
+                        <label className={lbl}>Putere de racire (kW)</label>
+                        <input type="number" min={0} value={powerKw || ''} onChange={(e) => setPowerKw(parseFloat(e.target.value) || 0)} className={inputCls} />
+                    </div>
+                    <div>
+                        <label className={lbl}>ΔT tur-retur (K)</label>
+                        <input type="number" min={0.5} max={20} value={deltaT || ''} onChange={(e) => setDeltaT(parseFloat(e.target.value) || 0)} className={inputCls} />
+                        <p className="text-[10px] text-muted-foreground mt-1">Tipic CHW: 6–8 K · variabil la AI/CDU</p>
+                    </div>
+                    <div>
+                        <label className={lbl}>Material teava</label>
+                        <select value={material} onChange={(e) => setMaterial(e.target.value)} className={inputCls}>
+                            {Object.entries(PIPE_STANDARDS).map(([key, std]) => (
+                                <option key={key} value={key}>{std.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-foreground pt-2">Protectie inghet</h3>
+                    <div>
+                        <label className={lbl}>Temperatura minima de protectie (°C)</label>
+                        <input type="number" min={-50} max={5} value={minTemp} onChange={(e) => setMinTemp(parseFloat(e.target.value) || 0)} className={inputCls} />
+                    </div>
+                </div>
+
+                {/* Rezultat debit + DN */}
+                <div className="bg-card rounded-xl p-4 border border-border space-y-3">
+                    <h3 className="text-sm font-bold text-foreground">Rezultat</h3>
+                    <div className="flex justify-between py-2 border-b border-border/40">
+                        <span className="text-sm text-muted-foreground">Debit necesar</span>
+                        <span className={`font-mono font-bold text-lg ${flowM3H > 0 ? 'text-primary' : 'text-muted-foreground'}`}>{flowM3H.toFixed(1)} m³/h</span>
+                    </div>
+                    {flowM3H > 0 && (
+                        <>
+                            <div className="flex justify-between py-2 border-b border-border/40 last:border-0">
+                                <span className="text-sm text-muted-foreground">Debit masic</span>
+                                <span className="font-mono text-sm">{massFlowKgS.toFixed(2)} kg/s</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-border/40 last:border-0">
+                                <span className="text-sm text-muted-foreground">DN recomandat (v ≤ 2.5 m/s)</span>
+                                <span className="font-mono font-bold">{sugg ? sugg.size : '-'}</span>
+                            </div>
+                            {sugg && (
+                                <div className={`text-xs px-3 py-2 rounded-lg ${sugg.withinLimit ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600'}`}>
+                                    Viteza la DN recomandat: <strong>{sugg.velocity.toFixed(2)} m/s</strong>
+                                    {!sugg.withinLimit && ' — peste limita: creste DN-ul sau imparte circuitul in doua'}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Glicol recomandat */}
+                <div className="bg-card rounded-xl p-4 border border-border space-y-3">
+                    <h3 className="text-sm font-bold text-foreground">Glicol recomandat</h3>
+                    {fluidType === 'water' ? (
+                        <p className="text-xs text-muted-foreground">Seteaza un tip de glicol in proiect pentru recomandarea concentratiei.</p>
+                    ) : recPct === null ? (
+                        <p className="text-xs text-amber-600 bg-amber-500/10 p-3 rounded-lg leading-relaxed">
+                            Nici 60% glicol nu protejeaza pana la {minTemp}°C (cu marja de 3°C).
+                            Considera incalzire de sprijin sau trasare termica.
+                        </p>
+                    ) : (
+                        <>
+                            <div className="flex items-center justify-between py-2 border-b border-border/40">
+                                <span className="text-sm text-muted-foreground">Protecție până la {minTemp}°C</span>
+                                <span className="font-mono font-bold text-lg">{recPct}% vol</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">Marja practică de +3°C față de punctul de îngheț inclusă.</p>
+                            {recPct > glycolPercentage && (
+                                <button onClick={() => setGlycolPercentage(recPct)} className="btn btn-secondary btn-sm w-full">
+                                    Aplica {recPct}% în proiect
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function FittingsTool() {
     // Fittingurile sunt PARTE din proiect (persistate) — apar în listele de cumpărat

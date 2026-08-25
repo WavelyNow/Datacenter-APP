@@ -1,4 +1,7 @@
 
+import { PIPE_STANDARDS } from '../pipeStandards';
+import { getFluidProperties } from '../calculations/pressureDrop';
+
 export interface HydraulicResult {
     velocity: number; // m/s
     pressureDropPa: number; // Pa/m
@@ -122,3 +125,26 @@ export const suggestPipeSize = (
     }
     return fallback;
 };
+
+/**
+ * DEBIT din puterea termică — veriga care lipsea între sarcină (kW) și diametru.
+ * ṁ = P / (cp · ΔT);  V = ṁ / ρ  →  m³/h
+ *
+ * @param powerKw sarcina termică (kW)
+ * @param deltaT_K diferența de temperatură tur-retur (K)
+ * @param fluidType tipul fluidului (propilen/etilen/apă)
+ * @param glycolPercentage % volum glicol
+ */
+export function calculateFlowFromLoad(
+    powerKw: number,
+    deltaT_K: number,
+    fluidType: 'ethylene' | 'propylene' | 'water',
+    glycolPercentage: number
+): { flowM3H: number; massFlowKgS: number } {
+    if (powerKw <= 0 || deltaT_K <= 0) return { flowM3H: 0, massFlowKgS: 0 };
+    // Proprietăți la temperatura medie de lucru (~20°C, suficient pentru screening)
+    const props = getFluidProperties(fluidType, glycolPercentage, 20);
+    const massFlowKgS = (powerKw * 1000) / (props.specificHeatJkgK * deltaT_K);
+    const flowM3H = (massFlowKgS / props.densityKgM3) * 3600;
+    return { flowM3H, massFlowKgS };
+}
