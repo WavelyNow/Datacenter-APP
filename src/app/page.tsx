@@ -8,6 +8,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { Dashboard } from '@/components/Dashboard';
 import { PipeStandardsPage } from '@/components/PipeStandardsPage';
+import { DesignWizard } from '@/components/DesignWizard';
 import { OnboardingOverlay } from '@/components/OnboardingOverlay';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { TableSkeleton } from '@/components/ui/Skeleton';
@@ -352,6 +353,12 @@ const DashboardContent = () => {
                         <p className="text-muted-foreground">Personalizați aspectul rapoartelor generate.</p>
                       </div>
                       <BrandingManager />
+                    </div>
+                  )}
+
+                  {activeTab === 'wizard' && (
+                    <div className="h-full overflow-y-auto">
+                      <DesignWizard />
                     </div>
                   )}
 

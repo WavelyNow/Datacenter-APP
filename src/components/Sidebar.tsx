@@ -28,7 +28,8 @@ import {
     Building2,
     FileText,
     Sparkles,
-    Ruler
+    Ruler,
+    Wand2
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
@@ -126,6 +127,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
     ], [t]);
 
     const engineeringGroup = React.useMemo<MenuItem[]>(() => [
+        { id: 'wizard', label: 'Asistent Dimensionare', icon: Wand2, badge: 'NOU' },
         { id: 'config', label: 'Dimensionare Conducte', icon: Package },
         { id: 'hydraulics', label: t('sidebar.hydraulics'), icon: Wrench },
         { id: 'supports', label: t('sidebar.supports'), icon: Anchor },
