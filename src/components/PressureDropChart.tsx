@@ -11,7 +11,7 @@ import {
 import { PipeSegment, FluidType } from '@/lib/types';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
 import { calculateHydraulics } from '@/lib/calc/hydraulics';
-import { getFluidProperties } from '@/lib/calculations/pressureDrop';
+import { getFluidProperties, getRoughness } from '@/lib/calculations/pressureDrop';
 import { Activity } from 'lucide-react';
 
 interface PressureDropChartProps {

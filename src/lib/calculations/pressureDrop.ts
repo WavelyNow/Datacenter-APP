@@ -117,8 +117,25 @@ export function getFluidProperties(fluidType: FluidType, glycolPercentage: numbe
     if (fluidType === 'ethylene') specificHeatJkgK = Math.max(3300, 4186 - 11.2 * Math.min(100, Math.max(0, glycolPercentage)));
     else if (fluidType === 'propylene') specificHeatJkgK = Math.max(3100, 4186 - 14.5 * Math.min(100, Math.max(0, glycolPercentage)));
 
-    // Temperature correction: viscosity decreases with temperature (~2.5%/°C above 20°C, increases below)
-    const tempFactor = Math.max(0.5, Math.min(2.5, Math.pow(1.025, 20 - tempC)));
+    // Corecția de temperatură a vâscozității — ancore pe curbe Dow
+    // (interpolare liniară pe factor relativ la 20°C; mai fidel decât exponențialul unic)
+    let tempFactor = 1.0;
+    if (tempC !== 20) {
+        const anchors: [number, number][] = [
+            [0, 1.9], [7, 1.6], [10, 1.5], [20, 1.0], [40, 0.62], [60, 0.45], [80, 0.35],
+        ];
+        for (let i = 0; i < anchors.length - 1; i++) {
+            const [t1, f1] = anchors[i];
+            const [t2, f2] = anchors[i + 1];
+            if (tempC >= t1 && tempC <= t2) {
+                tempFactor = f1 + (f2 - f1) * ((tempC - t1) / (t2 - t1));
+                break;
+            }
+        }
+        if (tempC < 0) tempFactor = 1.9;
+        if (tempC > 80) tempFactor = 0.35;
+        tempFactor = Math.max(0.3, Math.min(2.2, tempFactor));
+    }
     const correctedViscosity = dynamicViscosityPaS * tempFactor;
 
     return {

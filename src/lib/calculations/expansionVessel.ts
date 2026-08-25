@@ -27,15 +27,19 @@ const WATER_EXPANSION: [number, number][] = [
     [100, 0.04215],
 ];
 
-// Glycol expansion multiplier (glycol expands more than water)
-const GLYCOL_EXPANSION_MULTIPLIER: Record<number, number> = {
-    0: 1.00,   // Pure water
-    10: 1.02,
-    20: 1.05,
-    30: 1.08,
-    40: 1.12,
-    50: 1.16,
-    60: 1.20,
+// Glycol expansion multiplier — cât de mult se dilată amestecul față de apă.
+// DERIVAT din densitățile publicate Dow (raport ρ(Tmin)/ρ(Tmax) amestec vs apă):
+// propilen-glicolul dilată SEMNIFICATIV mai mult decât etilenul la același %.
+// Ex. PG 30%, 4→82°C: e_amestec ≈ 4.3% vs apă 3.1% → factor ≈ 1.39.
+const GLYCOL_EXPANSION_FACTOR: Record<'ethylene' | 'propylene', [number, number][]> = {
+    'ethylene': [
+        [0, 1.00], [10, 1.03], [20, 1.08], [30, 1.15],
+        [40, 1.20], [50, 1.25], [60, 1.32],
+    ],
+    'propylene': [
+        [0, 1.00], [10, 1.06], [20, 1.14], [30, 1.32],
+        [40, 1.45], [50, 1.56], [60, 1.66],
+    ],
 };
 
 // Standard vessel sizes (liters)
@@ -105,26 +109,26 @@ function getWaterExpansion(temperature: number): number {
 }
 
 /**
- * Get glycol expansion multiplier
+ * Get glycol expansion FACTOR (amestecul dilată mai mult ca apa).
+ * Tabele SEPARATE pe tip (PG dilată semnificativ mai mult — Dow density ratios).
  */
-function getGlycolMultiplier(glycolPercentage: number): number {
+function getGlycolExpansionFactor(glycolPercentage: number, fluidType: FluidType): number {
     const p = Math.max(0, Math.min(60, glycolPercentage));
+    if (fluidType === 'water') return 1.0;
 
-    const percentages = Object.keys(GLYCOL_EXPANSION_MULTIPLIER).map(Number).sort((a, b) => a - b);
+    const table = fluidType === 'propylene' ? GLYCOL_EXPANSION_FACTOR['propylene'] : GLYCOL_EXPANSION_FACTOR['ethylene'];
 
-    for (let i = 0; i < percentages.length - 1; i++) {
-        const p1 = percentages[i];
-        const p2 = percentages[i + 1];
+    for (let i = 0; i < table.length - 1; i++) {
+        const [p1, m1] = table[i];
+        const [p2, m2] = table[i + 1];
 
         if (p >= p1 && p <= p2) {
-            const m1 = GLYCOL_EXPANSION_MULTIPLIER[p1];
-            const m2 = GLYCOL_EXPANSION_MULTIPLIER[p2];
             const ratio = (p - p1) / (p2 - p1);
             return m1 + (m2 - m1) * ratio;
         }
     }
 
-    return GLYCOL_EXPANSION_MULTIPLIER[60];
+    return table[table.length - 1][1];
 }
 
 /**
@@ -186,10 +190,10 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
     }
     const eMin = getWaterExpansion(input.minTemperature);
     const eMax = getWaterExpansion(input.maxTemperature);
-    const glycolMultiplier = getGlycolMultiplier(input.glycolPercentage);
+    const glycolFactor = getGlycolExpansionFactor(input.glycolPercentage, input.fluidType);
 
     // Net expansion from min to max temperature
-    const expansionCoefficient = (eMax - eMin) * glycolMultiplier;
+    const expansionCoefficient = (eMax - eMin) * glycolFactor;
 
     // 2. Calculate expansion volume
     const expansionVolume = input.systemVolume * expansionCoefficient;
@@ -218,14 +222,17 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
         warnings.push('Presiunea de preîncărcare este prea mică');
     }
 
-    // 5. Calculate acceptance factor (vessel utilization)
-    // f = 1 - (p0 + 1) / (pf + 1)
+    // 5. Acceptanta NETA a vasului (EN 12828 / DIN 4807):
+    //    - intre umplere si presiunea maxima vasul absoarbe: Vn·p0_abs·(1/pe_abs − 1/pf_abs)
+    //    - rezerva de apa trebuie sa incapa LA UMPLERE: Vn·(1 − p0_abs/pe_abs) >= Vv
     const p0Abs = prechargePressure + 1; // Convert to absolute
+    const peAbs = fillPressure + 1;
     const pfAbs = maxPressure + 1;
 
-    const acceptanceFactor = 1 - (p0Abs / pfAbs);
+    const netAcceptance = p0Abs * (1 / peAbs - 1 / pfAbs);
+    const reserveCapacity = 1 - p0Abs / peAbs;
 
-    if (acceptanceFactor <= 0.05) {
+    if (netAcceptance <= 0.05) {
         // Hard-fail: vessel cannot absorb expansion with these pressures.
         // Returning a small "recommended" vessel here is FALSE information.
         hardErrors.push(
@@ -241,19 +248,21 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
             maxPressure: Math.round(maxPressure * 10) / 10,
             requiredVolume: 0,
             recommendedVessel: 0,
-            acceptanceFactor: Math.round(acceptanceFactor * 100) / 100,
+            acceptanceFactor: Math.round(netAcceptance * 100) / 100,
             isValid: false,
             warnings: hardErrors
         };
     }
 
-    if (acceptanceFactor <= 0.1) {
+    if (netAcceptance <= 0.1) {
         warnings.push('Factor de acceptare prea mic - diferență insuficientă între presiuni');
     }
 
-    // 6. Calculate required vessel volume
-    // Ve = (Ve_exp + Vv) / f
-    const requiredVolume = (expansionVolume + waterReserve) / acceptanceFactor;
+    // 6. Volumul necesar = MAX din cele două constrângeri (EN 12828):
+    //    absorbția expansiunii între umplere și max + rezerva la umplere
+    const volumeForExpansion = (expansionVolume + waterReserve) / netAcceptance;
+    const volumeForReserve = waterReserve / reserveCapacity;
+    const requiredVolume = Math.max(volumeForExpansion, volumeForReserve);
 
     // 7. Find standard size
     const recommendedVessel = findStandardSize(requiredVolume);
@@ -282,7 +291,7 @@ export function calculateExpansionVessel(input: ExpansionVesselInput): Expansion
         maxPressure: Math.round(maxPressure * 10) / 10,
         requiredVolume: Math.round(requiredVolume * 10) / 10,
         recommendedVessel,
-        acceptanceFactor: Math.round(acceptanceFactor * 100) / 100,
+        acceptanceFactor: Math.round(netAcceptance * 100) / 100,
         isValid: hardErrors.length === 0,
         warnings
     };

@@ -92,8 +92,11 @@ export const FluidComposition: React.FC = () => {
                             Freezing Point
                         </div>
                         <div className="text-xl font-black text-foreground font-mono bg-card px-3 py-1 rounded-lg border border-border">
-                            {freezingPoint}°C
+                            {glycolPercentage > 60 ? '—' : `${freezingPoint}°C`}
                         </div>
+                        {glycolPercentage > 60 && (
+                            <span className="text-[9px] text-amber-600 max-w-[110px] text-right leading-tight">peste 60% nu mai avem date de îngheț</span>
+                        )}
                     </div>
                 </div>
 
