@@ -5,7 +5,7 @@ import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, B
 import { useHistory } from '@/hooks/useHistory';
 import { supabase } from '@/lib/supabase';
 
-const CLOUD_DISABLED_MESSAGE = 'Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars';
+const CLOUD_DISABLED_MESSAGE = 'Cloud dezactivat — setează variabilele de mediu NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY';
 
 // Single shared storage key: ProjectContext owns local persistence of the project.
 export const PROJECT_STORAGE_KEY = 'hydraulic_calc_project_v2';
@@ -270,7 +270,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
             throw new Error(CLOUD_DISABLED_MESSAGE);
         }
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
-            throw new Error('Offline — connect to the internet before saving to the cloud.');
+            throw new Error('Fără conexiune — conectează-te la internet înainte de a salva în Cloud.');
         }
         if (cloudSaveInFlightRef.current) {
             throw new Error('A cloud save is already in progress.');

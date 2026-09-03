@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         }
         
         if (!data.equipmentList || !Array.isArray(data.equipmentList)) {
-            errors.push('Equipment list is required');
+            errors.push('Lista de echipamente este obligatorie');
         } else {
             if (data.equipmentList.length > VALIDATION_LIMITS.MAX_EQUIPMENT_ITEMS) {
                 errors.push(`Maximum ${VALIDATION_LIMITS.MAX_EQUIPMENT_ITEMS} equipment items allowed`);
@@ -44,13 +44,13 @@ export async function POST(req: NextRequest) {
             data.equipmentList.forEach((item, index) => {
                 const result = validateEquipmentItem(item);
                 if (!result.isValid) {
-                    errors.push(`Equipment ${index + 1}: ${result.errors.join(', ')}`);
+                    errors.push(`Echipament ${index + 1}: ${result.errors.join(', ')}`);
                 }
             });
         }
         
         if (!data.projectDetails || !data.projectDetails.projectName) {
-            errors.push('Project details with project name are required');
+            errors.push('Detaliile proiectului, inclusiv numele proiectului, sunt obligatorii');
         }
 
         // Fluid & parametri numerici — niciodata valori aiurea in raport
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
             const imgs = [...(eq.photos || []), eq.glycolProofImage, eq.proofImage].filter(Boolean) as string[];
             imgs.forEach((img, j) => {
                 const res = validateBase64Image(img.startsWith('data:') ? img : `data:image/jpeg;base64,${img}`);
-                if (!res.isValid) errors.push(`Equipment ${i + 1} foto ${j + 1}: ${res.errors.join('; ')}`);
+                if (!res.isValid) errors.push(`Echipament ${i + 1}, fotografia ${j + 1}: ${res.errors.join('; ')}`);
             });
         });
 
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         console.error('PDF Generation Error:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         return NextResponse.json({ 
-            error: 'Failed to generate PDF', 
+            error: 'Generarea PDF-ului a eșuat',
             message: errorMessage 
         }, { status: 500 });
     }

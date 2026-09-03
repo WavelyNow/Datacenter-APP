@@ -5,7 +5,7 @@
  *
  * Surse: EN 10255 (oțel sudat), EN 1057 (cupru), EN ISO 15874 (PPR),
  * EN ISO 15494 (PE100), EN 1452 SDR13.6 (PVC-U PN16),
- * broșurile oficiale GF COOL-FIT 2026, certificat KIWA (Uponor PE-Xa SDR 7.3).
+ * documentația oficială GF COOL-FIT, certificat KIWA (Uponor PE-Xa SDR 7.3).
  */
 
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
@@ -51,7 +51,7 @@ describe('Diametre REALE — referinte standarde (blocheaza regresii)', () => {
     });
 
     it('PE100 SDR17 — valori reale', () => {
-        expectReal('pehd_sdr17', '63mm', { od: 63, t: 3.7, id: 55.6 });
+        expectReal('pehd_sdr17', '63mm', { od: 63, t: 3.8, id: 55.4 });
         expectReal('pehd_sdr17', '110mm', { od: 110, t: 6.6, id: 96.8 });
     });
 
@@ -61,7 +61,7 @@ describe('Diametre REALE — referinte standarde (blocheaza regresii)', () => {
         expectReal('pvc_u_pn16', 'd110', { od: 110, t: 8.1, id: 93.8 });
     });
 
-    it('GF COOL-FIT 2.0 — brosura oficiala 2026 (d32-d140, PN16 SDR11)', () => {
+    it('GF COOL-FIT 2.0 — documentație oficială (d32-d140, PN16 SDR11)', () => {
         expectReal('gf_coolfit_2_0', 'd32', { od: 32, t: 2.9, id: 26.2, w: 1.140 });
         expectReal('gf_coolfit_2_0', 'd90', { od: 90, t: 8.2, id: 73.6, w: 4.320 });
         expectReal('gf_coolfit_2_0', 'd140', { od: 140, t: 12.7, id: 114.6, w: 9.021 });
@@ -70,7 +70,7 @@ describe('Diametre REALE — referinte standarde (blocheaza regresii)', () => {
     });
 
     it('GF COOL-FIT 4.0 — fisa tehnica oficiala (SDR11 PN16 + SDR17 PN10)', () => {
-        expectReal('gf_coolfit_4_0', 'd110', { od: 110, t: 10.0, id: 90.0, w: 6.12 });
+        expectReal('gf_coolfit_4_0', 'd110', { od: 110, t: 10.0, id: 90.0, w: 6.20 });
         expectReal('gf_coolfit_4_0', 'd160', { od: 160, t: 9.5, id: 141.0, w: 9.921 });
         expectReal('gf_coolfit_4_0', 'd225', { od: 225, t: 13.4, id: 198.2, w: 16.620 });
         expectReal('gf_coolfit_4_0', 'd450', { od: 450, t: 26.7, id: 396.6, w: 55.490 });

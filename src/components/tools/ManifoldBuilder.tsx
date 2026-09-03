@@ -64,14 +64,14 @@ export const ManifoldBuilder: React.FC = () => {
              {/* Global Configuration */}
              <div className="card-premium p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">System DN</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">DN sistem</label>
                     <select 
                         className="w-full bg-muted/30 border border-border/40 rounded-xl px-3 py-2.5 text-sm"
                         value={globalDn}
                         onChange={(e) => {
                             setGlobalDn(e.target.value);
                             // Optional: Update all existing nodes?
-                            if (confirm('Update all existing nodes to this DN?')) {
+                            if (confirm('Actualizezi toate nodurile existente la acest DN?')) {
                                 setNodes(nodes.map(n => ({ ...n, dn: e.target.value })));
                             }
                         }}
@@ -82,7 +82,7 @@ export const ManifoldBuilder: React.FC = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Inlet Flow</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Debit de intrare</label>
                     <NumberInput 
                         value={inletFlow} 
                         onChange={setInletFlow} 
@@ -91,7 +91,7 @@ export const ManifoldBuilder: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Fluid Temp</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Temperatura fluidului</label>
                     <NumberInput 
                         value={inletTemp} 
                         onChange={setInletTemp} 
@@ -100,7 +100,7 @@ export const ManifoldBuilder: React.FC = () => {
                 </div>
                 <div className="flex flex-col justify-end">
                      <div className="text-right">
-                        <span className="text-xs text-muted-foreground block">Total Pressure Drop</span>
+                        <span className="text-xs text-muted-foreground block">Pierdere totală de presiune</span>
                         <span className="text-2xl font-bold text-primary">
                             {(results[results.length - 1]?.cumulativePressureDropPa / 1000 || 0).toFixed(3)} <span className="text-sm font-normal text-muted-foreground">kPa</span>
                         </span>
@@ -116,14 +116,14 @@ export const ManifoldBuilder: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold flex items-center gap-2">
                             <Activity className="w-5 h-5 text-indigo-500" />
-                            Construction Sequence
+                            Succesiunea elementelor
                         </h3>
                         <div className="flex items-center gap-2">
-                             <button onClick={() => addNode('fitting', 'tee_branch')} className="btn btn-sm btn-secondary text-xs">+ Tee</button>
-                             <button onClick={() => addNode('fitting', 'elbow_90')} className="btn btn-sm btn-secondary text-xs">+ Elbow</button>
-                             <button onClick={() => addNode('fitting', 'valve_butterfly')} className="btn btn-sm btn-secondary text-xs">+ Valve</button>
-                             <button onClick={() => addNode('pipe')} className="btn btn-sm btn-secondary text-xs">+ Pipe</button>
-                             <button onClick={() => addNode('outlet')} className="btn btn-sm btn-primary text-xs">+ Outlet (Consumer)</button>
+                             <button onClick={() => addNode('fitting', 'tee_branch')} className="btn btn-sm btn-secondary text-xs">+ Teu</button>
+                             <button onClick={() => addNode('fitting', 'elbow_90')} className="btn btn-sm btn-secondary text-xs">+ Cot</button>
+                             <button onClick={() => addNode('fitting', 'valve_butterfly')} className="btn btn-sm btn-secondary text-xs">+ Vană</button>
+                             <button onClick={() => addNode('pipe')} className="btn btn-sm btn-secondary text-xs">+ Țeavă</button>
+                             <button onClick={() => addNode('outlet')} className="btn btn-sm btn-primary text-xs">+ Consumator</button>
                         </div>
                     </div>
 
@@ -152,10 +152,10 @@ export const ManifoldBuilder: React.FC = () => {
                                     <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
                                         <div className="col-span-2">
                                             <span className="text-xs font-semibold block text-foreground">
-                                                {node.type === 'inlet' ? 'Inlet Connection' : 
-                                                 node.type === 'outlet' ? 'Consumer Extraction' :
-                                                 node.type === 'pipe' ? 'Pipe Segment' :
-                                                 FITTING_LABELS[node.fittingType!] || 'Fitting'}
+                                                {node.type === 'inlet' ? 'Conexiune de intrare' :
+                                                 node.type === 'outlet' ? 'Ramificație consumator' :
+                                                 node.type === 'pipe' ? 'Tronson de țeavă' :
+                                                 FITTING_LABELS[node.fittingType!] || 'Fiting'}
                                             </span>
                                             <span className="text-[10px] text-muted-foreground">{node.dn}</span>
                                         </div>
@@ -189,11 +189,11 @@ export const ManifoldBuilder: React.FC = () => {
                                     {res && (
                                         <div className="flex items-center gap-6 pr-4 opacity-70 group-hover:opacity-100 transition-opacity">
                                             <div className="text-right">
-                                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Pressure</span>
+                                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Presiune</span>
                                                 <span className="text-xs font-mono font-bold text-red-500">-{res.pressureDropPa.toFixed(0)} Pa</span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Temp</span>
+                                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Temp.</span>
                                                 <span className="text-xs font-mono font-medium text-blue-500">{res.temp.toFixed(2)} °C</span>
                                             </div>
                                         </div>
@@ -217,7 +217,7 @@ export const ManifoldBuilder: React.FC = () => {
                 {/* Live Results Panel (Right) */}
                 <div className="lg:col-span-4 space-y-6">
                     <div className="bg-card/30 border border-border/40 rounded-xl p-6 backdrop-blur-sm">
-                        <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Simulation Analysis</h4>
+                        <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Analiza simulării</h4>
                         
                         <div className="space-y-6">
                             {/* Exit Params */}
@@ -227,12 +227,12 @@ export const ManifoldBuilder: React.FC = () => {
                                         <Thermometer className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <span className="text-xs text-muted-foreground block">Exit Temperature</span>
+                                        <span className="text-xs text-muted-foreground block">Temperatura la ieșire</span>
                                         <span className="text-lg font-mono font-bold">{results[results.length-1]?.temp.toFixed(2)} °C</span>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block">Loss</span>
+                                    <span className="text-xs text-muted-foreground block">Pierdere</span>
                                     <span className="text-sm font-mono text-red-400">
                                         -{(inletTemp - (results[results.length-1]?.temp || inletTemp)).toFixed(2)} °C
                                     </span>
@@ -245,7 +245,7 @@ export const ManifoldBuilder: React.FC = () => {
                                         <Gauge className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <span className="text-xs text-muted-foreground block">Exit Flow</span>
+                                        <span className="text-xs text-muted-foreground block">Debit la ieșire</span>
                                         <span className="text-lg font-mono font-bold">{results[results.length-1]?.flowRate.toFixed(1)} m³/h</span>
                                     </div>
                                 </div>
@@ -255,7 +255,7 @@ export const ManifoldBuilder: React.FC = () => {
                             {results.some(r => r.velocity > 3.0) && (
                                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start gap-3">
                                     <Info className="w-4 h-4 text-red-500 mt-0.5" />
-                                    <p className="text-xs text-red-500">High velocity detected (&gt;3.0 m/s). Consider increasing DN or reducing flow.</p>
+                                    <p className="text-xs text-red-500">Viteză mare detectată (&gt;3,0 m/s). Mărește DN-ul sau redu debitul.</p>
                                 </div>
                             )}
 
@@ -263,17 +263,17 @@ export const ManifoldBuilder: React.FC = () => {
                              {results.some(r => r.temp < 4.0) && inletTemp > 5 && (
                                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
                                     <Thermometer className="w-4 h-4 text-blue-500 mt-0.5" />
-                                    <p className="text-xs text-blue-500">Temperature dropped below 4°C. Risk of freezing/crystallization if water.</p>
+                                    <p className="text-xs text-blue-500">Temperatura a scăzut sub 4°C. Există risc de îngheț/cristalizare dacă fluidul este apă.</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     <div className="p-4 bg-muted/20 rounded-xl text-xs text-muted-foreground leading-relaxed">
-                        <strong className="text-foreground block mb-2">Engineering Notes:</strong>
-                        Calculations use Zeta values (K-factors) for fittings and Darcy-Weisbach equation. 
-                        Thermal loss assumes uninsulated components (worst case) or standard insulation if configured. 
-                        Results are 1D steady-state approximations suitable for sizing.
+                        <strong className="text-foreground block mb-2">Note de inginerie:</strong>
+                        Calculele folosesc valorile Zeta (coeficienți K) pentru fitinguri și ecuația Darcy-Weisbach.
+                        Pierderea termică presupune componente neizolate (caz defavorabil) sau izolația standard, dacă este configurată.
+                        Rezultatele sunt aproximații 1D în regim staționar, potrivite pentru dimensionare.
                     </div>
                 </div>
              </div>

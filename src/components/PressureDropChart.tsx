@@ -73,8 +73,8 @@ export function PressureDropChart({ segments, glycolPercentage, fluidType = 'eth
                     <Activity className="w-5 h-5 text-pink-500" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-foreground">Pressure Drop Profile</h3>
-                    <p className="text-xs text-muted-foreground">Cumulative distribution of hydraulic losses along the path</p>
+                    <h3 className="font-bold text-foreground">Profilul pierderii de presiune</h3>
+                    <p className="text-xs text-muted-foreground">Distribuția cumulată a pierderilor hidraulice pe traseu</p>
                 </div>
             </div>
 
@@ -101,10 +101,10 @@ export function PressureDropChart({ segments, glycolPercentage, fluidType = 'eth
                                         <div className="bg-popover border border-border p-3 rounded-xl shadow-xl backdrop-blur-md">
                                             <p className="font-bold text-foreground mb-1">{point.segmentName}</p>
                                             <div className="space-y-1 text-muted-foreground">
-                                                <p>Distance: <span className="text-foreground font-mono">{point.length.toFixed(1)} m</span></p>
-                                                <p>Total Drop: <span className="text-pink-500 font-mono font-bold">{point.pressure.toFixed(2)} kPa</span></p>
+                                                <p>Distanță: <span className="text-foreground font-mono">{point.length.toFixed(1)} m</span></p>
+                                                <p>Pierdere totală: <span className="text-pink-500 font-mono font-bold">{point.pressure.toFixed(2)} kPa</span></p>
                                                 {point.velocity > 0 && (
-                                                    <p>Velocity: <span className={`font-mono ${point.velocity > 2.5 ? 'text-red-500 font-bold' : 'text-primary'}`}>{point.velocity.toFixed(2)} m/s</span></p>
+                                                    <p>Viteză: <span className={`font-mono ${point.velocity > 2.5 ? 'text-red-500 font-bold' : 'text-primary'}`}>{point.velocity.toFixed(2)} m/s</span></p>
                                                 )}
                                             </div>
                                         </div>

@@ -1,6 +1,6 @@
 {
-    "name": "Datacenter Engineering Suite",
-    "short_name": "EngSuite",
+    "name": "Suita de inginerie Datacenter",
+    "short_name": "Inginerie DC",
     "description": "Dimensionare conducte, glicol și echipamente pentru datacenter",
     "start_url": "/",
     "display": "standalone",

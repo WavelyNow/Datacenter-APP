@@ -21,7 +21,7 @@ export const CloudBrowserAction = () => {
         setError(null);
         try {
             if (!supabase) {
-                throw new Error('Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars');
+                throw new Error('Cloud dezactivat — setează variabilele de mediu NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY');
             }
             const { data, error } = await supabase
                 .from('projects')
@@ -33,7 +33,7 @@ export const CloudBrowserAction = () => {
             setProjects((data as unknown as CloudProject[]) || []);
         } catch (err: unknown) {
             console.error('Error fetching projects:', err);
-            const msg = err instanceof Error ? err.message : 'Failed to fetch projects';
+            const msg = err instanceof Error ? err.message : 'Nu s-au putut încărca proiectele';
             setError(msg);
         } finally {
             setLoading(false);
@@ -90,10 +90,10 @@ export const CloudBrowserAction = () => {
                     onClick={handleSave}
                     disabled={saving}
                     className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-                    title={cloudProjectId ? "Update existing Cloud project" : "Save as new Cloud project"}
+                    title={cloudProjectId ? "Actualizează proiectul Cloud existent" : "Salvează ca proiect Cloud nou"}
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    {cloudProjectId ? 'Update Cloud' : 'Save to Cloud'}
+                    {cloudProjectId ? 'Actualizează în Cloud' : 'Salvează în Cloud'}
                 </button>
 
                 {/* Browser Button */}
@@ -102,7 +102,7 @@ export const CloudBrowserAction = () => {
                     className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 transition-colors border border-primary/20"
                 >
                     <Cloud className="w-4 h-4" />
-                    Cloud Browser
+                    Bibliotecă Cloud
                 </button>
             </div>
 
@@ -115,9 +115,9 @@ export const CloudBrowserAction = () => {
                             <div>
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <Cloud className="w-6 h-6 text-primary" />
-                                    Cloud Project Library
+                                    Biblioteca proiectelor Cloud
                                 </h2>
-                                <p className="text-sm text-muted-foreground">Wiki-Style: Everyone can read and write projects.</p>
+                                <p className="text-sm text-muted-foreground">Tip wiki: Toată lumea poate citi și modifica proiectele.</p>
                             </div>
                             <button onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground p-2 hover:bg-muted rounded-full transition-colors">
                                 <X className="w-5 h-5" />
@@ -130,7 +130,7 @@ export const CloudBrowserAction = () => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Search projects..."
+                                    placeholder="Caută proiecte..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full pl-9 pr-4 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary"
@@ -143,20 +143,20 @@ export const CloudBrowserAction = () => {
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
                                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                    <p>Loading projects from Supabase...</p>
+                                    <p>Se încarcă proiectele din Supabase...</p>
                                 </div>
                             ) : error ? (
                                 <div className="text-center py-12 text-destructive">
                                     <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
                                     <p>{error}</p>
                                     <p className="text-xs mt-2 overflow-auto max-w-md mx-auto bg-destructive/10 p-2 rounded">
-                                        Hint: Ensure you ran the SQL setup script.
+                                        Indiciu: Asigură-te că ai rulat scriptul de configurare SQL.
                                     </p>
                                 </div>
                             ) : filteredProjects.length === 0 ? (
                                 <div className="text-center py-12 text-muted-foreground">
-                                    <p>No projects found in the cloud.</p>
-                                    <p className="text-sm">Be the first to save one!</p>
+                                    <p>Nu există proiecte în Cloud.</p>
+                                    <p className="text-sm">Fii primul care salvează unul!</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -164,17 +164,17 @@ export const CloudBrowserAction = () => {
                                         <div key={project.id} className="group flex flex-col gap-3 p-5 rounded-xl border border-secondary bg-secondary/10 hover:bg-secondary/20 hover:border-primary/30 transition-all relative">
                                             <div className="flex justify-between items-start gap-4">
                                                 <div className="font-bold text-lg text-zinc-100 wrap-break-word leading-tight" title={project.name}>
-                                                    {(project.name && project.name.trim().length > 0) ? project.name : 'Untitled Project'}
+                                                            {(project.name && project.name.trim().length > 0) ? project.name : 'Proiect fără titlu'}
                                                 </div>
                                                 {project.id === cloudProjectId && (
                                                     <span className="text-[10px] bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
-                                                        ACTIVE
+                                                        ACTIV
                                                     </span>
                                                 )}
                                             </div>
 
                                             <div className="text-sm text-zinc-400 line-clamp-2 min-h-[2.5em]">
-                                                {project.description || 'No description provided.'}
+                                                {project.description || 'Nu a fost furnizată nicio descriere.'}
                                             </div>
 
                                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto pt-3 border-t border-border/10">
@@ -190,7 +190,7 @@ export const CloudBrowserAction = () => {
                                                 className="w-full mt-2 btn btn-secondary hover:bg-primary hover:text-primary-foreground border-primary/20 transition-all flex items-center justify-center gap-2 py-2 text-sm font-bold"
                                             >
                                                 <FolderOpen className="w-4 h-4" />
-                                                Open Project
+                                                Deschide proiectul
                                             </button>
                                         </div>
                                     ))}

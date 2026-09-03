@@ -121,6 +121,7 @@ const DashboardContent = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
 
 
@@ -205,17 +206,17 @@ const DashboardContent = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground animate-pulse font-medium">Initializing Engineering Suite...</p>
+          <p className="text-muted-foreground animate-pulse font-medium">Se inițializează suita de inginerie...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+    <div className="flex min-h-screen overflow-x-hidden bg-background font-sans text-foreground selection:bg-primary/20">
       {/* Skip Link for Accessibility */}
       <a href="#main-content" className="skip-link">
-        Skip to main content
+        Sari la conținutul principal
       </a>
 
       {/* 1. Global Modals (Rendered at root for Portal stability) */}
@@ -254,10 +255,12 @@ const DashboardContent = () => {
         onExportOpen={toggleExport}
         onSave={saveProject}
         onLoad={loadProject}
+        isMobileOpen={isMobileNavOpen}
+        onMobileClose={() => setIsMobileNavOpen(false)}
       />
 
       {/* 3. Main Content Area */}
-      <main id="main-content" className="flex-1 flex flex-col h-screen overflow-hidden relative">
+      <main id="main-content" className="relative flex h-screen h-dvh min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* Header (Top Bar) */}
         <MemoizedHeader
@@ -266,6 +269,7 @@ const DashboardContent = () => {
           onLoadProject={handleLoadProject}
           onOpenExport={toggleExport}
           onOpenSettings={toggleSettings}
+          onOpenNavigation={() => setIsMobileNavOpen(true)}
           onSaveProject={saveProject}
           onUndo={undo}
           onRedo={redo}
@@ -278,7 +282,7 @@ const DashboardContent = () => {
             {activeTab === 'dashboard' ? (
               <MemoizedDashboard />
             ) : (
-              <div className="spacing-page py-8">
+              <div className="spacing-page">
                 <div className="animate-in fade-in duration-300">
 
                   {/* Tab 1: Piping & Routing (New Design) */}

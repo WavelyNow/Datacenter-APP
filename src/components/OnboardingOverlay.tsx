@@ -61,7 +61,7 @@ export const OnboardingOverlay: React.FC = () => {
                         {/* Header */}
                         <div className="flex items-center justify-between px-8 pt-6">
                             <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground">
-                                Datacenter Engineering Suite
+                                Suita de inginerie Datacenter
                             </span>
                             <button
                                 onClick={() => finish()}

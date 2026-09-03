@@ -49,12 +49,12 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
 
                     <h3 className="text-xl font-bold text-foreground mb-2 tracking-tight">
-                        {this.props.componentName ? `${this.props.componentName} Error` : 'Something went wrong'}
+                        {this.props.componentName ? `Eroare în ${this.props.componentName}` : 'A apărut o problemă'}
                     </h3>
 
                     <div className="max-w-md bg-destructive/5 border border-destructive/10 rounded-lg p-3 mb-6 w-full">
                         <code className="text-xs font-mono text-destructive/80 break-all line-clamp-3">
-                            {this.state.error?.message || 'Unknown error occurred'}
+                            {this.state.error?.message || 'A apărut o eroare necunoscută'}
                         </code>
                     </div>
 
@@ -64,13 +64,13 @@ export class ErrorBoundary extends Component<Props, State> {
                             className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
                         >
                             <RefreshCw className="w-4 h-4" />
-                            Try Again
+                            Încearcă din nou
                         </button>
                         <button
                             onClick={() => window.location.reload()}
                             className="flex items-center justify-center gap-2 px-6 py-2.5 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-medium transition-all"
                         >
-                            Reload Page
+                            Reîncarcă pagina
                         </button>
                     </div>
                 </div>

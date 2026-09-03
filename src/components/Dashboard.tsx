@@ -93,7 +93,7 @@ const DashboardBase = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="max-w-[1600px] mx-auto p-8 space-y-12"
+            className="mx-auto max-w-[1600px] space-y-8 p-4 sm:space-y-12 sm:p-6 lg:p-8"
         >
             {/* Hero Section */}
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">                <div className="relative z-10">
@@ -113,20 +113,20 @@ const DashboardBase = () => {
                             FAZA PLANIFICARE
                         </div>
                     </motion.div>
-                    <h1 className="text-5xl font-semibold tracking-tight text-foreground mb-3">
-                        Engineering <span className="text-primary">Workspace</span>
+                    <h1 className="mb-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                        Spațiu de lucru <span className="text-primary">pentru inginerie</span>
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl">
                         Prezentare generală în timp real a metricilor proiectului.
                     </p>
                 </div>
 
-                <div className="flex gap-3 relative z-10">
+                <div className="relative z-10 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
                     <Tooltip content="Alege din șabloane pre-configurate pentru a începe rapid" side="bottom">
                         <button
                             onClick={() => setIsTemplateOpen(true)}
                             title="Alege din șabloane pre-configurate pentru a începe rapid"
-                            className="btn btn-secondary h-12 px-6 border-primary/30 hover:border-primary/60 gap-2 text-foreground bg-primary/5 hover:bg-primary/10"
+                            className="btn btn-secondary h-12 w-full gap-2 border-primary/30 bg-primary/5 px-6 text-foreground hover:border-primary/60 hover:bg-primary/10 sm:w-auto"
                         >
                             <Sparkles className="w-4 h-4 text-primary" />
                             Start Rapid
@@ -137,7 +137,7 @@ const DashboardBase = () => {
                         <button
                             onClick={() => setActiveTab('bim_gallery')}
                             title="Deschide galeria 3D cu produsele producătorilor (modele Sketchfab)"
-                            className="btn btn-secondary h-12 px-6 gap-2"
+                            className="btn btn-secondary h-12 w-full gap-2 px-6 sm:w-auto"
                         >
                             <FileBox className="w-4 h-4 text-primary" />
                             Galerie 3D
@@ -148,7 +148,7 @@ const DashboardBase = () => {
                         <button
                             onClick={() => setActiveTab('config')}
                             title="Începe un proiect nou adăugând manual segmente de țeavă"
-                            className="btn btn-primary h-12 px-6 gap-2 group"
+                            className="btn btn-primary group h-12 w-full gap-2 px-6 sm:w-auto"
                         >
                             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                             Proiect Nou
@@ -161,8 +161,8 @@ const DashboardBase = () => {
             </motion.div>
 
             {/* Quick Stats Grid */}
-            <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-primary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
+            <motion.div variants={containerVariants} className="grid grid-cols-1 gap-3 sm:gap-6 md:grid-cols-4">
+                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-primary/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <Package className="w-5 h-5" />
@@ -175,7 +175,7 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-secondary/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-secondary/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Activity className="w-5 h-5" />
@@ -190,13 +190,13 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-border group cursor-pointer h-[160px] relative overflow-hidden" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden p-4 hover:border-border sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
                     <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <TrendingUp className="w-5 h-5" />
                         </div>
-                        <div className="px-2 py-0.5 rounded-md bg-muted text-primary text-[10px] font-bold border border-border">REAL-TIME</div>
+                        <div className="px-2 py-0.5 rounded-md bg-muted text-primary text-[10px] font-bold border border-border">ÎN TIMP REAL</div>
                     </div>
                     <div className="relative z-10">
                         <div className="text-3xl font-bold font-mono tracking-tight">
@@ -206,7 +206,7 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium p-6 flex flex-col justify-between hover:border-blue-500/30 group cursor-pointer h-[160px]" onClick={() => setActiveTab('weights')}>
+                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-blue-500/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('weights')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Scale className="w-5 h-5" />
@@ -223,7 +223,7 @@ const DashboardBase = () => {
             </motion.div>
 
             {/* Content Grid */}
-            <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <motion.div variants={containerVariants} className="grid grid-cols-1 gap-4 sm:gap-8 lg:grid-cols-3">
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Pasul următor — strip de completare */}
@@ -433,7 +433,7 @@ const DashboardBase = () => {
 
                             <div className="mt-auto pt-4">
                                 <div className="p-4 rounded-xl bg-muted/40 border border-border/50">
-                                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1.5">Trend 2026</p>
+                                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-1.5">Tendință 2026</p>
                                     <p className="text-xs text-muted-foreground leading-relaxed">
                                         Răcirea pe lichid devine standard: CDU-uri 1–3 MW, operare cu apă caldă (32–45°C) și distribuție 800VDC.
                                         Dimensionați-vă conductele pentru debite mari la temperaturi ridicate — CoolFit 4.0 (PN10/SDR17) e soluția pre-izolată.

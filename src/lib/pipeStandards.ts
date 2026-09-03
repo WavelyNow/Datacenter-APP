@@ -1,29 +1,43 @@
 
+export interface PipeSource {
+    readonly name: string;
+    readonly url?: string;
+    readonly page?: string;
+    readonly note?: string;
+}
+
+export type PipeWeightBasis = 'bare' | 'preinsulated-total';
+
 export interface PipeDimension {
-    dn: string;      // "DN15" or "20mm"
-    inch: string;    // "1/2\""
-    od: number;      // Outer Diameter (mm)
-    thickness: number; // Wall Thickness (mm)
-    id: number;      // Internal Diameter (mm)
-    weight: number;  // Weight (kg/m) empty
-    insulatedOd?: number; // Outer Diameter with Insulation (mm)
-    supportSpacing?: {
+    readonly dn: string;      // "DN15", "d110" or "110mm"
+    readonly nominalDn?: string; // nominal DN when the manufacturer maps metric d/OD to DN
+    readonly inch: string;    // closest inch designation, display only
+    readonly od: number;      // Outer Diameter (mm)
+    readonly thickness: number; // Wall Thickness (mm)
+    readonly id: number;      // Internal Diameter (mm)
+    readonly weight: number;  // Weight (kg/m), basis is declared by the series
+    readonly pressureClass?: number; // PN (bar), when verified for this dimension
+    readonly sdr?: number; // SDR, when verified for this dimension
+    readonly insulatedOd?: number; // Outer Diameter with Insulation (mm)
+    readonly supportSpacing?: Readonly<{
         water: number; // max span in meters (fluid filled)
         gas?: number;  // max span in meters (gas/air)
-    };
+    }>;
 }
 
 export interface PipeStandard {
-    label: string;
-    description: string;
-    category: 'metal' | 'plastic' | 'special'; // Added for grouping
-    material?: string;
-    maxPressure?: number; // bar
-    tempRange?: { min: number; max: number }; // Celsius
-    insulationType?: string;
-    thermalExpansion?: number; // mm / (m * K)
-    roughness?: number; // mm (absolute roughness)
-    dimensions: PipeDimension[];
+    readonly label: string;
+    readonly description: string;
+    readonly category: 'metal' | 'plastic' | 'special'; // Added for grouping
+    readonly material?: string;
+    readonly maxPressure?: number; // bar; limită informativă, nu este afișată automat ca PN
+    readonly tempRange?: Readonly<{ min: number; max: number }>; // Celsius
+    readonly insulationType?: string;
+    readonly weightBasis?: PipeWeightBasis;
+    readonly thermalExpansion?: number; // mm / (m * K)
+    readonly roughness?: number; // mm (absolute roughness)
+    readonly sources?: readonly PipeSource[];
+    readonly dimensions: readonly PipeDimension[];
 }
 
 const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
@@ -49,7 +63,7 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
         ]
     },
     steel_medium: {
-        label: "Oțel - Medie (+Brezner)",
+        label: "Oțel - Medie",
         description: "EN 10255 Medie / EN 10216 (DN125+)",
         category: 'metal',
         material: "Carbon Steel",
@@ -173,14 +187,28 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
         material: "PE100 High Density",
         maxPressure: 10,
         tempRange: { min: -40, max: 40 },
+        weightBasis: 'bare',
         dimensions: [
-            { dn: "32mm", inch: "1\"", od: 32, thickness: 2.0, id: 28.0, weight: 0.20 },
-            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 2.4, id: 35.2, weight: 0.30 },
-            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 3.0, id: 44.0, weight: 0.46 },
-            { dn: "63mm", inch: "2\"", od: 63, thickness: 3.7, id: 55.6, weight: 0.66 },
-            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 4.5, id: 66.0, weight: 1.02 },
-            { dn: "90mm", inch: "3\"", od: 90, thickness: 5.4, id: 79.2, weight: 1.46 },
-            { dn: "110mm", inch: "4\"", od: 110, thickness: 6.6, id: 96.8, weight: 2.18 },
+            { dn: "32mm", inch: "1\"", od: 32, thickness: 2.0, id: 28.0, weight: 0.20, pressureClass: 10, sdr: 17 },
+            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 2.4, id: 35.2, weight: 0.30, pressureClass: 10, sdr: 17 },
+            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 3.0, id: 44.0, weight: 0.46, pressureClass: 10, sdr: 17 },
+            { dn: "63mm", inch: "2\"", od: 63, thickness: 3.8, id: 55.4, weight: 0.68, pressureClass: 10, sdr: 17 },
+            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 4.5, id: 66.0, weight: 1.02, pressureClass: 10, sdr: 17 },
+            { dn: "90mm", inch: "3\"", od: 90, thickness: 5.4, id: 79.2, weight: 1.46, pressureClass: 10, sdr: 17 },
+            { dn: "110mm", inch: "4\"", od: 110, thickness: 6.6, id: 96.8, weight: 2.18, pressureClass: 10, sdr: 17 },
+            { dn: "125mm", inch: "5\"", od: 125, thickness: 7.4, id: 110.2, weight: 2.77, pressureClass: 10, sdr: 17 },
+            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 8.3, id: 123.4, weight: 3.31, pressureClass: 10, sdr: 17 },
+            { dn: "160mm", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 3.96, pressureClass: 10, sdr: 17 },
+            { dn: "180mm", inch: "7\"", od: 180, thickness: 10.7, id: 158.6, weight: 5.01, pressureClass: 10, sdr: 17 },
+            { dn: "200mm", inch: "8\"", od: 200, thickness: 11.9, id: 176.2, weight: 6.14, pressureClass: 10, sdr: 17 },
+            { dn: "225mm", inch: "9\"", od: 225, thickness: 13.4, id: 198.2, weight: 7.79, pressureClass: 10, sdr: 17 },
+            { dn: "250mm", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 9.10, pressureClass: 10, sdr: 17 },
+            { dn: "280mm", inch: "11\"", od: 280, thickness: 16.6, id: 246.8, weight: 10.85, pressureClass: 10, sdr: 17 },
+            { dn: "315mm", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 13.29, pressureClass: 10, sdr: 17 },
+            { dn: "355mm", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 16.45, pressureClass: 10, sdr: 17 },
+            { dn: "400mm", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 20.60, pressureClass: 10, sdr: 17 },
+            { dn: "450mm", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 25.80, pressureClass: 10, sdr: 17 },
+            { dn: "500mm", inch: "20\"", od: 500, thickness: 29.7, id: 440.6, weight: 31.59, pressureClass: 10, sdr: 17 },
         ]
     },
     pvc_u_pn16: {
@@ -216,16 +244,24 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
         thermalExpansion: 0.18, // PE (mm/m·K)
         roughness: 0.007,
         insulationType: "GF HE Foam (λ 0.022 W/mK)",
+        weightBasis: 'preinsulated-total',
+        sources: [
+            {
+                name: 'GF COOL-FIT 2.0 — Planning Fundamentals',
+                url: 'https://www.gfps.com/content/dam/gfps/be/permalink-bt/gfps-be-document-planning-fundamentals-cool-fit-20-en.pdf',
+                note: 'Greutatea include manta și sistemul preizolat.',
+            },
+        ],
         dimensions: [
-            // Sursă: broșura oficială GF COOL-FIT 2.0 2026 (d, D, di, greutate completă kg/m cu manta)
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.140, insulatedOd: 75, supportSpacing: { water: 1.2 } },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.534, insulatedOd: 90, supportSpacing: { water: 1.3 } },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 1.722, insulatedOd: 90, supportSpacing: { water: 1.5 } },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.711, insulatedOd: 110, supportSpacing: { water: 1.6 } },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.405, insulatedOd: 125, supportSpacing: { water: 1.75 } },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.320, insulatedOd: 140, supportSpacing: { water: 1.85 } },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 5.692, insulatedOd: 160, supportSpacing: { water: 2.0 } },
-            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.021, insulatedOd: 200, supportSpacing: { water: 2.2 } },
+            // Sursă: documentația oficială GF COOL-FIT 2.0 (d, D, di, greutate completă kg/m cu manta)
+            { dn: "d32", nominalDn: "DN25", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.140, insulatedOd: 75, supportSpacing: { water: 1.2 } },
+            { dn: "d40", nominalDn: "DN32", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 1.534, insulatedOd: 90, supportSpacing: { water: 1.3 } },
+            { dn: "d50", nominalDn: "DN40", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 1.722, insulatedOd: 90, supportSpacing: { water: 1.5 } },
+            { dn: "d63", nominalDn: "DN50", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.711, insulatedOd: 110, supportSpacing: { water: 1.6 } },
+            { dn: "d75", nominalDn: "DN65", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.405, insulatedOd: 125, supportSpacing: { water: 1.75 } },
+            { dn: "d90", nominalDn: "DN80", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.320, insulatedOd: 140, supportSpacing: { water: 1.85 } },
+            { dn: "d110", nominalDn: "DN100", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 5.692, insulatedOd: 160, supportSpacing: { water: 2.0 } },
+            { dn: "d140", nominalDn: "DN125", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.021, insulatedOd: 200, supportSpacing: { water: 2.2 } },
         ]
     },
     gf_coolfit_4_0: {
@@ -233,30 +269,40 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
         description: "Industrial Cooling pre-izolat — d32–d450 (DN25–DN450). SDR11 PN16 (d32–d140), SDR17 PN10 (d160–d450)",
         category: 'special',
         material: "PE100 (EN ISO 15494)",
-        maxPressure: 16, // bar (SDR11); SDR17 → PN10
         tempRange: { min: -50, max: 60 },
         thermalExpansion: 0.18, // PE (mm/m·K)
         roughness: 0.007,
         insulationType: "GF HE Foam (λ 0.022–0.026 W/mK)",
+        weightBasis: 'preinsulated-total',
+        sources: [
+            {
+                name: 'GF COOL-FIT 4.0 — Brochure and Product Range EN',
+                url: 'https://www.gfps.com/content/dam/gfps/com/brochures-and-flyers/en/gfps-00031-brochure-and-product-range-cool-fit-4-0-en.pdf',
+            },
+            {
+                name: 'GF Planning Fundamentals — COOL-FIT 4.0',
+                url: 'https://www.gfps.com/content/dam/gfps/com/planning-fundamentals/en/gfps-planning-fundamentals-cool-fit-4-0-en.pdf',
+            },
+        ],
         dimensions: [
-            // Sursă: fișa tehnică oficială GF COOL-FIT 4.0 2026 (d32–d450, greutăți complete kg/m)
-            { dn: "d32", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.40, insulatedOd: 90, supportSpacing: { water: 1.2 } },
-            { dn: "d40", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.02, insulatedOd: 110, supportSpacing: { water: 1.3 } },
-            { dn: "d50", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.19, insulatedOd: 110, supportSpacing: { water: 1.5 } },
-            { dn: "d63", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.94, insulatedOd: 125, supportSpacing: { water: 1.6 } },
-            { dn: "d75", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.70, insulatedOd: 140, supportSpacing: { water: 1.75 } },
-            { dn: "d90", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.75, insulatedOd: 160, supportSpacing: { water: 1.85 } },
-            { dn: "d110", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 6.12, insulatedOd: 180, supportSpacing: { water: 2.0 } },
-            { dn: "d140", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.68, insulatedOd: 225, supportSpacing: { water: 2.2 } },
+            // Sursă: fișa tehnică oficială GF COOL-FIT 4.0 (d32–d450, greutăți complete kg/m)
+            { dn: "d32", nominalDn: "DN25", inch: "1\"", od: 32, thickness: 2.9, id: 26.2, weight: 1.411, pressureClass: 16, sdr: 11, insulatedOd: 90, supportSpacing: { water: 1.2 } },
+            { dn: "d40", nominalDn: "DN32", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 2.054, pressureClass: 16, sdr: 11, insulatedOd: 110, supportSpacing: { water: 1.3 } },
+            { dn: "d50", nominalDn: "DN40", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 2.221, pressureClass: 16, sdr: 11, insulatedOd: 110, supportSpacing: { water: 1.5 } },
+            { dn: "d63", nominalDn: "DN50", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 2.987, pressureClass: 16, sdr: 11, insulatedOd: 125, supportSpacing: { water: 1.6 } },
+            { dn: "d75", nominalDn: "DN65", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 3.757, pressureClass: 16, sdr: 11, insulatedOd: 140, supportSpacing: { water: 1.75 } },
+            { dn: "d90", nominalDn: "DN80", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 4.819, pressureClass: 16, sdr: 11, insulatedOd: 160, supportSpacing: { water: 1.85 } },
+            { dn: "d110", nominalDn: "DN100", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 6.200, pressureClass: 16, sdr: 11, insulatedOd: 180, supportSpacing: { water: 2.0 } },
+            { dn: "d140", nominalDn: "DN125", inch: "5\"", od: 140, thickness: 12.7, id: 114.6, weight: 9.676, pressureClass: 16, sdr: 11, insulatedOd: 225, supportSpacing: { water: 2.2 } },
             // SDR17 (PN10) — gama mare
-            { dn: "d160", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 9.921, insulatedOd: 250, supportSpacing: { water: 2.3 } },
-            { dn: "d225", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 16.620, insulatedOd: 315, supportSpacing: { water: 2.6 } },
-            { dn: "d250", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 18.180, insulatedOd: 355, supportSpacing: { water: 2.7 } },
-            { dn: "d280", inch: "10\"", od: 280, thickness: 16.6, id: 246.8, weight: 22.640, insulatedOd: 400, supportSpacing: { water: 2.8 } },
-            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 28.510, insulatedOd: 450, supportSpacing: { water: 2.9 } },
-            { dn: "d355", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 35.350, insulatedOd: 500, supportSpacing: { water: 3.0 } },
-            { dn: "d400", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 44.070, insulatedOd: 560, supportSpacing: { water: 3.1 } },
-            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 55.490, insulatedOd: 630, supportSpacing: { water: 3.2 } },
+            { dn: "d160", nominalDn: "DN150", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 9.921, pressureClass: 10, sdr: 17, insulatedOd: 250, supportSpacing: { water: 2.3 } },
+            { dn: "d225", nominalDn: "DN200", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 16.620, pressureClass: 10, sdr: 17, insulatedOd: 315, supportSpacing: { water: 2.6 } },
+            { dn: "d250", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 18.180, pressureClass: 10, sdr: 17, insulatedOd: 355, supportSpacing: { water: 2.7 } },
+            { dn: "d280", inch: "10\"", od: 280, thickness: 16.6, id: 246.8, weight: 22.640, pressureClass: 10, sdr: 17, insulatedOd: 400, supportSpacing: { water: 2.8 } },
+            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 28.510, pressureClass: 10, sdr: 17, insulatedOd: 450, supportSpacing: { water: 2.9 } },
+            { dn: "d355", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 35.350, pressureClass: 10, sdr: 17, insulatedOd: 500, supportSpacing: { water: 3.0 } },
+            { dn: "d400", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 44.070, pressureClass: 10, sdr: 17, insulatedOd: 560, supportSpacing: { water: 3.1 } },
+            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 55.490, pressureClass: 10, sdr: 17, insulatedOd: 630, supportSpacing: { water: 3.2 } },
         ]
 
     },
@@ -295,19 +341,29 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
         tempRange: { min: -40, max: 40 },
         thermalExpansion: 0.18,
         roughness: 0.007,
+        weightBasis: 'bare',
         dimensions: [
-            { dn: "32mm", inch: "1\"", od: 32, thickness: 3.0, id: 26.0, weight: 0.261 },
-            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 0.403 },
-            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 0.627 },
-            { dn: "63mm", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 0.995 },
-            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 1.393 },
-            { dn: "90mm", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 2.013 },
-            { dn: "110mm", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 3.001 },
-            { dn: "125mm", inch: "5\"", od: 125, thickness: 11.4, id: 102.2, weight: 3.888 },
-            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 12.7, id: 114.6, weight: 4.855 },
-            { dn: "160mm", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 6.373 },
-            { dn: "180mm", inch: "7\"", od: 180, thickness: 16.4, id: 147.2, weight: 8.052 },
-            { dn: "200mm", inch: "8\"", od: 200, thickness: 18.2, id: 163.6, weight: 9.940 },
+            { dn: "32mm", inch: "1\"", od: 32, thickness: 3.0, id: 26.0, weight: 0.261, pressureClass: 16, sdr: 11 },
+            { dn: "40mm", inch: "1 1/4\"", od: 40, thickness: 3.7, id: 32.6, weight: 0.403, pressureClass: 16, sdr: 11 },
+            { dn: "50mm", inch: "1 1/2\"", od: 50, thickness: 4.6, id: 40.8, weight: 0.627, pressureClass: 16, sdr: 11 },
+            { dn: "63mm", inch: "2\"", od: 63, thickness: 5.8, id: 51.4, weight: 0.995, pressureClass: 16, sdr: 11 },
+            { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 6.8, id: 61.4, weight: 1.393, pressureClass: 16, sdr: 11 },
+            { dn: "90mm", inch: "3\"", od: 90, thickness: 8.2, id: 73.6, weight: 2.013, pressureClass: 16, sdr: 11 },
+            { dn: "110mm", inch: "4\"", od: 110, thickness: 10.0, id: 90.0, weight: 3.001, pressureClass: 16, sdr: 11 },
+            { dn: "125mm", inch: "5\"", od: 125, thickness: 11.4, id: 102.2, weight: 3.888, pressureClass: 16, sdr: 11 },
+            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 12.7, id: 114.6, weight: 4.855, pressureClass: 16, sdr: 11 },
+            { dn: "160mm", inch: "6\"", od: 160, thickness: 14.6, id: 130.8, weight: 6.373, pressureClass: 16, sdr: 11 },
+            { dn: "180mm", inch: "7\"", od: 180, thickness: 16.4, id: 147.2, weight: 8.052, pressureClass: 16, sdr: 11 },
+            { dn: "200mm", inch: "8\"", od: 200, thickness: 18.2, id: 163.6, weight: 9.940, pressureClass: 16, sdr: 11 },
+            { dn: "225mm", inch: "9\"", od: 225, thickness: 20.5, id: 184.0, weight: 12.51, pressureClass: 16, sdr: 11 },
+            // Greutatea PE100 este calculată din geometrie la densitatea nominală 950 kg/m³.
+            { dn: "250mm", inch: "10\"", od: 250, thickness: 22.7, id: 204.6, weight: 15.399, pressureClass: 16, sdr: 11 },
+            { dn: "280mm", inch: "11\"", od: 280, thickness: 25.4, id: 229.2, weight: 19.300, pressureClass: 16, sdr: 11 },
+            { dn: "315mm", inch: "12\"", od: 315, thickness: 28.6, id: 257.8, weight: 24.446, pressureClass: 16, sdr: 11 },
+            { dn: "355mm", inch: "14\"", od: 355, thickness: 32.2, id: 290.6, weight: 31.022, pressureClass: 16, sdr: 11 },
+            { dn: "400mm", inch: "16\"", od: 400, thickness: 36.3, id: 327.4, weight: 39.402, pressureClass: 16, sdr: 11 },
+            { dn: "450mm", inch: "18\"", od: 450, thickness: 40.9, id: 368.2, weight: 49.937, pressureClass: 16, sdr: 11 },
+            { dn: "500mm", inch: "20\"", od: 500, thickness: 45.4, id: 409.2, weight: 61.597, pressureClass: 16, sdr: 11 },
         ]
     },
     valrom_ppr_pn20: {
@@ -329,97 +385,93 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
             { dn: "75mm", inch: "2 1/2\"", od: 75, thickness: 12.5, id: 50.0, weight: 2.234 },
             { dn: "90mm", inch: "3\"", od: 90, thickness: 15.0, id: 60.0, weight: 3.214 },
             { dn: "110mm", inch: "4\"", od: 110, thickness: 18.3, id: 73.4, weight: 4.794 },
-            { dn: "125mm", inch: "5\"", od: 125, thickness: 20.8, id: 83.4, weight: 6.196 },
-            { dn: "140mm", inch: "5 1/2\"", od: 140, thickness: 23.3, id: 93.4, weight: 7.772 },
-            { dn: "160mm", inch: "6\"", od: 160, thickness: 26.6, id: 106.8, weight: 10.140 },
         ]
     },
 };
 
-// ============================================================================
-// Override local (pentru pagina „Standarde Țevi”):
-// utilizatorul poate corecta datele din interfață; override-ul e aplicat
-// peste valorile implicite (care sunt cele verificate/oficiale).
-// ============================================================================
+const STANDARD_SOURCES: Record<string, readonly PipeSource[]> = {
+    steel_light: [{ name: 'EN 10255 — seria ușoară' }],
+    steel_medium: [{ name: 'EN 10255 / EN 10216 — seria medie' }],
+    steel_heavy: [{ name: 'EN 10216 / ASME B36.10M — schedule' }],
+    inox_press: [{ name: 'EN 10312 / EN 10217-7 — țeavă inox pentru presare' }],
+    copper: [{ name: 'EN 1057 — țeavă de cupru' }],
+    ppr_pn20: [{ name: 'EN ISO 15874 — PPR SDR6 / PN20' }],
+    pehd_sdr17: [{
+        name: 'Pipelife PE100 SDR17 — catalog produse',
+        url: 'https://catalog.pipelife.com/pl/articlelist/pe-80-i-pe-100-198966/179296/pe100-s-1w-sdr17-blackblue-coil',
+    }],
+    pvc_u_pn16: [{ name: 'PVC metric — seria industrială PN16' }],
+    uponor_pexa_sdr73: [{
+        name: 'Uponor — informații tehnice PE-Xa',
+        url: 'https://brandportal.uponor.com/m/598d0e5afb0b305/original/TI-Ecoflex-pipe-systems-UK-1142161.pdf',
+    }],
+    pipelife_pe100_sdr11: [{
+        name: 'Pipelife PE100 SDR11 — catalog produse',
+        url: 'https://catalog.pipelife.com/pl/articlelist/pe-80-i-pe-100-198966/193405/pe100-s-1w-sdr11-blue',
+        note: 'Grosimile și diametrele sunt catalog; greutatea este calculată din geometrie și densitatea PE100.',
+    }],
+    valrom_ppr_pn20: [{
+        name: 'Valrom VALDuotherm — catalog tehnic',
+        url: 'https://www.valrom.ro/wp-content/uploads/2025/01/2_Catalog-ValDuotherm-1.pdf',
+    }],
+};
 
-const OVERRIDE_KEY = 'pipe_standards_user_override_v1';
-
-// Cache pentru override (citit o singură dată din localStorage, invalidat la save/reset)
-let overrideCache: Record<string, PipeStandard> | null = null;
-
-function readOverride(): Record<string, PipeStandard> | null {
-    if (typeof window === 'undefined') return null;
-    if (overrideCache !== null) return overrideCache;
-    try {
-        const raw = window.localStorage.getItem(OVERRIDE_KEY);
-        if (!raw) { overrideCache = null; return null; }
-        const parsed = JSON.parse(raw);
-        overrideCache = parsed && typeof parsed === 'object' ? parsed : null;
-        return overrideCache;
-    } catch {
-        return null;
-    }
+function inferSingleSdr(standard: PipeStandard): number | undefined {
+    const matches = [...new Set(
+        `${standard.label} ${standard.description}`
+            .match(/SDR\s*[\d.]+/gi)
+            ?.map(value => Number(value.replace(/SDR\s*/i, ''))) ?? []
+    )];
+    return matches.length === 1 ? matches[0] : undefined;
 }
 
-function writeOverride(data: Record<string, PipeStandard>): void {
-    overrideCache = data;
-    if (typeof window === 'undefined') return;
-    try {
-        window.localStorage.setItem(OVERRIDE_KEY, JSON.stringify(data));
-    } catch (e) {
-        console.error('Nu s-a putut salva override-ul de țevi:', e);
-    }
+function inferSinglePressureClass(standard: PipeStandard): number | undefined {
+    const matches = [...new Set(
+        `${standard.label} ${standard.description}`
+            .match(/PN\s*\d+(?:\.\d+)?/gi)
+            ?.map(value => Number(value.replace(/PN\s*/i, ''))) ?? []
+    )];
+    return matches.length === 1 ? matches[0] : undefined;
 }
 
-/** Standardele efective = implicite + override local (dacă există). */
-export function getPipeStandards(): Record<string, PipeStandard> {
-    const override = readOverride();
-    if (!override) return { ...BASE_PIPE_STANDARDS };
-    return { ...BASE_PIPE_STANDARDS, ...override };
+function enrichDimensionMetadata(standard: PipeStandard): PipeStandard {
+    const sdr = inferSingleSdr(standard);
+    const pressureClass = inferSinglePressureClass(standard);
+    if (sdr === undefined && pressureClass === undefined) return standard;
+
+    return {
+        ...standard,
+        dimensions: standard.dimensions.map(dimension => ({
+            ...dimension,
+            pressureClass: dimension.pressureClass ?? pressureClass,
+            sdr: dimension.sdr ?? sdr,
+        })),
+    };
 }
 
-/**
- * PIPE_STANDARDS — vedere UNIFICATĂ (implicite + override local).
- * Este un Proxy dinamic: orice citire (indexare, Object.entries, Object.values)
- * reflectă modificările salvate din pagina „Standarde Țevi" — fără a modifica
- * niciun consumator. Calculele folosesc deci întotdeauna datele curente.
- */
-export const PIPE_STANDARDS: Record<string, PipeStandard> = new Proxy(BASE_PIPE_STANDARDS, {
-    get(target, prop) {
-        if (typeof prop === 'string') {
-            const merged = getPipeStandards();
-            if (prop in merged) return merged[prop];
-        }
-        return Reflect.get(target, prop);
-    },
-    has(target, prop) {
-        return prop in getPipeStandards();
-    },
-    ownKeys() {
-        return Reflect.ownKeys(getPipeStandards());
-    },
-    getOwnPropertyDescriptor(target, prop) {
-        return Reflect.getOwnPropertyDescriptor(getPipeStandards(), prop);
-    },
-}) as Record<string, PipeStandard>;
+const OFFICIAL_PIPE_STANDARDS: Record<string, PipeStandard> = Object.fromEntries(
+    Object.entries(BASE_PIPE_STANDARDS).map(([key, standard]) => [
+        key,
+        enrichDimensionMetadata({
+            ...standard,
+            sources: standard.sources?.length ? standard.sources : STANDARD_SOURCES[key] ?? [],
+        }),
+    ])
+) as Record<string, PipeStandard>;
 
-/** Salvează un set complet de standarde ca override local (aplicat instant în toate calculele). */
-export function saveUserPipeStandards(data: Record<string, PipeStandard>): void {
-    writeOverride(data);
+function deepFreeze<T>(value: T): T {
+    if (value === null || typeof value !== 'object') return value;
+    const objectValue = value as Record<string, unknown>;
+    if (Object.isFrozen(objectValue)) return value;
+    Object.freeze(objectValue);
+    Object.values(objectValue).forEach(deepFreeze);
+    return value;
 }
 
-/** Șterge override-ul și revine la datele oficiale. */
-export function resetUserPipeStandards(): void {
-    overrideCache = null;
-    if (typeof window === 'undefined') return;
-    try {
-        window.localStorage.removeItem(OVERRIDE_KEY);
-    } catch {
-        // ignore
-    }
-}
+/** Catalogul oficial este unic, read-only și folosit de toate calculele aplicației. */
+export const PIPE_STANDARDS: Readonly<Record<string, PipeStandard>> = deepFreeze(OFFICIAL_PIPE_STANDARDS);
 
-/** True dacă există un override local activ. */
-export function hasUserPipeStandardsOverride(): boolean {
-    return readOverride() !== null;
+/** Returnează aceeași bibliotecă oficială; nu există override local sau copie editabilă. */
+export function getPipeStandards(): Readonly<Record<string, PipeStandard>> {
+    return PIPE_STANDARDS;
 }

@@ -12,24 +12,24 @@ interface ShortcutItem {
 
 const SHORTCUTS: ShortcutItem[] = [
     // Navigation
-    { keys: ['⌘', 'K'], description: 'Open Command Palette', category: 'Navigation' },
-    { keys: ['/'], description: 'Quick Search', category: 'Navigation' },
-    { keys: ['?'], description: 'Show Keyboard Shortcuts', category: 'Navigation' },
+    { keys: ['⌘', 'K'], description: 'Deschide paleta de comenzi', category: 'Navigare' },
+    { keys: ['/'], description: 'Căutare rapidă', category: 'Navigare' },
+    { keys: ['?'], description: 'Afișează scurtăturile', category: 'Navigare' },
 
     // Project
-    { keys: ['⌘', 'S'], description: 'Save Project', category: 'Project' },
-    { keys: ['⌘', 'E'], description: 'Export Report', category: 'Project' },
-    { keys: ['⌘', ','], description: 'Open Settings', category: 'Project' },
+    { keys: ['⌘', 'S'], description: 'Salvează proiectul', category: 'Proiect' },
+    { keys: ['⌘', 'E'], description: 'Exportă raportul', category: 'Proiect' },
+    { keys: ['⌘', ','], description: 'Deschide setările', category: 'Proiect' },
 
     // Editing
-    { keys: ['⌘', 'Z'], description: 'Undo', category: 'Editing' },
-    { keys: ['⌘', '⇧', 'Z'], description: 'Redo', category: 'Editing' },
-    { keys: ['⌘', 'N'], description: 'New Item', category: 'Editing' },
+    { keys: ['⌘', 'Z'], description: 'Anulează', category: 'Editare' },
+    { keys: ['⌘', '⇧', 'Z'], description: 'Refă', category: 'Editare' },
+    { keys: ['⌘', 'N'], description: 'Element nou', category: 'Editare' },
 
     // Modal
-    { keys: ['Esc'], description: 'Close Modal / Cancel', category: 'Modal' },
-    { keys: ['Enter'], description: 'Confirm / Submit', category: 'Modal' },
-    { keys: ['Tab'], description: 'Next Field', category: 'Modal' },
+    { keys: ['Esc'], description: 'Închide fereastra / Anulează', category: 'Fereastră' },
+    { keys: ['Enter'], description: 'Confirmă / Trimite', category: 'Fereastră' },
+    { keys: ['Tab'], description: 'Câmpul următor', category: 'Fereastră' },
 ];
 
 interface KeyboardShortcutsModalProps {
@@ -41,11 +41,11 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
     const categories = [...new Set(SHORTCUTS.map(s => s.category))];
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Keyboard Shortcuts" size="md">
+        <Modal isOpen={isOpen} onClose={onClose} title="Scurtături de la tastatură" size="md">
             <div className="p-6 space-y-6">
                 <div className="flex items-center gap-3 text-muted-foreground">
                     <Keyboard className="w-5 h-5" />
-                    <p className="text-sm">Use these shortcuts to navigate faster.</p>
+                    <p className="text-sm">Folosește aceste scurtături pentru a naviga mai rapid.</p>
                 </div>
 
                 {categories.map(category => (
@@ -76,7 +76,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
                 <div className="pt-4 border-t border-border text-center">
                     <p className="text-xs text-muted-foreground">
                         <Command className="w-3 h-3 inline mr-1" />
-                        On Windows, use <kbd className="text-[10px] px-1 bg-muted rounded">Ctrl</kbd> instead of <kbd className="text-[10px] px-1 bg-muted rounded">⌘</kbd>
+                        Pe Windows, folosește <kbd className="text-[10px] px-1 bg-muted rounded">Ctrl</kbd> în loc de <kbd className="text-[10px] px-1 bg-muted rounded">⌘</kbd>
                     </p>
                 </div>
             </div>

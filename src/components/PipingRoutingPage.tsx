@@ -47,7 +47,7 @@ export function PipingRoutingPage() {
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
+            <div className="z-10 shrink-0 border-b border-border/40 bg-background/80 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
                 <div className="flex flex-col gap-6">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
@@ -56,9 +56,9 @@ export function PipingRoutingPage() {
                         <span className="text-foreground">{t('pipingRoutingPage.breadcrumbs.physicConfig')}</span>
                     </div>
 
-                    <div className="flex items-end justify-between">
+                    <div className="flex items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">
+                            <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                                 {t('pipingRoutingPage.title')}
                             </h1>
                             <p className="text-muted-foreground max-w-2xl text-sm font-medium">
@@ -67,9 +67,9 @@ export function PipingRoutingPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                         {/* Main Tabs */}
-                        <div className="flex items-center gap-2 p-1 bg-muted/40 rounded-xl w-fit border border-white/5">
+                        <div className="flex w-full items-center gap-2 overflow-x-auto rounded-xl border border-white/5 bg-muted/40 p-1 sm:w-fit">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon;
                                 const isActive = activeTab === tab.id;
@@ -78,7 +78,7 @@ export function PipingRoutingPage() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`
-                                            relative px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2.5 transition-all duration-300 outline-none focus:outline-none
+                                            relative shrink-0 rounded-lg px-3 py-2.5 text-sm font-bold flex items-center gap-2 transition-all duration-300 outline-none focus:outline-none sm:px-4 sm:gap-2.5
                                             ${isActive ? 'text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}
                                         `}
                                     >
@@ -101,7 +101,7 @@ export function PipingRoutingPage() {
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="flex items-center gap-1 bg-card border border-border/50 rounded-lg p-1"
+                                className="flex w-fit items-center gap-1 self-start rounded-lg border border-border/50 bg-card p-1 sm:self-auto"
                             >
                                 {equipmentTabs.map(t => (
                                     <button
@@ -121,7 +121,7 @@ export function PipingRoutingPage() {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto min-h-0 bg-linear-to-b from-background to-muted/20">
-                <div className="max-w-[1600px] mx-auto p-8">
+                <div className="mx-auto max-w-[1600px] p-3 sm:p-8">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}
@@ -147,7 +147,7 @@ export function PipingRoutingPage() {
                                     fittingItems={fittingItems}
                                     onFittingItemsChange={setFittingItems}
                                     isLoading={!isInitialized}
-                                    className="h-[calc(100vh-320px)] min-h-[600px]"
+                                    className="h-[calc(100dvh-360px)] min-h-[520px] sm:h-[calc(100vh-320px)] sm:min-h-[600px]"
                                 />
                             )}
                             {activeTab === 'equipment' && (

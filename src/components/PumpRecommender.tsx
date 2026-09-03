@@ -73,19 +73,19 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
                     <Zap className="w-5 h-5 text-yellow-500" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-foreground">Pump Matching</h3>
-                    <p className="text-xs text-muted-foreground">Automatic selection based on operating point</p>
+                    <h3 className="font-bold text-foreground">Potrivire pompă</h3>
+                    <p className="text-xs text-muted-foreground">Selecție automată pe baza punctului de funcționare</p>
                 </div>
             </div>
 
             {/* Operating Point Badge */}
             <div className="flex gap-4 mb-6">
                 <div className="flex-1 bg-muted/30 p-3 rounded-lg border border-border/30">
-                    <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">REQ. FLOW</div>
+                    <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">DEBIT CERUT</div>
                     <div className="text-lg font-mono font-bold text-foreground">{operatingPoint.flow} <span className="text-xs text-muted-foreground font-normal">m³/h</span></div>
                 </div>
                 <div className="flex-1 bg-muted/30 p-3 rounded-lg border border-border/30">
-                    <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">REQ. HEAD</div>
+                    <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">ÎNĂLȚIME CERUTĂ</div>
                     <div className="text-lg font-mono font-bold text-foreground">{operatingPoint.head} <span className="text-xs text-muted-foreground font-normal">kPa</span></div>
                 </div>
             </div>
@@ -98,7 +98,7 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold text-sm text-foreground">{pump.manufacturer}</span>
-                                        {idx === 0 && <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-[9px] font-bold rounded uppercase">Best Match</span>}
+                                        {idx === 0 && <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 text-[9px] font-bold rounded uppercase">Potrivire optimă</span>}
                                     </div>
                                     <div className="text-lg font-black tracking-tight text-foreground/90 mt-0.5">{pump.model}</div>
                                 </div>
@@ -115,8 +115,8 @@ export function PumpRecommender({ requiredFlow, requiredHead }: PumpRecommenderP
 
                             {/* Specs Bar */}
                             <div className="mt-3 pt-3 border-t border-border/30 grid grid-cols-2 gap-4 text-xs text-muted-foreground">
-                                <div>Max Flow: <span className="text-foreground">{pump.maxFlow} m³/h</span></div>
-                                <div>Max Head: <span className="text-foreground">{pump.maxHead} kPa</span></div>
+                                <div>Debit maxim: <span className="text-foreground">{pump.maxFlow} m³/h</span></div>
+                                <div>Înălțime maximă: <span className="text-foreground">{pump.maxHead} kPa</span></div>
                             </div>
 
                             <ArrowRight className="absolute bottom-4 right-4 w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:-translate-x-1 transition-all" />

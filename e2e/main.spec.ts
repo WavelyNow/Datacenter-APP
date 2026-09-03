@@ -11,10 +11,9 @@ test.describe('Datacenter APP - Full Project Simulation', () => {
         // Set Viewport to ensure desktop elements are visible
         await page.setViewportSize({ width: 1920, height: 1080 });
 
-        // Open Dashboard (Force EN for test stability)
+        // Open Dashboard with the single supported language: română.
         await page.addInitScript(() => {
             window.localStorage.setItem('datacenter_user_preferences', JSON.stringify({
-                language: 'en',
                 unitSystem: 'metric',
                 showWelcomeOnStartup: false
             }));
@@ -35,8 +34,8 @@ test.describe('Datacenter APP - Full Project Simulation', () => {
         const bodyText = await page.locator('body').innerText();
         console.log('Body Preview:', bodyText.substring(0, 500));
 
-        // Check for hardcoded title "Engineering Workspace"
-        await expect(page.getByText('Engineering Workspace')).toBeVisible();
+        // Verifică titlul Dashboard-ului în limba română.
+        await expect(page.getByText('Spațiu de lucru pentru inginerie')).toBeVisible();
 
         // Set Project Name
         const nameInput = page.getByPlaceholder(/Project Name|Nume Proiect/i);
@@ -44,7 +43,7 @@ test.describe('Datacenter APP - Full Project Simulation', () => {
 
         // Change Units in Settings
         // Navigate via Sidebar (More robust)
-        await page.getByText('Settings').click();
+        await page.getByText('Setări').click();
         await expect(page.getByText(/User Preferences|Preferințe Utilizator/i)).toBeVisible();
 
         // Alternatively, verify Settings page is open
@@ -56,7 +55,7 @@ test.describe('Datacenter APP - Full Project Simulation', () => {
 
         // Navigate to Piping via Sidebar
         await page.getByRole('button', { name: /tubulatură|piping/i }).click();
-        await expect(page.getByText('System Configuration')).toBeVisible();
+        await expect(page.getByText('Topologia rețelei')).toBeVisible();
 
         // Add Segment A
         // Add Segment A (Handle Empty State "Initialize Network" or Standard "Add Pipe Segment")

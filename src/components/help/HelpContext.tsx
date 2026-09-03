@@ -55,7 +55,7 @@ export const HelpProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                 <div>
                                     <h3 className="text-xl font-bold text-foreground">{activeContent.title}</h3>
                                     <span className="text-xs font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full">
-                                        Training Mode
+                                        Mod de instruire
                                     </span>
                                 </div>
                             </div>
@@ -74,7 +74,7 @@ export const HelpProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                 <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
                                     <div className="flex items-center gap-2 mb-3 text-primary font-bold">
                                         <Lightbulb className="w-5 h-5" />
-                                        <span>Pro Tips</span>
+                                        <span>Sfaturi utile</span>
                                     </div>
                                     <ul className="space-y-2">
                                         {activeContent.tips.map((tip, idx) => (

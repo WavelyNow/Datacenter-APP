@@ -39,7 +39,7 @@ export const SupportOrderSummary: React.FC<SupportOrderSummaryProps> = ({ bom, o
                             onClick={onExport}
                             className="flex items-center gap-2 px-4 py-2 bg-primary hover:brightness-110 text-primary-foreground rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105"
                         >
-                            <Download className="w-4 h-4" /> Export PDF
+                            <Download className="w-4 h-4" /> Exportă PDF
                         </button>
                     </div>
                 </div>

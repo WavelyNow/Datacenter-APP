@@ -29,7 +29,8 @@ import {
     FileText,
     Sparkles,
     Ruler,
-    Wand2
+    Wand2,
+    X
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { OnlineStatusBadge } from './OnlineStatusIndicator';
@@ -105,13 +106,17 @@ interface SidebarProps {
     onExportOpen: () => void;
     onSave: () => void;
     onLoad: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    isMobileOpen?: boolean;
+    onMobileClose?: () => void;
 }
 
 const SidebarBase: React.FC<SidebarProps> = ({
     onSettingsOpen,
     onExportOpen,
     onSave,
-    onLoad
+    onLoad,
+    isMobileOpen = false,
+    onMobileClose
 }) => {
     const { t } = useTranslation();
     const { activeTab, setActiveTab: onTabChange } = useUI();
@@ -121,6 +126,11 @@ const SidebarBase: React.FC<SidebarProps> = ({
 
     // Collapsed state
     const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const closeMobile = React.useCallback(() => onMobileClose?.(), [onMobileClose]);
+    const handleTabChange = React.useCallback((id: TabId) => {
+        onTabChange(id);
+        closeMobile();
+    }, [closeMobile, onTabChange]);
 
     const mainGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
@@ -148,21 +158,40 @@ const SidebarBase: React.FC<SidebarProps> = ({
     ], [t]);
 
     return (
-        <aside
-            className={`sidebar-panel flex flex-col justify-between p-3 z-50 transition-all duration-300 ease-in-out relative
-                ${isCollapsed ? 'w-20' : 'w-[280px]'}
-            `}
+        <>
+            {isMobileOpen && (
+                <button
+                    type="button"
+                    className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] lg:hidden"
+                    onClick={closeMobile}
+                    aria-label="Închide meniul de navigare"
+                />
+            )}
+            <aside
+                className={`sidebar-panel fixed inset-y-0 left-0 flex w-[min(88vw,280px)] flex-col justify-between p-3 z-50 transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:translate-x-0 lg:transition-[width]
+                    ${isCollapsed ? 'lg:w-20' : 'lg:w-[280px]'}
+                    ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}
             role="navigation"
-            aria-label="Main navigation"
-        >
+                aria-label="Navigare principală"
+            >
             {/* Collapse Toggle */}
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-20 bg-card border border-border shadow-sm rounded-full p-1 text-muted-foreground hover:text-foreground transition-colors z-50 hover:scale-110 active:scale-95"
+                className="absolute -right-3 top-20 z-50 hidden rounded-full border border-border bg-card p-1 text-muted-foreground shadow-sm transition-colors hover:scale-110 hover:text-foreground active:scale-95 lg:block"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 aria-expanded={!isCollapsed}
             >
                 {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+            </button>
+
+            <button
+                type="button"
+                onClick={closeMobile}
+                className="absolute right-3 top-3 rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+                aria-label="Închide meniul"
+            >
+                <X className="h-5 w-5" />
             </button>
 
             <div className="flex-1 overflow-y-auto no-scrollbar overflow-x-hidden">
@@ -184,7 +213,10 @@ const SidebarBase: React.FC<SidebarProps> = ({
 
                 {/* Project Selector */}
                 <button
-                    onClick={onSettingsOpen}
+                    onClick={() => {
+                        closeMobile();
+                        onSettingsOpen();
+                    }}
                     className={`w-full group flex items-center p-2 rounded-xl hover:bg-muted/70 transition-all mb-6
                         ${isCollapsed ? 'justify-center' : 'justify-between'}
                     `}
@@ -211,24 +243,24 @@ const SidebarBase: React.FC<SidebarProps> = ({
 
                 {/* Navigation Sections */}
                 <nav className="space-y-6">
-                    <NavSection items={mainGroup} activeTab={activeTab} onTabChange={onTabChange} isCollapsed={isCollapsed} />
+                    <NavSection items={mainGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
 
                     <div className="relative">
                         {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.engineering')}</div>}
                         {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={engineeringGroup} activeTab={activeTab} onTabChange={onTabChange} isCollapsed={isCollapsed} />
+                        <NavSection items={engineeringGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
                     </div>
 
                     <div className="relative">
                         {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.resources')}</div>}
                         {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={databaseGroup} activeTab={activeTab} onTabChange={onTabChange} isCollapsed={isCollapsed} />
+                        <NavSection items={databaseGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
                     </div>
 
                     <div className="relative">
                         {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.output')}</div>}
                         {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={reportsGroup} activeTab={activeTab} onTabChange={onTabChange} isCollapsed={isCollapsed} />
+                        <NavSection items={reportsGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
                     </div>
                 </nav>
             </div>
@@ -273,7 +305,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
                     {isCollapsed ? (
                         <Tooltip content={t('common.help')} side="right">
                             <button
-                                onClick={() => onTabChange('help')}
+                                onClick={() => handleTabChange('help')}
                                 className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-all"
                             >
                                 <HelpCircle className="w-4 h-4" />
@@ -281,7 +313,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
                         </Tooltip>
                     ) : (
                         <button
-                            onClick={() => onTabChange('help')}
+                            onClick={() => handleTabChange('help')}
                             className="flex-1 flex items-center justify-center gap-2 h-9 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-all"
                         >
                             <HelpCircle className="w-3.5 h-3.5" />
@@ -296,7 +328,8 @@ const SidebarBase: React.FC<SidebarProps> = ({
                     </div>
                 )}
             </div >
-        </aside >
+            </aside >
+        </>
     );
 };
 

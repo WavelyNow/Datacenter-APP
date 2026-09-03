@@ -90,7 +90,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                         className="mt-8 text-left bg-muted/20 backdrop-blur-sm rounded-xl p-5 border border-white/10"
                     >
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                            {tipsLabel || 'Quick Start Guide'}
+                            {tipsLabel || 'Ghid de pornire rapidă'}
                         </p>
                         <ul className="space-y-3">
                             {steps.map((step, i) => (

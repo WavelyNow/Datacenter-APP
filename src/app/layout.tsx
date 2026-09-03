@@ -10,13 +10,13 @@ import { Toaster } from "sonner";
 import { DynamicBackground } from "@/components/ui/DynamicBackground";
 
 export const metadata: Metadata = {
-  title: "Engineering Suite: Hydraulic Calc",
-  description: "Professional Tool for HVAC Hydraulic Calculations",
+  title: "Suita de inginerie: Calcul hidraulic",
+  description: "Instrument profesional pentru calcule hidraulice HVAC",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "EngSuite",
+    title: "Inginerie DC",
   },
 };
 
@@ -60,4 +60,3 @@ export default function RootLayout({
     </html>
   );
 }
-

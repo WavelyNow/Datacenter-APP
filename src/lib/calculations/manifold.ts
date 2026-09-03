@@ -1,5 +1,4 @@
 
-import { PIPE_STANDARDS } from '../pipeStandards';
 import { calculateHydraulics } from '../calc/hydraulics';
 import { getPipeData } from './common';
 

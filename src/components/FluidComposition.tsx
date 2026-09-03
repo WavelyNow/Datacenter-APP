@@ -80,8 +80,8 @@ export const FluidComposition: React.FC = () => {
                             <Snowflake className="w-6 h-6 text-indigo-500" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-foreground tracking-tight">Fluid Mix</h2>
-                            <p className="text-xs text-muted-foreground font-medium">Water / Glycol Ratio</p>
+                            <h2 className="text-xl font-bold text-foreground tracking-tight">Amestec de fluide</h2>
+                            <p className="text-xs text-muted-foreground font-medium">Raport apă / glicol</p>
                         </div>
                     </div>
 
@@ -89,7 +89,7 @@ export const FluidComposition: React.FC = () => {
                     <div className="flex flex-col items-end">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 uppercase tracking-wider mb-1">
                             <ThermometerSnowflake className="w-3.5 h-3.5" />
-                            Freezing Point
+                            Punct de îngheț
                         </div>
                         <div className="text-xl font-black text-foreground font-mono bg-card px-3 py-1 rounded-lg border border-border">
                             {glycolPercentage > 60 ? '—' : `${freezingPoint}°C`}
@@ -135,7 +135,7 @@ export const FluidComposition: React.FC = () => {
                             {fluidType === 'water' ? '100%' : `${glycolPercentage}%`}
                         </div>
                         <div className="absolute top-0 right-1/4 translate-x-8 text-xs font-bold text-muted-foreground border border-border rounded px-1.5 py-0.5 uppercase tracking-wider">
-                            {fluidType === 'water' ? 'Pure Water' : 'Concentration'}
+                            {fluidType === 'water' ? 'Apă pură' : 'Concentrație'}
                         </div>
                     </div>
 
@@ -156,7 +156,7 @@ export const FluidComposition: React.FC = () => {
 
                             {/* Unfilled Part (Water) */}
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none z-10 opacity-50">
-                                <span className="text-xs font-bold text-muted-foreground uppercase">Water</span>
+                                <span className="text-xs font-bold text-muted-foreground uppercase">Apă</span>
                                 <Droplets className="w-3.5 h-3.5 text-muted-foreground" />
                             </div>
 
@@ -181,7 +181,7 @@ export const FluidComposition: React.FC = () => {
                             <Droplets className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div>
-                            <div className="text-[10px] text-muted-foreground uppercase font-bold">Water Vol</div>
+                            <div className="text-[10px] text-muted-foreground uppercase font-bold">Volum apă</div>
                             <div className="text-sm font-bold text-foreground">{(100 - glycolPercentage)}%</div>
                         </div>
                     </div>
@@ -190,7 +190,7 @@ export const FluidComposition: React.FC = () => {
                             <Snowflake className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div>
-                            <div className="text-[10px] text-muted-foreground uppercase font-bold">Glycol Vol</div>
+                            <div className="text-[10px] text-muted-foreground uppercase font-bold">Volum glicol</div>
                             <div className="text-sm font-bold text-foreground">{glycolPercentage}%</div>
                         </div>
                     </div>

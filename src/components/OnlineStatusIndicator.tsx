@@ -41,7 +41,7 @@ export const OnlineStatusIndicator: React.FC = () => {
                     className="fixed top-0 left-0 right-0 z-9999 py-2 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 bg-amber-500 text-white"
                 >
                     <WifiOff className="w-4 h-4" />
-                    You&apos;re offline. Changes will be saved locally.
+                    Nu există conexiune la internet. Modificările vor fi salvate local.
                 </motion.div>
             )}
         </AnimatePresence>
@@ -60,7 +60,7 @@ export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className 
     return (
         <div
             className={`flex items-center gap-1.5 text-xs font-medium ${className}`}
-            title={isOnline ? 'Connected' : 'Offline - changes saved locally'}
+            title={isOnline ? 'Conectat' : 'Fără conexiune – modificările sunt salvate local'}
         >
             <span
                 className={`w-2 h-2 rounded-full ${isOnline
@@ -69,7 +69,7 @@ export const OnlineStatusBadge: React.FC<{ className?: string }> = ({ className 
                     }`}
             />
             <span className={isOnline ? 'text-primary dark:text-primary' : 'text-amber-600 dark:text-amber-400'}>
-                {isOnline ? 'Online' : 'Offline'}
+                {isOnline ? 'Conectat' : 'Deconectat'}
             </span>
         </div>
     );

@@ -36,10 +36,10 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
 
     // Specifications Aggregation
     const specs = {
-        Volume: `${item.volume || 0} L`,
-        Weight: `${item.weight || 0} kg`,
-        ...(item.power && { Power: `${item.power} kW` }),
-        ...(item.flowRate && { 'Flow Rate': `${item.flowRate} m³/h` }),
+        Volum: `${item.volume || 0} L`,
+        Greutate: `${item.weight || 0} kg`,
+        ...(item.power && { Putere: `${item.power} kW` }),
+        ...(item.flowRate && { Debit: `${item.flowRate} m³/h` }),
         ...(item.specifications && item.specifications)
     };
 
@@ -89,12 +89,12 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
 
                     <div className="absolute top-6 left-6 flex flex-col gap-2">
                         <span className="px-3 py-1.5 bg-primary/20 backdrop-blur-md rounded-full text-primary border border-primary/30 text-[10px] uppercase font-bold tracking-widest flex items-center gap-2">
-                            <Box className="w-3 h-3" /> {isCatalog ? 'Catalog Library' : 'Project Gallery'}
+                            <Box className="w-3 h-3" /> {isCatalog ? 'Biblioteca catalogului' : 'Galeria proiectului'}
                         </span>
                     </div>
 
                     <div className="absolute bottom-6 left-6 text-white/40 text-[10px] font-mono select-none">
-                        INTERACTIVE PREVIEW MODE [60 FPS]
+                        MOD DE PREVIZUALIZARE INTERACTIVĂ [60 FPS]
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
                     {/* Specs Grid */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border pb-2">
-                            <Settings className="w-3.5 h-3.5" /> Technical Specifications
+                            <Settings className="w-3.5 h-3.5" /> Specificații tehnice
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             {Object.entries(specs).map(([key, value]) => (
@@ -140,12 +140,12 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
                                 }}
                                 className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                             >
-                                <Plus className="w-5 h-5" /> Import to Project
+                                <Plus className="w-5 h-5" /> Importă în proiect
                             </button>
                         ) : (
                             <div className="flex items-center gap-3 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-600 dark:text-primary text-sm font-bold uppercase tracking-wider">
                                 <CheckCircle className="w-5 h-5 text-indigo-500" />
-                                Model is part of active project
+                                Modelul face parte din proiectul activ
                             </div>
                         )}
 
@@ -156,7 +156,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
                                 rel="noopener noreferrer"
                                 className="w-full py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-2xl font-bold flex items-center justify-center gap-2 border border-border transition-all"
                             >
-                                <FileText className="w-4 h-4" /> Technical Documentation
+                                <FileText className="w-4 h-4" /> Documentație tehnică
                             </a>
                         )}
                     </div>
@@ -165,7 +165,7 @@ export const BimModelDetailView: React.FC<BimModelDetailViewProps> = ({ item, is
                         <div className="flex items-center gap-3 opacity-40">
                             <Box className="w-8 h-8 text-muted-foreground" />
                             <div>
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none">Powered by</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none">Dezvoltat cu</div>
                                 <div className="text-xs font-bold text-foreground">BIM ENGINE v2.6</div>
                             </div>
                         </div>

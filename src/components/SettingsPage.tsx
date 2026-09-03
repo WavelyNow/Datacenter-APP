@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import { usePreferences, useTranslation, UnitSystem, Language, DateFormat } from '@/context/PreferencesContext';
+import { usePreferences, useTranslation, UnitSystem, DateFormat } from '@/context/PreferencesContext';
 import {
     Settings,
-    Globe,
     Ruler,
     Bell,
     Monitor,
@@ -120,11 +119,6 @@ export const SettingsPage: React.FC = () => {
         { value: 'imperial', label: t('settingsPage.options.imperial'), icon: <span>🇺🇸</span> }
     ];
 
-    const languageOptions: SelectOption<Language>[] = [
-        { value: 'ro', label: t('settingsPage.options.romanian'), icon: <span>🇷🇴</span> },
-        { value: 'en', label: t('settingsPage.options.english'), icon: <span>🇬🇧</span> }
-    ];
-
     const dateFormatOptions: SelectOption<DateFormat>[] = [
         { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
         { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
@@ -212,24 +206,6 @@ export const SettingsPage: React.FC = () => {
                         </SettingRow>
                     </SettingsSection>
 
-                    {/* Language Settings */}
-                    <SettingsSection
-                        title={t('settingsPage.sections.language.title')}
-                        description={t('settingsPage.sections.language.description')}
-                        icon={<Globe className="w-5 h-5" />}
-                    >
-                        <SettingRow
-                            label={t('settingsPage.rows.interfaceLanguage.label')}
-                            description={t('settingsPage.rows.interfaceLanguage.description')}
-                        >
-                            <SelectButtonGroup
-                                options={languageOptions}
-                                value={preferences.language}
-                                onChange={v => updatePreference('language', v)}
-                            />
-                        </SettingRow>
-                    </SettingsSection>
-
                     {/* Behavior Settings */}
                     <SettingsSection
                         title={t('settingsPage.sections.behavior.title')}
@@ -293,9 +269,6 @@ export const SettingsPage: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
                                 {preferences.unitSystem === 'metric' ? `🌍 ${t('settingsPage.options.metric')}` : `🇺🇸 ${t('settingsPage.options.imperial')}`}
-                            </span>
-                            <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
-                                {preferences.language === 'ro' ? `🇷🇴 ${t('settingsPage.options.romanian')}` : `🇬🇧 ${t('settingsPage.options.english')}`}
                             </span>
                             <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
                                 📅 {preferences.dateFormat}

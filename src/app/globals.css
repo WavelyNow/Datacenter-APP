@@ -224,7 +224,7 @@
   }
 
   .sidebar-panel {
-    @apply bg-background/75 backdrop-blur-xl border-r border-border/60 h-screen sticky top-0;
+    @apply bg-background/90 backdrop-blur-xl border-r border-border/60 h-dvh;
   }
 
   /* Skeleton Shimmer Animation */
@@ -278,7 +278,7 @@
   }
 
   .spacing-page {
-    @apply max-w-[1900px] mx-auto px-6 py-8 xl:px-12 xl:py-12;
+    @apply max-w-[1900px] mx-auto px-3 py-4 sm:px-6 sm:py-8 xl:px-12 xl:py-12;
   }
 
   /* Clean Text Utilities */

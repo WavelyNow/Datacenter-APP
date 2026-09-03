@@ -42,10 +42,9 @@ const mockTranslations: Record<string, string> = {
 jest.mock('@/context/PreferencesContext', () => ({
     useTranslation: () => ({
         t: (key: string) => mockTranslations[key] || key,
-        language: 'en',
     }),
     usePreferences: () => ({
-        preferences: { language: 'en', unitSystem: 'metric' },
+        preferences: { unitSystem: 'metric' },
         updatePreference: jest.fn(),
         resetPreferences: jest.fn(),
         isOnline: true,

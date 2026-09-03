@@ -10,6 +10,31 @@ import { EquipmentItem, CatalogEquipment } from '@/lib/types';
 import { BimModelDetailView } from './BimModelDetailView';
 import { AnimatePresence } from 'framer-motion';
 
+const FILTER_LABELS: Record<string, string> = {
+    All: 'Toate',
+    Generic: 'Generic',
+    Other: 'Altele',
+    Cooling: 'Răcire',
+    Racks: 'Rack-uri',
+    Power: 'Alimentare',
+    'Power Distribution': 'Distribuție energie',
+    'Integrated Solutions': 'Soluții integrate',
+    'Cooling Accessories': 'Accesorii răcire',
+    Safety: 'Siguranță',
+    Security: 'Securitate',
+    Infrastructure: 'Infrastructură',
+    'IT Systems': 'Sisteme IT',
+    Generator: 'Generator',
+    Container: 'Container',
+    Piping: 'Țevi',
+    Switchgear: 'Aparataj electric',
+    AHU: 'UTA',
+    'Cooling Tower': 'Turn de răcire',
+    'In-Row Cooling': 'Răcire in-row',
+};
+
+const filterLabel = (value: string) => FILTER_LABELS[value] ?? value;
+
 export const BimGalleryPage = () => {
     const { equipmentList, setEquipmentList } = useProject();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -183,14 +208,14 @@ export const BimGalleryPage = () => {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    const confirm = window.confirm('Are you sure you want to remove this model from your project?');
+                                    const confirm = window.confirm('Sigur vrei să elimini acest model din proiect?');
                                     if (confirm) {
                                         if (item.model3d?.startsWith('blob:')) URL.revokeObjectURL(item.model3d);
                                         setEquipmentList((prev: EquipmentItem[]) => prev.filter(i => i.id !== item.id));
                                     }
                                 }}
                                 className="p-2 rounded-lg hover:bg-red-500/10 text-destructive transition-colors shrink-0"
-                                title="Remove Model"
+                                title="Elimină modelul"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
@@ -200,7 +225,7 @@ export const BimGalleryPage = () => {
                                     setSelectedDetail({ item, isCatalog });
                                 }}
                                 className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors shrink-0"
-                                title="Inspect Model"
+                                title="Inspectează modelul"
                             >
                                 <Maximize2 className="w-4 h-4" />
                             </button>
@@ -225,7 +250,7 @@ export const BimGalleryPage = () => {
                     )}
                     <div className="absolute bottom-4 left-4 pointer-events-none flex gap-2">
                         <span className={`px-2 py-1 text-white/90 text-[10px] uppercase font-bold rounded-md backdrop-blur-md border border-white/10 flex items-center gap-1 ${isCatalog ? 'bg-primary/60' : 'bg-black/60'}`}>
-                            {isCatalog ? 'Catalog Preview' : <><Box className="w-3 h-3" /> 3D Interactive</>}
+                            {isCatalog ? 'Previzualizare catalog' : <><Box className="w-3 h-3" /> 3D interactiv</>}
                         </span>
                     </div>
                 </div>
@@ -243,10 +268,10 @@ export const BimGalleryPage = () => {
                             <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
                                 <Box className="w-8 h-8 text-primary" />
                             </div>
-                            3D Model Gallery
+                            Galerie 3D și modele
                         </h1>
                         <p className="text-muted-foreground text-sm mt-1">
-                            Visualize project equipment and explore BIM library.
+                            Vizualizează echipamentele proiectului și explorează biblioteca BIM.
                         </p>
                     </div>
                     {/* View Switcher */}
@@ -256,7 +281,7 @@ export const BimGalleryPage = () => {
                             className="btn btn-secondary btn-sm gap-2"
                             title="Importă fișiere .glb/.gltf descărcate de la producători (ex. cad.georgfischer.com, TraceParts, BIMobject)"
                         >
-                            <Upload className="w-4 h-4" /> Import GLB
+                            <Upload className="w-4 h-4" /> Importă GLB
                         </button>
                         <input
                             ref={fileInputRef}
@@ -270,13 +295,13 @@ export const BimGalleryPage = () => {
                                 onClick={() => setActiveView('project')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'project' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                             >
-                                My Gallery ({bimItems.length})
+                                Galeria mea ({bimItems.length})
                             </button>
                             <button
                                 onClick={() => setActiveView('catalog')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeView === 'catalog' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                             >
-                                Explore Library
+                                Explorează biblioteca
                             </button>
                         </div>
                     </div>
@@ -289,12 +314,12 @@ export const BimGalleryPage = () => {
                     {bimItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-2xl bg-muted/10 text-center">
                             <Cuboid className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                            <h3 className="text-lg font-medium">Gallery Empty</h3>
+                            <h3 className="text-lg font-medium">Galeria este goală</h3>
                             <p className="text-sm text-muted-foreground mb-6">
-                                You haven&apos;t added any 3D models to your project yet.
+                                Nu ai adăugat încă modele 3D în proiect.
                             </p>
                             <button onClick={() => setActiveView('catalog')} className="btn btn-primary gap-2">
-                                <Search className="w-4 h-4" /> Browse Catalog
+                                <Search className="w-4 h-4" /> Răsfoiește catalogul
                             </button>
                         </div>
                     ) : (
@@ -310,7 +335,7 @@ export const BimGalleryPage = () => {
                     {/* Filters Toolbar */}
                     <div className="flex flex-col md:flex-row gap-4 p-4 bg-muted/20 rounded-xl border border-border items-center">
                         <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground mr-auto">
-                            <Filter className="w-4 h-4" /> Filters:
+                            <Filter className="w-4 h-4" /> Filtre:
                             {(filterManufacturer !== 'All' || filterCategory !== 'All' || searchTerm) && (
                                 <button
                                     onClick={() => {
@@ -320,7 +345,7 @@ export const BimGalleryPage = () => {
                                     }}
                                     className="ml-2 px-2 py-0.5 rounded-md bg-secondary text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors flex items-center gap-1"
                                 >
-                                    <X className="w-3 h-3" /> Clear
+                                    <X className="w-3 h-3" /> Șterge
                                 </button>
                             )}
                         </div>
@@ -332,7 +357,7 @@ export const BimGalleryPage = () => {
                                 onChange={(e) => setFilterCategory(e.target.value)}
                                 className="bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none min-w-[150px]"
                             >
-                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                {categories.map(c => <option key={c} value={c}>{filterLabel(c)}</option>)}
                             </select>
 
                             {/* Manufacturer Filter */}
@@ -341,7 +366,7 @@ export const BimGalleryPage = () => {
                                 onChange={(e) => setFilterManufacturer(e.target.value)}
                                 className="bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none min-w-[150px]"
                             >
-                                {manufacturers.map(m => <option key={m} value={m}>{m}</option>)}
+                                {manufacturers.map(m => <option key={m} value={m}>{filterLabel(m)}</option>)}
                             </select>
 
                             {/* Search */}
@@ -349,7 +374,7 @@ export const BimGalleryPage = () => {
                                 <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-muted-foreground pointer-events-none" />
                                 <input
                                     type="text"
-                                    placeholder="Search models..."
+                                    placeholder="Caută modele..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="bg-background border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none w-full md:w-[200px]"
@@ -360,7 +385,7 @@ export const BimGalleryPage = () => {
 
                     <div className="flex items-center justify-between px-1">
                         <span className="text-xs text-muted-foreground font-mono">
-                            Showing {filteredCatalogItems.length} available models
+                            Se afișează {filteredCatalogItems.length} modele disponibile
                         </span>
                     </div>
 

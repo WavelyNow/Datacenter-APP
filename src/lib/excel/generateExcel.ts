@@ -20,7 +20,7 @@ interface ExcelExportData {
 
 export const generateExcelReport = async (data: ExcelExportData) => {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'Datacenter Engineering Suite';
+    workbook.creator = 'Suita de inginerie Datacenter';
     workbook.lastModifiedBy = data.projectDetails.designer;
     workbook.created = new Date();
     workbook.modified = new Date();
@@ -78,7 +78,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     };
 
     // --- SHEET 1: PROJECT OVERVIEW (Minimalist Dashboard) ---
-    const wsSummary = initSheet('Overview');
+    const wsSummary = initSheet('Sumar');
 
     // Title Area (Huge, Clean)
     wsSummary.mergeCells('B3:F3');
@@ -89,7 +89,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
 
     wsSummary.mergeCells('B4:F4');
     const subTitle = wsSummary.getCell('B4');
-    subTitle.value = `Technical ReportGenerated on ${new Date().toLocaleDateString('ro-RO')}`;
+    subTitle.value = `Raport tehnic. Generat la ${new Date().toLocaleDateString('ro-RO')}`;
     subTitle.font = { name: 'Arial', size: 10, color: { argb: palette.secondary } };
 
     // Spacer
@@ -130,13 +130,13 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     const glycol = purchase.totalGlycolL;
 
     // Row 7: Metrics Row 1
-    drawMetric(7, 2, 'Total System Volume', totalVolumeGross.toFixed(0), 'Liters');
-    drawMetric(7, 5, 'Glycol Needed', glycol.toFixed(0), 'Liters');
+    drawMetric(7, 2, 'Volum total sistem', totalVolumeGross.toFixed(0), 'litri');
+    drawMetric(7, 5, 'Glicol necesar', glycol.toFixed(0), 'litri');
 
     // Row 10: Metrics Row 2
-    const fluidName = data.fluidType === 'ethylene' ? 'Ethylene Glycol' : data.fluidType === 'water' ? 'Pure Water' : 'Propylene Glycol';
-    drawMetric(10, 2, 'Fluid Type', fluidName, '');
-    drawMetric(10, 5, 'Concentration', `${data.glycolPercentage}%`, '');
+    const fluidName = data.fluidType === 'ethylene' ? 'Etilen glicol' : data.fluidType === 'water' ? 'Apă pură' : 'Propilen glicol';
+    drawMetric(10, 2, 'Tip fluid', fluidName, '');
+    drawMetric(10, 5, 'Concentrație', `${data.glycolPercentage}%`, '');
 
     // Separator Line
     wsSummary.mergeCells('B13:F13');
@@ -145,10 +145,10 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     // Project Details List (Clean Vertical List)
     const startDetails = 15;
     const projectInfo = [
-        ['Project Number', data.projectDetails.projectNumber],
-        ['Location', data.projectDetails.location],
-        ['Beneficiary', data.projectDetails.beneficiary || 'N/A'],
-        ['Designer', data.projectDetails.designer],
+        ['Număr proiect', data.projectDetails.projectNumber],
+        ['Locație', data.projectDetails.location],
+        ['Beneficiar', data.projectDetails.beneficiary || 'N/A'],
+        ['Proiectant', data.projectDetails.designer],
     ];
 
     projectInfo.forEach((info, idx) => {
@@ -176,7 +176,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
 
 
     // --- SHEET 2: BILL OF QUANTITIES ---
-    const wsBoq = initSheet('Bill of Quantities');
+    const wsBoq = initSheet('Listă cantități');
     wsBoq.getColumn(2).width = 35; // Material
     wsBoq.getColumn(3).width = 15; // Size
     wsBoq.getColumn(4).width = 15; // Qty
@@ -184,7 +184,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
 
     // Sheet Title
     const boqTitle = wsBoq.getCell('B3');
-    boqTitle.value = 'Material Schedule';
+    boqTitle.value = 'Listă de materiale';
     boqTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
 
     // Data Grouping
@@ -195,10 +195,25 @@ export const generateExcelReport = async (data: ExcelExportData) => {
         return acc;
     }, {} as Record<string, { material: string, size: string, length: number }>);
 
+    const materialLabels: Record<string, string> = {
+        steel_light: 'Oțel - seria ușoară',
+        steel_medium: 'Oțel - seria medie',
+        steel_heavy: 'Oțel - seria grea',
+        inox_press: 'Inox pentru presare',
+        copper: 'Cupru',
+        ppr_pn20: 'PPR PN20',
+        pehd_sdr17: 'PEHD SDR17',
+        pvc_u_pn16: 'PVC-U PN16',
+        uponor_pexa_sdr73: 'Uponor PE-Xa SDR7.3',
+        gf_coolfit_2_0: 'GF COOL-FIT 2.0',
+        gf_coolfit_4_0: 'GF COOL-FIT 4.0',
+        pipelife_pe100_sdr11: 'Pipelife PE100 SDR11',
+        valrom_ppr_pn20: 'Valrom PPR PN20',
+    };
     const boqRows = Object.values(groupedPipes)
         .sort((a, b) => a.material.localeCompare(b.material))
         .map(p => [
-            p.material.replace(/_/g, ' ').toUpperCase().replace('STEEL', 'Steel').replace('LIGHT', 'Light'),
+            materialLabels[p.material] ?? p.material.replace(/_/g, ' '),
             p.size,
             p.length.toFixed(1) + ' m',
             (p.length * (1 + marginPct / 100)).toFixed(1) + ' m'
@@ -207,20 +222,20 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     styleTable(
         wsBoq,
         5,
-        ['Material Type', 'Dimension', 'Net Qty', 'Gross Qty (+10%)'],
+        ['Tip material', 'Dimensiune', 'Cantitate netă', `Cantitate brută (+${marginPct}%)`],
         boqRows
     );
 
 
     // --- SHEET 3: EQUIPMENT ---
-    const wsEq = initSheet('Equipment');
+    const wsEq = initSheet('Echipamente');
     wsEq.getColumn(2).width = 25;
     wsEq.getColumn(3).width = 35;
     wsEq.getColumn(4).width = 15;
     wsEq.getColumn(5).width = 15;
 
     const eqTitle = wsEq.getCell('B3');
-    eqTitle.value = 'Equipment Inventory';
+    eqTitle.value = 'Inventar echipamente';
     eqTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
 
     const eqRows = data.equipmentList.map(eq => [
@@ -233,32 +248,32 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     styleTable(
         wsEq,
         5,
-        ['Category', 'Model Reference', 'Volume', 'Weight'],
+        ['Categorie', 'Referință model', 'Volum', 'Greutate'],
         eqRows
     );
 
 
     // --- SHEET 4: CONFIGURATION ---
-    const wsConfig = initSheet('Configuration');
+    const wsConfig = initSheet('Configurație');
     wsConfig.getColumn(2).width = 30;
     wsConfig.getColumn(3).width = 40;
 
     const cfgTitle = wsConfig.getCell('B3');
-    cfgTitle.value = 'Support Specification';
+    cfgTitle.value = 'Specificații suporți';
     cfgTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
 
     const cfgRows = [
-        ['Mounting Type', data.supportConfig.mountingType === 'concrete' ? 'Floor Mounted (Concrete)' : 'Ceiling Suspended'],
-        ['Installation Height', `${data.supportConfig.height} meters`],
-        ['Support Spacing', `${data.supportConfig.spacing} meters max`],
-        ['Insulation Spec', `${data.supportConfig.insulationThickness}mm / ${data.supportConfig.insulationDensity}kg/m³`],
-        ['Console Arms', (data.supportConfig.addLeftConsole || data.supportConfig.addRightConsole) ? 'Required' : 'None'],
+        ['Tip montaj', data.supportConfig.mountingType === 'concrete' ? 'Montaj pe pardoseală (beton)' : 'Suspendat de tavan'],
+        ['Înălțime instalare', `${data.supportConfig.height} metri`],
+        ['Distanță între suporți', `${data.supportConfig.spacing} metri max.`],
+        ['Specificație izolație', `${data.supportConfig.insulationThickness} mm / ${data.supportConfig.insulationDensity} kg/m³`],
+        ['Brațe consolă', (data.supportConfig.addLeftConsole || data.supportConfig.addRightConsole) ? 'Necesare' : 'Niciuna'],
     ];
 
     styleTable(
         wsConfig,
         5,
-        ['Parameter', 'Specification'],
+        ['Parametru', 'Specificație'],
         cfgRows
     );
 
@@ -268,7 +283,7 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `Project_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Minimal.xlsx`;
+    anchor.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Minimal.xlsx`;
     anchor.click();
     window.URL.revokeObjectURL(url);
 };

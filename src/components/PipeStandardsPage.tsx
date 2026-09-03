@@ -2,382 +2,446 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-    Book, Search, Save, RotateCcw, Plus, Trash2, Download, Check,
-    Info, ShieldCheck, AlertTriangle
+    BookOpen,
+    Database,
+    ExternalLink,
+    Gauge,
+    Info,
+    Ruler,
+    Search,
+    ShieldCheck,
+    SlidersHorizontal,
+    Snowflake,
+    Weight,
 } from 'lucide-react';
-import {
-    getPipeStandards,
-    saveUserPipeStandards,
-    resetUserPipeStandards,
-    hasUserPipeStandardsOverride,
-    PipeStandard,
-    PipeDimension,
-} from '@/lib/pipeStandards';
+import { getPipeStandards, PipeDimension, PipeStandard } from '@/lib/pipeStandards';
 
 type PipeCategory = 'all' | 'metal' | 'plastic' | 'special';
+type CatalogEntry = { key: string; data: PipeStandard };
 
-interface EditableDim extends PipeDimension {
-    _key: string; // stable key for editing
-}
+const CATEGORY_LABELS: Record<PipeCategory, string> = {
+    all: 'Toate',
+    metal: 'Metal',
+    plastic: 'Plastic',
+    special: 'Speciale',
+};
 
-let dimSeq = 0;
-const makeKey = () => `dim-${Date.now()}-${dimSeq++}`;
+const formatNumber = (value: number, maximumFractionDigits = 1) => value.toLocaleString('ro-RO', {
+    maximumFractionDigits,
+});
+
+const getNominalDn = (dimension: PipeDimension) => {
+    if (dimension.nominalDn) return dimension.nominalDn;
+    if (/^DN/i.test(dimension.dn)) return dimension.dn;
+    return null;
+};
+
+const getDimensionText = (dimension: PipeDimension) => [
+    dimension.dn,
+    dimension.nominalDn ?? '',
+    dimension.inch,
+    String(dimension.od),
+    String(dimension.thickness),
+    String(dimension.id),
+    dimension.pressureClass ? `PN${dimension.pressureClass}` : '',
+    dimension.sdr ? `SDR${dimension.sdr}` : '',
+].join(' ').toLowerCase();
+
+const getStandardText = (standard: PipeStandard) => [
+    standard.label,
+    standard.description,
+    standard.material ?? '',
+    ...(standard.sources ?? []).map(source => source.name),
+].join(' ').toLowerCase();
+
+const inferSingleSdr = (standard: PipeStandard): number | undefined => {
+    const matches = [...new Set(
+        `${standard.label} ${standard.description}`
+            .match(/SDR\s*[\d.]+/gi)
+            ?.map(value => Number(value.replace(/SDR\s*/i, ''))) ?? []
+    )];
+    return matches.length === 1 ? matches[0] : undefined;
+};
+
+const getDimensionRating = (standard: PipeStandard, dimension: PipeDimension) => {
+    const pressure = dimension.pressureClass;
+    const sdr = dimension.sdr ?? inferSingleSdr(standard);
+    return {
+        pressure: pressure === undefined ? null : `PN${formatNumber(pressure, 0)}`,
+        sdr: sdr === undefined ? null : `SDR${formatNumber(sdr, 1)}`,
+    };
+};
+
+const getStandardPressureLabel = (standard: PipeStandard) => {
+    const pressureClasses = [...new Set(
+        standard.dimensions
+            .map(dimension => dimension.pressureClass)
+            .filter((pressure): pressure is number => pressure !== undefined)
+    )];
+    return pressureClasses.length > 0
+        ? pressureClasses.map(pressure => `PN${formatNumber(pressure, 0)}`).join(' / ')
+        : 'Presiune în funcție de dimensiune';
+};
+
+const getWeightLabel = (standard: PipeStandard) => {
+    if (standard.weightBasis === 'preinsulated-total') return 'kg/m cu manta și izolație';
+    if (standard.weightBasis === 'bare') return 'kg/m țeavă simplă';
+    return 'kg/m';
+};
+
+const getCategoryTone = (category: PipeCategory) => {
+    if (category === 'metal') return 'bg-indigo-500';
+    if (category === 'plastic') return 'bg-cyan-500';
+    return 'bg-violet-500';
+};
+
+const getSeriesRange = (dimensions: readonly PipeDimension[]) => {
+    if (dimensions.length === 0) return 'Fără dimensiuni';
+    return `${dimensions[0].dn} – ${dimensions[dimensions.length - 1].dn}`;
+};
+
+const DimensionCard: React.FC<{ standard: PipeStandard; dimension: PipeDimension }> = ({ standard, dimension }) => {
+    const rating = getDimensionRating(standard, dimension);
+    const nominalDn = getNominalDn(dimension);
+
+    return (
+        <article className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    {nominalDn && <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">{nominalDn}</p>}
+                    <h3 className="mt-1 font-mono text-lg font-bold text-foreground">{dimension.dn}</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{dimension.inch !== '-' ? dimension.inch : 'Dimensiune metrică'}</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                    {rating.pressure && <span className="rounded-full bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-600">{rating.pressure}</span>}
+                    {rating.sdr && <span className="rounded-full bg-violet-500/10 px-2 py-1 text-[10px] font-bold text-violet-600">{rating.sdr}</span>}
+                </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                    <p className="text-[10px] text-muted-foreground">Ø exterior</p>
+                    <p className="mt-0.5 font-mono text-sm font-semibold">{formatNumber(dimension.od)} mm</p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                    <p className="text-[10px] text-muted-foreground">Grosime</p>
+                    <p className="mt-0.5 font-mono text-sm font-semibold">{formatNumber(dimension.thickness, 2)} mm</p>
+                </div>
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5">
+                    <p className="text-[10px] text-primary/70">ID hidraulic</p>
+                    <p className="mt-0.5 font-mono text-sm font-bold text-primary">{formatNumber(dimension.id, 1)} mm</p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2.5">
+                    <p className="text-[10px] text-muted-foreground">Greutate</p>
+                    <p className="mt-0.5 font-mono text-sm font-semibold">{formatNumber(dimension.weight, 3)} kg/m</p>
+                </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+                {dimension.insulatedOd && <span>Izolat: <strong className="text-foreground">{formatNumber(dimension.insulatedOd)} mm</strong></span>}
+                {dimension.supportSpacing?.water && <span>Reazem apă: <strong className="text-foreground">{formatNumber(dimension.supportSpacing.water, 2)} m</strong></span>}
+            </div>
+        </article>
+    );
+};
 
 /**
- * Pagina „Standarde Țevi” — înlocuiește meniul/modalul vechi de catalog.
- * Permite VIZUALIZAREA și CORECTAREA tabelelor (Ø exterior, grosime, Ø interior,
- * greutate, Ø izolat) pentru toți producătorii, cu salvare locală (override)
- * și export/întoarcere la datele oficiale.
+ * Catalogul tehnic este un selector read-only: alegi seria, apoi vezi
+ * dimensiunile complete. Pe mobil, tabelul devine o listă de carduri.
  */
 export const PipeStandardsPage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<PipeCategory>('all');
-    const [hasOverride, setHasOverride] = useState<boolean>(() => hasUserPipeStandardsOverride());
-    const [savedFlash, setSavedFlash] = useState(false);
-    // Working copy: key → standard (copy of getPipeStandards on mount)
-    const [standards, setStandards] = useState<Record<string, PipeStandard>>(() => {
-        const standards = getPipeStandards();
-        // add stable keys to dimensions
-        const out: Record<string, PipeStandard> = {};
-        Object.entries(standards).forEach(([key, std]) => {
-            out[key] = {
-                ...std,
-                dimensions: std.dimensions.map(d => ({ ...d, _key: makeKey() } as EditableDim)),
-            };
-        });
-        return out;
-    });
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const standards = getPipeStandards();
 
-    const standardsList = useMemo(() => {
-        return Object.entries(standards)
-            .map(([key, data]) => ({ key, data }))
-            .filter(({ data }) => {
-                if (selectedCategory !== 'all' && data.category !== selectedCategory) return false;
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    return (
-                        data.label.toLowerCase().includes(q) ||
-                        data.description.toLowerCase().includes(q) ||
-                        data.dimensions.some(d => d.dn.toLowerCase().includes(q) || (d.inch ?? '').toLowerCase().includes(q))
-                    );
-                }
-                return true;
-            });
-    }, [standards, searchQuery, selectedCategory]);
+    const allEntries = useMemo<CatalogEntry[]>(() => Object.entries(standards).map(([key, data]) => ({ key, data })), [standards]);
+    const query = searchQuery.trim().toLowerCase();
 
     const categoryCounts = useMemo(() => {
         const counts: Record<PipeCategory, number> = { all: 0, metal: 0, plastic: 0, special: 0 };
-        Object.values(standards).forEach(s => { counts.all++; counts[s.category]++; });
+        allEntries.forEach(({ data }) => {
+            counts.all += 1;
+            counts[data.category] += 1;
+        });
         return counts;
-    }, [standards]);
+    }, [allEntries]);
 
-    const updateStandardMeta = (key: string, patch: Partial<PipeStandard>) => {
-        setStandards(prev => ({ ...prev, [key]: { ...prev[key], ...patch } }));
-    };
+    const filteredEntries = useMemo(() => allEntries.filter(({ data }) => {
+        if (selectedCategory !== 'all' && data.category !== selectedCategory) return false;
+        if (!query) return true;
+        return getStandardText(data).includes(query) || data.dimensions.some(dimension => getDimensionText(dimension).includes(query));
+    }), [allEntries, query, selectedCategory]);
 
-    const updateDim = (key: string, dimKey: string, patch: Partial<PipeDimension>) => {
-        setStandards(prev => ({
-            ...prev,
-            [key]: {
-                ...prev[key],
-                dimensions: prev[key].dimensions.map(d =>
-                    (d as EditableDim)._key === dimKey ? { ...d, ...patch } : d
-                ),
-            },
-        }));
-    };
+    const selectedEntry = useMemo(() => {
+        if (selectedKey) {
+            const exact = filteredEntries.find(entry => entry.key === selectedKey);
+            if (exact) return exact;
+        }
+        return filteredEntries[0] ?? null;
+    }, [filteredEntries, selectedKey]);
 
-    const removeDim = (key: string, dimKey: string) => {
-        setStandards(prev => ({
-            ...prev,
-            [key]: { ...prev[key], dimensions: prev[key].dimensions.filter(d => (d as EditableDim)._key !== dimKey) },
-        }));
-    };
+    const visibleDimensions = useMemo(() => {
+        if (!selectedEntry) return [];
+        const standardMatches = !query || getStandardText(selectedEntry.data).includes(query);
+        if (standardMatches) return selectedEntry.data.dimensions;
+        return selectedEntry.data.dimensions.filter(dimension => getDimensionText(dimension).includes(query));
+    }, [query, selectedEntry]);
 
-    const addDim = (key: string) => {
-        setStandards(prev => ({
-            ...prev,
-            [key]: {
-                ...prev[key],
-                dimensions: [...prev[key].dimensions, { dn: `d${prev[key].dimensions.length ? prev[key].dimensions[prev[key].dimensions.length - 1].od + 10 : 20}`, inch: '-', od: 0, thickness: 0, id: 0, weight: 0, _key: makeKey() } as EditableDim],
-            },
-        }));
-    };
-
-    const autoFillId = (d: PipeDimension): number | undefined => {
-        if (d.od > 0 && d.thickness > 0) return Math.round((d.od - 2 * d.thickness) * 10) / 10;
-        return undefined;
-    };
-
-    const handleSave = () => {
-        // Strip internal keys before saving
-        const clean: Record<string, PipeStandard> = {};
-        Object.entries(standards).forEach(([key, std]) => {
-            clean[key] = { ...std, dimensions: std.dimensions.map(d => {
-                const { _key, ...rest } = d as EditableDim;
-                return rest;
-            })};
-        });
-        saveUserPipeStandards(clean);
-        setHasOverride(true);
-        setSavedFlash(true);
-        setTimeout(() => setSavedFlash(false), 2000);
-    };
-
-    const handleReset = () => {
-        if (!confirm('Resetezi la datele OFICIALE din librăria aplicației? Modificările locale se pierd.')) return;
-        resetUserPipeStandards();
-        const fresh = getPipeStandards();
-        const out: Record<string, PipeStandard> = {};
-        Object.entries(fresh).forEach(([key, std]) => {
-            out[key] = { ...std, dimensions: std.dimensions.map(d => ({ ...d, _key: makeKey() } as EditableDim)) };
-        });
-        setStandards(out);
-        setHasOverride(false);
-    };
-
-    const handleExportTs = () => {
-        // Generate a ready-to-paste pipeStandards.ts data block (defaults rebuild)
-        const lines: string[] = ['// Export generat din pagina „Standarde Țevi” — valori curente', ''];
-        lines.push('const OFFICIAL_DEFAULTS: Record<string, PipeStandard> = {');
-        Object.entries(standards).forEach(([key, std]) => {
-            lines.push(`  ${key}: {`);
-            lines.push(`    label: ${JSON.stringify(std.label)},`);
-            lines.push(`    description: ${JSON.stringify(std.description)},`);
-            lines.push(`    category: '${std.category}',`);
-            lines.push(`    material: ${JSON.stringify(std.material ?? '')},`);
-            if (std.maxPressure !== undefined) lines.push(`    maxPressure: ${std.maxPressure},`);
-            if (std.tempRange) lines.push(`    tempRange: { min: ${std.tempRange.min}, max: ${std.tempRange.max} },`);
-            if (std.thermalExpansion !== undefined) lines.push(`    thermalExpansion: ${std.thermalExpansion},`);
-            if (std.roughness !== undefined) lines.push(`    roughness: ${std.roughness},`);
-            if (std.insulationType) lines.push(`    insulationType: ${JSON.stringify(std.insulationType)},`);
-            lines.push(`    dimensions: [`);
-            std.dimensions.forEach(d => {
-                const parts = [
-                    `dn: ${JSON.stringify(d.dn)}`,
-                    `inch: ${JSON.stringify(d.inch ?? '-')}`,
-                    `od: ${d.od}`,
-                    `thickness: ${d.thickness}`,
-                    `id: ${d.id}`,
-                    `weight: ${d.weight}`,
-                ];
-                if (d.insulatedOd) parts.push(`insulatedOd: ${d.insulatedOd}`);
-                if (d.supportSpacing?.water) parts.push(`supportSpacing: { water: ${d.supportSpacing.water} }`);
-                lines.push(`      { ${parts.join(', ')} },`);
-            });
-            lines.push(`    ],`);
-            lines.push(`  },`);
-        });
-        lines.push('};');
-        lines.push('');
-        const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pipeStandards_export.ts';
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const categories: { id: PipeCategory; label: string }[] = [
-        { id: 'all', label: 'Toate' },
-        { id: 'metal', label: 'Metal' },
-        { id: 'plastic', label: 'Plastic' },
-        { id: 'special', label: 'Speciale' },
-    ];
+    const totalDimensions = allEntries.reduce((sum, entry) => sum + entry.data.dimensions.length, 0);
+    const selectedPressure = selectedEntry ? getStandardPressureLabel(selectedEntry.data) : null;
 
     return (
-        <div className="max-w-[1400px] mx-auto p-6 md:p-8 space-y-6 pb-32">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20">
-                        <Book className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold">Standarde Țevi</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Catalog complet al producătorilor: dimensiuni Ø exterior/interior, grosimi, greutăți și Ø izolat. Editabil — datele au fost corectate conform librăriilor oficiale (GF COOL-FIT 2026, Uponor, Pipelife, Valrom).
-                        </p>
-                    </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {hasOverride && (
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/30">
-                            <AlertTriangle className="w-3.5 h-3.5" /> Modificări locale active
-                        </span>
-                    )}
-                    <button onClick={handleReset} className="btn btn-secondary btn-sm gap-2">
-                        <RotateCcw className="w-4 h-4" /> Date Oficiale
-                    </button>
-                    <button onClick={handleExportTs} className="btn btn-secondary btn-sm gap-2">
-                        <Download className="w-4 h-4" /> Export TS
-                    </button>
-                    <button onClick={handleSave} className="btn btn-primary btn-sm gap-2">
-                        {savedFlash ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                        {savedFlash ? 'Salvat!' : 'Salvează Modificările'}
-                    </button>
-                </div>
-            </div>
+        <div className="mx-auto max-w-[1600px] space-y-4 px-3 pb-28 pt-4 sm:space-y-6 sm:px-6 sm:pt-6 lg:px-8">
+            <section className="relative overflow-hidden rounded-[24px] border border-primary/20 bg-linear-to-br from-primary/10 via-card to-card p-4 shadow-sm sm:rounded-[30px] sm:p-7 lg:p-8">
+                <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-32 left-1/3 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl" />
 
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Caută după producător, DN sau inch..."
-                        className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary/20 text-foreground"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 sm:h-14 sm:w-14">
+                            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">Bibliotecă de proiectare</p>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-600">
+                                    <ShieldCheck className="h-3 w-3" /> Catalog blocat
+                                </span>
+                            </div>
+                            <h1 className="mt-1 text-2xl font-black tracking-tight text-foreground sm:text-4xl">Catalog tehnic de țevi</h1>
+                            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                Alege o serie și verifică rapid DN-ul, diametrul exterior, ID-ul hidraulic, PN-ul, SDR-ul și greutatea. Valorile sunt aceleași în dimensionare, hidraulică și export.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="relative grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[420px] lg:shrink-0">
+                        <div className="rounded-2xl border border-border/70 bg-card/80 p-3">
+                            <Database className="h-4 w-4 text-primary" />
+                            <p className="mt-2 text-lg font-black">{categoryCounts.all}</p>
+                            <p className="text-[10px] text-muted-foreground">serii</p>
+                        </div>
+                        <div className="rounded-2xl border border-border/70 bg-card/80 p-3">
+                            <Ruler className="h-4 w-4 text-primary" />
+                            <p className="mt-2 text-lg font-black">{totalDimensions}</p>
+                            <p className="text-[10px] text-muted-foreground">dimensiuni</p>
+                        </div>
+                        <div className="rounded-2xl border border-border/70 bg-card/80 p-3">
+                            <Gauge className="h-4 w-4 text-primary" />
+                            <p className="mt-2 text-lg font-black">ID</p>
+                            <p className="text-[10px] text-muted-foreground">hidraulic</p>
+                        </div>
+                        <div className="rounded-2xl border border-border/70 bg-card/80 p-3">
+                            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                            <p className="mt-2 text-lg font-black">100%</p>
+                            <p className="text-[10px] text-muted-foreground">doar vizualizare</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex gap-1.5 flex-wrap">
-                    {categories.map(cat => (
+            </section>
+
+            <section className="rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <div className="relative min-w-0 flex-1">
+                        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="search"
+                            aria-label="Caută în catalogul de țevi"
+                            placeholder="Caută serie, DN, d/OD, ID, PN sau SDR..."
+                            className="h-11 w-full rounded-xl border-border bg-background pl-10 pr-4 text-sm"
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <SlidersHorizontal className="h-4 w-4 shrink-0" />
+                        <span className="hidden sm:inline">Filtrează după categorie</span>
+                    </div>
+                </div>
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                    {(Object.keys(CATEGORY_LABELS) as PipeCategory[]).map(category => (
                         <button
-                            key={cat.id}
-                            onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${selectedCategory === cat.id
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-background border-border text-muted-foreground hover:border-foreground/30'
+                            key={category}
+                            type="button"
+                            onClick={() => setSelectedCategory(category)}
+                            className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold transition-colors ${selectedCategory === category
+                                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
                                 }`}
                         >
-                            {cat.label} ({categoryCounts[cat.id]})
+                            {CATEGORY_LABELS[category]} <span className="ml-1 opacity-70">{categoryCounts[category]}</span>
                         </button>
                     ))}
                 </div>
-            </div>
+            </section>
 
-            {/* Standards */}
-            <div className="space-y-6">
-                {standardsList.map(({ key, data }) => (
-                    <div key={key} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-                        {/* Standard Header */}
-                        <div className="px-5 py-4 border-b border-border bg-muted/20 flex flex-col gap-3">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-1.5 h-10 rounded-full ${data.category === 'metal' ? 'bg-indigo-500' : data.category === 'plastic' ? 'bg-slate-400' : 'bg-slate-500'}`} />
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-base font-bold">{data.label}</h3>
-                                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${data.category === 'metal' ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' : data.category === 'plastic' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20' : 'bg-slate-500/10 text-slate-500 border border-slate-500/20'}`}>
-                                                {data.category}
+            {filteredEntries.length === 0 ? (
+                <section className="rounded-2xl border border-dashed border-border p-10 text-center">
+                    <Search className="mx-auto h-7 w-7 text-muted-foreground/50" />
+                    <p className="mt-3 font-semibold">Nu am găsit nimic în catalog</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Încearcă un producător, un diametru sau golește filtrele.</p>
+                </section>
+            ) : selectedEntry ? (
+                <div className="grid gap-4 xl:grid-cols-[290px_minmax(0,1fr)] xl:gap-5">
+                    <aside className="min-w-0 rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:p-4">
+                        <div className="flex items-center justify-between gap-3 px-1 pb-3">
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Serii disponibile</p>
+                                <p className="mt-1 text-sm font-semibold">{filteredEntries.length} rezultate</p>
+                            </div>
+                            <BookOpen className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-1 xl:flex-col xl:overflow-visible">
+                            {filteredEntries.map(({ key, data }) => {
+                                const isSelected = key === selectedEntry.key;
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setSelectedKey(key)}
+                                        className={`group min-w-[235px] rounded-xl border p-3 text-left transition-all xl:min-w-0 ${isSelected
+                                            ? 'border-primary/40 bg-primary/8 shadow-sm'
+                                            : 'border-border/60 bg-background hover:border-primary/30 hover:bg-muted/40'
+                                            }`}
+                                    >
+                                        <div className="flex items-start gap-2.5">
+                                            <span className={`mt-1 h-8 w-1 rounded-full ${getCategoryTone(data.category)}`} />
+                                            <span className="min-w-0 flex-1">
+                                                <span className={`block truncate text-sm font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>{data.label}</span>
+                                                <span className="mt-1 block truncate text-[11px] text-muted-foreground">{data.description}</span>
                                             </span>
                                         </div>
-                                        <div className="flex flex-wrap gap-2 mt-1">
-                                            <input
-                                                className="text-xs bg-transparent text-muted-foreground border-b border-dashed border-border focus:border-primary outline-none w-full max-w-md"
-                                                value={data.description}
-                                                onChange={(e) => updateStandardMeta(key, { description: e.target.value })}
-                                                title="Dublu-click pe text pentru editare"
-                                            />
-                                            {data.maxPressure !== undefined && <span className="text-[10px] bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded border border-blue-500/20">PN{data.maxPressure}</span>}
-                                            {data.tempRange && <span className="text-[10px] bg-orange-500/10 text-orange-600 px-1.5 py-0.5 rounded border border-orange-500/20">{data.tempRange.min}°C ... {data.tempRange.max}°C</span>}
-                                            {data.thermalExpansion !== undefined && <span className="text-[10px] bg-purple-500/10 text-purple-600 px-1.5 py-0.5 rounded border border-purple-500/20">α = {data.thermalExpansion}</span>}
-                                            {data.roughness !== undefined && <span className="text-[10px] bg-slate-500/10 text-slate-600 px-1.5 py-0.5 rounded border border-slate-500/20">k = {data.roughness} mm</span>}
+                                        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                                            <span className="rounded-full bg-muted px-2 py-1">{data.dimensions.length} dimensiuni</span>
+                                            <span className="truncate">{getSeriesRange(data.dimensions)}</span>
                                         </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </aside>
+
+                    <section className="min-w-0 space-y-4">
+                        <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <div className={`mt-1 h-10 w-1.5 shrink-0 rounded-full ${getCategoryTone(selectedEntry.data.category)}`} />
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <h2 className="text-lg font-black tracking-tight sm:text-xl">{selectedEntry.data.label}</h2>
+                                            <span className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase text-muted-foreground">{CATEGORY_LABELS[selectedEntry.data.category]}</span>
+                                        </div>
+                                        <p className="mt-1 text-sm text-muted-foreground">{selectedEntry.data.description}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => addDim(key)} className="btn btn-secondary btn-sm gap-1.5 shrink-0">
-                                    <Plus className="w-3.5 h-3.5" /> Dimensiune
-                                </button>
+                                <div className="flex shrink-0 flex-wrap gap-2 text-[10px] font-bold">
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1.5 text-emerald-600"><ShieldCheck className="h-3 w-3" /> Doar vizualizare</span>
+                                    {selectedEntry.data.sources?.[0]?.url && (
+                                        <a
+                                            href={selectedEntry.data.sources[0].url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1.5 text-primary hover:bg-primary/10"
+                                        >
+                                            Fișă tehnică <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                <div className="rounded-xl bg-muted/50 p-3">
+                                    <p className="text-[10px] text-muted-foreground">Gama</p>
+                                    <p className="mt-1 truncate font-mono text-sm font-bold">{getSeriesRange(selectedEntry.data.dimensions)}</p>
+                                </div>
+                                <div className="rounded-xl bg-blue-500/5 p-3">
+                                    <p className="text-[10px] text-blue-600/70">Presiune</p>
+                                    <p className="mt-1 truncate text-sm font-bold text-blue-600">{selectedPressure}</p>
+                                </div>
+                                <div className="rounded-xl bg-cyan-500/5 p-3">
+                                    <p className="text-[10px] text-cyan-700/70">Temperatură</p>
+                                    <p className="mt-1 text-sm font-bold text-cyan-700">{selectedEntry.data.tempRange ? `${selectedEntry.data.tempRange.min}…${selectedEntry.data.tempRange.max}°C` : '—'}</p>
+                                </div>
+                                <div className="rounded-xl bg-violet-500/5 p-3">
+                                    <p className="text-[10px] text-violet-700/70">Masă</p>
+                                    <p className="mt-1 truncate text-sm font-bold text-violet-700">{getWeightLabel(selectedEntry.data).replace('kg/m ', '')}</p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Dimensions Table */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30 border-b border-border">
-                                    <tr>
-                                        <th className="px-4 py-3 font-bold">DN</th>
-                                        <th className="px-4 py-3 font-bold">Inch</th>
-                                        <th className="px-4 py-3 font-bold">Ø Ext (mm)</th>
-                                        <th className="px-4 py-3 font-bold">Grosime (mm)</th>
-                                        <th className="px-4 py-3 font-bold text-primary bg-primary/5">Ø Int (mm)</th>
-                                        <th className="px-4 py-3 font-bold">kg/m</th>
-                                        <th className="px-4 py-3 font-bold">Ø Izolat (mm)</th>
-                                        <th className="px-4 py-3 font-bold">L/m</th>
-                                        <th className="px-4 py-3 font-bold w-16"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border/50">
-                                    {data.dimensions.map((pipe) => {
-                                        const d = pipe as EditableDim;
-                                        const area_mm2 = Math.PI * Math.pow((d.id || 0) / 2, 2);
-                                        const vol = (area_mm2 * 1000) / 1000000;
-                                        const idRound = autoFillId(d);
-                                        const idMismatch = idRound !== undefined && d.id > 0 && Math.abs(idRound - d.id) > 0.2;
-                                        return (
-                                            <tr key={d._key} className="hover:bg-muted/20 transition-colors group">
-                                                <td className="px-4 py-1.5">
-                                                    <input className="w-20 bg-transparent border-b border-transparent focus:border-primary outline-none font-bold text-sm py-1"
-                                                        value={d.dn} onChange={(e) => updateDim(key, d._key, { dn: e.target.value })} />
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <input className="w-16 bg-transparent border-b border-transparent focus:border-primary outline-none text-sm py-1 text-muted-foreground"
-                                                        value={d.inch ?? '-'} onChange={(e) => updateDim(key, d._key, { inch: e.target.value })} />
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <input type="number" className="w-20 bg-transparent border-b border-transparent focus:border-primary outline-none font-mono text-sm py-1"
-                                                        value={d.od || ''} onChange={(e) => updateDim(key, d._key, { od: parseFloat(e.target.value) || 0 })} />
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <input type="number" className="w-20 bg-transparent border-b border-transparent focus:border-primary outline-none font-mono text-sm py-1"
-                                                        value={d.thickness || ''} onChange={(e) => updateDim(key, d._key, { thickness: parseFloat(e.target.value) || 0 })} />
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <div className="flex items-center gap-1">
-                                                        <input type="number" className={`w-20 bg-transparent border-b outline-none font-mono text-sm py-1 ${idMismatch ? 'border-amber-500 text-amber-600' : 'border-transparent focus:border-primary'}`}
-                                                            value={d.id || ''} onChange={(e) => updateDim(key, d._key, { id: parseFloat(e.target.value) || 0 })} />
-                                                        {idMismatch && (
-                                                            <button title={`Auto: ID = Ø ext − 2×grosime = ${idRound} mm. Click pentru corectare`}
-                                                                onClick={() => updateDim(key, d._key, { id: idRound })}
-                                                                className="text-amber-500 hover:bg-amber-500/10 p-1 rounded">
-                                                                <ShieldCheck className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <input type="number" className="w-20 bg-transparent border-b border-transparent focus:border-primary outline-none font-mono text-sm py-1"
-                                                        value={d.weight || ''} onChange={(e) => updateDim(key, d._key, { weight: parseFloat(e.target.value) || 0 })} />
-                                                </td>
-                                                <td className="px-4 py-1.5">
-                                                    <input type="number" className="w-20 bg-transparent border-b border-transparent focus:border-primary outline-none font-mono text-sm py-1"
-                                                        value={d.insulatedOd || ''} onChange={(e) => updateDim(key, d._key, { insulatedOd: parseFloat(e.target.value) || undefined })} />
-                                                </td>
-                                                <td className="px-4 py-1.5 font-mono text-indigo-500/80 text-xs">{vol.toFixed(3)}</td>
-                                                <td className="px-4 py-1.5 text-right">
-                                                    <button onClick={() => removeDim(key, d._key)}
-                                                        className="p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-all">
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </td>
+                        {visibleDimensions.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nu există dimensiuni potrivite în seria selectată.</div>
+                        ) : (
+                            <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+                                <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-muted/20 px-4 py-3 sm:px-5">
+                                    <div>
+                                        <p className="text-sm font-bold">Dimensiuni verificate</p>
+                                        <p className="text-[11px] text-muted-foreground">{visibleDimensions.length} variante afișate · valorile nu pot fi editate</p>
+                                    </div>
+                                    <Weight className="h-4 w-4 text-muted-foreground" />
+                                </div>
+
+                                <div className="hidden overflow-x-auto lg:block">
+                                    <table className="w-full min-w-[900px] text-left text-sm">
+                                        <caption className="sr-only">Dimensiuni pentru {selectedEntry.data.label}</caption>
+                                        <thead className="border-b border-border/70 bg-muted/20 text-[10px] uppercase tracking-wider text-muted-foreground">
+                                            <tr>
+                                                <th className="px-4 py-3 font-bold">DN nominal</th>
+                                                <th className="px-4 py-3 font-bold">d / OD</th>
+                                                <th className="px-4 py-3 font-bold">Grosime</th>
+                                                <th className="bg-primary/5 px-4 py-3 font-bold text-primary">ID hidraulic</th>
+                                                <th className="px-4 py-3 font-bold">PN</th>
+                                                <th className="px-4 py-3 font-bold">SDR</th>
+                                                <th className="px-4 py-3 font-bold">Greutate</th>
+                                                <th className="px-4 py-3 font-bold">Izolat</th>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/50">
+                                            {visibleDimensions.map(dimension => {
+                                                const rating = getDimensionRating(selectedEntry.data, dimension);
+                                                return (
+                                                    <tr key={dimension.dn} className="hover:bg-muted/20">
+                                                        <td className="px-4 py-3 font-bold">{getNominalDn(dimension) ?? <span className="text-muted-foreground">Metric</span>}</td>
+                                                        <td className="px-4 py-3 font-mono font-semibold">{dimension.dn}<span className="ml-1.5 text-xs font-normal text-muted-foreground">({formatNumber(dimension.od)} mm)</span></td>
+                                                        <td className="px-4 py-3 font-mono">{formatNumber(dimension.thickness, 2)} mm</td>
+                                                        <td className="bg-primary/5 px-4 py-3 font-mono font-bold text-primary">{formatNumber(dimension.id, 1)} mm</td>
+                                                        <td className="px-4 py-3">{rating.pressure ?? '—'}</td>
+                                                        <td className="px-4 py-3">{rating.sdr ?? '—'}</td>
+                                                        <td className="px-4 py-3 font-mono">{formatNumber(dimension.weight, 3)} kg/m</td>
+                                                        <td className="px-4 py-3">{dimension.insulatedOd ? `${formatNumber(dimension.insulatedOd)} mm` : '—'}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="space-y-3 p-3 lg:hidden">
+                                    {visibleDimensions.map(dimension => <DimensionCard key={dimension.dn} standard={selectedEntry.data} dimension={dimension} />)}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
+                            <div className="flex items-start gap-2.5">
+                                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                                <p><strong className="text-foreground">Regulă:</strong> pentru seriile GF, <code className="rounded bg-background/70 px-1 py-0.5 font-mono text-[11px]">d140</code> este diametrul exterior al țevii care corespunde nominalului <code className="rounded bg-background/70 px-1 py-0.5 font-mono text-[11px]">DN125</code>. OD-ul, grosimea și ID-ul provin din fișa seriei și nu se ajustează manual. Pentru o piesă atipică folosește separat <strong className="text-foreground">Personalizat / BIM</strong>.</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
 
-                {standardsList.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <Book className="w-12 h-12 mb-4 opacity-30" />
-                        <p className="text-sm">Nu s-au găsit standarde</p>
-                        <p className="text-xs mt-1">Încearcă să modifici filtrele</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Info footer */}
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-muted/30 border border-border text-xs text-muted-foreground">
-                <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                    <p><strong>Surse:</strong> GF COOL-FIT 2.0/4.0 — broșuri & fișe tehnice oficiale 2026 (d32–d140 / d32–d450, PN16 SDR11 / PN10 SDR17, greutăți complete cu manta). Uponor PE-Xa — certificat KIWA, EN ISO 15875. Pipelife/Valrom România — EN ISO 15494 / EN ISO 15874.</p>
-                    <p><strong>Sfaturi:</strong> Ø interior trebuie să fie «Ø exterior − 2 × grosime». Dacă nu se potrivește, apare un buton de auto-corectare. Salvează pentru a aplica modificările în tot proiectul; &bdquo;Date Oficiale&rdquo; revine la valorile verificate.</p>
+                        {(selectedEntry.data.sources ?? []).some(source => source.note) && (
+                            <div className="rounded-2xl border border-border/70 bg-muted/20 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                                {(selectedEntry.data.sources ?? []).filter(source => source.note).map(source => <p key={source.name}>{source.note}</p>)}
+                            </div>
+                        )}
+                    </section>
                 </div>
+            ) : null}
+
+            <div className="flex items-start gap-2.5 rounded-2xl border border-border/70 bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground">
+                <Snowflake className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p>Catalogul este o sursă tehnică comună pentru dimensionare. Seriile cu fișă de producător au link direct către referință; seriile generice bazate pe standard trebuie confirmate cu producătorul înainte de emiterea unei comenzi.</p>
             </div>
         </div>
     );

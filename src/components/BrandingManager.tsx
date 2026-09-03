@@ -14,12 +14,12 @@ import { validateUploadFile } from '@/lib/validation';
 import { DocumentSkeleton } from '@/components/ui/Skeleton';
 
 const DEFAULT_SECTIONS: PDFSection[] = [
-    { id: 'header', label: 'Header & Logo', enabled: true, alignment: 'center', order: 0 },
-    { id: 'volume', label: 'Volume Summary', enabled: true, alignment: 'left', order: 1 },
-    { id: 'boq', label: 'Bill of Quantities', enabled: true, alignment: 'left', order: 2 },
-    { id: 'weights', label: 'Weight Report', enabled: true, alignment: 'left', order: 3 },
-    { id: 'supports', label: 'Support Analysis', enabled: true, alignment: 'left', order: 4 },
-    { id: 'photos', label: 'Photo Annex', enabled: true, alignment: 'center', order: 5 },
+    { id: 'header', label: 'Antet și logo', enabled: true, alignment: 'center', order: 0 },
+    { id: 'volume', label: 'Rezumat volum', enabled: true, alignment: 'left', order: 1 },
+    { id: 'boq', label: 'Listă de cantități', enabled: true, alignment: 'left', order: 2 },
+    { id: 'weights', label: 'Raport greutăți', enabled: true, alignment: 'left', order: 3 },
+    { id: 'supports', label: 'Analiza suporților', enabled: true, alignment: 'left', order: 4 },
+    { id: 'photos', label: 'Anexă foto', enabled: true, alignment: 'center', order: 5 },
 ];
 
 export const BrandingManager: React.FC = () => {
@@ -159,7 +159,7 @@ export const BrandingManager: React.FC = () => {
                         {projectDetails.companyLogo ? (
                             <div className="flex items-center gap-1">
                                 <div className="w-8 h-8 rounded border border-border overflow-hidden bg-card">
-                                    <Image src={projectDetails.companyLogo} alt="Logo" width={32} height={32} className="object-contain w-full h-full" unoptimized />
+                                    <Image src={projectDetails.companyLogo} alt="Siglă" width={32} height={32} className="object-contain w-full h-full" unoptimized />
                                 </div>
                                 <button onClick={triggerFileInput} className="p-1.5 rounded hover:bg-muted text-muted-foreground"><RefreshCw className="w-3.5 h-3.5" /></button>
                                 <button onClick={removeLogo} className="p-1.5 rounded hover:bg-destructive/20 text-destructive"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -171,16 +171,16 @@ export const BrandingManager: React.FC = () => {
 
                     {/* Raport de comanda — sectiunile sunt fixe (Site → Teava → Comanda → Greutati) */}
                     <div className="space-y-1.5">
-                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Continutul raportului</h3>
-                        {['Date site & proiect', 'Cantitate teava', 'Lista de cumparat (glicol + fittinguri)', 'Greutati estimative'].map(label => (
+                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Conținutul raportului</h3>
+                        {['Date despre amplasament și proiect', 'Cantitate țeavă', 'Listă de cumpărat (glicol + fitinguri)', 'Greutăți estimative'].map(label => (
                             <div key={label} className="flex items-center gap-2 p-2 rounded-lg bg-card border border-border">
                                 <Eye className="w-3.5 h-3.5 text-primary" />
                                 <span className="flex-1 text-xs font-medium text-foreground">{label}</span>
-                                <span className="text-[9px] text-muted-foreground">mereu inclus</span>
+                                <span className="text-[9px] text-muted-foreground">inclusă permanent</span>
                             </div>
                         ))}
                         <p className="text-[10px] text-muted-foreground pt-1">
-                            Raportul de comanda este fix si minimal — sectiunile nu se pot dezactiva.
+                            Raportul de comandă este fix și minimal — secțiunile nu pot fi dezactivate.
                         </p>
                     </div>
 
@@ -198,7 +198,7 @@ export const BrandingManager: React.FC = () => {
                             <iframe
                                 src={previewUrl}
                                 className="w-full h-full"
-                                title="PDF Preview"
+                                title="Previzualizare PDF"
                             />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center gap-3">

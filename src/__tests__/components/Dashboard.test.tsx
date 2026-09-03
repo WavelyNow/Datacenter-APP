@@ -36,10 +36,9 @@ const mockTranslations: Record<string, string> = {
 jest.mock('@/context/PreferencesContext', () => ({
     useTranslation: () => ({
         t: (key: string) => mockTranslations[key] || key,
-        language: 'ro',
     }),
     usePreferences: () => ({
-        preferences: { language: 'ro', unitSystem: 'metric' },
+        preferences: { unitSystem: 'metric' },
         updatePreference: jest.fn(),
         resetPreferences: jest.fn(),
         isOnline: true,
@@ -72,8 +71,8 @@ describe('Dashboard Component', () => {
 
     it('renders the hero section correctly', () => {
         render(<Dashboard />);
-        expect(screen.getByText(/Engineering/i)).toBeInTheDocument();
-        expect(screen.getByText(/Workspace/i)).toBeInTheDocument();
+        expect(screen.getByText(/Spațiu de lucru/i)).toBeInTheDocument();
+        expect(screen.getByText(/pentru inginerie/i)).toBeInTheDocument();
         expect(screen.getByText(/Sistem Activ/i)).toBeInTheDocument();
     });
 

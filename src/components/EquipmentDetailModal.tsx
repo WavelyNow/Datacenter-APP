@@ -33,6 +33,11 @@ const AVAILABLE_OPTIONS = [
     'Manometru'
 ];
 
+const OPTION_LABELS: Record<string, string> = {
+    'Free Cooling': 'Răcire liberă',
+    'Variator Frecvență (VFD)': 'Variator de frecvență (VFD)',
+};
+
 export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
     isOpen, onClose, equipment, onUpdate
 }) => {
@@ -122,7 +127,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-border bg-secondary/30 flex items-center justify-between shrink-0">
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">{equipment.name || 'Equipment Details'}</h2>
+                        <h2 className="text-lg font-bold text-foreground">{equipment.name || 'Detalii echipament'}</h2>
                         <p className="text-xs text-muted-foreground">{equipment.type}</p>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-muted/50 text-muted-foreground"><X className="w-5 h-5" /></button>
@@ -212,7 +217,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                 <input type="file" accept="image/*" onChange={handleGlycolImageUpload} className="hidden" ref={glycolImageRef} />
                                 {equipment.glycolProofImage ? (
                                     <div className="relative group w-full h-24 rounded-lg overflow-hidden border border-border">
-                                        <Image src={equipment.glycolProofImage} alt="Glycol Proof" fill className="object-cover" unoptimized />
+                                        <Image src={equipment.glycolProofImage} alt="Confirmare glicol" fill className="object-cover" unoptimized />
                                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                                             <button onClick={() => glycolImageRef.current?.click()} className="p-2 rounded-full bg-white/20"><Upload className="w-4 h-4 text-white" /></button>
                                             <button onClick={() => onUpdate({ glycolProofImage: undefined })} className="p-2 rounded-full bg-red-500/50"><Trash2 className="w-4 h-4 text-white" /></button>
@@ -220,7 +225,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                     </div>
                                 ) : (
                                     <button onClick={() => glycolImageRef.current?.click()} className="w-full h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
-                                        <Upload className="w-4 h-4" /> Upload Screenshot
+                                        <Upload className="w-4 h-4" /> Încarcă o captură de ecran
                                     </button>
                                 )}
                             </div>
@@ -245,7 +250,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                             }`}
                                     >
                                         {isActive && <Check className="w-3 h-3 inline mr-1" />}
-                                        {option}
+                                        {OPTION_LABELS[option] ?? option}
                                     </button>
                                 );
                             })}
@@ -255,14 +260,14 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     {/* 3D BIM Model */}
                     <div className="bg-muted/20 p-5 rounded-xl border border-border">
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <Box className="w-4 h-4 text-indigo-500" /> 3D BIM Model
+                            <Box className="w-4 h-4 text-indigo-500" /> Model BIM 3D
                         </h3>
 
                         {!equipment.model3d ? (
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs text-muted-foreground">Paste Local Path (.glb) OR Sketchfab Embed Code</label>
+                                <label className="text-xs text-muted-foreground">Lipește calea locală (.glb) sau codul de încorporare Sketchfab</label>
                                 <textarea
-                                    placeholder='Paste <iframe...> code from Sketchfab OR /models/file.glb'
+                                    placeholder='Lipește codul <iframe...> din Sketchfab sau /models/file.glb'
                                     className="w-full bg-card border border-border rounded-lg px-3 py-2 text-foreground focus:ring-1 focus:ring-primary h-20 resize-none font-mono text-xs"
                                     onBlur={(e) => {
                                         let val = e.target.value.trim();
@@ -296,7 +301,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                         onClick={() => onUpdate({ model3d: undefined })}
                                         className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
                                     >
-                                        <Trash2 className="w-3 h-3" /> Remove
+                                        <Trash2 className="w-3 h-3" /> Elimină
                                     </button>
                                 </div>
                             </div>
@@ -306,7 +311,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                     {/* Technical Sheet */}
                     <div className="bg-muted/20 p-5 rounded-xl border border-border">
                         <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-indigo-500" /> Technical Data Sheet
+                            <FileText className="w-4 h-4 text-indigo-500" /> Fișă tehnică
                         </h3>
                         <input type="file" accept=".pdf" onChange={handlePdfUpload} className="hidden" ref={pdfInputRef} />
                         {equipment.technicalSheet ? (
@@ -315,13 +320,13 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                                     <FileText className="w-5 h-5 text-indigo-500" />
                                     <span className="text-sm text-foreground font-bold uppercase tracking-wider">PDF Atasat</span>
                                 </div>
-                                <button onClick={downloadPdf} className="btn btn-secondary btn-sm"><Download className="w-4 h-4 mr-1" /> Download</button>
+                                <button onClick={downloadPdf} className="btn btn-secondary btn-sm"><Download className="w-4 h-4 mr-1" /> Descarcă</button>
                                 <button onClick={() => pdfInputRef.current?.click()} className="btn btn-secondary btn-sm"><Upload className="w-4 h-4" /></button>
                                 <button onClick={() => onUpdate({ technicalSheet: undefined })} className="p-2 rounded-lg hover:bg-destructive/20 text-destructive"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         ) : (
                             <button onClick={() => pdfInputRef.current?.click()} className="w-full py-4 border-2 border-dashed border-border rounded-lg flex items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
-                                <Upload className="w-5 h-5" /> Upload Technical Sheet (PDF)
+                                <Upload className="w-5 h-5" /> Încarcă fișa tehnică (PDF)
                             </button>
                         )}
                     </div>
@@ -335,7 +340,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                         <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                             {(equipment.photos || []).map((photo, idx) => (
                                 <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-border">
-                                    <Image src={photo} alt={`Photo ${idx + 1}`} fill className="object-cover" unoptimized />
+                                    <Image src={photo} alt={`Fotografie ${idx + 1}`} fill className="object-cover" unoptimized />
                                     <button onClick={() => removePhoto(idx)} className="absolute top-1 right-1 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -343,7 +348,7 @@ export const EquipmentDetailModal: React.FC<EquipmentDetailModalProps> = ({
                             ))}
                             <button onClick={() => photoInputRef.current?.click()} className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors">
                                 <Plus className="w-6 h-6" />
-                                <span className="text-[10px]">Add Photo</span>
+                                <span className="text-[10px]">Adaugă fotografie</span>
                             </button>
                         </div>
                     </div>

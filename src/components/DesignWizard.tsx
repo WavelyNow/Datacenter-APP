@@ -296,7 +296,7 @@ export const DesignWizard: React.FC = () => {
                             <InfoBox title="Ce se generează automat?">
                                 Inel exterior tur+retur → alimentarea spre inelul interior → inel interior tur+retur → o ramură per CRAH.
                                 Debitul fiecărui tronson este deja cel corect (cumulat spre sursă), iar diametrul este cel recomandat pentru viteza ≤ 2,5 m/s.
-                                Poți ajusta orice după generare în tabelul „Dimensionare Conducte".
+                                Poți ajusta orice după generare în tabelul „Dimensionare Conducte”.
                             </InfoBox>
                         </StepCard>
                     )}

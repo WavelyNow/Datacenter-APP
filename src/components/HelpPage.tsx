@@ -8,7 +8,7 @@ const QuickStart = () => (
     <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10 mb-8">
         <h4 className="text-primary font-bold flex items-center gap-2 mb-3">
             <Zap className="w-4 h-4" />
-            Quick Guide: Cum încep un proiect?
+            Ghid rapid: Cum încep un proiect?
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -28,7 +28,7 @@ const QuickStart = () => (
 type Category = 'general' | 'bim' | 'engineering' | 'export';
 
 const categories: { id: Category; label: string; icon: LucideIcon }[] = [
-    { id: 'general', label: 'General & Dashboard', icon: Info },
+    { id: 'general', label: 'General și Dashboard', icon: Info },
     { id: 'bim', label: 'Galerie 3D & Modele', icon: Box },
     { id: 'engineering', label: 'Inginerie & Calcul', icon: Zap },
     { id: 'export', label: 'Export & Rapoarte', icon: FileText },
@@ -56,7 +56,7 @@ export const HelpPage = () => {
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2 mb-1">
                         <Book className="w-6 h-6 text-primary" />
-                        Help Center
+                        Centru de ajutor
                     </h2>
                     <p className="text-sm text-muted-foreground">Manual de utilizare & Documentație</p>
                 </div>
@@ -126,7 +126,7 @@ export const HelpPage = () => {
                                         {item.tips && item.tips.length > 0 && (
                                             <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
                                                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                                                    Key Information
+                                                    Informații esențiale
                                                 </p>
                                                 <ul className="space-y-2">
                                                     {item.tips.map((tip, idx) => (

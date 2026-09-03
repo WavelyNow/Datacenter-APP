@@ -99,14 +99,14 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2 text-primary mb-1">
                             <Flame className="w-5 h-5" />
-                            <span className="font-bold uppercase tracking-wider text-xs">Thermal Analysis</span>
+                            <span className="font-bold uppercase tracking-wider text-xs">Analiză termică</span>
                         </div>
                         <button onClick={onClose}>
                             <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
                         </button>
                     </div>
                     <h2 className="text-xl font-bold">{segment.size} - {segment.length}m</h2>
-                    <p className="text-xs text-muted-foreground">Heat transfer & condensation risk assessment</p>
+                    <p className="text-xs text-muted-foreground">Transfer termic și evaluarea riscului de condens</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -122,13 +122,13 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                                     : <CheckCircle className="w-6 h-6 text-primary" />
                                 }
                                 <div className="font-bold text-lg">
-                                    {calculations.riskCondensation ? 'Condensation RISK' : 'Safe Operation'}
+                                    {calculations.riskCondensation ? 'RISC de condens' : 'Funcționare sigură'}
                                 </div>
                             </div>
                             <p className="text-xs opacity-80 leading-relaxed">
                                 {calculations.riskCondensation
-                                    ? `Surface temp (${calculations.surfaceTemp.toFixed(1)}°C) is below Dew Point (${calculations.dewPoint.toFixed(1)}°C). Increase insulation!`
-                                    : `Surface temp (${calculations.surfaceTemp.toFixed(1)}°C) is above Dew Point (${calculations.dewPoint.toFixed(1)}°C).`}
+                                    ? `Temperatura suprafeței (${calculations.surfaceTemp.toFixed(1)}°C) este sub punctul de rouă (${calculations.dewPoint.toFixed(1)}°C). Mărește izolația!`
+                                    : `Temperatura suprafeței (${calculations.surfaceTemp.toFixed(1)}°C) este peste punctul de rouă (${calculations.dewPoint.toFixed(1)}°C).`}
                             </p>
                         </div>
                     )}
@@ -136,7 +136,7 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                     {/* Controls */}
                     <div className="space-y-4">
                         <h3 className="text-sm font-semibold flex items-center gap-2 border-b border-border/50 pb-2">
-                            <Wind className="w-4 h-4 text-zinc-400" /> Environment
+                            <Wind className="w-4 h-4 text-zinc-400" /> Mediu
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -145,28 +145,28 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                                     className="w-full bg-muted/50 border border-border/50 rounded px-2 py-1 text-sm text-foreground" />
                             </div>
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Humidity (%)</label>
+                                <label className="text-xs text-muted-foreground mb-1 block">Umiditate (%)</label>
                                 <input type="number" value={humidity} onChange={e => setHumidity(Number(e.target.value))}
                                     className="w-full bg-muted/50 border border-border/50 rounded px-2 py-1 text-sm text-foreground" />
                             </div>
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Fluid Temp (°C)</label>
+                                <label className="text-xs text-muted-foreground mb-1 block">Temperatura fluidului (°C)</label>
                                 <input type="number" value={fluidTemp} onChange={e => setFluidTemp(Number(e.target.value))}
                                     className="w-full bg-muted/50 border border-border/50 rounded px-2 py-1 text-sm cursor-not-allowed opacity-70" />
                             </div>
                         </div>
 
                         <h3 className="text-sm font-semibold flex items-center gap-2 border-b border-border/50 pb-2 pt-2">
-                            <Layers className="w-4 h-4 text-zinc-400" /> Insulation
+                            <Layers className="w-4 h-4 text-zinc-400" /> Izolație
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Thickness (mm)</label>
+                                <label className="text-xs text-muted-foreground mb-1 block">Grosime (mm)</label>
                                 <input type="number" value={insulationThickness} onChange={e => setInsulationThickness(Number(e.target.value))}
                                     className="w-full bg-muted/50 border border-border/50 rounded px-2 py-1 text-sm text-foreground" />
                             </div>
                             <div>
-                                <label className="text-xs text-muted-foreground mb-1 block">Conductivity (W/mK)</label>
+                                <label className="text-xs text-muted-foreground mb-1 block">Conductivitate (W/mK)</label>
                                 <input type="number" step="0.001" value={insulationConductivity} onChange={e => setInsulationConductivity(Number(e.target.value))}
                                     className="w-full bg-muted/50 border border-border/50 rounded px-2 py-1 text-sm text-foreground" />
                             </div>
@@ -177,29 +177,29 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
                     {calculations && (
                         <div className="space-y-4 pt-2">
                             <h3 className="text-sm font-semibold flex items-center gap-2 border-b border-border/50 pb-2">
-                                <Thermometer className="w-4 h-4 text-zinc-400" /> Results
+                                <Thermometer className="w-4 h-4 text-zinc-400" /> Rezultate
                             </h3>
                             <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div className="bg-muted/20 p-2 rounded">
-                                    <div className="text-xs text-muted-foreground">Dew Point</div>
+                                    <div className="text-xs text-muted-foreground">Punct de rouă</div>
                                     <div className="font-mono font-bold text-foreground">{calculations.dewPoint.toFixed(1)}°C</div>
                                 </div>
                                 <div className="bg-muted/20 p-2 rounded">
-                                    <div className="text-xs text-muted-foreground">Surface Temp</div>
+                                    <div className="text-xs text-muted-foreground">Temperatura suprafeței</div>
                                     <div className={`font-mono font-bold ${calculations.riskCondensation ? 'text-destructive' : 'text-foreground'}`}>
                                         {calculations.surfaceTemp.toFixed(1)}°C
                                     </div>
                                 </div>
                                 <div className="col-span-2 bg-linear-to-r from-primary/10 to-transparent p-3 rounded border border-primary/20">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="text-xs text-primary font-bold uppercase tracking-wider">Energy Loss</span>
+                                        <span className="text-xs text-primary font-bold uppercase tracking-wider">Pierdere termică</span>
                                         <Flame className="w-3 h-3 text-primary/70" />
                                     </div>
                                     <div className="text-2xl font-black text-primary">
-                                        {calculations.total_heat_transfer.toFixed(1)} <span className="text-sm font-medium opacity-70">Watts</span>
+                                        {calculations.total_heat_transfer.toFixed(1)} <span className="text-sm font-medium opacity-70">W</span>
                                     </div>
                                     <div className="text-[10px] text-primary/60 mt-0.5">
-                                        Per meter: {calculations.q_loss_per_meter.toFixed(1)} W/m
+                                        Pe metru: {calculations.q_loss_per_meter.toFixed(1)} W/m
                                     </div>
                                 </div>
                             </div>
@@ -210,4 +210,3 @@ export function ThermalAnalysisSheet({ segment, onClose }: ThermalAnalysisSheetP
         </AnimatePresence>
     );
 }
-

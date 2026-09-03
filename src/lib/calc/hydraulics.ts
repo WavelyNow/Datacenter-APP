@@ -1,5 +1,4 @@
 
-import { PIPE_STANDARDS } from '../pipeStandards';
 import { getFluidProperties } from '../calculations/pressureDrop';
 
 export interface HydraulicResult {
@@ -108,7 +107,7 @@ export interface PipeSizeSuggestion {
 
 export const suggestPipeSize = (
     flowRateM3H: number,
-    dimensions: { dn: string; id: number }[],
+    dimensions: ReadonlyArray<{ readonly dn: string; readonly id: number }>,
     vMax: number = 2.5,
     kinematicViscosity: number = 1.004e-6,
     fluidDensity: number = 998

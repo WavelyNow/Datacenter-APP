@@ -1,16 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useSyncExternalStore, useRef } from 'react';
+import { translations } from '@/lib/translations';
 
 // Types
 export type UnitSystem = 'metric' | 'imperial';
-export type Language = 'ro' | 'en';
 export type DateFormat = 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
 
 export interface UserPreferences {
     // Display
     unitSystem: UnitSystem;
-    language: Language;
     dateFormat: DateFormat;
     // Behavior
     autoSaveInterval: number; // seconds, 0 = disabled
@@ -26,7 +25,6 @@ export interface UserPreferences {
 
 const defaultPreferences: UserPreferences = {
     unitSystem: 'metric',
-    language: 'ro',
     dateFormat: 'DD/MM/YYYY',
     autoSaveInterval: 30,
     showWelcomeOnStartup: true,
@@ -34,7 +32,7 @@ const defaultPreferences: UserPreferences = {
     showSyncNotifications: true,
     showOfflineWarning: true,
     defaultCategory: 'Pipes',
-    defaultPipeMaterial: 'carbon_steel',
+    defaultPipeMaterial: 'steel_light',
 };
 
 // SSR-safe subscription to online status using useSyncExternalStore
@@ -79,14 +77,16 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
             if (stored) {
                 const parsed = JSON.parse(stored);
                 if (parsed && typeof parsed === 'object') {
+                    // Discard the legacy language preference while preserving all other settings.
+                    const storedPreferences = { ...(parsed as Partial<UserPreferences> & { language?: unknown }) };
+                    delete storedPreferences.language;
                     // eslint-disable-next-line react-hooks/set-state-in-effect -- mounted-gate pattern (SSR-safe)
-                    setPreferences({ ...defaultPreferences, ...parsed });
+                    setPreferences({ ...defaultPreferences, ...storedPreferences });
                 }
             }
         } catch (e) {
             console.warn('Failed to load preferences:', e);
         }
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- mounted-gate pattern (SSR-safe)
         setIsInitialized(true);
     }, []);
 
@@ -194,15 +194,8 @@ export const useUnitConversion = () => {
     }), [isMetric]);
 };
 
-// Import translations
-import { translations } from '@/lib/translations';
-
 export const useTranslation = () => {
-    const { preferences } = usePreferences();
-
     const t = useCallback((key: string): string => {
-        const lang = preferences.language;
-
         // Helper to traverse object path
         const resolve = (obj: Record<string, unknown> | undefined, path: string): string | undefined => {
             if (!obj) return undefined;
@@ -223,27 +216,8 @@ export const useTranslation = () => {
             return typeof current === 'string' ? current : undefined;
         };
 
-        // 1. Try selected language
-        let result = resolve(translations[lang as keyof typeof translations] as Record<string, unknown> | undefined, key);
+        return resolve(translations as unknown as Record<string, unknown>, key) || key;
+    }, []);
 
-        // 2. Fallback: Try root level (fixes structural issues where keys leaked to root)
-        if (!result) {
-            result = resolve(translations as unknown as Record<string, unknown>, key);
-        }
-
-        // 3. Last resort: Try 'ro' explicitly if not already checked
-        if (!result && lang !== 'ro') {
-            result = resolve(translations['ro' as keyof typeof translations] as Record<string, unknown> | undefined, key);
-        }
-
-        // 4. Ultimate fallback: Check common keys at root if common.x
-        if (!result && key.startsWith('common.')) {
-            const commonObj = (translations as unknown as Record<string, unknown>)['common'];
-            result = resolve(commonObj as Record<string, unknown> | undefined, key.replace('common.', ''));
-        }
-
-        return result || key;
-    }, [preferences.language]);
-
-    return { t, language: preferences.language };
+    return { t };
 };

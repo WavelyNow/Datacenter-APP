@@ -3,18 +3,18 @@ import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
     Plus, Trash2,
     Copy, Activity, LayoutList, Workflow, ShoppingCart,
-    Flame, ArrowLeftRight
+    Flame, ArrowLeftRight, AlertTriangle
 } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ContextMenu, ContextMenuAction } from './ui/ContextMenu';
 import { PIPE_STANDARDS } from '@/lib/pipeStandards';
+import type { PipeDimension, PipeStandard } from '@/lib/pipeStandards';
 import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types';
 import { calculateHydraulics, suggestPipeSize, calculateFlowFromLoad } from '@/lib/calc/hydraulics';
 import { calculateFittingsPressureLoss, Fitting } from '@/lib/calculations/fittings';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
 import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
-import { isValidLength } from '@/lib/validation/schemas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
@@ -44,6 +44,28 @@ interface PipeManagerProps {
     className?: string;
     isLoading?: boolean;
 }
+
+const inferSingleSdr = (standard: PipeStandard): number | undefined => {
+    const matches = [...new Set(
+        `${standard.label} ${standard.description}`
+            .match(/SDR\s*[\d.]+/gi)
+            ?.map(value => Number(value.replace(/SDR\s*/i, ''))) ?? []
+    )];
+    return matches.length === 1 ? matches[0] : undefined;
+};
+
+const getDimensionRating = (standard: PipeStandard, dimension: PipeDimension): string => {
+    const pressure = dimension.pressureClass;
+    const sdr = dimension.sdr ?? inferSingleSdr(standard);
+    return [
+        pressure === undefined ? '' : `PN${pressure}`,
+        sdr === undefined ? '' : `SDR${sdr}`,
+    ].filter(Boolean).join(' · ');
+};
+
+const getDimensionLabel = (dimension: PipeDimension): string => {
+    return dimension.nominalDn ? `${dimension.nominalDn} · ${dimension.dn}` : dimension.dn;
+};
 
 // Separate component for row rendering to enable React.memo
 const PipeRow = React.memo(({
@@ -75,7 +97,11 @@ const PipeRow = React.memo(({
 }) => {
     const isCustom = segment.material === 'custom';
     const standardData = !isCustom ? PIPE_STANDARDS[segment.material] : null;
-    const id_mm = isCustom ? (segment.customInnerDiameter || 0) : (standardData?.dimensions.find(d => d.dn === segment.size)?.id || 0);
+    const selectedDimension = standardData?.dimensions.find(d => d.dn === segment.size);
+    const id_mm = isCustom ? (segment.customInnerDiameter || 0) : (selectedDimension?.id || 0);
+    const pressureOrSdr = standardData && selectedDimension
+        ? getDimensionRating(standardData, selectedDimension)
+        : '';
 
     // Hydraulics Calc — REAL fluid properties (density + viscosity per TYPE and %),
     // nu formula liniară veche 1000 + %×5 care dădea valori diferite de restul aplicației
@@ -85,13 +111,13 @@ const PipeRow = React.memo(({
 
     const hasFlow = (segment.flowRate || 0) > 0;
     const fluidProps = getFluidProperties(fluidType, glycolPercentage);
-    const hydraulics = useMemo(() => calculateHydraulics(
+    const hydraulics = calculateHydraulics(
         segment.flowRate || 0,
         id_mm,
         0.045,
         fluidProps.densityKgM3,
         fluidProps.kinematicViscosityM2S
-    ), [segment.flowRate, id_mm, fluidProps.densityKgM3, fluidProps.kinematicViscosityM2S]);
+    );
 
     const isHighVelocity = hydraulics.velocity > 2.5;
 
@@ -114,58 +140,100 @@ const PipeRow = React.memo(({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.15, delay: Math.min(index, 8) * 0.03 }}
-            className={`grid grid-cols-12 gap-6 px-8 py-5 items-center transition-all group relative border-b border-border/30 last:border-0 hover:bg-muted/40`}
+            className="relative mx-3 my-2 grid grid-cols-1 gap-4 rounded-2xl border border-border/60 bg-card px-4 py-4 transition-all group hover:bg-muted/40 lg:mx-0 lg:my-0 lg:grid-cols-12 lg:items-center lg:gap-6 lg:rounded-none lg:border-0 lg:border-b lg:border-border/30 lg:px-8 lg:py-5"
             onContextMenu={(e) => onContextMenu(e, segment.id)} // [NEW] Trigger
         >
             {/* Index */}
-            <div className="col-span-1 flex items-center justify-center text-muted-foreground/40 font-mono text-xs font-medium">
+            <div className="col-span-1 flex items-center justify-between text-muted-foreground/40 font-mono text-xs font-medium lg:justify-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 lg:hidden">Tronson</span>
                 {String(index + 1).padStart(2, '0')}
             </div>
 
             {viewMode === 'config' ? (
                 <>
                     {/* Material & Size Specs */}
-                    <div className="col-span-5 space-y-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="col-span-1 min-w-0 space-y-3 lg:col-span-5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-3">
                             <select
                                 className="w-full bg-transparent border-none p-0 text-sm font-medium text-foreground focus:ring-0 cursor-pointer hover:text-primary transition-colors tracking-tight"
                                 value={segment.material}
-                                onChange={(e) => updateSegment(segment.id, { material: e.target.value })}
+                                onChange={(e) => {
+                                    const nextMaterial = e.target.value;
+                                    const nextStandard = PIPE_STANDARDS[nextMaterial];
+                                    updateSegment(segment.id, {
+                                        material: nextMaterial,
+                                        size: nextStandard?.dimensions[0]?.dn ?? '',
+                                        customInnerDiameter: nextMaterial === 'custom' ? segment.customInnerDiameter : undefined,
+                                    });
+                                }}
                             >
                                 {Object.entries(PIPE_STANDARDS).map(([key, std]) => (
                                     <option key={key} value={key}>{std.label}</option>
                                 ))}
-                                <option value="custom">Custom Configuration</option>
+                                <option value="custom">Personalizat / BIM — fără catalog</option>
                             </select>
                         </div>
                         <div className="flex items-center gap-2">
                             {isCustom ? (
-                                <div className="flex items-center gap-2 w-full">
+                                <div className="w-full space-y-2">
+                                    <div
+                                        role="alert"
+                                        className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300"
+                                    >
+                                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                        <span>
+                                            <strong>Fără catalog:</strong> folosește Personalizat / BIM doar când nu există o dimensiune oficială. Introdu ID-ul din fișa tehnică sau model și verifică manual segmentul înainte de calcul și export.
+                                        </span>
+                                    </div>
                                     <NumberInput
                                         value={segment.customInnerDiameter || 0}
                                         onChange={(val) => updateSegment(segment.id, { customInnerDiameter: val })}
-                                        placeholder="ID"
+                                        label="ID interior din fișă/BIM"
+                                        placeholder="ID interior"
                                         endAdornment="mm"
                                         min={0}
-                                        className="w-28"
+                                        className="max-w-[180px]"
                                     />
                                 </div>
                             ) : (
-                                <select
-                                    className="w-full bg-muted/30 border border-border/40 rounded-xl px-3 py-2.5 text-xs text-muted-foreground focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none hover:bg-muted/50 transition-colors"
-                                    value={segment.size}
-                                    onChange={(e) => updateSegment(segment.id, { size: e.target.value })}
-                                >
-                                    {standardData?.dimensions.map(d => (
-                                        <option key={d.dn} value={d.dn}>
-                                            {d.dn} {d.inch !== '-' ? `(${d.inch})` : ''} - ID: {d.id}mm
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="w-full space-y-2">
+                                    <select
+                                        aria-label="Dimensiune comercială"
+                                        className="w-full bg-muted/30 border border-border/40 rounded-xl px-3 py-2.5 text-xs text-muted-foreground focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none hover:bg-muted/50 transition-colors"
+                                        value={segment.size}
+                                        onChange={(e) => updateSegment(segment.id, { size: e.target.value })}
+                                    >
+                                        {standardData?.dimensions.map(d => (
+                                            <option key={d.dn} value={d.dn}>
+                                                {getDimensionLabel(d)} {d.inch !== '-' ? `(${d.inch})` : ''} — OD {d.od} mm · grosime {d.thickness} mm · ID {d.id} mm{standardData ? ` · ${getDimensionRating(standardData, d)}` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {selectedDimension ? (
+                                        <div className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+                                            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                                                <span>Dimensiune comercială: <strong className="text-foreground">{getDimensionLabel(selectedDimension)}{selectedDimension.inch !== '-' ? ` (${selectedDimension.inch})` : ''}</strong></span>
+                                                {selectedDimension.nominalDn && <span>DN nominal: <strong className="text-foreground">{selectedDimension.nominalDn}</strong></span>}
+                                                <span>OD: <strong className="text-foreground">{selectedDimension.od} mm</strong></span>
+                                                <span>Grosime: <strong className="text-foreground">{selectedDimension.thickness} mm</strong></span>
+                                                <span>ID hidraulic: <strong className="text-foreground">{selectedDimension.id} mm</strong></span>
+                                            </div>
+                                            {pressureOrSdr && (
+                                                <div className="mt-1 border-t border-border/30 pt-1">
+                                                    Presiune / SDR: <strong className="text-foreground">{pressureOrSdr}</strong>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-[11px] text-red-700 dark:text-red-300">
+                                            Dimensiunea salvată nu există în catalogul standardului ales. Selectează o dimensiune disponibilă înainte de calcul.
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             {/* Helper: nu stii debitul? Calculeaza-l din sarcina (kW / dT) */}
                             {(segment.flowRate ?? 0) <= 0 && standardData && (
-                                <div className="mt-1 flex items-center gap-1.5 text-xs">
+                                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                                     <span className="text-[10px] text-muted-foreground">Din sarcină:</span>
                                     <input
                                         type="number"
@@ -232,7 +300,7 @@ const PipeRow = React.memo(({
                     </div>
 
                     {/* Length */}
-                    <div className="col-span-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="col-span-1 lg:col-span-3" onClick={(e) => e.stopPropagation()}>
                         <NumberInput
                             value={segment.length}
                             onChange={(val) => updateSegment(segment.id, { length: val })}
@@ -245,7 +313,7 @@ const PipeRow = React.memo(({
                     </div>
 
                     {/* Fittinguri pe această mărime (coturi / teuri / vane) */}
-                    <div className="col-span-2 flex flex-col gap-1 text-xs" onClick={(e) => e.stopPropagation()}>
+                    <div className="col-span-1 flex flex-col gap-1 text-xs lg:col-span-2" onClick={(e) => e.stopPropagation()}>
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60" title="Volumul acestui segment">
                             Volum: {(Math.PI * Math.pow(id_mm / 200, 2) * segment.length * 10).toFixed(1)} L
                         </span>
@@ -273,25 +341,25 @@ const PipeRow = React.memo(({
                     </div>
 
                     {/* Actions */}
-                    <div className="col-span-1 flex items-center justify-end gap-1">
+                    <div className="col-span-1 flex items-center justify-end gap-1 border-t border-border/50 pt-3 lg:col-span-1 lg:border-0 lg:pt-0">
                         <button
                             onClick={(e) => { e.stopPropagation(); duplicateSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-xl transition-all hover:scale-105 active:scale-95"
-                            title="Duplicate"
+                            title="Duplică"
                         >
                             <Copy className="w-4 h-4" />
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); onAnalyzeThermal(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
-                            title="Thermal Analysis"
+                            title="Analiză termică"
                         >
                             <Flame className="w-4 h-4" />
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); removeSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
-                            title="Remove"
+                            title="Șterge"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -300,16 +368,21 @@ const PipeRow = React.memo(({
             ) : (
                 <>
                     {/* Hydraulics View Columns */}
-                    <div className="col-span-3">
+                    <div className="col-span-1 lg:col-span-3">
                         <div className="text-sm font-medium text-foreground flex flex-col gap-1.5">
-                            <span>{segment.size} <span className="text-muted-foreground text-xs font-normal opacity-70">({segment.length}m)</span></span>
+                            <span>{selectedDimension ? getDimensionLabel(selectedDimension) : segment.size} <span className="text-muted-foreground text-xs font-normal opacity-70">({segment.length}m)</span></span>
+                            {selectedDimension && (
+                                <span className="text-[10px] text-muted-foreground font-normal">
+                                    OD {selectedDimension.od} mm · grosime {selectedDimension.thickness} mm · ID {selectedDimension.id} mm
+                                </span>
+                            )}
                         </div>
                         <div className="text-[10px] text-muted-foreground bg-muted/40 border border-border/30 px-2.5 py-0.5 rounded-full w-fit">
-                            {standardData?.label || 'Custom'}
+                            {standardData?.label || 'Personalizat / BIM'}
                         </div>
                     </div>
 
-                    <div className="col-span-3">
+                    <div className="col-span-1 lg:col-span-3">
                         <NumberInput
                             value={segment.flowRate || 0}
                             onChange={(val) => updateSegment(segment.id, { flowRate: val })}
@@ -319,7 +392,7 @@ const PipeRow = React.memo(({
                         />
                     </div>
 
-                    <div className="col-span-3">
+                    <div className="col-span-1 lg:col-span-3">
                         <div className="flex items-center gap-4">
                             <div className="flex-1 space-y-2">
                                 <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden">
@@ -335,7 +408,7 @@ const PipeRow = React.memo(({
                         </div>
                     </div>
 
-                    <div className="col-span-2 text-right">
+                    <div className="col-span-1 text-left lg:col-span-2 lg:text-right">
                         <div className="text-sm font-mono text-foreground font-semibold">
                             {hydraulics.pressureDropPa} <span className="text-xs text-muted-foreground font-normal">Pa/m</span>
                         </div>
@@ -502,17 +575,17 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         if (!contextMenu) return [];
         return [
             {
-                label: 'Duplicate Pipe',
+                label: 'Duplică țeava',
                 icon: Copy,
                 onClick: () => duplicateSegment(contextMenu.segmentId)
             },
             {
-                label: 'Thermal Sizing',
+                label: 'Analiză termică',
                 icon: Flame,
                 onClick: () => setThermalAnalysisId(contextMenu.segmentId)
             },
             {
-                label: 'Remove Pipe',
+                label: 'Șterge țeava',
                 icon: Trash2,
                 variant: 'danger',
                 onClick: () => removeSegment(contextMenu.segmentId)
@@ -531,50 +604,50 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                 actions={contextMenuActions}
             />
 
-            <div className="w-full space-y-10">
+            <div className="w-full space-y-6 sm:space-y-10">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-border/40">
+                <div className="flex flex-col gap-5 border-b border-border/40 pb-6 sm:gap-8 sm:pb-8 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-3">
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-4">
+                        <h2 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-foreground sm:gap-4 sm:text-3xl">
                             <div className="p-2.5 bg-primary/10 rounded-2xl">
                                 <Workflow className="w-6 h-6 text-primary" />
                             </div>
-                            Network Topology
+                            Topologia rețelei
                         </h2>
-                        <p className="text-base text-muted-foreground ml-16 max-w-2xl font-light">
-                            Configure pipe segments manually or import from hydraulic schema.
+                        <p className="ml-0 max-w-2xl text-sm font-light text-muted-foreground sm:ml-16 sm:text-base">
+                            Configurează tronsoanele de țeavă sau importă schema hidraulică.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-border/40 self-start md:self-auto backdrop-blur-sm">
+                    <div className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-border/40 bg-muted/30 p-1.5 backdrop-blur-sm md:w-auto md:self-auto">
                         <button
                             onClick={() => setViewMode('config')}
                             className={`
-                            px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2.5
+                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
                             ${viewMode === 'config'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
                         `}
                         >
                             <LayoutList className="w-4 h-4" />
-                            Configuration
+                            Configurare
                         </button>
                         <button
                             onClick={() => setViewMode('hydraulics')}
                             className={`
-                            px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2.5
+                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
                             ${viewMode === 'hydraulics'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
                         `}
                         >
                             <Activity className="w-4 h-4" />
-                            Hydraulics
+                            Hidraulică
                         </button>
                         <button
                             onClick={() => setViewMode('simulator')}
                             className={`
-                            px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2.5
+                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
                             ${viewMode === 'simulator'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
@@ -591,7 +664,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                 ) : (
                     <>
                         {/* Main Content Card */}
-                        <div className={`card-premium overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
+                        <div className={`card-premium min-w-0 overflow-hidden flex flex-col ${className || 'h-[750px]'}`}>
                     {isLoading ? (
                         <div className="p-8">
                             <TableSkeleton rows={8} />
@@ -600,39 +673,39 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                         <div className="flex-1 flex items-center justify-center p-8">
                             <EmptyState
                                 icon={Workflow}
-                                title="No Segments Defined"
-                                description="Start by adding your first pipe segment to begin the hydraulic calculation."
+                                title="Nu există tronsoane definite"
+                                description="Adaugă primul tronson de țeavă pentru a începe calculul hidraulic."
                                 action={{
-                                    label: 'Initialize Network',
+                                    label: 'Inițializează rețeaua',
                                     onClick: addSegment,
                                     variant: 'primary'
                                 }}
                                 steps={[
-                                    "Define pipe material and dimensions",
-                                    "Set length and flow rates",
-                                    "Analyze pressure drops automatically"
+                                    "Alege materialul și dimensiunea țevii",
+                                    "Introdu lungimea și debitele",
+                                    "Analizează automat pierderile de presiune"
                                 ]}
-                                tipsLabel="Design Process"
+                                tipsLabel="Proces de proiectare"
                             />
                         </div>
                     ) : (
                         <>
                             {/* Table Header */}
-                            <div className="grid grid-cols-12 gap-8 px-8 py-5 bg-muted/20 border-b border-border/40 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.1em] backdrop-blur-sm z-20">
+                            <div className="z-20 hidden grid-cols-12 gap-8 border-b border-border/40 bg-muted/20 px-8 py-5 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground backdrop-blur-sm lg:grid">
                                 <div className="col-span-1 text-center">#</div>
                                 {viewMode === 'config' ? (
                                     <>
-                                        <div className="col-span-5">Pipe Specification</div>
-                                        <div className="col-span-3">Length (m)</div>
+                                        <div className="col-span-5">Specificație țeavă</div>
+                                        <div className="col-span-3">Lungime (m)</div>
                                         <div className="col-span-2">Fittinguri (buc) · Volum</div>
-                                        <div className="col-span-1 text-right">Actions</div>
+                                        <div className="col-span-1 text-right">Acțiuni</div>
                                     </>
                                 ) : (
                                     <>
-                                        <div className="col-span-3">Segment</div>
-                                        <div className="col-span-3">Flow Rate</div>
-                                        <div className="col-span-3">Velocity</div>
-                                        <div className="col-span-2 text-right">Pressure Drop</div>
+                                        <div className="col-span-3">Tronson</div>
+                                        <div className="col-span-3">Debit</div>
+                                        <div className="col-span-3">Viteză</div>
+                                        <div className="col-span-2 text-right">Pierdere de presiune</div>
                                     </>
                                 )}
                             </div>
@@ -687,48 +760,48 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                             </div>
 
                             {/* Footer / Add Action */}
-                            <div className="p-6 bg-card/80 backdrop-blur-md border-t border-border/30 z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="z-20 border-t border-border/30 bg-card/80 p-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] backdrop-blur-md sm:p-6">
+                                <div className="flex flex-col items-stretch justify-between gap-5 md:flex-row md:items-center md:gap-6">
                                     <button
                                         onClick={addSegment}
                                         className="btn btn-secondary btn-md gap-2 shadow-sm text-foreground/80 hover:text-foreground w-full md:w-auto"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        Add {viewMode === 'config' ? 'Pipe Segment' : 'Flow Path'}
+                                        Adaugă {viewMode === 'config' ? 'tronson' : 'traseu de debit'}
                                     </button>
 
-                                    <div className="flex flex-wrap items-center justify-end gap-x-8 gap-y-4 text-sm w-full md:w-auto">
+                                    <div className="flex w-full flex-wrap items-center justify-start gap-x-5 gap-y-4 text-sm md:w-auto md:justify-end md:gap-x-8">
                                         {/* Detailed Breakdown - Purchasing Formula (aceleasi cifre ca Dashboard/PDF) */}
-                                        <div className="flex items-center gap-6 pr-6 border-r border-border/30">
+                                        <div className="grid grid-cols-2 gap-3 lg:flex lg:items-center lg:gap-6 lg:border-r lg:border-border/30 lg:pr-6">
 
                                             {/* Components */}
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
-                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Piping</span>
+                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Țevi</span>
                                                 <span className="font-mono font-medium text-sm">{purchase.pipeVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
-                                            <div className="text-muted-foreground/30 font-light">+</div>
+                                            <div className="hidden text-muted-foreground/30 font-light lg:block">+</div>
 
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
                                                 <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Fittinguri</span>
                                                 <span className="font-mono font-medium text-sm">{purchase.fittingsVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
-                                            <div className="text-muted-foreground/30 font-light">+</div>
+                                            <div className="hidden text-muted-foreground/30 font-light lg:block">+</div>
 
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
-                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Equip</span>
+                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Echipamente</span>
                                                 <span className="font-mono font-medium text-sm">{purchase.equipmentVolumeL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
-                                            <div className="text-muted-foreground/30 font-light">+</div>
+                                            <div className="hidden text-muted-foreground/30 font-light lg:block">+</div>
 
                                             <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity">
                                                 <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1">Marja {safetyMargin ? `(${purchase.marginPercent}%)` : ''}</span>
                                                 <span className="font-mono font-medium text-sm">{purchase.marginL.toFixed(0)} <span className="text-[10px]">L</span></span>
                                             </div>
 
-                                            <div className="text-muted-foreground/30 font-light">=</div>
+                                            <div className="hidden text-muted-foreground/30 font-light lg:block">=</div>
 
                                             {/* Total to Buy */}
                                             <div className="flex flex-col items-end">
@@ -744,8 +817,8 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
 
                                         {/* System Stats */}
                                         {viewMode === 'hydraulics' && (
-                                            <div className="flex flex-col items-end pl-6">
-                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1 opacity-70">System Drop</span>
+                                        <div className="flex flex-col items-start md:items-end md:pl-6">
+                                                <span className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold mb-1 opacity-70">Pierdere sistem</span>
                                                 <span className="font-mono font-bold text-xl text-primary">{totalPressureDrop.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">kPa</span></span>
                                             </div>
                                         )}

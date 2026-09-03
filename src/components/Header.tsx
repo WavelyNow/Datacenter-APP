@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2, CheckCircle2 } from 'lucide-react';
+import { Menu, Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2, CheckCircle2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useProject } from '@/context/ProjectContext';
 import { CloudBrowserAction } from './CloudBrowserAction';
@@ -13,6 +13,7 @@ interface HeaderProps {
     // Actions
     onOpenExport: () => void;
     onOpenSettings: () => void;
+    onOpenNavigation: () => void;
     onSaveProject: () => void;
     onUndo: () => void;
     onRedo: () => void;
@@ -26,6 +27,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
     onLoadProject,
     onOpenExport,
     onOpenSettings,
+    onOpenNavigation,
     onSaveProject,
     onUndo,
     onRedo,
@@ -102,13 +104,22 @@ const HeaderBase: React.FC<HeaderProps> = ({
 
     return (
         <header className="sticky top-0 z-40 w-full mb-0 bg-background/70 backdrop-blur-xl border-b border-border/50 screen-only transition-all duration-200" >
-            <div className="px-5 h-16 flex items-center justify-between gap-4">
+            <div className="flex h-16 items-center justify-between gap-1 px-2 sm:gap-4 sm:px-5">
+
+                <button
+                    type="button"
+                    onClick={onOpenNavigation}
+                    className="btn btn-ghost btn-icon h-10 w-10 shrink-0 rounded-xl lg:hidden"
+                    aria-label="Deschide meniul de navigare"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
 
                 {/* Left: Breadcrumbs & Project Title */}
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                        <span>{projectDetails.projectNumber || 'PR-000'}</span>
+                        <span className="hidden sm:inline">{projectDetails.projectNumber || 'PR-000'}</span>
                         <ChevronRight className="w-3 h-3 opacity-50" />
                         <span className="text-primary">{getTabName(activeTab)}</span>
                         {savedFlash && (
@@ -119,24 +130,26 @@ const HeaderBase: React.FC<HeaderProps> = ({
                     </div>
 
                     {/* Project Title Input */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
                         <input
                             type="text"
                             value={projectDetails.projectName}
                             onChange={(e) => updateDetail('projectName', e.target.value)}
-                            className="bg-transparent border-none p-0 text-lg font-bold text-foreground placeholder:text-muted-foreground/50 focus:ring-0 focus:bg-muted/30 rounded px-1 -ml-1 transition-all w-full max-w-[300px] truncate"
+                            className="-ml-1 w-full max-w-[300px] truncate rounded bg-transparent px-1 p-0 text-base font-bold text-foreground placeholder:text-muted-foreground/50 focus:bg-muted/30 focus:ring-0 sm:text-lg"
                             placeholder="Nume Proiect..."
                         />
-                        <CommandPalette
-                            onSave={onSaveProject}
-                            onExport={onOpenExport}
-                            onSettings={onOpenSettings}
-                        />
+                        <div className="hidden sm:block">
+                            <CommandPalette
+                                onSave={onSaveProject}
+                                onExport={onOpenExport}
+                                onSettings={onOpenSettings}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Right: Tools & Catalogs */}
-                <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
 
                     {/* Undo/Redo */}
                     <div className="hidden lg:flex items-center gap-0.5 bg-secondary/40 p-1 rounded-xl border border-border/40">
@@ -163,7 +176,9 @@ const HeaderBase: React.FC<HeaderProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
-                        <CloudBrowserAction />
+                        <div className="hidden sm:block">
+                            <CloudBrowserAction />
+                        </div>
 
                         <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title="Salvare / Import">
                             <button

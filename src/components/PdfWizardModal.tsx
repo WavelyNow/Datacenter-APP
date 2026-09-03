@@ -42,20 +42,20 @@ type Preset = 'basic' | 'custom' | 'excel';
 
 const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
     basic: {
-        name: 'Raport Comanda',
-        desc: 'Site + teava + lista de cumparat (recomandat).',
+        name: 'Raport de comandă',
+        desc: 'Amplasament + țeavă + listă de cumpărat (recomandat).',
         icon: Package,
         options: {}
     },
     excel: {
-        name: 'Excel Date Export',
-        desc: 'Date tabelare pentru prelucrare externa.',
+        name: 'Export date Excel',
+        desc: 'Date tabelare pentru prelucrare externă.',
         icon: FileSpreadsheet,
         options: {}
     },
     custom: {
         name: 'Personalizat',
-        desc: 'Configureaza manual.',
+        desc: 'Configurează manual.',
         icon: Settings,
         options: {}
     }
@@ -135,7 +135,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 ...data,
                 equipmentList: data.equipmentList.map((item, index) => ({
                     ...item,
-                    name: item.name.trim() || `Equipment ${index + 1}`
+                    name: item.name.trim() || `Echipament ${index + 1}`
                 }))
             };
             const pdfData: PdfData = { ...sanitizedData, options };
@@ -148,14 +148,14 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('[PDF] Generation failed:', response.status, errorText.slice(0, 300));
-                toast.error('Generarea PDF-ului a esuat. Verificati datele si incercati din nou.');
+                toast.error('Generarea PDF-ului a eșuat. Verificați datele și încercați din nou.');
                 return null;
             }
             const blob = await response.blob();
             return blob;
         } catch (error) {
             console.error('[PDF] Error:', error);
-            toast.error('Eroare de retea la generarea PDF-ului.');
+            toast.error('Eroare de rețea la generarea PDF-ului.');
             return null;
         } finally {
             setIsGenerating(false);
@@ -176,7 +176,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         if (previewUrl) {
             const a = document.createElement('a');
             a.href = previewUrl;
-            a.download = `Project_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
             a.click();
             onClose();
             return;
@@ -187,7 +187,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Project_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -214,8 +214,8 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 return (
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center space-y-2">
-                            <h3 className="text-2xl font-bold text-foreground">Select Report Type</h3>
-                            <p className="text-muted-foreground">Choose a preset configuration or customize your own.</p>
+                            <h3 className="text-2xl font-bold text-foreground">Selectează tipul raportului</h3>
+                            <p className="text-muted-foreground">Alege o configurație prestabilită sau personalizează raportul.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {(Object.keys(presets) as Preset[]).map(preset => {
@@ -262,14 +262,14 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 return (
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center space-y-2">
-                            <h3 className="text-2xl font-bold text-foreground">Continutul raportului</h3>
-                            <p className="text-muted-foreground">Raportul de comanda este fix si minimal — 3 pagini, mereu aceleasi:</p>
+                            <h3 className="text-2xl font-bold text-foreground">Conținutul raportului</h3>
+                            <p className="text-muted-foreground">Raportul de comandă este fix și minimal — 3 pagini, mereu aceleași:</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {[
-                                { nr: '1', label: 'Date site', desc: 'Proiect, proiectant, beneficiar, locatie, fluid & concentratie.' },
-                                { nr: '2', label: 'Cantitate teava', desc: 'Pe DN si material: lungime, volum din diametrul interior, greutate.' },
-                                { nr: '3', label: 'Lista de cumparat', desc: 'Glicol (cu pierderi fittinguri + marja), teava, fittinguri.' },
+                                { nr: '1', label: 'Date amplasament', desc: 'Proiect, proiectant, beneficiar, locație, fluid și concentrație.' },
+                                { nr: '2', label: 'Cantitate țeavă', desc: 'Pe DN și material: lungime, volum din diametrul interior, greutate.' },
+                                { nr: '3', label: 'Listă de cumpărat', desc: 'Glicol (cu pierderi fitinguri + marjă), țeavă, fitinguri.' },
                             ].map((s) => (
                                 <div key={s.nr} className="p-5 rounded-xl border border-border bg-card flex items-start gap-4">
                                     <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
@@ -283,7 +283,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             ))}
                         </div>
                         <div className="p-4 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground">
-                            Fittingurile definite in proiect (Hidraulica &gt; Pierderi Locale) apar automat in lista de cumparat. Marja de pierderi fittinguri si marja de siguranta se seteaza in proiect.
+                            Fitingurile definite în proiect (Hidraulică &gt; Pierderi locale) apar automat în lista de cumpărat. Marja de pierderi fitinguri și marja de siguranță se setează în proiect.
                         </div>
                     </div>
                 );
@@ -291,25 +291,25 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 return (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
                         <div className="text-center space-y-2 shrink-0">
-                            <h3 className="text-2xl font-bold text-foreground">Preview Report</h3>
-                            <p className="text-muted-foreground">Review the content before final export.</p>
+                            <h3 className="text-2xl font-bold text-foreground">Previzualizare raport</h3>
+                            <p className="text-muted-foreground">Verifică conținutul înainte de exportul final.</p>
                         </div>
                         <div className="flex-1 min-h-0 bg-muted/20 rounded-xl border border-border shadow-2xl overflow-hidden relative group">
                             {previewUrl ? (
-                                <iframe src={previewUrl} className="w-full h-[62vh] min-h-[420px] bg-white" title="Preview PDF" />
+                                <iframe src={previewUrl} className="w-full h-[62vh] min-h-[420px] bg-white" title="Previzualizare PDF" />
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                                     <div className="w-20 h-20 rounded-full bg-muted border border-border flex items-center justify-center mb-6 shadow-xl">
                                         <Eye className="w-10 h-10 text-muted-foreground" />
                                     </div>
-                                    <p className="text-muted-foreground max-w-xs mb-8">Preview has not been generated yet. Click the button below to render the PDF.</p>
+                                    <p className="text-muted-foreground max-w-xs mb-8">Previzualizarea nu a fost generată. Apasă butonul de mai jos pentru a crea PDF-ul.</p>
                                     <button
                                         onClick={handlePreview}
                                         disabled={isGenerating}
                                         className="btn btn-primary btn-lg gap-3"
                                     >
                                         {isGenerating ? <span className="animate-spin text-xl">•</span> : <Eye className="w-5 h-5" />}
-                                        Generate Preview
+                                        Generează previzualizarea
                                     </button>
                                 </div>
                             )}
@@ -320,11 +320,11 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                 return (
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 flex flex-col items-center justify-center h-full">
                         <div className="text-center space-y-2">
-                            <h3 className="text-3xl font-bold text-foreground">Ready to Download</h3>
+                            <h3 className="text-3xl font-bold text-foreground">Gata pentru descărcare</h3>
                             <p className="text-muted-foreground">
                                 {selectedPreset === 'excel'
-                                    ? 'Your Excel export is ready.'
-                                    : 'Your report has been successfully generated.'}
+                                    ? 'Exportul Excel este pregătit.'
+                                    : 'Raportul a fost generat cu succes.'}
                             </p>
                         </div>
 
@@ -340,10 +340,10 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             </div>
 
                             <h4 className="text-xl font-bold text-foreground mb-2">
-                                {data.projectDetails.projectName || 'Untitled Project'}
+                                {data.projectDetails.projectName || 'Proiect fără titlu'}
                             </h4>
                             <p className="text-muted-foreground mb-8 font-mono text-sm bg-muted py-1 px-3 rounded-full inline-block border border-border">
-                                Revision {data.projectDetails.revision}
+                                Revizie {data.projectDetails.revision}
                             </p>
 
                             <button
@@ -353,13 +353,13 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                         toast.success('Excel generat');
                     } catch (e) {
                         console.error('[Excel]', e);
-                        toast.error('Generarea Excel-ului a esuat.');
+                        toast.error('Generarea Excel-ului a eșuat.');
                     }
                 } : handleDownload}
                                 className="w-full btn btn-primary btn-lg gap-2 text-base shadow-xl shadow-primary/20"
                             >
                                 <Download className="w-5 h-5" />
-                                {selectedPreset === 'excel' ? 'Download Excel' : 'Download PDF'}
+                                {selectedPreset === 'excel' ? 'Descarcă Excel' : 'Descarcă PDF'}
                             </button>
                         </div>
                     </div>
@@ -382,8 +382,8 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                             <Sparkles className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-foreground leading-none">Report Wizard</h3>
-                            <p className="text-xs text-muted-foreground mt-1">Step {currentStep} of 4</p>
+                            <h3 className="text-lg font-bold text-foreground leading-none">Asistent raport</h3>
+                            <p className="text-xs text-muted-foreground mt-1">Pasul {currentStep} din 4</p>
                         </div>
                     </div>
                     <button
@@ -417,9 +417,9 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                     </div>
                                     <span className={`text-xs font-medium transition-colors duration-300 ${isActive ? 'text-primary' : 'text-muted-foreground'
                                         }`}>
-                                        {step === 1 && 'Type'}
-                                        {step === 2 && 'Options'}
-                                        {step === 3 && 'Preview'}
+                                        {step === 1 && 'Tip'}
+                                        {step === 2 && 'Opțiuni'}
+                                        {step === 3 && 'Previzualizare'}
                                         {step === 4 && 'Export'}
                                     </span>
                                 </div>
@@ -443,7 +443,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                         className="btn btn-ghost gap-2 pl-2 disabled:opacity-0"
                     >
                         <ChevronLeft className="w-4 h-4" />
-                        Back
+                        Înapoi
                     </button>
 
                     <div className="flex gap-4">
@@ -454,7 +454,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                 className="btn btn-secondary gap-2"
                             >
                                 {isGenerating ? <span className="animate-spin">•</span> : <Eye className="w-4 h-4" />}
-                                Generate Preview
+                                Generează previzualizarea
                             </button>
                         )}
 
@@ -463,7 +463,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                 onClick={nextStep}
                                 className="btn btn-primary gap-2 px-8"
                             >
-                                Continue
+                                Continuă
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         ) : (
@@ -472,7 +472,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                                 className="btn btn-primary gap-2 px-8 shadow-lg shadow-primary/25"
                             >
                                 <Download className="w-4 h-4" />
-                                Download Again
+                                Descarcă din nou
                             </button>
                         )}
                     </div>
