@@ -28,7 +28,7 @@ const FITTING_LABELS_RO: Record<string, string> = {
  * greutati estimative fara/cu fluid.
  */
 export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
-    const { width, theme, fontBold, fontRegular, currentPage } = ctx;
+    const { width, theme, fontBold, fontRegular } = ctx;
     const M = 50;
     const colW = width - M * 2;
     const boxH = 62;
@@ -47,7 +47,7 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
 
     // ---------- 1. GLICOL ----------
     await ctx.checkSpace(40);
-    currentPage.drawText('1. FLUID (GLICOL)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+    ctx.currentPage.drawText('1. FLUID (GLICOL)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
     ctx.currentY -= 15;
 
     const fluidName = data.fluidType === 'propylene' ? 'Propilen Glicol' : data.fluidType === 'water' ? 'Apa pura' : 'Etilen Glicol';
@@ -70,28 +70,27 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
     // ---------- TOTAL ----------
     await ctx.checkSpace(boxH + 40);
     const boxY = ctx.currentY - boxH;
-    currentPage.drawRectangle({
+    ctx.currentPage.drawRectangle({
         x: M, y: boxY, width: colW, height: boxH,
         color: theme.bgLight,
         borderColor: theme.primary,
         borderWidth: 1.2,
     });
     // Stanga: label + valoare mare
-    currentPage.drawText('TOTAL DE CUMPARAT', { x: M + 16, y: boxY + boxH - 20, size: 8, font: fontBold, color: theme.textLight });
-    currentPage.drawText(`${purchase.totalGlycolL.toFixed(0)} L`, { x: M + 16, y: boxY + 10, size: 24, font: fontBold, color: theme.primary });
+    ctx.currentPage.drawText('TOTAL DE CUMPARAT', { x: M + 16, y: boxY + boxH - 20, size: 8, font: fontBold, color: theme.textLight });
+    ctx.currentPage.drawText(`${purchase.totalGlycolL.toFixed(0)} L`, { x: M + 16, y: boxY + 10, size: 24, font: fontBold, color: theme.primary });
     // Dreapta: detalii stivuite (nu mai existe coliziune)
     const rightX = M + colW * 0.52;
-    const rightW = colW * 0.48 - 16;
-    currentPage.drawText(sanitizePdfText(`${fluidName} ${data.glycolPercentage}%`), { x: rightX, y: boxY + boxH - 20, size: 9, font: fontBold, color: theme.text });
-    currentPage.drawText(`${purchase.canisters10L.toFixed(1)} canistre de 10 L`, { x: rightX, y: boxY + boxH - 36, size: 9, font: fontRegular, color: theme.text });
-    currentPage.drawText(`Greutate fluid ~${purchase.fluidWeightKg.toFixed(0)} kg`, { x: rightX, y: boxY + boxH - 50, size: 9, font: fontRegular, color: theme.textLight });
+    ctx.currentPage.drawText(sanitizePdfText(`${fluidName} ${data.glycolPercentage}%`), { x: rightX, y: boxY + boxH - 20, size: 9, font: fontBold, color: theme.text });
+    ctx.currentPage.drawText(`${purchase.canisters10L.toFixed(1)} canistre de 10 L`, { x: rightX, y: boxY + boxH - 36, size: 9, font: fontRegular, color: theme.text });
+    ctx.currentPage.drawText(`Greutate fluid ~${purchase.fluidWeightKg.toFixed(0)} kg`, { x: rightX, y: boxY + boxH - 50, size: 9, font: fontRegular, color: theme.textLight });
 
     ctx.currentY = boxY - 30;
 
     // ---------- 2. FITTINGURI (comanda de material) ----------
     if (purchase.fittingItems.length > 0) {
         await ctx.checkSpace(60);
-        currentPage.drawText('2. FITTINGURI DE COMANDAT', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText('2. FITTINGURI DE COMANDAT', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
         ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
@@ -113,7 +112,7 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
     const withFluidWeight = emptyWeight + purchase.fluidWeightKg;
     if (withFluidWeight > 0) {
         await ctx.checkSpace(90 + boxH);
-        currentPage.drawText('3. GREUTATI ESTIMATIVE', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText('3. GREUTATI ESTIMATIVE', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
         ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
@@ -131,7 +130,7 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
 
         await ctx.checkSpace(boxH + 36);
         const boxY2 = ctx.currentY - boxH;
-        currentPage.drawRectangle({
+        ctx.currentPage.drawRectangle({
             x: M, y: boxY2, width: colW, height: boxH,
             color: theme.bgLight,
             borderColor: theme.text,
@@ -139,11 +138,11 @@ export async function generatePurchasePage(ctx: PDFContext, data: PdfData) {
         });
         const halfW = colW / 2;
         // Jumatati clare cu separator
-        currentPage.drawLine({ start: { x: M + halfW, y: boxY2 + 8 }, end: { x: M + halfW, y: boxY2 + boxH - 8 }, thickness: 0.5, color: theme.border });
-        currentPage.drawText('INSTALATIE FARA FLUID', { x: M + 16, y: boxY2 + boxH - 20, size: 7.5, font: fontBold, color: theme.textLight });
-        currentPage.drawText(`${emptyWeight.toFixed(0)} kg`, { x: M + 16, y: boxY2 + 10, size: 19, font: fontBold, color: theme.text });
-        currentPage.drawText('CU FLUID (IN FUNCTIUNE)', { x: M + halfW + 16, y: boxY2 + boxH - 20, size: 7.5, font: fontBold, color: theme.textLight });
-        currentPage.drawText(`${withFluidWeight.toFixed(0)} kg`, { x: M + halfW + 16, y: boxY2 + 10, size: 19, font: fontBold, color: theme.primary });
+        ctx.currentPage.drawLine({ start: { x: M + halfW, y: boxY2 + 8 }, end: { x: M + halfW, y: boxY2 + boxH - 8 }, thickness: 0.5, color: theme.border });
+        ctx.currentPage.drawText('INSTALATIE FARA FLUID', { x: M + 16, y: boxY2 + boxH - 20, size: 7.5, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText(`${emptyWeight.toFixed(0)} kg`, { x: M + 16, y: boxY2 + 10, size: 19, font: fontBold, color: theme.text });
+        ctx.currentPage.drawText('CU FLUID (IN FUNCTIUNE)', { x: M + halfW + 16, y: boxY2 + boxH - 20, size: 7.5, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText(`${withFluidWeight.toFixed(0)} kg`, { x: M + halfW + 16, y: boxY2 + 10, size: 19, font: fontBold, color: theme.primary });
         ctx.currentY = boxY2 - 20;
     }
 }

@@ -14,8 +14,8 @@
  */
 
 import { PipeSegment, EquipmentItem, FluidType, FittingItem } from '../types';
-import { calculatePipeVolume } from './hydraulics';
-import { getPipeData, getFluidDensity } from './common';
+import { calculateGlycolVolume, calculatePipeVolume } from './hydraulics';
+import { getPipeData, getFluidDensity, resolveInnerDiameterMm as resolveSegmentInnerDiameterMm } from './common';
 import { PIPE_STANDARDS } from '../pipeStandards';
 
 /** Volumul intern estimat al fittingurilor, exprimat în MULTIPLI DE DIAMETRU
@@ -48,9 +48,39 @@ export interface PurchaseLine {
     weightKg: number;
 }
 
+export interface PipeGlycolLine {
+    segmentId: string;
+    label: string;
+    material: string;
+    size: string;
+    lengthM: number;
+    innerDiameterMm: number;
+    pipeVolumeL: number;
+    pureGlycolL: number;
+}
+
+export const calculatePipeGlycolLines = (segments: PipeSegment[], glycolPercentage: number): PipeGlycolLine[] => {
+    const percentage = Math.max(0, Math.min(100, Number(glycolPercentage) || 0));
+
+    return segments.filter(Boolean).map((segment, index) => {
+        const pipeVolumeL = calculatePipeVolume(segment) || 0;
+        return {
+            segmentId: segment.id,
+            label: segment.name || `Segment ${index + 1}`,
+            material: segment.material,
+            size: segment.size,
+            lengthM: segment.length || 0,
+            innerDiameterMm: resolveSegmentInnerDiameterMm(segment),
+            pipeVolumeL,
+            pureGlycolL: calculateGlycolVolume(pipeVolumeL, percentage),
+        };
+    });
+};
+
 export interface PurchaseSummary {
     // Țeavă
     pipeLines: PurchaseLine[];
+    pipeGlycolLines: PipeGlycolLine[];
     pipeTotalLengthM: number;
     pipeVolumeL: number;
     pipeTotalWeightKg: number;
@@ -113,6 +143,8 @@ export function calculatePurchaseSummary(
     safetyMarginPercentage: number,
     fittingItems: FittingItem[] = []
 ): PurchaseSummary {
+    const pipeGlycolLines = calculatePipeGlycolLines(segments, glycolPercentage);
+
     // 1. Agregare țeavă pe (material, DN)
     const byKey = new Map<string, PurchaseLine>();
     let pipeVolumeL = 0;
@@ -190,6 +222,7 @@ export function calculatePurchaseSummary(
 
     return {
         pipeLines,
+        pipeGlycolLines,
         pipeTotalLengthM: pipeLines.reduce((s, l) => s + l.lengthM, 0),
         pipeVolumeL,
         pipeTotalWeightKg: pipeWeightKg,

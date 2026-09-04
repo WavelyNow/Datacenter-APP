@@ -72,6 +72,7 @@ jest.mock('@/components/ui/Tooltip', () => ({
 
 describe('Dashboard Component', () => {
     beforeEach(() => {
+        jest.clearAllMocks();
         (useProject as jest.Mock).mockReturnValue(mockProjectContextValue);
     });
 
@@ -112,7 +113,23 @@ describe('Dashboard Component', () => {
         render(<Dashboard />);
         const newProjectButton = screen.getByText(/Proiect Nou/i);
         fireEvent.click(newProjectButton);
+        expect(mockProjectContextValue.resetProject).toHaveBeenCalled();
         expect(mockUiSetActiveTab).toHaveBeenCalledWith('config');
+    });
+
+    it('does not replace existing work when the user cancels a new project', () => {
+        const confirm = jest.spyOn(window, 'confirm').mockReturnValue(false);
+        (useProject as jest.Mock).mockReturnValue({
+            ...mockProjectContextValue,
+            segments: [{ id: 's1', material: 'steel_light', standard: 'EN 10255', size: 'DN50', length: 10 }],
+        });
+
+        render(<Dashboard />);
+        fireEvent.click(screen.getByText(/Proiect Nou/i));
+
+        expect(mockProjectContextValue.resetProject).not.toHaveBeenCalled();
+        expect(mockUiSetActiveTab).not.toHaveBeenCalledWith('config');
+        confirm.mockRestore();
     });
 
     it('opens TemplateSelector when "Quick Start" is clicked', () => {
@@ -130,7 +147,8 @@ describe('Dashboard Component', () => {
     it('opens the requested piping sub-tab from the progress strip', () => {
         render(<Dashboard />);
 
-        fireEvent.click(screen.getByRole('button', { name: /Echipamente/i }));
+        const equipmentActions = screen.getAllByRole('button', { name: /Echipamente/i });
+        fireEvent.click(equipmentActions[equipmentActions.length - 1]);
 
         expect(mockUiSetPipingTab).toHaveBeenCalledWith('equipment');
         expect(mockUiSetActiveTab).toHaveBeenCalledWith('config');
@@ -145,33 +163,9 @@ describe('Dashboard Component', () => {
         expect(mockUiSetActiveTab).toHaveBeenCalledWith('hydraulics');
     });
 
-    it('displays "Cloud Activ" ONLY when a cloudProjectId is connected (not by projectNumber)', () => {
-        const mockValue = {
-            ...mockProjectContextValue,
-            projectDetails: {
-                ...mockProjectContextValue.projectDetails,
-                projectNumber: '2026-CLOUD',
-            },
-            cloudProjectId: 'real-cloud-id-123',
-        };
-        (useProject as jest.Mock).mockReturnValue(mockValue);
-
+    it('displays local project persistence status', () => {
         render(<Dashboard />);
-        expect(screen.getByText(/Cloud Activ/i)).toBeInTheDocument();
-    });
-
-    it('displays "Doar Local" even when projectNumber is set but no cloud project is connected', () => {
-        const mockValue = {
-            ...mockProjectContextValue,
-            projectDetails: {
-                ...mockProjectContextValue.projectDetails,
-                projectNumber: '2026-CLOUD',
-            },
-            cloudProjectId: null, // ← the real source of truth
-        };
-        (useProject as jest.Mock).mockReturnValue(mockValue);
-
-        render(<Dashboard />);
-        expect(screen.getByText(/Doar Local/i)).toBeInTheDocument();
+        expect(screen.getByText(/Persistență proiect/i)).toBeInTheDocument();
+        expect(screen.getByText(/^Local$/i)).toBeInTheDocument();
     });
 });

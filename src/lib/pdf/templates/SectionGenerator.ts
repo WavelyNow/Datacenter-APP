@@ -2,7 +2,6 @@ import { PDFDocument, PDFPage, PDFFont, PDFImage } from 'pdf-lib';
 import { ProjectDetails } from '@/lib/types';
 import { drawHeader, drawFooter } from './common';
 import { PdfTheme } from '../styles';
-import { sanitizePdfText } from '../utils';
 
 export class PDFContext {
     pdfDoc: PDFDocument;
@@ -72,9 +71,7 @@ export class PDFContext {
             this.currentPage,
             this.fontRegular,
             this.pageNumber,
-            this.theme,
-            sanitizePdfText(this.projectDetails.projectName),
-            sanitizePdfText(this.projectDetails.revision)
+            this.theme
         );
     }
 

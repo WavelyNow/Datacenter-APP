@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { CloudProject } from '@/lib/types';
 import { useProject } from '@/context/ProjectContext';
+import { usePreferences } from '@/context/PreferencesContext';
 import { Cloud, Save, Loader2, Search, Calendar, FolderOpen, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const CloudBrowserAction = () => {
     const { cloudProjectId, saveToCloud, loadFromCloud } = useProject();
+    const { preferences } = usePreferences();
     const [isOpen, setIsOpen] = useState(false);
     const [projects, setProjects] = useState<CloudProject[]>([]);
     const [loading, setLoading] = useState(false);
@@ -53,7 +55,7 @@ export const CloudBrowserAction = () => {
         setSaving(true);
         try {
             await saveToCloud();
-            toast.success('Proiect salvat în cloud');
+            if (preferences.showSyncNotifications) toast.success('Proiect salvat în cloud');
             // If browser is open, refresh
             if (isOpen) fetchProjects();
         } catch (err: unknown) {
@@ -69,7 +71,7 @@ export const CloudBrowserAction = () => {
             try {
                 await loadFromCloud(id);
                 setIsOpen(false);
-                toast.success('Proiect încărcat din cloud');
+                if (preferences.showSyncNotifications) toast.success('Proiect încărcat din cloud');
             } catch (err: unknown) {
                 const msg = err instanceof Error ? err.message : 'Eroare necunoscută';
                 toast.error('Încărcare eșuată: ' + msg);

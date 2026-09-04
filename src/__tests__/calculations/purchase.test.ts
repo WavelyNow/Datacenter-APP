@@ -5,7 +5,7 @@
  * configurată de utilizator.
  */
 
-import { calculatePurchaseSummary, FITTING_DIAMETER_MULTIPLIERS } from '@/lib/calculations/purchase';
+import { calculatePurchaseSummary, calculatePipeGlycolLines, FITTING_DIAMETER_MULTIPLIERS } from '@/lib/calculations/purchase';
 import { PipeSegment } from '@/lib/types';
 
 const segments: PipeSegment[] = [
@@ -14,6 +14,24 @@ const segments: PipeSegment[] = [
 ];
 
 describe('Purchase summary (cât trebuie să cumpăr)', () => {
+    it('exposes the pipe glycol calculation per segment for auditable exports', () => {
+        const lines = calculatePipeGlycolLines(segments, 30);
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toMatchObject({
+            segmentId: 's1',
+            size: 'DN50',
+            lengthM: 10,
+            innerDiameterMm: 54.5,
+        });
+        expect(lines[0].pipeVolumeL).toBeCloseTo(23.33, 1);
+        expect(lines[0].pureGlycolL).toBeCloseTo(lines[0].pipeVolumeL * 0.3, 4);
+        expect(lines.reduce((sum, line) => sum + line.pipeVolumeL, 0)).toBeCloseTo(
+            calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, []).pipeVolumeL,
+            6
+        );
+    });
+
     it('computes pipe volumes from real diameters and aggregates per DN', () => {
         const p = calculatePurchaseSummary(segments, [], 30, 'ethylene', false, 0, []);
         expect(p.pipeVolumeL).toBeGreaterThan(60);

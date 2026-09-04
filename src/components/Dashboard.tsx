@@ -14,7 +14,7 @@ import {
     TrendingUp,
     Scale,
     Package,
-    Cloud,
+    HardDrive,
     Printer,
     Check,
     Circle
@@ -35,7 +35,9 @@ const DashboardBase = () => {
         safetyMarginPercentage,
         cloudProjectId,
         fluidType,
-        fittingItems
+        fittingItems,
+        ifcModelUrl,
+        resetProject
     } = useProject();
 
     const { setActiveTab, setPipingTab, setHydraulicTool } = useUI();
@@ -51,6 +53,13 @@ const DashboardBase = () => {
     }, [setActiveTab, setHydraulicTool]);
 
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
+
+    const startNewProject = React.useCallback(() => {
+        const hasExistingWork = segments.length > 0 || equipmentList.length > 0 || fittingItems.length > 0 || Boolean(ifcModelUrl) || Boolean(cloudProjectId);
+        if (hasExistingWork && !window.confirm('Proiectul curent va fi înlocuit cu un proiect gol. Continuați?')) return;
+        resetProject();
+        openPiping('segments');
+    }, [cloudProjectId, equipmentList.length, fittingItems.length, ifcModelUrl, openPiping, resetProject, segments.length]);
 
     const resources = React.useMemo(() => calculateSystemResources(
         segments,
@@ -102,15 +111,15 @@ const DashboardBase = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="mx-auto max-w-[1600px] space-y-8 p-4 sm:space-y-12 sm:p-6 lg:p-8"
+            className="mx-auto max-w-[1600px] space-y-7 p-4 sm:space-y-10 sm:p-6 lg:p-8"
         >
             {/* Hero Section */}
-            <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">                <div className="relative z-10">
+            <motion.div variants={itemVariants} className="relative flex flex-col items-start justify-between gap-6 rounded-3xl border border-border/60 bg-card/30 p-5 sm:p-7 md:flex-row md:items-center">                <div className="relative z-10">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="flex items-center gap-2.5 mb-5"
+                        className="mb-4 flex flex-wrap items-center gap-2"
                     >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium">
                             <span className="relative flex h-1.5 w-1.5">
@@ -125,12 +134,12 @@ const DashboardBase = () => {
                     <h1 className="mb-3 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
                         Spațiu de lucru <span className="text-primary">pentru inginerie</span>
                     </h1>
-                    <p className="text-muted-foreground text-lg max-w-2xl">
+                    <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
                         Prezentare generală în timp real a metricilor proiectului.
                     </p>
                 </div>
 
-                <div className="relative z-10 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
+                <div className="relative z-10 grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-3 sm:gap-3">
                     <Tooltip content="Alege din șabloane pre-configurate pentru a începe rapid" side="bottom">
                         <button
                             onClick={() => setIsTemplateOpen(true)}
@@ -155,7 +164,7 @@ const DashboardBase = () => {
 
                     <Tooltip content="Începe un proiect nou adăugând manual segmente de țeavă" side="bottom">
                         <button
-                            onClick={() => openPiping('segments')}
+                            onClick={startNewProject}
                             title="Începe un proiect nou adăugând manual segmente de țeavă"
                             className="btn btn-primary group h-12 w-full gap-2 px-6 sm:w-auto"
                         >
@@ -170,8 +179,8 @@ const DashboardBase = () => {
             </motion.div>
 
             {/* Quick Stats Grid */}
-            <motion.div variants={containerVariants} className="grid grid-cols-1 gap-3 sm:gap-6 md:grid-cols-4">
-                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-primary/30 sm:p-6 md:h-[160px]" onClick={() => openPiping('equipment')}>
+            <motion.div variants={containerVariants} className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+                <motion.button type="button" aria-label="Deschide echipamentele" variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 text-left hover:border-primary/30 sm:min-h-[160px] sm:p-6" onClick={() => openPiping('equipment')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <Package className="w-5 h-5" />
@@ -182,9 +191,9 @@ const DashboardBase = () => {
                         <div className="text-3xl font-bold font-mono tracking-tight">{equipmentList.length}</div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Unități / Echipamente</div>
                     </div>
-                </motion.div>
+                </motion.button>
 
-                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-secondary/30 sm:p-6 md:h-[160px]" onClick={() => openPiping('segments')}>
+                <motion.button type="button" aria-label="Deschide segmentele de țeavă" variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 text-left hover:border-secondary/30 sm:min-h-[160px] sm:p-6" onClick={() => openPiping('segments')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Activity className="w-5 h-5" />
@@ -197,9 +206,9 @@ const DashboardBase = () => {
                         </div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Lungime Totală Țeavă</div>
                     </div>
-                </motion.div>
+                </motion.button>
 
-                <motion.div variants={itemVariants} className="card-premium group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden p-4 hover:border-border sm:p-6 md:h-[160px]" onClick={() => openPiping('fluid')}>
+                <motion.button type="button" aria-label="Deschide configurarea fluidului" variants={itemVariants} className="card-premium group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden p-4 text-left hover:border-border sm:min-h-[160px] sm:p-6" onClick={() => openPiping('fluid')}>
                     <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -213,9 +222,9 @@ const DashboardBase = () => {
                         </div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Volum Total Sistem</div>
                     </div>
-                </motion.div>
+                </motion.button>
 
-                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-blue-500/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('weights')}>
+                <motion.button type="button" aria-label="Deschide calculul sarcinii" variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 text-left hover:border-blue-500/30 sm:min-h-[160px] sm:p-6" onClick={() => setActiveTab('weights')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Scale className="w-5 h-5" />
@@ -228,7 +237,7 @@ const DashboardBase = () => {
                         </div>
                         <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Sarcina Totală la Sol</div>
                     </div>
-                </motion.div>
+                </motion.button>
             </motion.div>
 
             {/* Content Grid */}
@@ -236,7 +245,7 @@ const DashboardBase = () => {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Pasul următor — strip de completare */}
-                    <motion.div variants={itemVariants} className="glass-panel p-4 rounded-2xl flex flex-wrap items-center gap-2">
+                    <motion.div variants={itemVariants} className="glass-panel flex flex-wrap items-center gap-2 rounded-2xl p-4 sm:p-5">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mr-1">Progres:</span>
                         {[
                             { done: (segments || []).length > 0, label: 'Segmente', action: () => openPiping('segments') },
@@ -257,7 +266,7 @@ const DashboardBase = () => {
                                 {step.label}
                             </button>
                         ))}
-                        <span className="ml-auto text-[11px] text-muted-foreground">
+                        <span className="w-full text-[11px] text-muted-foreground sm:ml-auto sm:w-auto sm:text-right">
                             {segments.length > 0 && equipmentList.length > 0 ? 'Sistem definit — vezi comanda mai jos' : 'Adaugă segmente pentru a calcula'}
                         </span>
                     </motion.div>
@@ -315,11 +324,11 @@ const DashboardBase = () => {
 
                         <motion.div variants={itemVariants} className="glass-panel p-6 rounded-3xl flex items-center gap-6">
                             <div className="p-3 bg-secondary rounded-2xl">
-                                <Cloud className="w-6 h-6 text-muted-foreground" />
+                                <HardDrive className="w-6 h-6 text-muted-foreground" />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Status Sincronizare</p>
-                                <p className="text-2xl font-bold">{cloudProjectId ? "Cloud Activ" : "Doar Local"}</p>
+                                <p className="text-sm font-medium text-muted-foreground">Persistență proiect</p>
+                                <p className="text-2xl font-bold">Local</p>
                             </div>
                         </motion.div>
                     </div>

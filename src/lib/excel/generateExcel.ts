@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { ProjectDetails, PipeSegment, EquipmentItem, SupportConfig } from '@/lib/types';
 import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
+import { sanitizeProjectName } from '@/lib/validation';
 
 interface ExcelExportData {
     projectDetails: ProjectDetails;
@@ -175,7 +176,260 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     wsSummary.getColumn(5).width = 25; // Metric 2 col
 
 
-    // --- SHEET 2: BILL OF QUANTITIES ---
+    // --- SHEET 2: GLYCOL CALCULATION (AUDIT TRAIL) ---
+    const wsGlycol = initSheet('Calcul glicol');
+    wsGlycol.mergeCells('B3:K3');
+    const glycolTitle = wsGlycol.getCell('B3');
+    glycolTitle.value = 'Calcul volum glicol';
+    glycolTitle.font = { name: 'Arial', size: 16, bold: true, color: { argb: palette.text } };
+
+    wsGlycol.mergeCells('B4:K4');
+    const glycolSubtitle = wsGlycol.getCell('B4');
+    glycolSubtitle.value = 'Calculul este prezentat pe fiecare segment și apoi reconciliat cu volumul total de cumpărat.';
+    glycolSubtitle.font = { name: 'Arial', size: 10, color: { argb: palette.secondary } };
+
+    const glycolPercentage = Math.max(0, Math.min(100, Number(data.glycolPercentage) || 0));
+    const glycolParameter = wsGlycol.getCell('E5');
+    glycolParameter.value = 'Concentrație glicol';
+    glycolParameter.font = { name: 'Arial', size: 9, bold: true, color: { argb: palette.secondary } };
+    const glycolPercentageCell = wsGlycol.getCell('F5');
+    glycolPercentageCell.value = glycolPercentage;
+    glycolPercentageCell.numFmt = '0.00"%"';
+    glycolPercentageCell.font = baseFont;
+
+    const marginParameter = wsGlycol.getCell('H5');
+    marginParameter.value = 'Marjă siguranță';
+    marginParameter.font = { name: 'Arial', size: 9, bold: true, color: { argb: palette.secondary } };
+    const marginPercentageCell = wsGlycol.getCell('I5');
+    marginPercentageCell.value = marginPct;
+    marginPercentageCell.numFmt = '0.00"%"';
+    marginPercentageCell.font = baseFont;
+
+    const glycolHeaders = [
+        'Segment', 'Nume', 'Material', 'Dimensiune', 'Lungime (m)',
+        'ID interior (mm)', 'Volum țeavă (L)', '% glicol', 'Glicol pur (L)', 'Formula volum'
+    ];
+    const glycolHeaderRow = 7;
+    glycolHeaders.forEach((header, index) => {
+        const cell = wsGlycol.getRow(glycolHeaderRow).getCell(index + 2);
+        cell.value = header.toUpperCase();
+        cell.font = { name: 'Arial', size: 9, bold: true, color: { argb: palette.secondary } };
+        cell.border = { bottom: { style: 'medium', color: { argb: palette.border } } };
+        cell.alignment = { vertical: 'bottom', horizontal: 'left', wrapText: true };
+    });
+
+    const firstPipeRow = glycolHeaderRow + 1;
+    const pipeGlycolLines = purchase.pipeGlycolLines;
+    const visiblePipeLines = pipeGlycolLines.length > 0 ? pipeGlycolLines : [{
+        segmentId: '',
+        label: '—',
+        material: '—',
+        size: '—',
+        lengthM: 0,
+        innerDiameterMm: 0,
+        pipeVolumeL: 0,
+        pureGlycolL: 0,
+    }];
+
+    visiblePipeLines.forEach((line, index) => {
+        const rowNumber = firstPipeRow + index;
+        const row = wsGlycol.getRow(rowNumber);
+        const values = [
+            line.segmentId ? index + 1 : '—',
+            line.label,
+            line.material,
+            line.size,
+            line.lengthM,
+            line.innerDiameterMm,
+            undefined,
+            glycolPercentage,
+            undefined,
+            'π/4 × (ID/1000)² × lungime × 1000',
+        ];
+
+        values.forEach((value, columnIndex) => {
+            const cell = row.getCell(columnIndex + 2);
+            cell.value = value;
+            cell.font = baseFont;
+            cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+            cell.border = { bottom: { style: 'thin', color: { argb: palette.border } } };
+        });
+
+        const volumeCell = row.getCell(8);
+        volumeCell.value = {
+            formula: `PI()/4*(G${rowNumber}/1000)^2*F${rowNumber}*1000`,
+            result: line.pipeVolumeL,
+        };
+        volumeCell.numFmt = '0.00';
+
+        const pureGlycolCell = row.getCell(10);
+        pureGlycolCell.value = {
+            formula: `H${rowNumber}*$F$5/100`,
+            result: line.pureGlycolL,
+        };
+        pureGlycolCell.numFmt = '0.00';
+        row.height = 30;
+    });
+
+    const summaryStart = firstPipeRow + visiblePipeLines.length + 3;
+    wsGlycol.mergeCells(`B${summaryStart}:K${summaryStart}`);
+    const calculationTitle = wsGlycol.getCell(`B${summaryStart}`);
+    calculationTitle.value = 'REZUMAT CALCUL';
+    calculationTitle.font = { name: 'Arial', size: 10, bold: true, color: { argb: palette.accent } };
+
+    const firstVisiblePipeRow = firstPipeRow;
+    const lastVisiblePipeRow = firstPipeRow + visiblePipeLines.length - 1;
+    const writeCalculationRow = (
+        rowNumber: number,
+        label: string,
+        unit: string,
+        formula: string | undefined,
+        result: number,
+        explanation: string
+    ) => {
+        const labelCell = wsGlycol.getCell(rowNumber, 2);
+        labelCell.value = label;
+        labelCell.font = baseFont;
+        const valueCell = wsGlycol.getCell(rowNumber, 3);
+        valueCell.value = formula ? { formula, result } : result;
+        valueCell.font = { ...baseFont, bold: label.includes('cumpărat') || label.includes('total') };
+        valueCell.numFmt = '0.00';
+        const unitCell = wsGlycol.getCell(rowNumber, 4);
+        unitCell.value = unit;
+        unitCell.font = { name: 'Arial', size: 10, color: { argb: palette.secondary } };
+        const explanationCell = wsGlycol.getCell(rowNumber, 6);
+        explanationCell.value = explanation;
+        explanationCell.font = { name: 'Arial', size: 9, color: { argb: palette.secondary } };
+        explanationCell.alignment = { wrapText: true };
+        [labelCell, valueCell, unitCell, explanationCell].forEach(cell => {
+            cell.border = { bottom: { style: 'thin', color: { argb: palette.border } } };
+        });
+        wsGlycol.getRow(rowNumber).height = 22;
+    };
+
+    const pipeVolumeRow = summaryStart + 1;
+    const purePipeGlycolRow = summaryStart + 2;
+    const pipeWaterRow = summaryStart + 3;
+    const equipmentVolumeRow = summaryStart + 4;
+    const fittingsVolumeRow = summaryStart + 5;
+    const baseVolumeRow = summaryStart + 6;
+    const marginVolumeRow = summaryStart + 7;
+    const rawTotalRow = summaryStart + 8;
+    const purchaseTotalRow = summaryStart + 9;
+    const pureTotalGlycolRow = summaryStart + 10;
+    const canisterRow = summaryStart + 11;
+
+    writeCalculationRow(
+        pipeVolumeRow,
+        'Volum intern țevi',
+        'L',
+        `SUM(H${firstVisiblePipeRow}:H${lastVisiblePipeRow})`,
+        purchase.pipeVolumeL,
+        'Σ volum pe segmente'
+    );
+    writeCalculationRow(
+        purePipeGlycolRow,
+        'Glicol pur echivalent în țevi',
+        'L',
+        `C${pipeVolumeRow}*$F$5/100`,
+        purchase.pipeVolumeL * glycolPercentage / 100,
+        'volum țevi × concentrație / 100'
+    );
+    writeCalculationRow(
+        pipeWaterRow,
+        'Apă echivalentă în țevi',
+        'L',
+        `C${pipeVolumeRow}-C${purePipeGlycolRow}`,
+        purchase.pipeVolumeL - (purchase.pipeVolumeL * glycolPercentage / 100),
+        'volum țevi − glicol pur'
+    );
+    writeCalculationRow(
+        equipmentVolumeRow,
+        'Volum echipamente',
+        'L',
+        undefined,
+        purchase.equipmentVolumeL,
+        'sumă volume introduse în inventar'
+    );
+    writeCalculationRow(
+        fittingsVolumeRow,
+        'Volum fitinguri',
+        'L',
+        undefined,
+        purchase.fittingsVolumeL,
+        'calculat din tip, DN și cantitate'
+    );
+    writeCalculationRow(
+        baseVolumeRow,
+        'Volum de bază sistem',
+        'L',
+        `C${pipeVolumeRow}+C${equipmentVolumeRow}+C${fittingsVolumeRow}`,
+        purchase.pipeVolumeL + purchase.equipmentVolumeL + purchase.fittingsVolumeL,
+        'țevi + echipamente + fitinguri'
+    );
+    writeCalculationRow(
+        marginVolumeRow,
+        'Marjă de siguranță',
+        'L',
+        `C${baseVolumeRow}*$I$5/100`,
+        purchase.marginL,
+        'volum de bază × marjă / 100'
+    );
+    writeCalculationRow(
+        rawTotalRow,
+        'Volum înainte de rotunjire',
+        'L',
+        `C${baseVolumeRow}+C${marginVolumeRow}`,
+        purchase.rawTotalL,
+        'volum de bază + marjă'
+    );
+    writeCalculationRow(
+        purchaseTotalRow,
+        'Soluție de umplere / cumpărat',
+        'L',
+        `ROUNDUP(C${rawTotalRow}/10,0)*10`,
+        purchase.totalGlycolL,
+        'rotunjit la canistre de 10 L'
+    );
+    writeCalculationRow(
+        pureTotalGlycolRow,
+        'Glicol pur echivalent — total',
+        'L',
+        `C${purchaseTotalRow}*$F$5/100`,
+        purchase.totalGlycolL * glycolPercentage / 100,
+        'soluție totală × concentrație / 100'
+    );
+    writeCalculationRow(
+        canisterRow,
+        'Canistre de 10 L',
+        'buc.',
+        `C${purchaseTotalRow}/10`,
+        purchase.canisters10L,
+        'soluție totală / 10'
+    );
+
+    const noteRow = canisterRow + 2;
+    wsGlycol.mergeCells(`B${noteRow}:K${noteRow}`);
+    const note = wsGlycol.getCell(`B${noteRow}`);
+    note.value = 'Notă: „Soluție de umplere / cumpărat” este volumul total al amestecului apă-glicol. „Glicol pur echivalent” arată componenta de glicol la concentrația aleasă.';
+    note.font = { name: 'Arial', size: 9, italic: true, color: { argb: palette.secondary } };
+    note.alignment = { wrapText: true };
+    wsGlycol.getRow(noteRow).height = 32;
+
+    wsGlycol.getColumn(2).width = 12;
+    wsGlycol.getColumn(3).width = 25;
+    wsGlycol.getColumn(4).width = 24;
+    wsGlycol.getColumn(5).width = 14;
+    wsGlycol.getColumn(6).width = 13;
+    wsGlycol.getColumn(7).width = 17;
+    wsGlycol.getColumn(8).width = 17;
+    wsGlycol.getColumn(9).width = 12;
+    wsGlycol.getColumn(10).width = 17;
+    wsGlycol.getColumn(11).width = 42;
+    wsGlycol.views = [{ state: 'frozen', ySplit: glycolHeaderRow, showGridLines: false, zoomScale: 115 }];
+
+
+    // --- SHEET 3: BILL OF QUANTITIES ---
     const wsBoq = initSheet('Listă cantități');
     wsBoq.getColumn(2).width = 35; // Material
     wsBoq.getColumn(3).width = 15; // Size
@@ -283,7 +537,10 @@ export const generateExcelReport = async (data: ExcelExportData) => {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Minimal.xlsx`;
+    anchor.download = `Proiect_${sanitizeProjectName(data.projectDetails.projectName) || 'Proiect'}_Minimal.xlsx`;
+    document.body.appendChild(anchor);
     anchor.click();
-    window.URL.revokeObjectURL(url);
+    anchor.remove();
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
+    return workbook;
 };

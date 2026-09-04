@@ -10,11 +10,8 @@ interface TableOptions {
     rowHeight?: number;
     align?: ('left' | 'center' | 'right')[];
     showBorders?: boolean;
-    stripeColors?: (RGB | undefined)[];
     fontSize?: number;
 }
-
-const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
 export const drawTable = async (
     ctx: PDFContext,

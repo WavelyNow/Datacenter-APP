@@ -1,4 +1,4 @@
-import { PDFPage, PDFFont, PDFImage, rgb } from 'pdf-lib';
+import { PDFPage, PDFFont, PDFImage } from 'pdf-lib';
 import { ProjectDetails } from '../../types';
 import { PdfTheme } from '../styles';
 import { sanitizePdfText } from '../utils';
@@ -92,11 +92,9 @@ export const drawFooter = (
     page: PDFPage,
     fontRegular: PDFFont,
     pageNumber: number,
-    theme: PdfTheme,
-    projectName?: string,
-    revision?: string
+    theme: PdfTheme
 ): void => {
-    const { width, height } = page.getSize();
+    const { width } = page.getSize();
     const margin = 50;
 
     // Hairline sus

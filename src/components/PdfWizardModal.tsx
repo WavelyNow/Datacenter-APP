@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, Settings, Wrench, LucideIcon, FileSpreadsheet } from 'lucide-react';
+import { X, FileText, Check, Package, Eye, Download, ChevronLeft, ChevronRight, Sparkles, LucideIcon, FileSpreadsheet } from 'lucide-react';
 import { ProjectDetails, PipeSegment, EquipmentItem } from '@/lib/types';
-import { PdfData, PdfOptions } from '@/lib/pdf/types';
+import { PdfData } from '@/lib/pdf/types';
+import { sanitizeProjectName } from '@/lib/validation';
 
 import { generateExcelReport } from '@/lib/excel/generateExcel';
 import { toast } from 'sonner';
@@ -38,27 +39,19 @@ interface PdfWizardModalProps {
     };
 }
 
-type Preset = 'basic' | 'custom' | 'excel';
+type Preset = 'basic' | 'excel';
 
-const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon; options: Partial<PdfOptions> }> = {
+const presets: Record<Preset, { name: string; desc: string; icon: LucideIcon }> = {
     basic: {
         name: 'Raport de comandă',
         desc: 'Amplasament + țeavă + listă de cumpărat (recomandat).',
-        icon: Package,
-        options: {}
+        icon: Package
     },
     excel: {
         name: 'Export date Excel',
         desc: 'Date tabelare pentru prelucrare externă.',
-        icon: FileSpreadsheet,
-        options: {}
+        icon: FileSpreadsheet
     },
-    custom: {
-        name: 'Personalizat',
-        desc: 'Configurează manual.',
-        icon: Settings,
-        options: {}
-    }
 };
 
 export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose, data }) => {
@@ -73,26 +66,6 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         return () => setMounted(false);
     }, []);
 
-    // Options State
-    const [options, setOptions] = useState<PdfOptions>({
-        includeVolume: true,
-        includeBoQ: true,
-        includeSupports: false,
-        includeWeights: false,
-        includePhotos: false,
-        includeEnergy: false,
-        supportSpacing: 2.0
-    });
-
-    // Invalidate preview when options change — dar NU revoca blob-ul imediat
-    // (revocarea instantanee omora iframe-ul — blob-ul e inlocuit la handlePreview).
-    // Curatenia se face la unmount / la inlocuire.
-    useEffect(() => {
-        if (previewUrl) {
-            setPreviewUrl(null);
-        }
-    }, [options, selectedPreset]);
-
     // Cleanup preview URL on unmount or close
     useEffect(() => {
         return () => {
@@ -106,15 +79,6 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             setCurrentStep(1);
             setSelectedPreset('basic');
             setPreviewUrl(null);
-            setOptions({
-                includeVolume: true,
-                includeBoQ: true,
-                includeSupports: false,
-                includeWeights: false,
-                includePhotos: false,
-                includeEnergy: false,
-                supportSpacing: 2.0
-            });
         }
     }, [isOpen]);
 
@@ -122,10 +86,10 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
 
     const selectPreset = (preset: Preset) => {
         setSelectedPreset(preset);
-        if (preset !== 'custom' && preset !== 'excel') {
-            setOptions(prev => ({ ...prev, ...presets[preset].options }));
-        }
+        setPreviewUrl(null);
     };
+
+    const pdfFileName = `Proiect_${sanitizeProjectName(data.projectDetails.projectName) || 'Proiect'}_Rev${sanitizeProjectName(data.projectDetails.revision) || 'A'}.pdf`;
 
     const generatePdfBlob = async () => {
         setIsGenerating(true);
@@ -138,7 +102,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                     name: item.name.trim() || `Echipament ${index + 1}`
                 }))
             };
-            const pdfData: PdfData = { ...sanitizedData, options };
+            const pdfData: PdfData = sanitizedData;
             const response = await fetch('/api/generate-pdf', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -176,7 +140,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
         if (previewUrl) {
             const a = document.createElement('a');
             a.href = previewUrl;
-            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = pdfFileName;
             a.click();
             onClose();
             return;
@@ -187,7 +151,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Proiect_${data.projectDetails.projectName.replace(/\s+/g, '_')}_Rev${data.projectDetails.revision}.pdf`;
+            a.download = pdfFileName;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -215,7 +179,7 @@ export const PdfWizardModal: React.FC<PdfWizardModalProps> = ({ isOpen, onClose,
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center space-y-2">
                             <h3 className="text-2xl font-bold text-foreground">Selectează tipul raportului</h3>
-                            <p className="text-muted-foreground">Alege o configurație prestabilită sau personalizează raportul.</p>
+                            <p className="text-muted-foreground">Alege raportul PDF sau exportul de date Excel.</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {(Object.keys(presets) as Preset[]).map(preset => {

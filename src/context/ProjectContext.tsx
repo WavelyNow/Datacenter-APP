@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, ReactNode, useCallback, us
 import { PipeSegment, EquipmentItem, ProjectDetails, FluidType, SupportConfig, BrandingConfig, BoQItem, ProjectLoadData, FittingItem } from '@/lib/types';
 import { useHistory } from '@/hooks/useHistory';
 import { supabase } from '@/lib/supabase';
+import { usePreferences } from '@/context/PreferencesContext';
+import { parseProjectData, PROJECT_FILE_VERSION } from '@/lib/projectFile';
 
 const CLOUD_DISABLED_MESSAGE = 'Cloud dezactivat — setează variabilele de mediu NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY';
 
@@ -73,6 +75,9 @@ interface ProjectState {
 
     // Full local reset (clears everything incl. cloud link)
     resetProject: () => void;
+    // Local persistence status and explicit manual save.
+    isProjectDirty: boolean;
+    saveProjectLocally: () => void;
 }
 
 
@@ -83,8 +88,7 @@ const loadFromStorage = (): Partial<ProjectDataState> => {
     try {
         const saved = localStorage.getItem(PROJECT_STORAGE_KEY);
         if (!saved) return {};
-        const parsed = JSON.parse(saved);
-        return parsed && typeof parsed === 'object' ? parsed : {};
+        return parseProjectData(JSON.parse(saved)) as Partial<ProjectDataState>;
     } catch (e) {
         console.error('Failed to load project:', e);
         return {};
@@ -96,22 +100,25 @@ const serializeProjectState = (s: ProjectDataState): string => {
     // — le excludem din persistare (fara obiecte moarte in storage).
     const equipmentList = s.equipmentList.map(eq => (eq.model3d && eq.model3d.startsWith('blob:')) ? { ...eq, model3d: undefined } : eq);
     return JSON.stringify({
-    projectDetails: s.projectDetails,
-    segments: s.segments,
-    equipmentList,
-    ifcModelUrl: s.ifcModelUrl,
-    fluidType: s.fluidType,
-    glycolPercentage: s.glycolPercentage,
-    safetyMargin: s.safetyMargin,
-    safetyMarginPercentage: s.safetyMarginPercentage,
-    supportConfig: s.supportConfig,
-    branding: s.branding,
-    cloudProjectId: s.cloudProjectId,
-    boqItems: s.boqItems,
-    fittingItems: s.fittingItems,
-});};
+        version: PROJECT_FILE_VERSION,
+        projectDetails: s.projectDetails,
+        segments: s.segments,
+        equipmentList,
+        ifcModelUrl: s.ifcModelUrl,
+        fluidType: s.fluidType,
+        glycolPercentage: s.glycolPercentage,
+        safetyMargin: s.safetyMargin,
+        safetyMarginPercentage: s.safetyMarginPercentage,
+        supportConfig: s.supportConfig,
+        branding: s.branding,
+        cloudProjectId: s.cloudProjectId,
+        boqItems: s.boqItems,
+        fittingItems: s.fittingItems,
+    });
+};
 
 const buildProjectLoadData = (s: ProjectDataState): ProjectLoadData => ({
+    version: PROJECT_FILE_VERSION,
     projectDetails: s.projectDetails,
     segments: s.segments,
     equipmentList: s.equipmentList,
@@ -170,6 +177,8 @@ const applyProjectData = (base: ProjectDataState, data: ProjectLoadData): Projec
 };
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
+    const { preferences } = usePreferences();
+
     // Initial State Definition
     const defaultState = React.useMemo<ProjectDataState>(() => ({
         projectDetails: {
@@ -213,6 +222,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
     // Initialization check
     const [isInitialized, setIsInitialized] = React.useState(false);
+    const [isProjectDirty, setIsProjectDirty] = React.useState(false);
 
     // Load saved data using useHistory reset
     useEffect(() => {
@@ -223,44 +233,70 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Push to next tick to avoid cascading render warning in React
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             setIsInitialized(true);
         }, 0);
+        return () => clearTimeout(timer);
     }, [defaultState, reset]);
 
     // Debounced local persistence — ProjectContext is the single owner of PROJECT_STORAGE_KEY.
     const latestStateRef = useRef<ProjectDataState>(state);
+    const lastSeenStateRef = useRef<ProjectDataState>(state);
+    const hydratedStateRef = useRef(false);
+    const dirtyRef = useRef(false);
     useEffect(() => {
         latestStateRef.current = state;
     }, [state]);
 
-    useEffect(() => {
-        // Skip writing until the initial localStorage load has been applied
-        if (!isInitialized) return;
-        const timer = setTimeout(() => {
-            try {
-                localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(state));
-                // Feedback discret pentru utilizator: "salvat local"
+    const persistProjectLocally = useCallback((nextState: ProjectDataState, notify = true) => {
+        try {
+            localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(nextState));
+            dirtyRef.current = false;
+            if (notify) {
+                setIsProjectDirty(false);
                 window.dispatchEvent(new CustomEvent('opencode:project-saved'));
-            } catch (e) {
-                console.error('Failed to persist project:', e);
             }
-        }, 400);
+        } catch (e) {
+            console.error('Failed to persist project:', e);
+        }
+    }, []);
+
+    const autoSaveDelayMs = preferences.autoSaveInterval === 0
+        ? null
+        : Math.max(1, Number.isFinite(preferences.autoSaveInterval) ? preferences.autoSaveInterval : 30) * 1000;
+
+    useEffect(() => {
+        // Skip writing until the initial localStorage load has been applied.
+        if (!isInitialized) return;
+        if (!hydratedStateRef.current) {
+            hydratedStateRef.current = true;
+            lastSeenStateRef.current = state;
+            return;
+        }
+
+        if (lastSeenStateRef.current !== state) {
+            lastSeenStateRef.current = state;
+            dirtyRef.current = true;
+            setIsProjectDirty(true);
+        }
+
+        if (!dirtyRef.current || autoSaveDelayMs === null) return;
+        const timer = setTimeout(() => persistProjectLocally(latestStateRef.current), autoSaveDelayMs);
         return () => clearTimeout(timer);
-    }, [isInitialized, state]);
+    }, [autoSaveDelayMs, isInitialized, persistProjectLocally, state]);
 
     // Flush pending changes on unload so the last debounce window is never lost
     useEffect(() => {
         const flush = () => {
-            try {
-                localStorage.setItem(PROJECT_STORAGE_KEY, serializeProjectState(latestStateRef.current));
-            } catch (e) {
-                console.error('Failed to persist project:', e);
-            }
+            persistProjectLocally(latestStateRef.current, false);
         };
         window.addEventListener('beforeunload', flush);
         return () => window.removeEventListener('beforeunload', flush);
-    }, []);
+    }, [persistProjectLocally]);
+
+    const saveProjectLocally = useCallback(() => {
+        persistProjectLocally(latestStateRef.current);
+    }, [persistProjectLocally]);
 
     // Cloud Methods
     const cloudSaveInFlightRef = useRef(false);
@@ -344,17 +380,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
     // Local file import: full document replace with defaults for fields absent from older files.
     const importProjectData = useCallback((data: ProjectLoadData) => {
-        // Minimal validation: reject obviously malformed documents.
-        if (!data || typeof data !== 'object') {
-            throw new Error('Invalid project file: expected a JSON object.');
-        }
-        if (data.segments !== undefined && !Array.isArray(data.segments)) {
-            throw new Error('Invalid project file: "segments" must be an array.');
-        }
-        if (data.equipmentList !== undefined && !Array.isArray(data.equipmentList)) {
-            throw new Error('Invalid project file: "equipmentList" must be an array.');
-        }
-        reset(applyProjectData(defaultState, data));
+        reset(applyProjectData(defaultState, parseProjectData(data)));
     }, [defaultState, reset]);
 
     // Setters Adapters
@@ -400,6 +426,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
         set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
 
+    const resetProject = useCallback(() => reset(defaultState), [defaultState, reset]);
+
     const addSegments = useCallback((newSegments: PipeSegment[]) =>
         set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })), [set]);
 
@@ -435,13 +463,15 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
         importProjectData,
         // Full local reset (clears everything, incl. cloud link)
-        resetProject: () => reset(defaultState),
+        resetProject,
+        isProjectDirty,
+        saveProjectLocally,
     }), [
         state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
-        setBoqItems, setFittingItems, importProjectData, reset
+        setBoqItems, setFittingItems, importProjectData, resetProject, isProjectDirty, saveProjectLocally
     ]);
 
     return (

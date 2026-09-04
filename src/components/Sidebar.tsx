@@ -4,7 +4,6 @@ import React from 'react';
 import {
     Box,
     LayoutDashboard,
-    Book,
     Package,
     Scale,
     Camera,
@@ -15,17 +14,11 @@ import {
     Save,
     Upload,
     Printer,
-    Leaf,
-    Calculator,
-    ClipboardCheck,
     Wrench,
     Cuboid,
-    Layers,
     LucideIcon,
-    ClipboardList,
     ChevronLeft,
     ChevronRight,
-    Building2,
     FileText,
     Sparkles,
     Ruler,
@@ -63,17 +56,19 @@ const NavSection: React.FC<NavSectionProps> = ({ items, activeTab, onTabChange, 
 
                 return (
                     <button
+                        type="button"
                         key={item.id}
                         onClick={() => onTabChange(item.id)}
                         className={`
                             w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative
                             ${isActive
-                                ? 'bg-primary/10 text-primary font-semibold'
+                                ? 'bg-primary text-primary-foreground shadow-sm font-semibold ring-1 ring-primary/20'
                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                             }
                             ${isCollapsed ? 'justify-center' : ''}
                         `}
                         title={isCollapsed ? item.label : undefined}
+                        aria-current={isActive ? 'page' : undefined}
                     >
                         <div className={`relative flex items-center justify-center transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-105'}`}>
                             <Icon className={`w-[18px] h-[18px] ${isActive ? 'stroke-2' : 'stroke-2'}`} />
@@ -131,6 +126,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
         onTabChange(id);
         closeMobile();
     }, [closeMobile, onTabChange]);
+    const isCompact = isCollapsed && !isMobileOpen;
 
     const mainGroup = React.useMemo<MenuItem[]>(() => [
         { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
@@ -177,6 +173,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
             >
             {/* Collapse Toggle */}
             <button
+                type="button"
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute -right-3 top-20 z-50 hidden rounded-full border border-border bg-card p-1 text-muted-foreground shadow-sm transition-colors hover:scale-110 hover:text-foreground active:scale-95 lg:block"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -196,11 +193,11 @@ const SidebarBase: React.FC<SidebarProps> = ({
 
             <div className="flex-1 overflow-y-auto no-scrollbar overflow-x-hidden">
                 {/* Brand Logo */}
-                <div className={`flex items-center gap-3 px-2 mb-8 pt-2 transition-all ${isCollapsed ? 'justify-center' : ''}`}>
+                <div className={`flex items-center gap-3 px-2 mb-6 pt-2 transition-all ${isCompact ? 'justify-center' : ''}`}>
                     <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm shrink-0">
                         <Box className="w-[18px] h-[18px] text-primary-foreground" strokeWidth={2} />
                     </div>
-                    {!isCollapsed && (
+                    {!isCompact && (
                         <div className="animate-in fade-in slide-in-from-left-4 duration-300">
                             <h1 className="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap">{t('sidebar.brand')}</h1>
                             <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 whitespace-nowrap">
@@ -217,15 +214,16 @@ const SidebarBase: React.FC<SidebarProps> = ({
                         closeMobile();
                         onSettingsOpen();
                     }}
-                    className={`w-full group flex items-center p-2 rounded-xl hover:bg-muted/70 transition-all mb-6
-                        ${isCollapsed ? 'justify-center' : 'justify-between'}
+                    type="button"
+                    className={`w-full group flex items-center p-2 rounded-xl border border-transparent hover:border-border/70 hover:bg-muted/70 transition-all mb-5
+                        ${isCompact ? 'justify-center' : 'justify-between'}
                     `}
                 >
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-semibold text-xs shrink-0">
                             {projectDetails.projectNumber?.slice(0, 2) || 'PR'}
                         </div>
-                        {!isCollapsed && (
+                        {!isCompact && (
                             <div className="flex flex-col min-w-0 items-start animate-in fade-in slide-in-from-left-2 duration-300">
                                 <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors text-foreground max-w-[140px]">
                                     {projectDetails.projectName || t('common.project')}
@@ -236,38 +234,38 @@ const SidebarBase: React.FC<SidebarProps> = ({
                             </div>
                         )}
                     </div>
-                    {!isCollapsed && (
+                    {!isCompact && (
                         <Settings className="w-4 h-4 text-muted-foreground/60 group-hover:text-primary transition-colors shrink-0" />
                     )}
                 </button>
 
                 {/* Navigation Sections */}
-                <nav className="space-y-6">
-                    <NavSection items={mainGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
+                <nav className="space-y-5" aria-label="Secțiuni aplicație">
+                    <NavSection items={mainGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCompact} />
 
                     <div className="relative">
-                        {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.engineering')}</div>}
-                        {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={engineeringGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
+                        {!isCompact && <div className="px-3 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2 font-mono">{t('sidebar.engineering')}</div>}
+                        {isCompact && <div className="h-px bg-border/40 mx-4 mb-4" />}
+                        <NavSection items={engineeringGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCompact} />
                     </div>
 
                     <div className="relative">
-                        {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.resources')}</div>}
-                        {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={databaseGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
+                        {!isCompact && <div className="px-3 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2 font-mono">{t('sidebar.resources')}</div>}
+                        {isCompact && <div className="h-px bg-border/40 mx-4 mb-4" />}
+                        <NavSection items={databaseGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCompact} />
                     </div>
 
                     <div className="relative">
-                        {!isCollapsed && <div className="px-4 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-2 font-mono">{t('sidebar.output')}</div>}
-                        {isCollapsed && <div className="h-px bg-border/40 mx-4 mb-4" />}
-                        <NavSection items={reportsGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCollapsed} />
+                        {!isCompact && <div className="px-3 text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-2 font-mono">{t('sidebar.output')}</div>}
+                        {isCompact && <div className="h-px bg-border/40 mx-4 mb-4" />}
+                        <NavSection items={reportsGroup} activeTab={activeTab} onTabChange={handleTabChange} isCollapsed={isCompact} />
                     </div>
                 </nav>
             </div>
 
             {/* Bottom Actions */}
-            <div className={`mt-4 pt-4 border-t border-border/60 space-y-3 ${isCollapsed ? 'flex flex-col items-center' : ''}`} >
-                {!isCollapsed ? (
+            <div className={`mt-4 pt-4 border-t border-border/60 space-y-3 ${isCompact ? 'flex flex-col items-center' : ''}`} >
+                {!isCompact ? (
                     <div className="grid grid-cols-4 gap-2">
                         <button onClick={onExportOpen} className="col-span-2 flex items-center justify-center gap-2 bg-primary text-primary-foreground h-9 rounded-full text-xs font-medium transition-colors hover:bg-primary/90">
                             <Printer className="w-3.5 h-3.5" />
@@ -298,11 +296,11 @@ const SidebarBase: React.FC<SidebarProps> = ({
                     </div>
                 )}
 
-                <div className={`flex items-center gap-2 ${isCollapsed ? 'flex-col justify-center w-full' : 'justify-between'}`}>
+                <div className={`flex items-center gap-2 ${isCompact ? 'flex-col justify-center w-full' : 'justify-between'}`}>
                     <ThemeToggle />
-                    {!isCollapsed && <OnlineStatusBadge />}
+                    {!isCompact && <OnlineStatusBadge />}
 
-                    {isCollapsed ? (
+                    {isCompact ? (
                         <Tooltip content={t('common.help')} side="right">
                             <button
                                 onClick={() => handleTabChange('help')}
@@ -322,7 +320,7 @@ const SidebarBase: React.FC<SidebarProps> = ({
                     )}
                 </div>
 
-                {!isCollapsed && (
+                {!isCompact && (
                     <div className="text-[9px] text-center text-muted-foreground/20 font-mono mt-2 uppercase tracking-widest animate-in fade-in">
                         Datacenter OS v2026.1
                     </div>

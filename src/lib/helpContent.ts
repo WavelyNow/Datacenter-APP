@@ -15,20 +15,9 @@ export const helpRegistry: Record<string, HelpItem> = {
         description: 'Generează rapoarte profesionale în format PDF sau Excel pentru proiectul curent.',
         category: 'export',
         tips: [
-            'Poți selecta ce secțiuni să incluzi (ex: doar volume, sau și fișe tehnice).',
+            'Previzualizează raportul PDF înainte de descărcare.',
             'Raportul PDF include automat sigla companiei tale dacă este configurată.',
-            'Exportul "Sustainability" include calculul PUE și amprenta de carbon.'
-        ]
-    },
-    'pue-gauge': {
-        id: 'pue-gauge',
-        title: 'Indicator PUE (Power Usage Effectiveness)',
-        description: 'Măsoară eficiența energetică a centrului de date. Un PUE de 1.0 este ideal (eficiență perfectă).',
-        category: 'engineering',
-        tips: [
-            'Valori sub 1.5 sunt considerate "Bune".',
-            'Valori peste 2.0 indică ineficiență majoră.',
-            'Scăderea PUE se face prin optimizarea răcirii (ex: Free Cooling).'
+            'Exportul Excel conține date tabelare pentru prelucrare externă.'
         ]
     },
     'bim-upload': {
@@ -108,4 +97,3 @@ export const helpRegistry: Record<string, HelpItem> = {
         ]
     }
 };
-

@@ -1,15 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ProjectDetails, ProjectLoadData } from '@/lib/types';
-import { Menu, Printer, Save, Upload, Undo, Redo, User, ChevronRight, Settings, UserCircle, Trash2, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ProjectDetails } from '@/lib/types';
+import { Menu, Printer, Save, Upload, Undo, Redo, ChevronRight, Settings, CheckCircle2 } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useProject } from '@/context/ProjectContext';
-import { CloudBrowserAction } from './CloudBrowserAction';
 import { CommandPalette } from './CommandPalette';
 
 interface HeaderProps {
     projectDetails: ProjectDetails;
     onProjectDetailsChange: (details: ProjectDetails) => void;
-    onLoadProject: (data: ProjectLoadData) => void;
+    onLoadProjectFile: (file: File) => void;
     // Actions
     onOpenExport: () => void;
     onOpenSettings: () => void;
@@ -24,7 +23,7 @@ interface HeaderProps {
 const HeaderBase: React.FC<HeaderProps> = ({
     projectDetails,
     onProjectDetailsChange,
-    onLoadProject,
+    onLoadProjectFile,
     onOpenExport,
     onOpenSettings,
     onOpenNavigation,
@@ -34,10 +33,8 @@ const HeaderBase: React.FC<HeaderProps> = ({
     canUndo,
     canRedo
 }) => {
-    const { activeTab, setActiveTab } = useUI();
-    const { resetProject } = useProject();
-    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const userMenuRef = useRef<HTMLDivElement>(null);
+    const { activeTab } = useUI();
+    const { isProjectDirty } = useProject();
     // Feedback discret: "Salvat local" după autosave
     const [savedFlash, setSavedFlash] = useState(false);
     useEffect(() => {
@@ -49,17 +46,6 @@ const HeaderBase: React.FC<HeaderProps> = ({
         return () => window.removeEventListener('opencode:project-saved', handler);
     }, []);
 
-    // Close menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-                setIsUserMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
     const updateDetail = React.useCallback((field: keyof ProjectDetails, value: string) => {
         onProjectDetailsChange({ ...projectDetails, [field]: value });
     }, [onProjectDetailsChange, projectDetails]);
@@ -67,20 +53,9 @@ const HeaderBase: React.FC<HeaderProps> = ({
     const handleLoadProject = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target?.result as string;
-                const projectData = JSON.parse(content) as ProjectLoadData;
-                onLoadProject(projectData);
-            } catch (error) {
-                console.error('Failed to parse project file:', error);
-                alert('A apărut o eroare la încărcarea fișierului.');
-            }
-        };
-        reader.readAsText(file);
-    }, [onLoadProject]);
+        onLoadProjectFile(file);
+        event.target.value = '';
+    }, [onLoadProjectFile]);
 
     // Helper to get readable name for active tab
     const getTabName = React.useCallback((tab: string) => {
@@ -122,7 +97,11 @@ const HeaderBase: React.FC<HeaderProps> = ({
                         <span className="hidden sm:inline">{projectDetails.projectNumber || 'PR-000'}</span>
                         <ChevronRight className="w-3 h-3 opacity-50" />
                         <span className="text-primary">{getTabName(activeTab)}</span>
-                        {savedFlash && (
+                        {isProjectDirty ? (
+                            <span className="ml-1.5 inline-flex items-center gap-1 text-amber-600 text-[9px] font-bold animate-in fade-in duration-200">
+                                Modificări nesalvate
+                            </span>
+                        ) : savedFlash && (
                             <span className="ml-1.5 inline-flex items-center gap-1 text-emerald-600 text-[9px] font-bold animate-in fade-in zoom-in-95 duration-200">
                                 <CheckCircle2 className="w-3 h-3" /> Salvat local
                             </span>
@@ -176,19 +155,16 @@ const HeaderBase: React.FC<HeaderProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-1.5 md:gap-2">
-                        <div className="hidden sm:block">
-                            <CloudBrowserAction />
-                        </div>
-
                         <div className="hidden sm:flex items-center border border-border/40 rounded-xl bg-card/50 shadow-sm p-1 gap-0.5" title="Salvare / Import">
                             <button
                                 onClick={onSaveProject}
+                                aria-label="Salvează proiectul local"
                                 className="btn btn-ghost btn-icon h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                             >
                                 <Save className="w-4 h-4" />
                             </button>
                             <div className="w-px h-4 bg-border/40" />
-                            <label className="btn btn-ghost btn-icon h-8 w-8 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted">
+                            <label className="btn btn-ghost btn-icon h-8 w-8 rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted" aria-label="Încarcă proiect local">
                                 <Upload className="w-4 h-4" />
                                 <input type="file" accept=".json" onChange={handleLoadProject} className="hidden" />
                             </label>
@@ -196,94 +172,22 @@ const HeaderBase: React.FC<HeaderProps> = ({
 
                         <button
                             onClick={onOpenExport}
+                            aria-label="Exportă raportul"
                             className="btn btn-primary h-10 w-10 md:w-auto md:px-5 gap-2 text-xs font-bold shadow-lg shadow-primary/20 ml-1 md:ml-3 flex items-center justify-center"
                         >
                             <Printer className="w-4 h-4" />
                             <span className="hidden md:inline">Export Raport</span>
                         </button>
 
-                        {/* User Profile Dropdown */}
-                        <div className="relative" ref={userMenuRef}>
-                            <button
-                                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                className="h-10 w-10 ml-2 rounded-full bg-linear-to-tr from-primary to-primary/50 p-[2px] cursor-pointer hover:scale-105 transition-transform shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
-                                aria-label="Meniu Utilizator"
-                                aria-expanded={isUserMenuOpen}
-                                aria-haspopup="true"
-                            >
-                                <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                                    <User className="w-5 h-5 text-primary" />
-                                </div>
-                            </button>
-
-                            {/* Dropdown Menu */}
-                            {isUserMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-56 origin-top-right bg-card border border-border rounded-xl shadow-2xl shadow-black/20 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                    {/* User Info Header */}
-                                    <div className="px-4 py-3 bg-muted/30 border-b border-border/50">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-primary/50 p-[2px]">
-                                                <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                                                    <User className="w-5 h-5 text-primary" />
-                                                </div>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-foreground truncate">
-                                                    {projectDetails.designer || 'Utilizator'}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground truncate">
-                                                    {projectDetails.projectNumber || 'Fără proiect'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Menu Items */}
-                                    <div className="py-1">
-                                        <button
-                                            onClick={() => {
-                                                setIsUserMenuOpen(false);
-                                                setActiveTab('settings');
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
-                                        >
-                                            <UserCircle className="w-4 h-4 text-muted-foreground" />
-                                            <span>Profil</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => {
-                                                setIsUserMenuOpen(false);
-                                                onOpenSettings();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
-                                        >
-                                            <Settings className="w-4 h-4 text-muted-foreground" />
-                                            <span>Setări</span>
-                                        </button>
-
-                                        <div className="my-1 mx-3 border-t border-border/50" />
-
-                                        <button
-                                            onClick={() => {
-                                                setIsUserMenuOpen(false);
-                                                // There is NO auth/session in the app — a fake "logout"
-                                                // would lie to the user. This resets the local project
-                                                // (a REAL operation): clears data + cloud link.
-                                                if (window.confirm('Resetare proiect: se șterge TOT conținutul proiectului local (inclusiv link-ul cloud). Continuați?')) {
-                                                    resetProject();
-                                                    setActiveTab('dashboard');
-                                                }
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                            <span>Reset Proiect (Șterge tot)</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <button
+                            type="button"
+                            onClick={onOpenSettings}
+                            aria-label="Deschide setările"
+                            title="Setări"
+                            className="btn btn-ghost btn-icon h-10 w-10 ml-1 text-muted-foreground hover:text-foreground"
+                        >
+                            <Settings className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             </div>

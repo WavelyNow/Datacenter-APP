@@ -48,50 +48,53 @@ export function PipingRoutingPage() {
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="z-10 shrink-0 border-b border-border/40 bg-background/80 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
-                <div className="flex flex-col gap-6">
+            <header className="z-10 shrink-0 border-b border-border/40 bg-background/80 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
+                <div className="mx-auto flex max-w-[1600px] flex-col gap-5 sm:gap-6">
                     {/* Breadcrumbs */}
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
+                    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground/60">
                         <span>{t('pipingRoutingPage.breadcrumbs.design')}</span>
-                        <ChevronRight className="w-3 h-3" />
+                        <ChevronRight aria-hidden="true" className="h-3 w-3" />
                         <span className="text-foreground">{t('pipingRoutingPage.breadcrumbs.physicConfig')}</span>
-                    </div>
+                    </nav>
 
-                    <div className="flex items-end justify-between gap-4">
-                        <div>
-                            <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                    <div className="max-w-3xl">
+                        <h1 className="mb-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                                 {t('pipingRoutingPage.title')}
-                            </h1>
-                            <p className="text-muted-foreground max-w-2xl text-sm font-medium">
+                        </h1>
+                        <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                                 {t('pipingRoutingPage.subtitle')}
-                            </p>
-                        </div>
+                        </p>
                     </div>
 
-                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         {/* Main Tabs */}
-                        <div className="flex w-full items-center gap-2 overflow-x-auto rounded-xl border border-white/5 bg-muted/40 p-1 sm:w-fit">
+                        <div role="tablist" aria-label={t('pipingRoutingPage.title')} className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-border/50 bg-muted/40 p-1 sm:w-fit sm:gap-2">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon;
                                 const isActive = activeTab === tab.id;
                                 return (
                                     <button
                                         key={tab.id}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isActive}
+                                        aria-current={isActive ? 'page' : undefined}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`
-                                            relative shrink-0 rounded-lg px-3 py-2.5 text-sm font-bold flex items-center gap-2 transition-all duration-300 outline-none focus:outline-none sm:px-4 sm:gap-2.5
+                                            relative flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-4 sm:gap-2.5
                                             ${isActive ? 'text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}
                                         `}
                                     >
                                         {isActive && (
                                             <motion.div
                                                 layoutId="activeTab"
-                                                className="absolute inset-0 bg-primary rounded-lg"
+                                                aria-hidden="true"
+                                                className="absolute inset-0 rounded-lg bg-primary"
                                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                             />
                                         )}
-                                        <Icon className="w-4 h-4 z-10 relative" />
-                                        <span className="z-10 relative">{tab.label}</span>
+                                        <Icon aria-hidden="true" className="relative z-10 h-4 w-4" />
+                                        <span className="relative z-10">{tab.label}</span>
                                     </button>
                                 )
                             })}
@@ -102,27 +105,32 @@ export function PipingRoutingPage() {
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="flex w-fit items-center gap-1 self-start rounded-lg border border-border/50 bg-card p-1 sm:self-auto"
+                                role="group"
+                                aria-label={t('pipingRoutingPage.tabs.equipment')}
+                                className="flex w-fit items-center gap-1 self-start rounded-lg border border-border/50 bg-card p-1 shadow-sm lg:self-auto"
                             >
                                 {equipmentTabs.map(t => (
                                     <button
                                         key={t.id}
+                                        type="button"
                                         onClick={() => setEquipmentViewMode(t.id)}
-                                        className={`p-2 rounded-md transition-colors ${equipmentViewMode === t.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        aria-label={t.label}
+                                        aria-pressed={equipmentViewMode === t.id}
+                                        className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${equipmentViewMode === t.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                                         title={t.label}
                                     >
-                                        <t.icon className="w-4 h-4" />
+                                        <t.icon aria-hidden="true" className="h-4 w-4" />
                                     </button>
                                 ))}
                             </motion.div>
                         )}
                     </div>
                 </div>
-            </div>
+            </header>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto min-h-0 bg-linear-to-b from-background to-muted/20">
-                <div className="mx-auto max-w-[1600px] p-3 sm:p-8">
+                <div className="mx-auto max-w-[1600px] p-3 sm:p-6 lg:p-8">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={activeTab}

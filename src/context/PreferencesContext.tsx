@@ -111,6 +111,10 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [preferences, isInitialized]);
 
+    useEffect(() => {
+        document.documentElement.classList.toggle('compact-mode', preferences.compactMode);
+    }, [preferences.compactMode]);
+
     const updatePreference = useCallback(<K extends keyof UserPreferences>(
         key: K,
         value: UserPreferences[K]

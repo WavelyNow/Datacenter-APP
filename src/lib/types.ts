@@ -133,6 +133,8 @@ export interface PdfGenerationProgress {
 }
 
 export interface ProjectLoadData {
+    /** File/cloud schema version; omitted in legacy exports. */
+    version?: number;
     segments?: PipeSegment[];
     equipmentList?: EquipmentItem[];
     projectDetails?: ProjectDetails;

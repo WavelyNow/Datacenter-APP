@@ -78,7 +78,7 @@ const MemoizedSidebar = React.memo(Sidebar);
 const MemoizedHeader = React.memo(Header);
 const MemoizedDashboard = React.memo(Dashboard);
 
-import { ProjectLoadData } from '@/lib/types';
+import { PROJECT_FILE_VERSION, readProjectFile } from '@/lib/projectFile';
 
 import { useKeyboardShortcuts, createStandardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -89,20 +89,15 @@ import {
 
 const DashboardContent = () => {
   const {
-    activeTab,
-    setActiveTab
+    activeTab
   } = useUI();
 
   const {
     segments,
-    setSegments,
     equipmentList,
     setEquipmentList,
     setProjectDetails,
     projectDetails,
-    setFluidType,
-    setGlycolPercentage,
-    setSafetyMargin,
     fluidType,
     glycolPercentage,
     safetyMargin,
@@ -114,7 +109,8 @@ const DashboardContent = () => {
     importProjectData,
     isInitialized,
     undo, redo, canUndo, canRedo,
-    fittingItems
+    fittingItems,
+    saveProjectLocally
   } = useProject();
 
   // Modal States
@@ -127,7 +123,9 @@ const DashboardContent = () => {
 
   // File Handlers - defined before keyboard shortcuts effect
   const saveProject = React.useCallback(() => {
+    saveProjectLocally();
     const data = {
+      version: PROJECT_FILE_VERSION,
       projectDetails,
       segments,
       equipmentList,
@@ -149,7 +147,8 @@ const DashboardContent = () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, fittingItems, ifcModelUrl]);
+    URL.revokeObjectURL(url);
+  }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, boqItems, fittingItems, ifcModelUrl, saveProjectLocally]);
 
   // Keyboard Shortcuts — useKeyboardShortcuts skips shortcuts while typing in
   // inputs/textarea/contentEditable, so Cmd+Z no longer hijacks native undo in text fields.
@@ -172,30 +171,24 @@ const DashboardContent = () => {
     return () => window.removeEventListener('opencode:open-export', handler);
   }, []);
 
-  const loadProject = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const loadProjectFile = React.useCallback(async (file: File) => {
+    try {
+      const projectData = await readProjectFile(file);
+      const hasExistingWork = segments.length > 0 || equipmentList.length > 0 || fittingItems.length > 0 || Boolean(ifcModelUrl);
+      if (hasExistingWork && !window.confirm('Importul va înlocui proiectul curent. Continuați?')) return;
+      importProjectData(projectData);
+    } catch (error) {
+      console.error('Error loading project:', error);
+      const message = error instanceof Error ? error.message : 'Fișier invalid.';
+      alert(`Eroare la încărcarea fișierului: ${message}`);
+    }
+  }, [equipmentList.length, fittingItems.length, ifcModelUrl, importProjectData, segments.length]);
+
+  const loadProject = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        // Full restore (supportConfig, safetyMarginPercentage, branding...);
-        // validation (non-array segments/equipmentList) happens in importProjectData.
-        importProjectData(data);
-      } catch (error) {
-        console.error('Error loading project:', error);
-        alert('Eroare la încărcarea fișierului.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-
-  // Wrap setters in useCallback for stable props
-  const handleLoadProject = React.useCallback((data: ProjectLoadData) => {
-    importProjectData(data);
-  }, [importProjectData]);
+    if (file) void loadProjectFile(file);
+    event.target.value = '';
+  }, [loadProjectFile]);
 
   const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
   const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
@@ -266,7 +259,7 @@ const DashboardContent = () => {
         <MemoizedHeader
           projectDetails={projectDetails}
           onProjectDetailsChange={setProjectDetails}
-          onLoadProject={handleLoadProject}
+          onLoadProjectFile={loadProjectFile}
           onOpenExport={toggleExport}
           onOpenSettings={toggleSettings}
           onOpenNavigation={() => setIsMobileNavOpen(true)}

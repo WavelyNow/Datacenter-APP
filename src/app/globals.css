@@ -281,6 +281,20 @@
     @apply max-w-[1900px] mx-auto px-3 py-4 sm:px-6 sm:py-8 xl:px-12 xl:py-12;
   }
 
+  html.compact-mode .spacing-page {
+    @apply py-2 sm:py-4 xl:py-6;
+  }
+
+  html.compact-mode .card-premium {
+    border-radius: 1rem;
+  }
+
+  html.compact-mode input,
+  html.compact-mode select,
+  html.compact-mode textarea {
+    @apply py-2;
+  }
+
   /* Clean Text Utilities */
   .text-balance {
     text-wrap: balance;

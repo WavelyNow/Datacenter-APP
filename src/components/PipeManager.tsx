@@ -13,7 +13,6 @@ import { PipeSegment, FluidType, EquipmentItem, FittingItem } from '@/lib/types'
 import { calculateHydraulics, suggestPipeSize, calculateFlowFromLoad } from '@/lib/calc/hydraulics';
 import { calculateFittingsPressureLoss, Fitting } from '@/lib/calculations/fittings';
 import { getFluidProperties } from '@/lib/calculations/pressureDrop';
-import { calculateSystemResources, SystemResources } from '@/lib/calc/resources';
 import { calculatePurchaseSummary } from '@/lib/calculations/purchase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -155,6 +154,7 @@ const PipeRow = React.memo(({
                     <div className="col-span-1 min-w-0 space-y-3 lg:col-span-5" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-3">
                             <select
+                                aria-label={`Material țeavă tronson ${index + 1}`}
                                 className="w-full bg-transparent border-none p-0 text-sm font-medium text-foreground focus:ring-0 cursor-pointer hover:text-primary transition-colors tracking-tight"
                                 value={segment.material}
                                 onChange={(e) => {
@@ -237,6 +237,7 @@ const PipeRow = React.memo(({
                                     <span className="text-[10px] text-muted-foreground">Din sarcină:</span>
                                     <input
                                         type="number"
+                                        aria-label={`Sarcină termică tronson ${index + 1} în kW`}
                                         min={0}
                                         placeholder="kW"
                                         value={loadKwDraft || ''}
@@ -247,6 +248,7 @@ const PipeRow = React.memo(({
                                     <span className="text-muted-foreground/60">/</span>
                                     <input
                                         type="number"
+                                        aria-label={`Diferență de temperatură tronson ${index + 1} în K`}
                                         min={0.5}
                                         max={20}
                                         value={dT}
@@ -267,6 +269,7 @@ const PipeRow = React.memo(({
                                         disabled={!loadKwDraft}
                                         className="px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 font-medium disabled:opacity-30"
                                         title="kW / ΔT -> m³/h, cu proprietatile reale ale glicolului"
+                                        aria-label={`Calculează debitul din sarcină pentru tronsonul ${index + 1}`}
                                     >
                                         → m³/h
                                     </button>
@@ -289,6 +292,7 @@ const PipeRow = React.memo(({
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); updateSegment(segment.id, { size: sugg.size }); }}
                                                 className="text-primary hover:underline font-medium"
+                                                aria-label={`Aplică dimensiunea recomandată ${sugg.size} pentru tronsonul ${index + 1}`}
                                             >
                                                 Aplica
                                             </button>
@@ -329,6 +333,7 @@ const PipeRow = React.memo(({
                                 <span className="w-12 text-[10px] text-muted-foreground">{f.label}</span>
                                 <input
                                     type="number"
+                                    aria-label={`${f.label} pentru dimensiunea ${segment.size}`}
                                     min={0}
                                     step={1}
                                     value={fittings?.[f.key] ?? 0}
@@ -346,6 +351,7 @@ const PipeRow = React.memo(({
                             onClick={(e) => { e.stopPropagation(); duplicateSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-xl transition-all hover:scale-105 active:scale-95"
                             title="Duplică"
+                            aria-label={`Duplică tronsonul ${index + 1}`}
                         >
                             <Copy className="w-4 h-4" />
                         </button>
@@ -353,6 +359,7 @@ const PipeRow = React.memo(({
                             onClick={(e) => { e.stopPropagation(); onAnalyzeThermal(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
                             title="Analiză termică"
+                            aria-label={`Deschide analiza termică pentru tronsonul ${index + 1}`}
                         >
                             <Flame className="w-4 h-4" />
                         </button>
@@ -360,6 +367,7 @@ const PipeRow = React.memo(({
                             onClick={(e) => { e.stopPropagation(); removeSegment(segment.id); }}
                             className="p-2.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all hover:scale-105 active:scale-95"
                             title="Șterge"
+                            aria-label={`Șterge tronsonul ${index + 1}`}
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -538,15 +546,6 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
         }, 0);
     }, [segments, glycolPercentage, fluidType]);
 
-    // Resurse (volum + greutati) — afisare detaliata
-    const resources: SystemResources = useMemo(() => calculateSystemResources(
-        segments,
-        equipmentList,
-        glycolPercentage,
-        { enabled: safetyMargin, percentage: safetyMarginPercentage },
-        fluidType
-    ), [segments, equipmentList, glycolPercentage, safetyMargin, safetyMarginPercentage, fluidType]);
-
     // Sumar de comanda — ACELEAȘI cifre ca Dashboard/PDF (cu volum fittinguri real)
     const purchase = useMemo(() => calculatePurchaseSummary(
         segments, equipmentList, glycolPercentage, fluidType,
@@ -619,11 +618,13 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                         </p>
                     </div>
 
-                    <div className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-border/40 bg-muted/30 p-1.5 backdrop-blur-sm md:w-auto md:self-auto">
+                    <div role="tablist" aria-label="Mod de vizualizare" className="flex w-full items-center gap-1 overflow-x-auto rounded-xl border border-border/40 bg-muted/30 p-1 backdrop-blur-sm md:w-auto md:self-auto">
                         <button
+                            role="tab"
+                            aria-selected={viewMode === 'config'}
                             onClick={() => setViewMode('config')}
                             className={`
-                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
+                            min-w-[92px] flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-4 sm:text-sm
                             ${viewMode === 'config'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
@@ -633,9 +634,11 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                             Configurare
                         </button>
                         <button
+                            role="tab"
+                            aria-selected={viewMode === 'hydraulics'}
                             onClick={() => setViewMode('hydraulics')}
                             className={`
-                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
+                            min-w-[92px] flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-4 sm:text-sm
                             ${viewMode === 'hydraulics'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
@@ -645,9 +648,11 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                             Hidraulică
                         </button>
                         <button
+                            role="tab"
+                            aria-selected={viewMode === 'simulator'}
                             onClick={() => setViewMode('simulator')}
                             className={`
-                            min-w-[92px] flex-1 rounded-lg px-3 py-2.5 text-xs font-medium transition-all duration-300 flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-5 sm:text-sm sm:gap-2.5
+                            min-w-[92px] flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-2 sm:min-w-0 sm:flex-none sm:px-4 sm:text-sm
                             ${viewMode === 'simulator'
                                     ? 'bg-background text-foreground shadow-sm ring-1 ring-border/20'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-background/40'}
@@ -691,7 +696,7 @@ export const PipeManager: React.FC<PipeManagerProps> = ({
                     ) : (
                         <>
                             {/* Table Header */}
-                            <div className="z-20 hidden grid-cols-12 gap-8 border-b border-border/40 bg-muted/20 px-8 py-5 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground backdrop-blur-sm lg:grid">
+                            <div role="row" className="z-20 hidden grid-cols-12 gap-6 border-b border-border/40 bg-muted/20 px-6 py-4 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground backdrop-blur-sm lg:grid">
                                 <div className="col-span-1 text-center">#</div>
                                 {viewMode === 'config' ? (
                                     <>

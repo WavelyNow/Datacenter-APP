@@ -1,5 +1,7 @@
 # 🌐 Datacenter - Engineering Suite 2026
 
+Aplicație local-first pentru instalații de răcire în datacentere: dimensionare țevi, calcule hidraulice, glicol și rapoarte Excel/PDF.
+
 ## 🎯 Scop principal
 
 **Aflarea diametrelor de țeavă corecte și a cantității de glicol necesare** pentru sisteme de răcire datacenter — cu date de producători **verificate** (nu inventate).
@@ -20,7 +22,9 @@
   (ex. modele GF de pe cad.georgfischer.com)
 - **Asistent Specificații** — extragere pe bază de reguli din Caietul de Sarcini
 - **Normative** — registry cu integritate testată
-- Export rapoarte PDF/Excel, cloud sync Supabase (opțional)
+- Export rapoarte PDF/Excel și persistență locală a proiectului
+
+Documentație tehnică: [arhitectură](docs/ARCHITECTURE.md), [contract export](docs/EXPORT-CONTRACT.md), [status funcțional](docs/FEATURE-STATUS.md).
 
 ### Eliminate
 Mapare IFC, Pregătire Cameră, Sustenabilitate, Estimator Costuri, Cantități (BoQ),
@@ -33,8 +37,8 @@ Punere în Funcțiune, Librărie Tehnică — componentă moartă ștearsă.
 - **Framework**: Next.js 16 (Turbopack) + React 19 + React Compiler
 - **Style**: TailwindCSS 4 — temă Apple-minimal (un singur accent, fără culori țipătoare)
 - **3D**: Three.js / react-three-fiber (doar în galerie — lazy-loaded)
-- **Persistence**: localStorage (proiect, standarde țevi) + Supabase Cloud
-- **Testing**: 229 teste Jest (inclusiv integritate date: țevi, normative, geometrie)
+- **Persistence**: localStorage (proiect, standarde țevi); fluxul principal este local
+- **Testing**: 293 teste Jest (inclusiv integritate date: țevi, normative, geometrie)
 
 ---
 
@@ -43,12 +47,11 @@ Punere în Funcțiune, Librărie Tehnică — componentă moartă ștearsă.
 ```bash
 npm install
 npm run dev        # localhost:3000
-npm test           # 229 teste
+npm test           # 293 teste
 npm run build      # producție
 ```
 
-Deploy automat pe Vercel la push pe `main`. Variabile opționale:
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Deploy automat pe Vercel la push pe `main`.
 
 ---
 

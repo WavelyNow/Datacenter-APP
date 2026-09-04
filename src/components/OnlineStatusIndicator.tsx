@@ -3,6 +3,7 @@
 import React, { useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePreferences } from '@/context/PreferencesContext';
 
 // SSR-safe subscription to online status using useSyncExternalStore
 function subscribeOnlineStatus(callback: () => void) {
@@ -23,6 +24,7 @@ function getServerSnapshot() {
 }
 
 export const OnlineStatusIndicator: React.FC = () => {
+    const { preferences } = usePreferences();
     // Use useSyncExternalStore for SSR-safe online status
     const isOnline = useSyncExternalStore(
         subscribeOnlineStatus,
@@ -33,7 +35,7 @@ export const OnlineStatusIndicator: React.FC = () => {
     // Simple: show banner only when offline
     return (
         <AnimatePresence>
-            {!isOnline && (
+            {!isOnline && preferences.showOfflineWarning && (
                 <motion.div
                     initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}

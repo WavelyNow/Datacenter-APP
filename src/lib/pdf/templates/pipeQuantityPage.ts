@@ -21,7 +21,7 @@ function resolveIdForPrint(size: string): number {
  * (ce intra in lucrare — teava pe DN + fittingurile cu cantitati)
  */
 export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
-    const { width, theme, fontBold, fontRegular, currentPage } = ctx;
+    const { width, theme, fontBold, fontRegular } = ctx;
     const M = 50;
     const colW = width - M * 2;
 
@@ -35,10 +35,10 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         data.fittingItems ?? []
     );
 
-    await beginSection(ctx, 'CANTITATE DE TEAVA');
+    await beginSection(ctx, 'CANTITATE DE TEAVA', true);
 
     if (purchase.pipeLines.length === 0) {
-        currentPage.drawText('Nu exista segmente de teava definite in proiect.', { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight });
+        ctx.currentPage.drawText('Nu exista segmente de teava definite in proiect.', { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight });
         ctx.currentY -= 20;
         return;
     }
@@ -62,23 +62,23 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
     const totalRow = rows[rows.length - 1];
     const startY = ctx.currentY;
     const rowH = 22;
-    currentPage.drawRectangle({ x: M, y: startY - rowH, width: colW, height: rowH, color: theme.bgLight });
+    ctx.currentPage.drawRectangle({ x: M, y: startY - rowH, width: colW, height: rowH, color: theme.bgLight });
     let tx = M;
     totalRow.forEach((cell, i) => {
         const w = [colW * 0.12, colW * 0.4, colW * 0.16, colW * 0.16, colW * 0.16][i];
         const textW = fontBold.widthOfTextAtSize(cell, 9);
         const isNum = i >= 2;
         const cx = i === 0 ? tx + (w - textW) / 2 : isNum ? tx + w - textW - 6 : tx + 6;
-        currentPage.drawText(sanitizePdfText(cell), { x: cx, y: startY - rowH / 2 - 4.5, size: 9, font: fontBold, color: theme.primary });
+        ctx.currentPage.drawText(sanitizePdfText(cell), { x: cx, y: startY - rowH / 2 - 4.5, size: 9, font: fontBold, color: theme.primary });
         tx += w;
     });
-    currentPage.drawLine({ start: { x: M, y: startY - rowH }, end: { x: M + colW, y: startY - rowH }, thickness: 0.6, color: theme.border });
+    ctx.currentPage.drawLine({ start: { x: M, y: startY - rowH }, end: { x: M + colW, y: startY - rowH }, thickness: 0.6, color: theme.border });
     ctx.currentY = startY - rowH - 4;
 
     // Fittinguri (dacă există) — cantități trecute de utilizator
     if (purchase.fittingItems.length > 0) {
         await ctx.checkSpace(70);
-        currentPage.drawText('FITTINGURI (CANTITATI INTRODUSE)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText('FITTINGURI (CANTITATI INTRODUSE)', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
         ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
@@ -90,14 +90,14 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         });
         ctx.currentY -= 8;
         await ctx.checkSpace(30);
-        currentPage.drawText(
+        ctx.currentPage.drawText(
             `Volumul acestor fittinguri (calculate din diametrul real): +${purchase.fittingsVolumeL.toFixed(1)} L`,
             { x: M, y: ctx.currentY, size: 9, font: fontBold, color: theme.text }
         );
         ctx.currentY -= 16;
     } else {
         await ctx.checkSpace(30);
-        currentPage.drawText(
+        ctx.currentPage.drawText(
             'Sugestie: treceti coturile/teurile/vanele in tabelul de teava (coloana Fittinguri) — volumul lor se calculeaza automat.',
             { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
         );
@@ -107,7 +107,7 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
     // ---------- SCHEMA SISTEM (desenata live din segmente) ----------
     if (purchase.pipeLines.length > 0) {
         await ctx.checkSpace(110);
-        currentPage.drawText('SCHEMA SISTEM', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText('SCHEMA SISTEM', { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
         ctx.currentY -= 14;
 
         const schH = 54;
@@ -117,7 +117,7 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
         const scaleLen = colW / Math.max(purchase.pipeTotalLengthM, 1);
 
         // linia de baza
-        currentPage.drawLine({ start: { x: schX0, y: schY }, end: { x: schX1, y: schY }, thickness: 0.4, color: theme.border });
+        ctx.currentPage.drawLine({ start: { x: schX0, y: schY }, end: { x: schX1, y: schY }, thickness: 0.4, color: theme.border });
 
         let cx = schX0;
         purchase.pipeLines.forEach((l) => {
@@ -126,35 +126,33 @@ export async function generatePipeQuantityPage(ctx: PDFContext, data: PdfData) {
             const w = Math.max(14, l.lengthM * scaleLen);
             const segX1 = Math.min(cx + w, schX1 - 1);
 
-            currentPage.drawLine({
+            ctx.currentPage.drawLine({
                 start: { x: cx, y: schY }, end: { x: segX1, y: schY },
                 thickness, color: theme.primary,
             });
             // Eticheta DN deasupra, lungimea dedesubt
-            currentPage.drawText(l.size + (w > 70 ? ` · ${l.lengthM.toFixed(1)} m` : ''), {
+            ctx.currentPage.drawText(l.size + (w > 70 ? ` · ${l.lengthM.toFixed(1)} m` : ''), {
                 x: cx + (segX1 - cx) / 2 - fontRegular.widthOfTextAtSize(l.size, 7.5) / 2,
                 y: schY + thickness / 2 + 7, size: 7.5, font: fontBold, color: theme.text,
             });
             // nod intre segmente
-            currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
+            ctx.currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
             cx = segX1;
         });
-        currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
+        ctx.currentPage.drawCircle({ x: cx, y: schY, size: 2.4, color: theme.bgLight, borderColor: theme.primary, borderWidth: 0.8 });
         ctx.currentY = schY - 18;
     }
 
     await ctx.checkSpace(30);
     if (purchase.equipmentVolumeL > 0) {
-        currentPage.drawText(`Volum apa echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`, {
+        ctx.currentPage.drawText(`Volum apa echipamente: ${purchase.equipmentVolumeL.toFixed(0)} L`, {
             x: M, y: ctx.currentY, size: 10, font: fontBold, color: theme.text,
         });
         ctx.currentY -= 14;
     }
-    currentPage.drawText(
+    ctx.currentPage.drawText(
         'Volumul tevii este calculat din diametrul INTERIOR real (standardele verificate).',
         { x: M, y: ctx.currentY, size: 8, font: fontRegular, color: theme.textLight }
     );
     ctx.currentY -= 14;
 }
-
-

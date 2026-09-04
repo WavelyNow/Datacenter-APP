@@ -12,7 +12,7 @@ const QuickStart = () => (
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-                { step: '1', text: 'Importă fișierul IFC în tab-ul BIM' },
+                { step: '1', text: 'Importă un model GLB/GLTF în tab-ul BIM' },
                 { step: '2', text: 'Configurează fluidul și traseele' },
                 { step: '3', text: 'Exportă raportul tehnic PDF' }
             ].map(s => (
@@ -98,7 +98,7 @@ export const HelpPage = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <input
                             type="text"
-                            placeholder="Caută în documentație (ex: cum export pdf, calcul pue...)"
+                            placeholder="Caută în documentație (ex: cum export PDF, calcul glicol...)"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-11 pr-4 py-3 rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"

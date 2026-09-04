@@ -9,7 +9,7 @@ import { sanitizePdfText } from '../utils';
  * PAGINA 1 — DATE SITE & PROIECT
  */
 export async function generateSitePage(ctx: PDFContext, data: PdfData) {
-    const { width, theme, fontBold, fontRegular, currentPage } = ctx;
+    const { width, theme, fontBold, fontRegular } = ctx;
     const pd = data.projectDetails;
     const M = 50;
     const colW = width - M * 2;
@@ -22,11 +22,11 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
     let name = projectName;
     while (fontBold.widthOfTextAtSize(name, 19) > maxNameW && name.length > 6) name = name.slice(0, -1);
     if (name !== projectName) name += '...';
-    currentPage.drawText(name, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
+    ctx.currentPage.drawText(name, { x: M, y: ctx.currentY, size: 19, font: fontBold, color: theme.text });
     ctx.currentY -= 26;
 
     // Subtitlu
-    currentPage.drawText(
+    ctx.currentPage.drawText(
         `Site datacenter  ·  ${sanitizePdfText(pd.location || '-')}  ·  ${sanitizePdfText(pd.date || '-')}`,
         { x: M, y: ctx.currentY, size: 10, font: fontRegular, color: theme.textLight }
     );
@@ -34,7 +34,7 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
 
     const drawGroup = async (label: string, rows: [string, string][]) => {
         await ctx.checkSpace(70);
-        currentPage.drawText(label.toUpperCase(), { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
+        ctx.currentPage.drawText(label.toUpperCase(), { x: M, y: ctx.currentY, size: 8, font: fontBold, color: theme.textLight });
         ctx.currentY -= 15;
         await drawTable(ctx, {
             x: M,
@@ -66,7 +66,7 @@ export async function generateSitePage(ctx: PDFContext, data: PdfData) {
     ]);
 
     await ctx.checkSpace(30);
-    currentPage.drawText(
+    ctx.currentPage.drawText(
         'Cantitatile sunt calculate automat: volum teava di interior real + volum fittinguri din numarul introdus + apa echipamente, apoi marja de siguranta.',
         { x: M, y: ctx.currentY, size: 8.5, font: fontRegular, color: theme.textLight }
     );

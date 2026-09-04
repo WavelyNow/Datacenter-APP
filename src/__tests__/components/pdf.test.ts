@@ -4,6 +4,8 @@
  */
 import { generatePdf } from '@/lib/pdf/generatePdf';
 import { PdfData } from '@/lib/pdf/types';
+import { generatePurchasePage } from '@/lib/pdf/templates/purchasePage';
+import { PDFContext } from '@/lib/pdf/templates/SectionGenerator';
 
 const baseData: PdfData = {
     projectDetails: {
@@ -53,4 +55,42 @@ describe('PDF generation (report de comandă)', () => {
         const bytes = await generatePdf(empty);
         expect(bytes.byteLength).toBeGreaterThan(500);
     }, 30000);
+
+    it('draws a section on the page created by beginSection', async () => {
+        const oldPage = {
+            drawText: jest.fn(),
+            drawRectangle: jest.fn(),
+            drawLine: jest.fn(),
+            getSize: () => ({ width: 595.28, height: 841.89 }),
+        };
+        const newPage = {
+            drawText: jest.fn(),
+            drawRectangle: jest.fn(),
+            drawLine: jest.fn(),
+            getSize: () => ({ width: 595.28, height: 841.89 }),
+        };
+        const font = { widthOfTextAtSize: jest.fn(() => 10) };
+        const ctx = {
+            currentPage: oldPage,
+            currentY: 700,
+            width: 595.28,
+            height: 841.89,
+            pageNumber: 1,
+            fontRegular: font,
+            fontBold: font,
+            theme: {},
+            drawFooter: jest.fn(),
+            checkSpace: jest.fn(async () => undefined),
+        } as unknown as PDFContext;
+        ctx.addPage = jest.fn(async () => {
+            ctx.currentPage = newPage as never;
+            ctx.currentY = 757;
+            ctx.pageNumber = 2;
+        });
+
+        await generatePurchasePage(ctx, baseData);
+
+        expect(newPage.drawText).toHaveBeenCalledWith('1. FLUID (GLICOL)', expect.anything());
+        expect(oldPage.drawText).not.toHaveBeenCalledWith('1. FLUID (GLICOL)', expect.anything());
+    });
 });

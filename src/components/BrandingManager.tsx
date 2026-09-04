@@ -8,53 +8,24 @@ import {
     Layout, Eye, Trash2, RefreshCw,
     Image as ImageIcon, Loader2, RefreshCcw
 } from 'lucide-react';
-import { PDFSection, PDFSectionId, PDFAlignment } from '@/lib/types';
-import { PdfData, PdfOptions } from '@/lib/pdf/types';
+import { PdfData } from '@/lib/pdf/types';
 import { validateUploadFile } from '@/lib/validation';
 import { DocumentSkeleton } from '@/components/ui/Skeleton';
-
-const DEFAULT_SECTIONS: PDFSection[] = [
-    { id: 'header', label: 'Antet și logo', enabled: true, alignment: 'center', order: 0 },
-    { id: 'volume', label: 'Rezumat volum', enabled: true, alignment: 'left', order: 1 },
-    { id: 'boq', label: 'Listă de cantități', enabled: true, alignment: 'left', order: 2 },
-    { id: 'weights', label: 'Raport greutăți', enabled: true, alignment: 'left', order: 3 },
-    { id: 'supports', label: 'Analiza suporților', enabled: true, alignment: 'left', order: 4 },
-    { id: 'photos', label: 'Anexă foto', enabled: true, alignment: 'center', order: 5 },
-];
 
 export const BrandingManager: React.FC = () => {
     const {
         projectDetails, setProjectDetails,
         segments, equipmentList, fluidType, glycolPercentage,
-        safetyMargin, safetyMarginPercentage, supportConfig, branding
+        safetyMargin, safetyMarginPercentage, supportConfig, branding, fittingItems
     } = useProject();
     const { t } = useTranslation();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [sections, setSections] = useState<PDFSection[]>(DEFAULT_SECTIONS);
-
     // PDF Preview State
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const previewUrlRef = useRef<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
-
-    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
-    const enabledSections = sortedSections.filter(s => s.enabled);
-
-    // Generate PDF Options from sections
-    const buildPdfOptions = useCallback((): PdfOptions => {
-        const opts: PdfOptions = {
-            includeVolume: enabledSections.some(s => s.id === 'volume'),
-            includeBoQ: enabledSections.some(s => s.id === 'boq'),
-            includeWeights: enabledSections.some(s => s.id === 'weights'),
-            includeSupports: enabledSections.some(s => s.id === 'supports'),
-            includePhotos: enabledSections.some(s => s.id === 'photos'),
-            includeEnergy: false,
-            supportSpacing: supportConfig.spacing,
-        };
-        return opts;
-    }, [enabledSections, supportConfig.spacing]);
 
     // Generate PDF Preview
     const generatePreview = useCallback(async () => {
@@ -70,7 +41,7 @@ export const BrandingManager: React.FC = () => {
                 safetyMarginPercentage,
                 supportConfig,
                 branding,
-                options: buildPdfOptions()
+                fittingItems
             };
 
             const response = await fetch('/api/generate-pdf', {
@@ -91,7 +62,7 @@ export const BrandingManager: React.FC = () => {
         } finally {
             setIsGenerating(false);
         }
-    }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, buildPdfOptions, previewUrl]);
+    }, [projectDetails, segments, equipmentList, fluidType, glycolPercentage, safetyMargin, safetyMarginPercentage, supportConfig, branding, fittingItems]);
 
     // Generate on mount
     useEffect(() => {
