@@ -118,9 +118,9 @@ const getWeightLabel = (standard: PipeStandard) => {
 };
 
 const getCategoryTone = (category: PipeCategory) => {
-    if (category === 'metal') return 'bg-indigo-500';
-    if (category === 'plastic') return 'bg-cyan-500';
-    return 'bg-violet-500';
+    if (category === 'metal') return 'bg-primary';
+    if (category === 'plastic') return 'bg-secondary-foreground/60';
+    return 'bg-muted-foreground/70';
 };
 
 const getSeriesRange = (dimensions: readonly PipeDimension[]) => {
@@ -161,7 +161,7 @@ const DimensionResultCard: React.FC<{
             aria-pressed={isSelected}
             className={isSelected
                 ? 'group relative w-full rounded-[22px] border border-primary/50 bg-primary/[0.06] p-4 text-left shadow-[0_14px_34px_-22px_hsl(var(--primary))] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
-                : 'group relative w-full rounded-[22px] border border-border/70 bg-card p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_-24px_rgba(15,23,42,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'}
+                : 'card-premium group relative w-full p-4 text-left hover:-translate-y-0.5 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -196,8 +196,8 @@ const DimensionResultCard: React.FC<{
                 <span className="rounded-full border border-border/70 bg-background px-2 py-1 font-mono text-muted-foreground">
                     perete {formatNumber(dimension.thickness, 2)} mm
                 </span>
-                {rating.pressure && <span className="rounded-full bg-blue-500/10 px-2 py-1 font-bold text-blue-600">{rating.pressure}</span>}
-                {rating.sdr && <span className="rounded-full bg-violet-500/10 px-2 py-1 font-bold text-violet-600">{rating.sdr}</span>}
+                {rating.pressure && <span className="rounded-full bg-primary/10 px-2 py-1 font-bold text-primary">{rating.pressure}</span>}
+                {rating.sdr && <span className="rounded-full bg-secondary px-2 py-1 font-bold text-secondary-foreground">{rating.sdr}</span>}
                 <span className="ml-auto inline-flex items-center gap-1 font-mono text-muted-foreground">
                     <Weight className="h-3 w-3" /> {formatNumber(dimension.weight, 3)} kg/m
                 </span>
@@ -225,7 +225,7 @@ const SeriesCard: React.FC<{
         aria-pressed={isSelected}
         className={isSelected
             ? 'group flex min-h-[154px] w-full flex-col rounded-[22px] border border-primary/45 bg-primary/[0.06] p-4 text-left shadow-[0_16px_38px_-26px_hsl(var(--primary))] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
-            : 'group flex min-h-[154px] w-full flex-col rounded-[22px] border border-border/70 bg-card p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_16px_36px_-24px_rgba(15,23,42,0.32)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'}
+            : 'card-premium group flex min-h-[154px] w-full flex-col p-4 text-left hover:-translate-y-0.5 hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'}
     >
         <div className="flex items-start gap-3">
             <span className={'mt-1 h-9 w-1.5 shrink-0 rounded-full ' + getCategoryTone(entry.data.category)} />
@@ -405,7 +405,7 @@ export const PipeStandardsPage: React.FC = () => {
                 </div>
             </section>
 
-            <section className="rounded-[22px] border border-border/70 bg-card p-3 shadow-sm sm:rounded-[26px] sm:p-4">
+            <section className="glass-panel rounded-2xl p-3 sm:p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <SlidersHorizontal className="h-4 w-4 shrink-0 text-primary" />
@@ -438,7 +438,7 @@ export const PipeStandardsPage: React.FC = () => {
             </section>
 
             {filteredEntries.length === 0 ? (
-                <section className="rounded-[26px] border border-dashed border-border bg-card p-10 text-center shadow-sm">
+                <section className="glass-panel rounded-3xl border-dashed p-10 text-center">
                     <Search className="mx-auto h-8 w-8 text-muted-foreground/50" />
                     <p className="mt-4 font-bold">Nu am găsit nimic în catalog</p>
                     <p className="mt-1 text-sm text-muted-foreground">Încearcă un producător, DN, d / OD, ID sau golește filtrul.</p>
@@ -494,7 +494,7 @@ export const PipeStandardsPage: React.FC = () => {
 
                     {selectedEntry && (
                         <section className="space-y-3">
-                            <div className="rounded-[26px] border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+                            <div className="card-premium p-4 sm:p-6">
                                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="flex min-w-0 items-start gap-3">
                                         <div className={'mt-1 h-11 w-1.5 shrink-0 rounded-full ' + getCategoryTone(selectedEntry.data.category)} />
@@ -527,17 +527,17 @@ export const PipeStandardsPage: React.FC = () => {
                                         <p className="text-[10px] text-muted-foreground">Dimensiuni</p>
                                         <p className="mt-1 text-lg font-black">{selectedEntry.data.dimensions.length}</p>
                                     </div>
-                                    <div className="rounded-2xl bg-blue-500/5 p-3">
-                                        <p className="text-[10px] text-blue-600/70">Presiune</p>
-                                        <p className="mt-1 truncate text-sm font-bold text-blue-600">{selectedPressure}</p>
+                                    <div className="rounded-2xl bg-primary/5 p-3">
+                                        <p className="text-[10px] text-primary/70">Presiune</p>
+                                        <p className="mt-1 truncate text-sm font-bold text-primary">{selectedPressure}</p>
                                     </div>
-                                    <div className="rounded-2xl bg-cyan-500/5 p-3">
-                                        <p className="text-[10px] text-cyan-700/70">Temperatură</p>
-                                        <p className="mt-1 text-sm font-bold text-cyan-700">{selectedEntry.data.tempRange ? selectedEntry.data.tempRange.min + '…' + selectedEntry.data.tempRange.max + '°C' : '—'}</p>
+                                    <div className="rounded-2xl bg-secondary p-3">
+                                        <p className="text-[10px] text-muted-foreground">Temperatură</p>
+                                        <p className="mt-1 text-sm font-bold text-foreground">{selectedEntry.data.tempRange ? selectedEntry.data.tempRange.min + '…' + selectedEntry.data.tempRange.max + '°C' : '—'}</p>
                                     </div>
-                                    <div className="rounded-2xl bg-violet-500/5 p-3">
-                                        <p className="text-[10px] text-violet-700/70">Bază greutate</p>
-                                        <p className="mt-1 truncate text-sm font-bold text-violet-700">{getWeightLabel(selectedEntry.data).replace('kg/m ', '')}</p>
+                                    <div className="rounded-2xl bg-muted p-3">
+                                        <p className="text-[10px] text-muted-foreground">Bază greutate</p>
+                                        <p className="mt-1 truncate text-sm font-bold text-foreground">{getWeightLabel(selectedEntry.data).replace('kg/m ', '')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -575,7 +575,7 @@ export const PipeStandardsPage: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="rounded-[26px] border border-border/70 bg-card p-3 shadow-sm sm:p-5">
+                            <div className="glass-panel rounded-3xl p-3 sm:p-5">
                                 <div className="flex flex-col gap-1 border-b border-border/70 px-1 pb-4 sm:flex-row sm:items-end sm:justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Dimensiuni verificate</p>
@@ -603,7 +603,7 @@ export const PipeStandardsPage: React.FC = () => {
                             </div>
 
                             {(selectedEntry.data.sources ?? []).some(source => source.note) && (
-                                <div className="rounded-[22px] border border-border/70 bg-muted/20 px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
+                                <div className="glass-panel rounded-2xl px-4 py-3 text-[11px] leading-relaxed text-muted-foreground">
                                     {(selectedEntry.data.sources ?? []).filter(source => source.note).map(source => <p key={source.name}>{source.note}</p>)}
                                 </div>
                             )}
@@ -612,12 +612,12 @@ export const PipeStandardsPage: React.FC = () => {
                 </>
             )}
 
-            <div className="flex items-start gap-2.5 rounded-[22px] border border-blue-500/20 bg-blue-500/5 p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+            <div className="glass-panel flex items-start gap-2.5 rounded-2xl p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <p><strong className="text-foreground">Regulă de identificare:</strong> pentru seriile GF, <code className="rounded bg-background/70 px-1 py-0.5 font-mono text-[11px]">d140</code> este diametrul exterior al țevii care corespunde nominalului <code className="rounded bg-background/70 px-1 py-0.5 font-mono text-[11px]">DN125</code>. OD-ul, grosimea și ID-ul provin din fișa seriei și nu se ajustează manual. Seriile fără link de producător trebuie confirmate înainte de comandă.</p>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-[22px] border border-border/70 bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground">
+            <div className="glass-panel flex items-start gap-2.5 rounded-2xl p-4 text-xs leading-relaxed text-muted-foreground">
                 <Snowflake className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <p>Acest catalog este sursa comună pentru dimensionare, hidraulică și export. Când găsești o dimensiune, folosește ID-ul hidraulic afișat aici, nu o valoare introdusă manual.</p>
             </div>

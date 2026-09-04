@@ -21,9 +21,9 @@ interface SettingsSectionProps {
 }
 
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, icon, children }) => (
-    <div className="min-w-0 bg-card rounded-2xl border border-border p-4 mb-4 sm:p-6">
-        <div className="flex min-w-0 items-start gap-3 mb-4 sm:gap-4">
-            <div className="shrink-0 p-2 rounded-xl bg-primary/10 text-primary">
+    <div className="card-premium mb-4 min-w-0 rounded-2xl p-4 sm:p-6">
+        <div className="mb-4 flex min-w-0 items-start gap-3 sm:gap-4">
+            <div className="shrink-0 rounded-xl bg-muted p-2 text-primary">
                 {icon}
             </div>
             <div className="min-w-0">
@@ -46,14 +46,14 @@ interface SettingRowProps {
 }
 
 const SettingRow: React.FC<SettingRowProps> = ({ label, description, children }) => (
-    <div className="flex flex-col gap-3 py-3 border-b border-border/50 last:border-0 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-b border-border py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">{label}</p>
             {description && (
                 <p className="text-xs text-muted-foreground">{description}</p>
             )}
         </div>
-        <div className="w-full max-w-full sm:ml-4 sm:w-auto">
+        <div className="w-full max-w-full sm:ml-6 sm:w-auto">
             {children}
         </div>
     </div>
@@ -72,13 +72,13 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, ariaLabe
         role="switch"
         aria-checked={checked}
         aria-label={ariaLabel}
-        className={`relative ml-auto block h-6 w-11 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${checked ? 'bg-primary' : 'bg-muted'
+        className={`relative ml-auto block h-6 w-11 rounded-full border border-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${checked ? 'bg-primary' : 'bg-muted'
             }`}
     >
         <motion.div
             animate={{ x: checked ? 20 : 2 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm"
+            className="absolute top-1 h-4 w-4 rounded-full bg-background shadow-sm"
         />
     </button>
 );
@@ -97,15 +97,15 @@ interface SelectButtonGroupProps<T extends string> {
 
 function SelectButtonGroup<T extends string>({ options, value, onChange }: SelectButtonGroupProps<T>) {
     return (
-        <div className="flex w-full max-w-full flex-wrap rounded-lg border border-border overflow-hidden sm:w-auto sm:flex-nowrap">
+        <div className="flex w-full max-w-full flex-wrap overflow-hidden rounded-xl border border-border sm:w-auto sm:flex-nowrap">
             {options.map((opt, i) => (
                 <button
                     key={opt.value}
                     type="button"
                     onClick={() => onChange(opt.value)}
                     className={`flex min-w-0 basis-1/2 items-center justify-center gap-2 px-2 py-2 text-center text-xs font-medium transition-colors sm:basis-auto sm:px-3 sm:py-1.5 ${value === opt.value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-background text-muted-foreground hover:bg-muted'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-background'
                         } ${i % 2 === 1 ? 'border-l border-border' : ''} ${i > 0 ? 'sm:border-l sm:border-border' : ''} ${i > 1 ? 'border-t border-border sm:border-t-0' : ''}`}
                 >
                     {opt.icon}
@@ -141,7 +141,7 @@ export const SettingsPage: React.FC = () => {
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 px-4 py-4 border-b border-border/40 bg-background/80 backdrop-blur-md z-10 sm:px-8 sm:py-6">
+            <div className="glass-panel z-10 shrink-0 border-x-0 border-t-0 px-4 py-4 sm:px-8 sm:py-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
                         <span>{t('settingsPage.system')}</span>
@@ -163,7 +163,7 @@ export const SettingsPage: React.FC = () => {
                         <button
                             onClick={resetPreferences}
                             type="button"
-                            className="btn btn-secondary h-10 w-full justify-center gap-2 sm:w-auto"
+                            className="btn btn-secondary btn-md w-full justify-center gap-2 whitespace-nowrap sm:w-auto"
                         >
                             <RotateCcw className="w-4 h-4" /> {t('settingsPage.resetDefaults')}
                         </button>
@@ -273,18 +273,18 @@ export const SettingsPage: React.FC = () => {
                     </SettingsSection>
 
                     {/* Current Settings Summary */}
-                    <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border/50">
+                    <div className="card-premium mt-6 rounded-xl p-4">
                         <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                             <Check className="w-3 h-3" /> {t('settingsPage.currentSettings')}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                            <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
+                            <span className="rounded-xl border border-border bg-muted px-2 py-1 text-xs text-foreground">
                                 {preferences.unitSystem === 'metric' ? `🌍 ${t('settingsPage.options.metric')}` : `🇺🇸 ${t('settingsPage.options.imperial')}`}
                             </span>
-                            <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
+                            <span className="rounded-xl border border-border bg-muted px-2 py-1 text-xs text-foreground">
                                 📅 {preferences.dateFormat}
                             </span>
-                            <span className="px-2 py-1 rounded-md bg-background border border-border text-xs">
+                            <span className="rounded-xl border border-border bg-muted px-2 py-1 text-xs text-foreground">
                                 💾 Auto-save: {preferences.autoSaveInterval === 0 ? t('settingsPage.options.off') : `${preferences.autoSaveInterval}s`}
                             </span>
                         </div>
