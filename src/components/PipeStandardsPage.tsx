@@ -84,6 +84,10 @@ const getDimensionSearchText = (standard: PipeStandard, dimension: PipeDimension
         'ø' + dimension.od,
         'id' + dimension.id,
         'diametru interior ' + dimension.id,
+        'greutate ' + dimension.weight,
+        'kg/m ' + dimension.weight,
+        dimension.insulatedOd ? 'izolat ' + dimension.insulatedOd : '',
+        dimension.supportSpacing?.water ? 'reazem apa ' + dimension.supportSpacing.water : '',
         rating.pressure ?? '',
         rating.sdr ?? '',
     ].join(' '));
