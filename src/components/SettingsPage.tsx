@@ -21,12 +21,12 @@ interface SettingsSectionProps {
 }
 
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, icon, children }) => (
-    <div className="bg-card rounded-2xl border border-border p-6 mb-4">
-        <div className="flex items-start gap-4 mb-4">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+    <div className="min-w-0 bg-card rounded-2xl border border-border p-4 mb-4 sm:p-6">
+        <div className="flex min-w-0 items-start gap-3 mb-4 sm:gap-4">
+            <div className="shrink-0 p-2 rounded-xl bg-primary/10 text-primary">
                 {icon}
             </div>
-            <div>
+            <div className="min-w-0">
                 <h3 className="text-lg font-bold text-foreground">{title}</h3>
                 {description && (
                     <p className="text-sm text-muted-foreground">{description}</p>
@@ -46,14 +46,14 @@ interface SettingRowProps {
 }
 
 const SettingRow: React.FC<SettingRowProps> = ({ label, description, children }) => (
-    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
-        <div className="flex-1">
+    <div className="flex flex-col gap-3 py-3 border-b border-border/50 last:border-0 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">{label}</p>
             {description && (
                 <p className="text-xs text-muted-foreground">{description}</p>
             )}
         </div>
-        <div className="shrink-0 ml-4">
+        <div className="w-full max-w-full sm:ml-4 sm:w-auto">
             {children}
         </div>
     </div>
@@ -62,12 +62,17 @@ const SettingRow: React.FC<SettingRowProps> = ({ label, description, children })
 interface ToggleSwitchProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
+    ariaLabel: string;
 }
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange }) => (
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, ariaLabel }) => (
     <button
+        type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-muted'
+        role="switch"
+        aria-checked={checked}
+        aria-label={ariaLabel}
+        className={`relative ml-auto block h-6 w-11 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${checked ? 'bg-primary' : 'bg-muted'
             }`}
     >
         <motion.div
@@ -92,15 +97,16 @@ interface SelectButtonGroupProps<T extends string> {
 
 function SelectButtonGroup<T extends string>({ options, value, onChange }: SelectButtonGroupProps<T>) {
     return (
-        <div className="flex rounded-lg border border-border overflow-hidden">
+        <div className="flex w-full max-w-full flex-wrap rounded-lg border border-border overflow-hidden sm:w-auto sm:flex-nowrap">
             {options.map((opt, i) => (
                 <button
                     key={opt.value}
+                    type="button"
                     onClick={() => onChange(opt.value)}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${value === opt.value
+                    className={`flex min-w-0 basis-1/2 items-center justify-center gap-2 px-2 py-2 text-center text-xs font-medium transition-colors sm:basis-auto sm:px-3 sm:py-1.5 ${value === opt.value
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-background text-muted-foreground hover:bg-muted'
-                        } ${i > 0 ? 'border-l border-border' : ''}`}
+                        } ${i % 2 === 1 ? 'border-l border-border' : ''} ${i > 0 ? 'sm:border-l sm:border-border' : ''} ${i > 1 ? 'border-t border-border sm:border-t-0' : ''}`}
                 >
                     {opt.icon}
                     {opt.label}
@@ -135,7 +141,7 @@ export const SettingsPage: React.FC = () => {
     return (
         <div className="flex flex-col flex-1 h-full min-h-0 bg-background/50 relative overflow-hidden">
             {/* Header */}
-            <div className="shrink-0 px-8 py-6 border-b border-border/40 bg-background/80 backdrop-blur-md z-10">
+            <div className="shrink-0 px-4 py-4 border-b border-border/40 bg-background/80 backdrop-blur-md z-10 sm:px-8 sm:py-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground/60">
                         <span>{t('settingsPage.system')}</span>
@@ -143,10 +149,10 @@ export const SettingsPage: React.FC = () => {
                         <span className="text-foreground">{t('commandPalette.cmds.projectSettings.title')}</span>
                     </div>
 
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2 flex items-center gap-3">
-                                <Settings className="w-8 h-8 text-primary" />
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div className="min-w-0">
+                            <h1 className="mb-2 flex flex-wrap items-center gap-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                                <Settings className="h-8 w-8 shrink-0 text-primary" />
                                 {t('settingsPage.title')}
                             </h1>
                             <p className="text-muted-foreground max-w-2xl text-sm font-medium">
@@ -156,7 +162,8 @@ export const SettingsPage: React.FC = () => {
 
                         <button
                             onClick={resetPreferences}
-                            className="btn btn-secondary gap-2 h-10"
+                            type="button"
+                            className="btn btn-secondary h-10 w-full justify-center gap-2 sm:w-auto"
                         >
                             <RotateCcw className="w-4 h-4" /> {t('settingsPage.resetDefaults')}
                         </button>
@@ -165,7 +172,7 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 min-h-0">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-8">
                 <div className="max-w-3xl mx-auto">
                     {/* Display Settings */}
                     <SettingsSection
@@ -202,6 +209,7 @@ export const SettingsPage: React.FC = () => {
                             <ToggleSwitch
                                 checked={preferences.compactMode}
                                 onChange={v => updatePreference('compactMode', v)}
+                                ariaLabel="Mod compact"
                             />
                         </SettingRow>
                     </SettingsSection>
@@ -230,6 +238,7 @@ export const SettingsPage: React.FC = () => {
                             <ToggleSwitch
                                 checked={preferences.showWelcomeOnStartup}
                                 onChange={v => updatePreference('showWelcomeOnStartup', v)}
+                                ariaLabel="Mesaj de bun venit la deschidere"
                             />
                         </SettingRow>
                     </SettingsSection>
@@ -247,6 +256,7 @@ export const SettingsPage: React.FC = () => {
                             <ToggleSwitch
                                 checked={preferences.showSyncNotifications}
                                 onChange={v => updatePreference('showSyncNotifications', v)}
+                                ariaLabel="Notificări la sincronizare"
                             />
                         </SettingRow>
 
@@ -257,6 +267,7 @@ export const SettingsPage: React.FC = () => {
                             <ToggleSwitch
                                 checked={preferences.showOfflineWarning}
                                 onChange={v => updatePreference('showOfflineWarning', v)}
+                                ariaLabel="Avertisment la deconectare"
                             />
                         </SettingRow>
                     </SettingsSection>

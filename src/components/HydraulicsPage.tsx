@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useUI, HydraulicToolId } from '@/context/UIContext';
 import {
+    Activity,
     Wrench,
     Droplets,
     Thermometer,
@@ -13,7 +15,7 @@ import {
 // Import all calculator components
 import { ExpansionVesselCalculator } from './ExpansionVesselCalculator';
 
-type HydraulicTool = 'flow' | 'expansion' | 'thermal' | 'valve' | 'fittings' | 'pump';
+type HydraulicTool = HydraulicToolId;
 
 interface ToolTab {
     id: HydraulicTool;
@@ -23,6 +25,12 @@ interface ToolTab {
 }
 
 const TOOL_TABS: ToolTab[] = [
+    {
+        id: 'flow',
+        label: 'Debit & DN',
+        icon: Activity,
+        description: 'Debit termic și DN recomandat'
+    },
     {
         id: 'expansion',
         label: 'Vas Expansiune',
@@ -43,9 +51,9 @@ const TOOL_TABS: ToolTab[] = [
     },
     {
         id: 'fittings',
-        label: 'K-Factors',
+        label: 'Fitinguri',
         icon: GitBranch,
-        description: 'Pierderi locale fitinguri'
+        description: 'Pierderi locale și listă de fitinguri'
     },
     {
         id: 'pump',
@@ -56,56 +64,61 @@ const TOOL_TABS: ToolTab[] = [
 ];
 
 export function HydraulicsPage() {
-    const [activeTool, setActiveTool] = useState<HydraulicTool>('expansion');
+    const { hydraulicTool: activeTool, setHydraulicTool: setActiveTool } = useUI();
 
     return (
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-linear-to-br from-primary to-primary/70">
-                    <Wrench className="w-6 h-6 text-primary-foreground" />
+            <div className="flex min-w-0 items-start gap-3 sm:items-center">
+                <div className="shrink-0 rounded-xl bg-linear-to-br from-primary to-primary/70 p-2.5 sm:p-3">
+                    <Wrench className="h-5 w-5 text-primary-foreground sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">
+                <div className="min-w-0">
+                    <h1 className="text-xl font-bold leading-tight text-foreground sm:text-2xl">
                         Instrumente Hidraulice
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                         Calculatoare pentru proiectare sisteme de răcire
                     </p>
                 </div>
             </div>
 
             {/* Tool Tabs */}
-            <div className="flex flex-wrap gap-2">
-                {TOOL_TABS.map(tab => {
-                    const Icon = tab.icon;
-                    const isActive = activeTool === tab.id;
+            <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain pb-1 md:overflow-visible md:pb-0">
+                <div className="flex w-max min-w-full gap-2 md:w-auto md:flex-wrap">
+                    {TOOL_TABS.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTool === tab.id;
 
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTool(tab.id)}
-                            className={`
-                                flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200
-                                ${isActive
-                                    ? 'bg-primary/10 border-primary/30 text-primary'
-                                    : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted'
-                                }
-                                border shadow-sm
-                            `}
-                        >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : ''}`} />
-                            <div className="text-left">
-                                <div className="text-sm font-medium">{tab.label}</div>
-                                <div className="text-xs text-zinc-500 hidden sm:block">{tab.description}</div>
-                            </div>
-                        </button>
-                    );
-                })}
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTool(tab.id)}
+                                aria-pressed={isActive}
+                                className={`
+                                    flex min-h-12 min-w-[10rem] shrink-0 items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all duration-200
+                                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-w-[11rem] sm:px-4 sm:py-3
+                                    ${isActive
+                                        ? 'border-primary/30 bg-primary/10 text-primary'
+                                        : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
+                                    }
+                                    shadow-sm
+                                `}
+                            >
+                                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-primary' : ''}`} />
+                                <div className="min-w-0">
+                                    <div className="whitespace-nowrap text-sm font-medium">{tab.label}</div>
+                                    <div className="hidden text-xs leading-tight text-zinc-500 sm:block">{tab.description}</div>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Content Area — tool-urile raman MONTATE (ascunse) ca sa nu se piarda parametrii */}
-            <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+            <div className="min-w-0 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-6">
                 {[
                     { id: 'flow', el: <FlowAndSizeTool /> },
                     { id: 'expansion', el: <ExpansionVesselCalculator /> },

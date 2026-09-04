@@ -6,6 +6,8 @@ import { mockProjectContextValue } from '@/__tests__/mocks/mockProjectContext';
 
 // Mock the contexts
 const mockUiSetActiveTab = jest.fn();
+const mockUiSetPipingTab = jest.fn();
+const mockUiSetHydraulicTool = jest.fn();
 
 jest.mock('@/context/ProjectContext', () => ({
     useProject: jest.fn(),
@@ -14,6 +16,10 @@ jest.mock('@/context/UIContext', () => ({
     useUI: () => ({
         activeTab: 'dashboard',
         setActiveTab: mockUiSetActiveTab,
+        pipingTab: 'segments',
+        setPipingTab: mockUiSetPipingTab,
+        hydraulicTool: 'expansion',
+        setHydraulicTool: mockUiSetHydraulicTool,
         highlightedItemId: null,
         setHighlightedItemId: jest.fn(),
         isSidebarCollapsed: false,
@@ -119,6 +125,24 @@ describe('Dashboard Component', () => {
         // <TemplateSelector isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
         // We can't easily check internal state, but we can check if it received the prop.
         // However, with our simple mock, we might need a better mock to verify props.
+    });
+
+    it('opens the requested piping sub-tab from the progress strip', () => {
+        render(<Dashboard />);
+
+        fireEvent.click(screen.getByRole('button', { name: /Echipamente/i }));
+
+        expect(mockUiSetPipingTab).toHaveBeenCalledWith('equipment');
+        expect(mockUiSetActiveTab).toHaveBeenCalledWith('config');
+    });
+
+    it('opens the fittings calculator directly from the progress strip', () => {
+        render(<Dashboard />);
+
+        fireEvent.click(screen.getByRole('button', { name: /Fitinguri/i }));
+
+        expect(mockUiSetHydraulicTool).toHaveBeenCalledWith('fittings');
+        expect(mockUiSetActiveTab).toHaveBeenCalledWith('hydraulics');
     });
 
     it('displays "Cloud Activ" ONLY when a cloudProjectId is connected (not by projectNumber)', () => {

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
-const CLOUD_DISABLED_MESSAGE = 'Cloud disabled — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY env vars';
+const CLOUD_DISABLED_MESSAGE = 'Cloud dezactivat — biblioteca locală rămâne disponibilă';
 
 export interface LibraryItem<T> {
     id: string;
@@ -25,8 +25,11 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
         try {
             setLoading(true);
             if (!supabase) {
-                throw new Error(CLOUD_DISABLED_MESSAGE);
+                setItems([]);
+                setError(CLOUD_DISABLED_MESSAGE);
+                return;
             }
+            setError(null);
             const { data, error } = await supabase
                 .from('library_items')
                 .select('*')
@@ -74,7 +77,9 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
             setItems(prev => [...prev, newItem as unknown as LibraryItem<T>]);
             return newItem;
         } catch (err: unknown) {
-            console.error(`Error adding library item (${type}):`, err);
+            if (!(err instanceof Error && err.message === CLOUD_DISABLED_MESSAGE)) {
+                console.error(`Error adding library item (${type}):`, err);
+            }
             throw err;
         }
     };
@@ -93,7 +98,9 @@ export function useLibrary<T>(type: 'equipment' | 'profile' | 'pipe') {
 
             setItems(prev => prev.filter(item => item.id !== id));
         } catch (err: unknown) {
-            console.error(`Error deleting library item (${type}):`, err);
+            if (!(err instanceof Error && err.message === CLOUD_DISABLED_MESSAGE)) {
+                console.error(`Error deleting library item (${type}):`, err);
+            }
             throw err;
         }
     };

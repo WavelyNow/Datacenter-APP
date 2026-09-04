@@ -297,12 +297,12 @@ const BASE_PIPE_STANDARDS: Record<string, PipeStandard> = {
             // SDR17 (PN10) — gama mare
             { dn: "d160", nominalDn: "DN150", inch: "6\"", od: 160, thickness: 9.5, id: 141.0, weight: 9.921, pressureClass: 10, sdr: 17, insulatedOd: 250, supportSpacing: { water: 2.3 } },
             { dn: "d225", nominalDn: "DN200", inch: "8\"", od: 225, thickness: 13.4, id: 198.2, weight: 16.620, pressureClass: 10, sdr: 17, insulatedOd: 315, supportSpacing: { water: 2.6 } },
-            { dn: "d250", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 18.180, pressureClass: 10, sdr: 17, insulatedOd: 355, supportSpacing: { water: 2.7 } },
-            { dn: "d280", inch: "10\"", od: 280, thickness: 16.6, id: 246.8, weight: 22.640, pressureClass: 10, sdr: 17, insulatedOd: 400, supportSpacing: { water: 2.8 } },
-            { dn: "d315", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 28.510, pressureClass: 10, sdr: 17, insulatedOd: 450, supportSpacing: { water: 2.9 } },
-            { dn: "d355", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 35.350, pressureClass: 10, sdr: 17, insulatedOd: 500, supportSpacing: { water: 3.0 } },
-            { dn: "d400", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 44.070, pressureClass: 10, sdr: 17, insulatedOd: 560, supportSpacing: { water: 3.1 } },
-            { dn: "d450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 55.490, pressureClass: 10, sdr: 17, insulatedOd: 630, supportSpacing: { water: 3.2 } },
+            { dn: "d250", nominalDn: "DN250", inch: "10\"", od: 250, thickness: 14.8, id: 220.4, weight: 18.180, pressureClass: 10, sdr: 17, insulatedOd: 355, supportSpacing: { water: 2.7 } },
+            { dn: "d280", nominalDn: "DN250", inch: "10\"", od: 280, thickness: 16.6, id: 246.8, weight: 22.640, pressureClass: 10, sdr: 17, insulatedOd: 400, supportSpacing: { water: 2.8 } },
+            { dn: "d315", nominalDn: "DN300", inch: "12\"", od: 315, thickness: 18.7, id: 277.6, weight: 28.510, pressureClass: 10, sdr: 17, insulatedOd: 450, supportSpacing: { water: 2.9 } },
+            { dn: "d355", nominalDn: "DN350", inch: "14\"", od: 355, thickness: 21.1, id: 312.8, weight: 35.350, pressureClass: 10, sdr: 17, insulatedOd: 500, supportSpacing: { water: 3.0 } },
+            { dn: "d400", nominalDn: "DN400", inch: "16\"", od: 400, thickness: 23.7, id: 352.6, weight: 44.070, pressureClass: 10, sdr: 17, insulatedOd: 560, supportSpacing: { water: 3.1 } },
+            { dn: "d450", nominalDn: "DN450", inch: "18\"", od: 450, thickness: 26.7, id: 396.6, weight: 55.490, pressureClass: 10, sdr: 17, insulatedOd: 630, supportSpacing: { water: 3.2 } },
         ]
 
     },

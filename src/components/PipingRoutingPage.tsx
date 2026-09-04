@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useProject } from '@/context/ProjectContext';
 import { useTranslation } from '@/context/PreferencesContext';
+import { useUI } from '@/context/UIContext';
 import { PipeManager } from './PipeManager';
 import { EquipmentManager } from './EquipmentManager';
 import { FluidComposition } from './FluidComposition';
@@ -29,7 +30,7 @@ export function PipingRoutingPage() {
     } = useProject();
 
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<'segments' | 'equipment' | 'fluid'>('segments');
+    const { pipingTab: activeTab, setPipingTab: setActiveTab } = useUI();
     const [equipmentViewMode, setEquipmentViewMode] = useState<'volume' | 'weights' | 'photos'>('volume');
 
     const tabs = React.useMemo(() => ([

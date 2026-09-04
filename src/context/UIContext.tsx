@@ -4,10 +4,19 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 
 import { TabId } from '@/lib/types';
 
+export type PipingTab = 'segments' | 'equipment' | 'fluid';
+export type HydraulicToolId = 'flow' | 'expansion' | 'thermal' | 'valve' | 'fittings' | 'pump';
+
 interface UIContextState {
     // Navigation
     activeTab: TabId;
     setActiveTab: (tab: TabId) => void;
+
+    // Sub-navigation for the dense engineering workspaces.
+    pipingTab: PipingTab;
+    setPipingTab: (tab: PipingTab) => void;
+    hydraulicTool: HydraulicToolId;
+    setHydraulicTool: (tool: HydraulicToolId) => void;
 
     // Search & Highlight (global cross-component communication)
     highlightedItemId: string | null;
@@ -22,6 +31,8 @@ const UIContext = createContext<UIContextState | undefined>(undefined);
 
 export const UIProvider = ({ children }: { children: ReactNode }) => {
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+    const [pipingTab, setPipingTab] = useState<PipingTab>('segments');
+    const [hydraulicTool, setHydraulicTool] = useState<HydraulicToolId>('expansion');
     const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -32,11 +43,15 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     const value: UIContextState = useMemo(() => ({
         activeTab,
         setActiveTab,
+        pipingTab,
+        setPipingTab,
+        hydraulicTool,
+        setHydraulicTool,
         highlightedItemId,
         setHighlightedItemId,
         isSidebarCollapsed,
         toggleSidebar
-    }), [activeTab, highlightedItemId, isSidebarCollapsed, toggleSidebar]);
+    }), [activeTab, pipingTab, hydraulicTool, highlightedItemId, isSidebarCollapsed, toggleSidebar]);
 
     return (
         <UIContext.Provider value={value}>

@@ -38,6 +38,10 @@ describe('Pipe standards data integrity', () => {
         expect(gf.maxPressure).toBe(16);
         const dn = gf.dimensions.map(d => d.dn);
         expect(dn).toEqual(['d32', 'd40', 'd50', 'd63', 'd75', 'd90', 'd110', 'd140']);
+        expect(gf.dimensions.map(d => [d.dn, d.nominalDn, d.od])).toEqual([
+            ['d32', 'DN25', 32], ['d40', 'DN32', 40], ['d50', 'DN40', 50], ['d63', 'DN50', 63],
+            ['d75', 'DN65', 75], ['d90', 'DN80', 90], ['d110', 'DN100', 110], ['d140', 'DN125', 140],
+        ]);
         // Greutăți oficiale cu manta (kg/m) — nu valorile vechi greșite
         const d32 = gf.dimensions[0];
         expect(d32.weight).toBeCloseTo(1.140, 2);
@@ -53,6 +57,12 @@ describe('Pipe standards data integrity', () => {
         expect(gf).toBeDefined();
         const dns = gf.dimensions.map(d => d.dn);
         expect(dns).toEqual(['d32', 'd40', 'd50', 'd63', 'd75', 'd90', 'd110', 'd140', 'd160', 'd225', 'd250', 'd280', 'd315', 'd355', 'd400', 'd450']);
+        expect(gf.dimensions.map(d => [d.dn, d.nominalDn, d.od])).toEqual([
+            ['d32', 'DN25', 32], ['d40', 'DN32', 40], ['d50', 'DN40', 50], ['d63', 'DN50', 63],
+            ['d75', 'DN65', 75], ['d90', 'DN80', 90], ['d110', 'DN100', 110], ['d140', 'DN125', 140],
+            ['d160', 'DN150', 160], ['d225', 'DN200', 225], ['d250', 'DN250', 250], ['d280', 'DN250', 280],
+            ['d315', 'DN300', 315], ['d355', 'DN350', 355], ['d400', 'DN400', 400], ['d450', 'DN450', 450],
+        ]);
         const d225 = gf.dimensions.find(d => d.dn === 'd225')!;
         expect(d225.thickness).toBeCloseTo(13.4, 1); // SDR17 (225/17 ≈ 13.2)
         expect(d225.weight).toBeCloseTo(16.62, 1);

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useProject } from '@/context/ProjectContext';
-import { useUI } from '@/context/UIContext';
+import { HydraulicToolId, PipingTab, useUI } from '@/context/UIContext';
 import { motion } from 'framer-motion';
 import {
     Sparkles,
@@ -28,7 +28,6 @@ import { Tooltip } from './ui/Tooltip';
 const DashboardBase = () => {
     const { t } = useTranslation();
     const {
-        projectDetails,
         segments,
         equipmentList,
         glycolPercentage,
@@ -39,7 +38,17 @@ const DashboardBase = () => {
         fittingItems
     } = useProject();
 
-    const { setActiveTab } = useUI();
+    const { setActiveTab, setPipingTab, setHydraulicTool } = useUI();
+
+    const openPiping = React.useCallback((tab: PipingTab) => {
+        setPipingTab(tab);
+        setActiveTab('config');
+    }, [setActiveTab, setPipingTab]);
+
+    const openHydraulics = React.useCallback((tool: HydraulicToolId) => {
+        setHydraulicTool(tool);
+        setActiveTab('hydraulics');
+    }, [setActiveTab, setHydraulicTool]);
 
     const [isTemplateOpen, setIsTemplateOpen] = React.useState(false);
 
@@ -146,7 +155,7 @@ const DashboardBase = () => {
 
                     <Tooltip content="Începe un proiect nou adăugând manual segmente de țeavă" side="bottom">
                         <button
-                            onClick={() => setActiveTab('config')}
+                            onClick={() => openPiping('segments')}
                             title="Începe un proiect nou adăugând manual segmente de țeavă"
                             className="btn btn-primary group h-12 w-full gap-2 px-6 sm:w-auto"
                         >
@@ -162,7 +171,7 @@ const DashboardBase = () => {
 
             {/* Quick Stats Grid */}
             <motion.div variants={containerVariants} className="grid grid-cols-1 gap-3 sm:gap-6 md:grid-cols-4">
-                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-primary/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-primary/30 sm:p-6 md:h-[160px]" onClick={() => openPiping('equipment')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <Package className="w-5 h-5" />
@@ -175,7 +184,7 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-secondary/30 sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium group flex min-h-[140px] cursor-pointer flex-col justify-between p-4 hover:border-secondary/30 sm:p-6 md:h-[160px]" onClick={() => openPiping('segments')}>
                     <div className="flex justify-between items-start">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                             <Activity className="w-5 h-5" />
@@ -190,7 +199,7 @@ const DashboardBase = () => {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="card-premium group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden p-4 hover:border-border sm:p-6 md:h-[160px]" onClick={() => setActiveTab('config')}>
+                <motion.div variants={itemVariants} className="card-premium group relative flex min-h-[140px] cursor-pointer flex-col justify-between overflow-hidden p-4 hover:border-border sm:p-6 md:h-[160px]" onClick={() => openPiping('fluid')}>
                     <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex justify-between items-start relative z-10">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -230,14 +239,14 @@ const DashboardBase = () => {
                     <motion.div variants={itemVariants} className="glass-panel p-4 rounded-2xl flex flex-wrap items-center gap-2">
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mr-1">Progres:</span>
                         {[
-                            { done: (segments || []).length > 0, label: 'Segmente', tab: 'config' as const },
-                            { done: (equipmentList || []).length > 0, label: 'Echipamente', tab: 'config' as const },
-                            { done: (fittingItems || []).length > 0, label: 'Fittinguri', tab: 'hydraulics' as const },
-                            { done: true, label: 'Standarde verificate', tab: 'pipe-standards' as const },
+                            { done: (segments || []).length > 0, label: 'Segmente', action: () => openPiping('segments') },
+                            { done: (equipmentList || []).length > 0, label: 'Echipamente', action: () => openPiping('equipment') },
+                            { done: (fittingItems || []).length > 0, label: 'Fitinguri', action: () => openHydraulics('fittings') },
+                            { done: true, label: 'Standarde verificate', action: () => setActiveTab('pipe-standards') },
                         ].map((step) => (
                             <button
                                 key={step.label}
-                                onClick={() => setActiveTab(step.tab)}
+                                onClick={step.action}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-[1.03] ${
                                     step.done
                                         ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
@@ -259,7 +268,7 @@ const DashboardBase = () => {
 
                             <h3 className="font-bold text-xl mb-6 relative z-10">Inițializare Proiect</h3>
                             <div className="grid gap-4 relative z-10">
-                                <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                <button onClick={() => openPiping('fluid')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
                                     <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 group-hover:scale-110 transition-transform">1</div>
                                     <div>
                                         <div className="font-bold text-sm">Configurează Fluide</div>
@@ -268,7 +277,7 @@ const DashboardBase = () => {
                                     <ArrowRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </button>
 
-                                <button onClick={() => setActiveTab('config')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
+                                <button onClick={() => openPiping('segments')} className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/40 border border-white/5 hover:bg-secondary/60 hover:border-primary/20 transition-all text-left group">
                                     <div className="w-10 h-10 rounded-full bg-secondary/10 text-muted-foreground flex items-center justify-center font-bold border border-secondary/20 group-hover:scale-110 transition-transform">2</div>
                                     <div>
                                         <div className="font-bold text-sm">Alege Diametre & Lungimi</div>
