@@ -22,6 +22,7 @@ Status: 4 septembrie 2026. Acest document descrie ce face codul acum, nu o arhit
 ## Persistență și fișiere
 
 - Proiectul local este salvat sub cheia `hydraulic_calc_project_v2`.
+- Copiile numite folosesc indexul `datacenter-app:projects:index:v1` și câte o cheie de date per proiect; indexul păstrează doar metadatele pentru listare.
 - Fișierele JSON folosesc versiunea `1`; fișierele vechi fără versiune rămân acceptate.
 - Importul local acceptă fișiere de cel mult 25 MB.
 - Importul înlocuiește proiectul curent după validarea transportului; câmpurile lipsă sunt completate cu valori implicite.

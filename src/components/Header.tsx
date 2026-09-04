@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProjectDetails } from '@/lib/types';
-import { Menu, Printer, Save, Upload, Undo, Redo, ChevronRight, Settings, CheckCircle2 } from 'lucide-react';
+import { Menu, Printer, Save, Upload, Undo, Redo, ChevronRight, Settings, CheckCircle2, FolderOpen } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { useProject } from '@/context/ProjectContext';
 import { CommandPalette } from './CommandPalette';
@@ -11,6 +11,7 @@ interface HeaderProps {
     onLoadProjectFile: (file: File) => void;
     // Actions
     onOpenExport: () => void;
+    onOpenLocalProjects: () => void;
     onOpenSettings: () => void;
     onOpenNavigation: () => void;
     onSaveProject: () => void;
@@ -25,6 +26,7 @@ const HeaderBase: React.FC<HeaderProps> = ({
     onProjectDetailsChange,
     onLoadProjectFile,
     onOpenExport,
+    onOpenLocalProjects,
     onOpenSettings,
     onOpenNavigation,
     onSaveProject,
@@ -177,6 +179,16 @@ const HeaderBase: React.FC<HeaderProps> = ({
                         >
                             <Printer className="w-4 h-4" />
                             <span className="hidden md:inline">Export Raport</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={onOpenLocalProjects}
+                            aria-label="Deschide proiectele locale"
+                            title="Proiecte locale"
+                            className="btn btn-ghost btn-icon h-10 w-10 text-muted-foreground hover:text-foreground"
+                        >
+                            <FolderOpen className="w-4 h-4" />
                         </button>
 
                         <button

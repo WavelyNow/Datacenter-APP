@@ -22,6 +22,7 @@ Aplicație local-first pentru instalații de răcire în datacentere: dimensiona
   (ex. modele GF de pe cad.georgfischer.com)
 - **Asistent Specificații** — extragere pe bază de reguli din Caietul de Sarcini
 - **Normative** — registry cu integritate testată
+- **Proiecte locale** — salvează copii, redeschide și șterge proiecte din browser
 - Export rapoarte PDF/Excel și persistență locală a proiectului
 
 Documentație tehnică: [arhitectură](docs/ARCHITECTURE.md), [contract export](docs/EXPORT-CONTRACT.md), [status funcțional](docs/FEATURE-STATUS.md).
@@ -38,7 +39,7 @@ Punere în Funcțiune, Librărie Tehnică — componentă moartă ștearsă.
 - **Style**: TailwindCSS 4 — temă Apple-minimal (un singur accent, fără culori țipătoare)
 - **3D**: Three.js / react-three-fiber (doar în galerie — lazy-loaded)
 - **Persistence**: localStorage (proiect, standarde țevi); fluxul principal este local
-- **Testing**: 293 teste Jest (inclusiv integritate date: țevi, normative, geometrie)
+- **Testing**: 297 teste Jest (inclusiv integritate date: țevi, normative, geometrie și proiecte locale)
 
 ---
 
@@ -47,7 +48,7 @@ Punere în Funcțiune, Librărie Tehnică — componentă moartă ștearsă.
 ```bash
 npm install
 npm run dev        # localhost:3000
-npm test           # 293 teste
+npm test           # 297 teste
 npm run build      # producție
 ```
 

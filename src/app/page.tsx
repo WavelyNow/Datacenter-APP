@@ -68,6 +68,11 @@ const ProjectSettingsModal = dynamic(() => import('@/components/ProjectSettingsM
   ssr: false,
 });
 
+const LocalProjectsModal = dynamic(() => import('@/components/LocalProjectsModal').then(m => m.LocalProjectsModal), {
+  loading: () => <div className="p-8"><TableSkeleton rows={5} /></div>,
+  ssr: false,
+});
+
 const PdfWizardModal = dynamic(() => import('@/components/PdfWizardModal').then(m => m.PdfWizardModal), {
   loading: () => <div className="p-8"><TableSkeleton rows={10} /></div>,
   ssr: false,
@@ -110,11 +115,17 @@ const DashboardContent = () => {
     isInitialized,
     undo, redo, canUndo, canRedo,
     fittingItems,
-    saveProjectLocally
+    saveProjectLocally,
+    isProjectDirty,
+    localProjectId,
+    saveAsLocalProject,
+    loadLocalProject,
+    deleteLocalProject,
   } = useProject();
 
   // Modal States
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isLocalProjectsOpen, setIsLocalProjectsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -191,6 +202,7 @@ const DashboardContent = () => {
   }, [loadProjectFile]);
 
   const toggleSettings = React.useCallback(() => setIsSettingsOpen(prev => !prev), []);
+  const toggleLocalProjects = React.useCallback(() => setIsLocalProjectsOpen(prev => !prev), []);
   const toggleExport = React.useCallback(() => setIsExportOpen(prev => !prev), []);
   const toggleShortcuts = React.useCallback(() => setIsShortcutsOpen(prev => !prev), []);
 
@@ -221,6 +233,18 @@ const DashboardContent = () => {
         projectDetails={projectDetails}
         onProjectDetailsChange={setProjectDetails}
       />
+      )}
+      {isLocalProjectsOpen && (
+        <LocalProjectsModal
+          isOpen
+          onClose={toggleLocalProjects}
+          currentProjectName={projectDetails.projectName}
+          currentProjectId={localProjectId}
+          currentProjectDirty={isProjectDirty}
+          onSaveAs={saveAsLocalProject}
+          onLoad={loadLocalProject}
+          onDelete={deleteLocalProject}
+        />
       )}
       {isExportOpen && (
       <PdfWizardModal
@@ -261,6 +285,7 @@ const DashboardContent = () => {
           onProjectDetailsChange={setProjectDetails}
           onLoadProjectFile={loadProjectFile}
           onOpenExport={toggleExport}
+          onOpenLocalProjects={toggleLocalProjects}
           onOpenSettings={toggleSettings}
           onOpenNavigation={() => setIsMobileNavOpen(true)}
           onSaveProject={saveProject}

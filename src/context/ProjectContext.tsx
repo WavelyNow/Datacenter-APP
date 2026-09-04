@@ -6,6 +6,11 @@ import { useHistory } from '@/hooks/useHistory';
 import { supabase } from '@/lib/supabase';
 import { usePreferences } from '@/context/PreferencesContext';
 import { parseProjectData, PROJECT_FILE_VERSION } from '@/lib/projectFile';
+import {
+    deleteLocalProject as removeStoredLocalProject,
+    readLocalProject,
+    saveLocalProject,
+} from '@/lib/localProjects';
 
 const CLOUD_DISABLED_MESSAGE = 'Cloud dezactivat — setează variabilele de mediu NEXT_PUBLIC_SUPABASE_URL și NEXT_PUBLIC_SUPABASE_ANON_KEY';
 
@@ -78,6 +83,10 @@ interface ProjectState {
     // Local persistence status and explicit manual save.
     isProjectDirty: boolean;
     saveProjectLocally: () => void;
+    localProjectId: string | null;
+    saveAsLocalProject: (name: string) => string | null;
+    loadLocalProject: (id: string) => boolean;
+    deleteLocalProject: (id: string) => boolean;
 }
 
 
@@ -223,6 +232,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // Initialization check
     const [isInitialized, setIsInitialized] = React.useState(false);
     const [isProjectDirty, setIsProjectDirty] = React.useState(false);
+    const [localProjectId, setLocalProjectId] = React.useState<string | null>(null);
 
     // Load saved data using useHistory reset
     useEffect(() => {
@@ -244,6 +254,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const lastSeenStateRef = useRef<ProjectDataState>(state);
     const hydratedStateRef = useRef(false);
     const dirtyRef = useRef(false);
+    const localProjectIdRef = useRef<string | null>(null);
     useEffect(() => {
         latestStateRef.current = state;
     }, [state]);
@@ -295,8 +306,59 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }, [persistProjectLocally]);
 
     const saveProjectLocally = useCallback(() => {
-        persistProjectLocally(latestStateRef.current);
+        const current = latestStateRef.current;
+        persistProjectLocally(current);
+        const id = localProjectIdRef.current;
+        if (id) {
+            saveLocalProject(id, current.projectDetails.projectName, buildProjectLoadData(current));
+        }
     }, [persistProjectLocally]);
+
+    const setActiveLocalProject = useCallback((id: string | null) => {
+        localProjectIdRef.current = id;
+        setLocalProjectId(id);
+    }, []);
+
+    const saveAsLocalProject = useCallback((name: string) => {
+        const projectName = name.trim();
+        if (!projectName) return null;
+
+        const current = latestStateRef.current;
+        const nextState: ProjectDataState = {
+            ...current,
+            cloudProjectId: null,
+            projectDetails: { ...current.projectDetails, projectName },
+        };
+        const id = crypto.randomUUID();
+        if (!saveLocalProject(id, projectName, buildProjectLoadData(nextState))) return null;
+
+        set(nextState);
+        setActiveLocalProject(id);
+        persistProjectLocally(nextState);
+        return id;
+    }, [persistProjectLocally, set, setActiveLocalProject]);
+
+    const loadLocalProject = useCallback((id: string) => {
+        const stored = readLocalProject(id);
+        if (!stored) return false;
+
+        try {
+            const nextState = applyProjectData(defaultState, parseProjectData(stored.data));
+            reset(nextState);
+            setActiveLocalProject(id);
+            persistProjectLocally(nextState);
+            return true;
+        } catch (error) {
+            console.error('Failed to load local project:', error);
+            return false;
+        }
+    }, [defaultState, persistProjectLocally, reset, setActiveLocalProject]);
+
+    const deleteLocalProject = useCallback((id: string) => {
+        const deleted = removeStoredLocalProject(id);
+        if (deleted && localProjectIdRef.current === id) setActiveLocalProject(null);
+        return deleted;
+    }, [setActiveLocalProject]);
 
     // Cloud Methods
     const cloudSaveInFlightRef = useRef(false);
@@ -380,8 +442,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
     // Local file import: full document replace with defaults for fields absent from older files.
     const importProjectData = useCallback((data: ProjectLoadData) => {
-        reset(applyProjectData(defaultState, parseProjectData(data)));
-    }, [defaultState, reset]);
+        const nextState = applyProjectData(defaultState, parseProjectData(data));
+        reset(nextState);
+        setActiveLocalProject(null);
+        persistProjectLocally(nextState);
+    }, [defaultState, persistProjectLocally, reset, setActiveLocalProject]);
 
     // Setters Adapters
     const setProjectDetails = useCallback((val: ProjectDetails | ((prev: ProjectDetails) => ProjectDetails)) =>
@@ -426,7 +491,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const setBoqItems = useCallback((val: BoQItem[] | ((prev: BoQItem[]) => BoQItem[])) =>
         set(prev => ({ ...prev, boqItems: typeof val === 'function' ? val(prev.boqItems) : val })), [set]);
 
-    const resetProject = useCallback(() => reset(defaultState), [defaultState, reset]);
+    const resetProject = useCallback(() => {
+        reset(defaultState);
+        setActiveLocalProject(null);
+        persistProjectLocally(defaultState);
+    }, [defaultState, persistProjectLocally, reset, setActiveLocalProject]);
 
     const addSegments = useCallback((newSegments: PipeSegment[]) =>
         set(prev => ({ ...prev, segments: [...prev.segments, ...newSegments] })), [set]);
@@ -466,12 +535,17 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         resetProject,
         isProjectDirty,
         saveProjectLocally,
+        localProjectId,
+        saveAsLocalProject,
+        loadLocalProject,
+        deleteLocalProject,
     }), [
         state, setProjectDetails, setSegments, setEquipmentList, setFluidType,
         setIfcModelUrl, setGlycolPercentage, setSafetyMargin, setSafetyMarginPercentage,
         setSupportConfig, setBranding, isInitialized,
         undo, redo, canUndo, canRedo, addSegments, addEquipment, saveToCloud, loadFromCloud,
-        setBoqItems, setFittingItems, importProjectData, resetProject, isProjectDirty, saveProjectLocally
+        setBoqItems, setFittingItems, importProjectData, resetProject, isProjectDirty, saveProjectLocally,
+        localProjectId, saveAsLocalProject, loadLocalProject, deleteLocalProject
     ]);
 
     return (
